@@ -44,23 +44,27 @@ pub struct Address {
 
 pub type FailFuture<'a, T> = Pin<Box<dyn 'a + Send + Future<Output = Result<T>>>>;
 
-pub type ResolvedBytes = (Vec<u8>, Arc<dyn Resolver>);
+pub type ByteNode = (Vec<u8>, Arc<dyn Resolve>);
 
-pub trait Resolver: Send + Sync {
-    fn resolve(&self, address: Address) -> FailFuture<ResolvedBytes>;
+pub trait Resolve: Send + Sync {
+    fn resolve(&self, address: Address) -> FailFuture<ByteNode>;
 }
 
-pub trait Origin: Send + Sync + ResolveBytes {
+pub trait FetchBytes {
+    fn fetch_bytes(&self) -> FailFuture<ByteNode>;
+}
+
+pub trait Fetch: Send + Sync + FetchBytes {
     type T;
-    fn resolve(&self) -> FailFuture<Self::T>;
+    fn fetch(&self) -> FailFuture<Self::T>;
 }
 
-pub struct Ref<T> {
+pub struct Point<T> {
     hash: Hash,
-    origin: Arc<dyn Origin<T = T>>,
+    origin: Arc<dyn Fetch<T = T>>,
 }
 
-impl<T> Clone for Ref<T> {
+impl<T> Clone for Point<T> {
     fn clone(&self) -> Self {
         Self {
             hash: self.hash,
@@ -69,51 +73,51 @@ impl<T> Clone for Ref<T> {
     }
 }
 
-impl<T: Object> Ref<T> {
-    pub fn from_address(address: Address, resolver: Arc<dyn Resolver>) -> Self {
+impl<T: Object> Point<T> {
+    pub fn from_address(address: Address, resolve: Arc<dyn Resolve>) -> Self {
         Self {
             hash: address.hash,
-            origin: Arc::new(ResolverOrigin {
+            origin: Arc::new(ByAddress {
                 address,
-                resolver,
+                resolve,
                 _object: PhantomData,
             }),
         }
     }
 }
 
-struct ResolverOrigin<T> {
+struct ByAddress<T> {
     address: Address,
-    resolver: Arc<dyn Resolver>,
+    resolve: Arc<dyn Resolve>,
     _object: PhantomData<T>,
 }
 
-impl<T: Object> Origin for ResolverOrigin<T> {
+impl<T: Object> Fetch for ByAddress<T> {
     type T = T;
 
-    fn resolve(&self) -> FailFuture<Self::T> {
+    fn fetch(&self) -> FailFuture<Self::T> {
         Box::pin(async {
-            let (data, resolver) = self.resolver.resolve(self.address).await?;
-            let object = T::parse_slice(&data, &resolver)?;
+            let (data, resolve) = self.resolve.resolve(self.address).await?;
+            let object = T::parse_slice(&data, &resolve)?;
             Ok(object)
         })
     }
 }
 
-impl<T> ResolveBytes for ResolverOrigin<T> {
-    fn resolve_bytes(&self) -> FailFuture<ResolvedBytes> {
-        self.resolver.resolve(self.address)
+impl<T> FetchBytes for ByAddress<T> {
+    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+        self.resolve.resolve(self.address)
     }
 }
 
 pub trait RefVisitor {
-    fn visit<T: Object>(&mut self, point: &Ref<T>);
+    fn visit<T: Object>(&mut self, point: &Point<T>);
 }
 
 pub struct HashVisitor<F>(F);
 
 impl<F: FnMut(Hash)> RefVisitor for HashVisitor<F> {
-    fn visit<T: Object>(&mut self, point: &Ref<T>) {
+    fn visit<T: Object>(&mut self, point: &Point<T>) {
         self.0(point.hash)
     }
 }
@@ -125,7 +129,7 @@ pub struct ReflessInput<'a> {
 
 pub struct Input<'a> {
     refless: ReflessInput<'a>,
-    resolver: &'a Arc<dyn Resolver>,
+    resolve: &'a Arc<dyn Resolve>,
     index: usize,
 }
 
@@ -203,9 +207,9 @@ impl Input<'_> {
         Ok(Address { hash, index })
     }
 
-    fn parse_ref<T: Object>(&mut self) -> crate::Result<Ref<T>> {
+    fn parse_point<T: Object>(&mut self) -> crate::Result<Point<T>> {
         let address = self.parse_address()?;
-        Ok(Ref::from_address(address, self.resolver.clone()))
+        Ok(Point::from_address(address, self.resolve.clone()))
     }
 
     fn parse_inline<T: Inline>(&mut self) -> crate::Result<T> {
@@ -225,10 +229,10 @@ pub trait Object: 'static + Sized + Send + Sync + ToOutput {
     fn accept_refs(&self, visitor: &mut impl RefVisitor);
     fn parse(input: Input) -> crate::Result<Self>;
 
-    fn parse_slice(data: &[u8], resolver: &Arc<dyn Resolver>) -> crate::Result<Self> {
+    fn parse_slice(data: &[u8], resolve: &Arc<dyn Resolve>) -> crate::Result<Self> {
         let input = Input {
             refless: ReflessInput { data, at: 0 },
-            resolver,
+            resolve,
             index: 0,
         };
         let object = Self::parse(input)?;
@@ -276,7 +280,7 @@ pub trait Inline: Object {
     }
 }
 
-impl<T: Object> Object for Ref<T> {
+impl<T: Object> Object for Point<T> {
     fn accept_refs(&self, visitor: &mut impl RefVisitor) {
         visitor.visit(self);
     }
@@ -286,15 +290,15 @@ impl<T: Object> Object for Ref<T> {
     }
 }
 
-impl<T> ToOutput for Ref<T> {
+impl<T> ToOutput for Point<T> {
     fn to_output(&self, output: &mut dyn Output) {
         output.write(&self.hash);
     }
 }
 
-impl<T: Object> Inline for Ref<T> {
+impl<T: Object> Inline for Point<T> {
     fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        input.parse_ref()
+        input.parse_point()
     }
 }
 
@@ -307,29 +311,25 @@ pub trait Topology: Send + Sync {
     }
 }
 
-pub trait ResolveBytes {
-    fn resolve_bytes(&self) -> FailFuture<ResolvedBytes>;
-}
-
-pub trait Singular: Send + Sync + ResolveBytes {
+pub trait Singular: Send + Sync + FetchBytes {
     fn hash(&self) -> &Hash;
 }
 
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
 impl RefVisitor for TopoVec {
-    fn visit<T: Object>(&mut self, point: &Ref<T>) {
+    fn visit<T: Object>(&mut self, point: &Point<T>) {
         self.push(Arc::new(point.clone()));
     }
 }
 
-impl<T> ResolveBytes for Ref<T> {
-    fn resolve_bytes(&self) -> FailFuture<ResolvedBytes> {
-        self.origin.resolve_bytes()
+impl<T> FetchBytes for Point<T> {
+    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+        self.origin.fetch_bytes()
     }
 }
 
-impl<T> Singular for Ref<T> {
+impl<T> Singular for Point<T> {
     fn hash(&self) -> &Hash {
         &self.hash
     }
@@ -505,7 +505,7 @@ impl HashOutput {
     }
 }
 
-impl<T: Object + Clone> Ref<T> {
+impl<T: Object + Clone> Point<T> {
     pub fn from_object(object: T) -> Self {
         Self {
             hash: object.full_hash(),
@@ -516,42 +516,42 @@ impl<T: Object + Clone> Ref<T> {
 
 struct LocalOrigin<T>(T);
 
-impl<T: Object + Clone> Origin for LocalOrigin<T> {
+impl<T: Object + Clone> Fetch for LocalOrigin<T> {
     type T = T;
 
-    fn resolve(&self) -> FailFuture<Self::T> {
+    fn fetch(&self) -> FailFuture<Self::T> {
         Box::pin(ready(Ok(self.0.clone())))
     }
 }
 
-impl<T: Object> ResolveBytes for LocalOrigin<T> {
-    fn resolve_bytes(&self) -> FailFuture<ResolvedBytes> {
+impl<T: Object> FetchBytes for LocalOrigin<T> {
+    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
         Box::pin(ready(Ok((
             self.0.output(),
-            Arc::new(SingularResolver {
+            Arc::new(ByTopology {
                 topology: self.0.topology(),
             }) as _,
         ))))
     }
 }
 
-struct SingularResolver {
+struct ByTopology {
     topology: TopoVec,
 }
 
-impl SingularResolver {
-    fn try_resolve(&self, address: Address) -> Result<FailFuture<ResolvedBytes>> {
+impl ByTopology {
+    fn try_resolve(&self, address: Address) -> Result<FailFuture<ByteNode>> {
         let point = self.topology.get(address.index).ok_or(Error::OutOfBounds)?;
         if *point.hash() != address.hash {
             Err(Error::Mismatch)
         } else {
-            Ok(point.resolve_bytes())
+            Ok(point.fetch_bytes())
         }
     }
 }
 
-impl Resolver for SingularResolver {
-    fn resolve(&self, address: Address) -> FailFuture<ResolvedBytes> {
+impl Resolve for ByTopology {
+    fn resolve(&self, address: Address) -> FailFuture<ByteNode> {
         self.try_resolve(address)
             .map_err(Err)
             .map_err(ready)
@@ -560,11 +560,11 @@ impl Resolver for SingularResolver {
     }
 }
 
-impl<T> Origin for Ref<T> {
+impl<T> Fetch for Point<T> {
     type T = T;
 
-    fn resolve(&self) -> FailFuture<Self::T> {
-        self.origin.resolve()
+    fn fetch(&self) -> FailFuture<Self::T> {
+        self.origin.fetch()
     }
 }
 

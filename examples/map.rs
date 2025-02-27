@@ -6,7 +6,7 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, FailFuture, Hash, Object, Origin, Ref, RefVisitor, Refless, ResolvedBytes, Resolver,
+    Address, ByteNode, FailFuture, Fetch, Hash, Object, Point, RefVisitor, Refless, Resolve,
     Singular,
 };
 use smol::{Executor, channel::Sender};
@@ -41,8 +41,8 @@ impl EventContext<'_> {
         let _ = send.send(event).await;
     }
 
-    async fn resolve(self, point: Ref<impl Object>) {
-        match point.resolve().await {
+    async fn resolve(self, point: Point<impl Object>) {
+        match point.fetch().await {
             Ok(object) => self.send(object).await,
             Err(e) => tracing::error!("{e:?}"),
         }
@@ -50,7 +50,7 @@ impl EventContext<'_> {
 }
 
 impl RefVisitor for EventVisitor<'_, '_> {
-    fn visit<T: Object>(&mut self, point: &object_rainbow::Ref<T>) {
+    fn visit<T: Object>(&mut self, point: &object_rainbow::Point<T>) {
         if !self.fetching.contains(point.hash()) {
             self.fetching.insert(*point.hash());
             let point = point.clone();
@@ -75,8 +75,8 @@ impl<'ex> Event<'ex> {
 #[derive(Debug, Clone)]
 struct MapResolver(Arc<BTreeMap<Hash, Vec<u8>>>);
 
-impl Resolver for MapResolver {
-    fn resolve(&self, address: object_rainbow::Address) -> FailFuture<ResolvedBytes> {
+impl Resolve for MapResolver {
+    fn resolve(&self, address: object_rainbow::Address) -> FailFuture<ByteNode> {
         Box::pin(ready(match self.0.get(&address.hash) {
             Some(data) => Ok((data.clone(), Arc::new(self.clone()) as _)),
             None => Err(object_rainbow::error!("hash not found")),
@@ -84,7 +84,7 @@ impl Resolver for MapResolver {
     }
 }
 
-async fn iterate<T: Object>(object: T) -> Ref<T> {
+async fn iterate<T: Object>(object: T) -> Point<T> {
     let (send, recv) = smol::channel::unbounded::<Event>();
     let executor = Arc::new(Executor::new());
     let hash = object.full_hash();
@@ -118,7 +118,7 @@ async fn iterate<T: Object>(object: T) -> Ref<T> {
     }
     let address = Address { index: 0, hash };
     let resolver = Arc::new(MapResolver(Arc::new(fetched)));
-    Ref::from_address(address, resolver)
+    Point::from_address(address, resolver)
 }
 
 fn main() -> anyhow::Result<()> {
@@ -126,13 +126,13 @@ fn main() -> anyhow::Result<()> {
     tracing::info!("starting");
     smol::block_on(async move {
         let point = iterate((
-            Ref::from_object(Refless((*b"alisa", *b"feistel"))),
-            Ref::from_object(Refless([1, 2, 3, 4])),
+            Point::from_object(Refless((*b"alisa", *b"feistel"))),
+            Point::from_object(Refless([1, 2, 3, 4])),
         ))
         .await;
-        assert_eq!(point.resolve().await?.0.resolve().await?.0.0, *b"alisa");
-        assert_eq!(point.resolve().await?.0.resolve().await?.0.1, *b"feistel");
-        assert_eq!(point.resolve().await?.1.resolve().await?.0, [1, 2, 3, 4]);
+        assert_eq!(point.fetch().await?.0.fetch().await?.0.0, *b"alisa");
+        assert_eq!(point.fetch().await?.0.fetch().await?.0.1, *b"feistel");
+        assert_eq!(point.fetch().await?.1.fetch().await?.0, [1, 2, 3, 4]);
         Ok(())
     })
 }
