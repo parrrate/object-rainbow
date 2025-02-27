@@ -36,6 +36,10 @@ impl<A: ReflessInline, B: ReflessInline> ReflessInline for (A, B) {
     }
 }
 
+impl<A: Size, B: Size> Size for (A, B) {
+    const SIZE: usize = A::SIZE + B::SIZE;
+}
+
 impl<A: ToOutput, B: ToOutput, C: ToOutput> ToOutput for (A, B, C) {
     fn to_output(&self, output: &mut dyn Output) {
         self.0.to_output(output);
@@ -80,6 +84,10 @@ impl<A: ReflessInline, B: ReflessInline, C: ReflessInline> ReflessInline for (A,
             input.parse_inline()?,
         ))
     }
+}
+
+impl<A: Size, B: Size, C: Size> Size for (A, B, C) {
+    const SIZE: usize = A::SIZE + B::SIZE + C::SIZE;
 }
 
 impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput> ToOutput for (A, B, C, D) {
@@ -144,6 +152,10 @@ impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessInline> Ref
             input.parse_inline()?,
         ))
     }
+}
+
+impl<A: Size, B: Size, C: Size, D: Size> Size for (A, B, C, D) {
+    const SIZE: usize = A::SIZE + B::SIZE + C::SIZE + D::SIZE;
 }
 
 impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput> ToOutput for (A, B, C, D, E) {
@@ -214,6 +226,10 @@ impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessInline, E: 
             input.parse_inline()?,
         ))
     }
+}
+
+impl<A: Size, B: Size, C: Size, D: Size, E: Size> Size for (A, B, C, D, E) {
+    const SIZE: usize = A::SIZE + B::SIZE + C::SIZE + D::SIZE + E::SIZE;
 }
 
 impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutput> ToOutput
@@ -308,6 +324,10 @@ impl<
             input.parse_inline()?,
         ))
     }
+}
+
+impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size> Size for (A, B, C, D, E, F) {
+    const SIZE: usize = A::SIZE + B::SIZE + C::SIZE + D::SIZE + E::SIZE + F::SIZE;
 }
 
 impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutput, G: ToOutput>
@@ -410,6 +430,10 @@ impl<
             input.parse_inline()?,
         ))
     }
+}
+
+impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size> Size for (A, B, C, D, E, F, G) {
+    const SIZE: usize = A::SIZE + B::SIZE + C::SIZE + D::SIZE + E::SIZE + F::SIZE + G::SIZE;
 }
 
 impl<
@@ -528,6 +552,13 @@ impl<
             input.parse_inline()?,
         ))
     }
+}
+
+impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size> Size
+    for (A, B, C, D, E, F, G, H)
+{
+    const SIZE: usize =
+        A::SIZE + B::SIZE + C::SIZE + D::SIZE + E::SIZE + F::SIZE + G::SIZE + H::SIZE;
 }
 
 impl<
@@ -673,6 +704,13 @@ impl<
             input.parse_inline()?,
         ))
     }
+}
+
+impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size, I: Size> Size
+    for (A, B, C, D, E, F, G, H, I)
+{
+    const SIZE: usize =
+        A::SIZE + B::SIZE + C::SIZE + D::SIZE + E::SIZE + F::SIZE + G::SIZE + H::SIZE + I::SIZE;
 }
 
 impl<
@@ -829,6 +867,21 @@ impl<
             input.parse_inline()?,
         ))
     }
+}
+
+impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size, I: Size, J: Size> Size
+    for (A, B, C, D, E, F, G, H, I, J)
+{
+    const SIZE: usize = A::SIZE
+        + B::SIZE
+        + C::SIZE
+        + D::SIZE
+        + E::SIZE
+        + F::SIZE
+        + G::SIZE
+        + H::SIZE
+        + I::SIZE
+        + J::SIZE;
 }
 
 impl<
@@ -996,6 +1049,33 @@ impl<
             input.parse_inline()?,
         ))
     }
+}
+
+impl<
+    A: Size,
+    B: Size,
+    C: Size,
+    D: Size,
+    E: Size,
+    F: Size,
+    G: Size,
+    H: Size,
+    I: Size,
+    J: Size,
+    K: Size,
+> Size for (A, B, C, D, E, F, G, H, I, J, K)
+{
+    const SIZE: usize = A::SIZE
+        + B::SIZE
+        + C::SIZE
+        + D::SIZE
+        + E::SIZE
+        + F::SIZE
+        + G::SIZE
+        + H::SIZE
+        + I::SIZE
+        + J::SIZE
+        + K::SIZE;
 }
 
 impl<
@@ -1174,4 +1254,33 @@ impl<
             input.parse_inline()?,
         ))
     }
+}
+
+impl<
+    A: Size,
+    B: Size,
+    C: Size,
+    D: Size,
+    E: Size,
+    F: Size,
+    G: Size,
+    H: Size,
+    I: Size,
+    J: Size,
+    K: Size,
+    L: Size,
+> Size for (A, B, C, D, E, F, G, H, I, J, K, L)
+{
+    const SIZE: usize = A::SIZE
+        + B::SIZE
+        + C::SIZE
+        + D::SIZE
+        + E::SIZE
+        + F::SIZE
+        + G::SIZE
+        + H::SIZE
+        + I::SIZE
+        + J::SIZE
+        + K::SIZE
+        + L::SIZE;
 }
