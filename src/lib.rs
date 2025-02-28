@@ -46,7 +46,9 @@ pub enum Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-pub type Hash = [u8; 32];
+pub const HASH_SIZE: usize = 32;
+
+pub type Hash = [u8; HASH_SIZE];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Address {
@@ -83,6 +85,10 @@ impl<T> Clone for Point<T> {
             origin: self.origin.clone(),
         }
     }
+}
+
+impl<T> Size for Point<T> {
+    const SIZE: usize = HASH_SIZE;
 }
 
 impl<T: Object> Point<T> {
@@ -718,7 +724,7 @@ impl<const N: usize> Size for [u8; N] {
 
 #[derive(ToOutput, Object, Inline, ReflessObject, ReflessInline, Size)]
 pub struct DeriveExample<A, B> {
-    stuff: Arc<()>,
+    stuff: Arc<Point<Self>>,
     field1: A,
     field2: B,
 }
