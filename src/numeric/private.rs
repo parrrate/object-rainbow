@@ -7,6 +7,30 @@ pub struct Le<T>(T);
 #[derive(ParseAsInline)]
 pub struct Be<T>(T);
 
+impl<T> Deref for Ae<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<T> Deref for Le<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<T> Deref for Be<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 pub trait AsLe {
     type Le;
 }
