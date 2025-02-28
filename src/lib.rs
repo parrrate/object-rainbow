@@ -278,7 +278,7 @@ pub trait Topological {
 pub trait Tagged {
     const TAGS: Tags = Tags(&[], &[]);
 
-    fn tag_hash(&self) -> Hash {
+    fn tag_hash() -> Hash {
         let mut hasher = Sha256::new();
         Self::TAGS.hash(&mut |tag| {
             hasher.update({
@@ -306,9 +306,9 @@ pub trait Object:
 
     fn full_hash(&self) -> Hash {
         let mut output = HashOutput::default();
+        output.hasher.update(Self::tag_hash());
         output.hasher.update(self.topology_hash());
         output.hasher.update(self.data_hash());
-        output.hasher.update(self.tag_hash());
         output.hash()
     }
 }
@@ -566,7 +566,6 @@ impl<T> Fetch for Point<T> {
         self.origin.fetch()
     }
 }
-
 
 pub trait Size {
     const SIZE: usize;
