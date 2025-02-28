@@ -7,7 +7,7 @@ use std::{
 
 use object_rainbow::{
     Address, ByteNode, FailFuture, Fetch, Hash, Object, Point, RefVisitor, Refless, Resolve,
-    Singular,
+    Singular, error_parse,
 };
 use smol::{Executor, channel::Sender};
 
@@ -79,7 +79,7 @@ impl Resolve for MapResolver {
     fn resolve(&self, address: object_rainbow::Address) -> FailFuture<ByteNode> {
         Box::pin(ready(match self.0.get(&address.hash) {
             Some(data) => Ok((data.clone(), Arc::new(self.clone()) as _)),
-            None => Err(object_rainbow::error!("hash not found")),
+            None => Err(error_parse!("hash not found")),
         }))
     }
 }
