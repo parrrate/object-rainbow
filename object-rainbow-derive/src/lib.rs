@@ -1,8 +1,8 @@
 use proc_macro::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::{
-    Data, DeriveInput, Error, Generics, Index, parse_macro_input, parse_quote, parse_quote_spanned,
-    spanned::Spanned,
+    Data, DeriveInput, Error, Generics, Ident, Index, parse::Parse, parse_macro_input, parse_quote,
+    parse_quote_spanned, spanned::Spanned, token::Comma,
 };
 
 #[proc_macro_derive(ToOutput)]
@@ -181,17 +181,21 @@ fn gen_accept_points(data: &Data) -> proc_macro2::TokenStream {
     }
 }
 
-#[proc_macro_derive(Tagged)]
+#[proc_macro_derive(Tagged, attributes(tags))]
 pub fn derive_tagged(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
-    let generics = match bounds_tagged(input.generics, &input.data) {
+    let mut errors = Vec::new();
+    let generics = match bounds_tagged(input.generics, &input.data, &mut errors) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
     let tags = gen_tags(&input.data);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let errors = errors.into_iter().map(|e| e.into_compile_error());
     let output = quote! {
+        #(#errors)*
+
         impl #impl_generics ::object_rainbow::Tagged for #name #ty_generics #where_clause {
             const TAGS: ::object_rainbow::Tags = #tags;
         }
@@ -199,17 +203,50 @@ pub fn derive_tagged(input: TokenStream) -> TokenStream {
     TokenStream::from(output)
 }
 
-fn bounds_tagged(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+struct FieldTagArgs {
+    skip: bool,
+}
+
+impl Parse for FieldTagArgs {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let mut skip = false;
+        while !input.is_empty() {
+            let ident = input.parse::<Ident>()?;
+            if ident.to_string().as_str() != "skip" {
+                return Err(Error::new(ident.span(), "expected: skip"));
+            }
+            skip = true;
+            if !input.is_empty() {
+                input.parse::<Comma>()?;
+            }
+        }
+        Ok(Self { skip })
+    }
+}
+
+fn bounds_tagged(
+    mut generics: Generics,
+    data: &Data,
+    errors: &mut Vec<Error>,
+) -> syn::Result<Generics> {
     match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
-                let ty = &f.ty;
-                generics
-                    .make_where_clause()
-                    .predicates
-                    .push(parse_quote_spanned! { ty.span() =>
-                        #ty: ::object_rainbow::Tagged
-                    });
+                let mut skip = false;
+                for attr in &f.attrs {
+                    match attr.parse_args::<FieldTagArgs>() {
+                        Ok(args) => skip |= args.skip,
+                        Err(e) => errors.push(e),
+                    }
+                }
+                if !skip {
+                    let ty = &f.ty;
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: ::object_rainbow::Tagged
+                        },
+                    );
+                }
             }
         }
         Data::Enum(data) => {
@@ -231,9 +268,13 @@ fn bounds_tagged(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
 fn gen_tags(data: &Data) -> proc_macro2::TokenStream {
     match data {
         Data::Struct(data) => {
-            let tags = data.fields.iter().map(|f| {
+            let tags = data.fields.iter().filter_map(|f| {
+                let mut skip = false;
+                for attr in &f.attrs {
+                    skip |= attr.parse_args::<FieldTagArgs>().ok()?.skip;
+                }
                 let ty = &f.ty;
-                quote! { &<#ty as ::object_rainbow::Tagged>::TAGS }
+                (!skip).then_some(quote! { &<#ty as ::object_rainbow::Tagged>::TAGS })
             });
             quote! {
                 ::object_rainbow::Tags(&[], &[#(#tags),*])
