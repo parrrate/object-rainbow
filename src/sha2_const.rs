@@ -1,4 +1,6 @@
 //! Original: <https://docs.rs/sha2-const/0.1.2/src/sha2_const/lib.rs.html>
+//!
+//! Original license: MIT OR Apache-2.0, copyright Saleem Rashid
 
 mod constants;
 mod sha;
