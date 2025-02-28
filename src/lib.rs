@@ -16,6 +16,7 @@ pub use object_rainbow_derive::{
 use sha2::{Digest, Sha256};
 
 mod impls;
+mod sha2_const;
 
 #[macro_export]
 macro_rules! error_parse {
@@ -49,7 +50,7 @@ pub enum Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-pub const HASH_SIZE: usize = 32;
+pub const HASH_SIZE: usize = sha2_const::Sha256::DIGEST_SIZE;
 
 pub type Hash = [u8; HASH_SIZE];
 
@@ -278,17 +279,7 @@ pub trait Topological {
 pub trait Tagged {
     const TAGS: Tags = Tags(&[], &[]);
 
-    fn tag_hash() -> Hash {
-        let mut hasher = Sha256::new();
-        Self::TAGS.hash(&mut |tag| {
-            hasher.update({
-                let mut hasher = Sha256::new();
-                hasher.update(tag);
-                hasher.finalize()
-            })
-        });
-        hasher.finalize().into()
-    }
+    const HASH: Hash = const { Self::TAGS.const_hash(sha2_const::Sha256::new()).finalize() };
 }
 
 pub trait Object:
@@ -306,7 +297,7 @@ pub trait Object:
 
     fn full_hash(&self) -> Hash {
         let mut output = HashOutput::default();
-        output.hasher.update(Self::tag_hash());
+        output.hasher.update(Self::HASH);
         output.hasher.update(self.topology_hash());
         output.hasher.update(self.data_hash());
         output.hash()
@@ -316,13 +307,22 @@ pub trait Object:
 pub struct Tags(pub &'static [&'static str], pub &'static [&'static Self]);
 
 impl Tags {
-    fn hash(&self, f: &mut impl FnMut(&'static str)) {
-        for tag in self.0 {
-            f(tag);
+    const fn const_hash(&self, mut hasher: sha2_const::Sha256) -> sha2_const::Sha256 {
+        {
+            let mut i = 0;
+            while i < self.0.len() {
+                hasher = hasher.update(self.0[i].as_bytes());
+                i += 1;
+            }
         }
-        for tags in self.1 {
-            tags.hash(f)
+        {
+            let mut i = 0;
+            while i < self.0.len() {
+                hasher = self.1[i].const_hash(hasher);
+                i += 1;
+            }
         }
+        hasher
     }
 }
 
@@ -644,23 +644,4 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
         input.empty()?;
         Ok(object)
     }
-}
-
-#[derive(
-    ToOutput,
-    Topological,
-    Tagged,
-    Object,
-    Inline,
-    ReflessObject,
-    ReflessInline,
-    Size,
-    Parse,
-    ParseInline,
-)]
-#[tags("example")]
-pub struct DeriveExample<A, B> {
-    a: A,
-    #[tags(skip)]
-    b: B,
 }
