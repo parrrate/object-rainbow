@@ -6,7 +6,7 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, ByteNode, FailFuture, Fetch, Hash, Object, Point, RefVisitor, Refless, Resolve,
+    Address, ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Refless, Resolve,
     Singular, error_parse,
 };
 use smol::{Executor, channel::Sender};
@@ -49,7 +49,7 @@ impl EventContext<'_> {
     }
 }
 
-impl RefVisitor for EventVisitor<'_, '_> {
+impl PointVisitor for EventVisitor<'_, '_> {
     fn visit<T: Object>(&mut self, point: &object_rainbow::Point<T>) {
         if !self.fetching.contains(point.hash()) {
             self.fetching.insert(*point.hash());
@@ -67,7 +67,7 @@ impl<'ex> Event<'ex> {
         Event(
             hash,
             data,
-            Box::new(move |fetching| object.accept_refs(&mut EventVisitor { fetching, context })),
+            Box::new(move |fetching| object.accept_points(&mut EventVisitor { fetching, context })),
         )
     }
 }
