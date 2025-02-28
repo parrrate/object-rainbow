@@ -773,7 +773,7 @@ pub trait ParseInput: Sized {
         self.collect(f)
     }
 
-    fn collect_parse<T: ParseInline<Self>, B: FromIterator<T>>(self) -> crate::Result<B> {
+    fn parse_collect<T: ParseInline<Self>, B: FromIterator<T>>(self) -> crate::Result<B> {
         self.collect(|input| input.parse_inline())
     }
 
