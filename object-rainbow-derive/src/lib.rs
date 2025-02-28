@@ -293,16 +293,27 @@ fn gen_tags(data: &Data, attrs: &[Attribute], errors: &mut Vec<Error>) -> proc_m
                     Err(e) => errors.push(e),
                 }
             }
-            let nested = data.fields.iter().filter_map(|f| {
-                let mut skip = false;
-                for attr in &f.attrs {
-                    skip |= attr.parse_args::<FieldTagArgs>().ok()?.skip;
+            let nested = data
+                .fields
+                .iter()
+                .filter_map(|f| {
+                    let mut skip = false;
+                    for attr in &f.attrs {
+                        skip |= attr.parse_args::<FieldTagArgs>().ok()?.skip;
+                    }
+                    let ty = &f.ty;
+                    (!skip).then_some(quote! { <#ty as ::object_rainbow::Tagged>::TAGS })
+                })
+                .collect::<Vec<_>>();
+            if nested.len() == 1 && tags.is_empty() {
+                let nested = nested.into_iter().next().unwrap();
+                quote! {
+                    #nested
                 }
-                let ty = &f.ty;
-                (!skip).then_some(quote! { &<#ty as ::object_rainbow::Tagged>::TAGS })
-            });
-            quote! {
-                ::object_rainbow::Tags(&[#(#tags),*], &[#(#nested),*])
+            } else {
+                quote! {
+                    ::object_rainbow::Tags(&[#(#tags),*], &[&#(#nested),*])
+                }
             }
         }
         Data::Enum(data) => {
