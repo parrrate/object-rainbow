@@ -9,7 +9,7 @@ use std::{
 };
 
 pub use anyhow::anyhow;
-pub use object_rainbow_derive::{Inline, Object, ToOutput};
+pub use object_rainbow_derive::{Inline, Object, ReflessInline, ReflessObject, ToOutput};
 use sha2::{Digest, Sha256};
 
 mod tuple;
@@ -690,7 +690,7 @@ impl<const N: usize> Size for [u8; N] {
     const SIZE: usize = N;
 }
 
-#[derive(ToOutput, Object, Inline)]
+#[derive(ToOutput, Object, Inline, ReflessObject, ReflessInline)]
 pub struct DeriveExample<A, B> {
     field1: A,
     field2: B,
