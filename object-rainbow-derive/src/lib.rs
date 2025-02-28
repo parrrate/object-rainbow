@@ -93,6 +93,94 @@ fn gen_to_output(data: &Data) -> proc_macro2::TokenStream {
     }
 }
 
+fn bounds_topological(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    match data {
+        Data::Struct(data) => {
+            for f in data.fields.iter() {
+                let ty = &f.ty;
+                generics
+                    .make_where_clause()
+                    .predicates
+                    .push(parse_quote_spanned! { ty.span() =>
+                        #ty: ::object_rainbow::Topological
+                    });
+            }
+        }
+        Data::Enum(data) => {
+            return Err(Error::new_spanned(
+                data.enum_token,
+                "`enum`s are not supported",
+            ));
+        }
+        Data::Union(data) => {
+            return Err(Error::new_spanned(
+                data.union_token,
+                "`union`s are not supported",
+            ));
+        }
+    }
+    Ok(generics)
+}
+
+#[proc_macro_derive(Topological)]
+pub fn derive_topological(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+    let generics = match bounds_topological(input.generics, &input.data) {
+        Ok(g) => g,
+        Err(e) => return e.into_compile_error().into(),
+    };
+    let accept_points = gen_accept_points(&input.data);
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let output = quote! {
+        impl #impl_generics ::object_rainbow::Topological for #name #ty_generics #where_clause {
+            fn accept_points(&self, visitor: &mut impl ::object_rainbow::PointVisitor) {
+                #accept_points
+            }
+        }
+    };
+    TokenStream::from(output)
+}
+
+fn gen_accept_points(data: &Data) -> proc_macro2::TokenStream {
+    match data {
+        Data::Struct(data) => match &data.fields {
+            syn::Fields::Named(fields) => {
+                let accept_points = fields.named.iter().map(|f| {
+                    let i = f.ident.as_ref().unwrap();
+                    quote_spanned! { f.ty.span() =>
+                        self.#i.accept_points(visitor)
+                    }
+                });
+                quote! {
+                    #(#accept_points);*
+                }
+            }
+            syn::Fields::Unnamed(fields) => {
+                let accept_points = fields.unnamed.iter().enumerate().map(|(i, f)| {
+                    let i: Index = Index {
+                        index: i.try_into().unwrap(),
+                        span: f.span(),
+                    };
+                    quote_spanned! { f.ty.span() =>
+                        self.#i.accept_points(visitor)
+                    }
+                });
+                quote! {
+                    #(#accept_points);*
+                }
+            }
+            syn::Fields::Unit => quote! {},
+        },
+        Data::Enum(data) => {
+            Error::new_spanned(data.enum_token, "`enum`s are not supported").to_compile_error()
+        }
+        Data::Union(data) => {
+            Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
+        }
+    }
+}
+
 #[proc_macro_derive(Object)]
 pub fn derive_object(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -101,16 +189,11 @@ pub fn derive_object(input: TokenStream) -> TokenStream {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let accept_points = gen_accept_points(&input.data);
     let parse = gen_parse(&input.data);
     let tags = gen_tags(&input.data);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let output = quote! {
         impl #impl_generics ::object_rainbow::Object for #name #ty_generics #where_clause {
-            fn accept_points(&self, visitor: &mut impl ::object_rainbow::PointVisitor) {
-                #accept_points
-            }
-
             fn parse(mut input: ::object_rainbow::Input) -> ::object_rainbow::Result<Self> {
                 #parse
             }
@@ -155,45 +238,6 @@ fn bounds_object(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
         }
     }
     Ok(generics)
-}
-
-fn gen_accept_points(data: &Data) -> proc_macro2::TokenStream {
-    match data {
-        Data::Struct(data) => match &data.fields {
-            syn::Fields::Named(fields) => {
-                let accept_points = fields.named.iter().map(|f| {
-                    let i = f.ident.as_ref().unwrap();
-                    quote_spanned! { f.ty.span() =>
-                        self.#i.accept_points(visitor)
-                    }
-                });
-                quote! {
-                    #(#accept_points);*
-                }
-            }
-            syn::Fields::Unnamed(fields) => {
-                let accept_points = fields.unnamed.iter().enumerate().map(|(i, f)| {
-                    let i: Index = Index {
-                        index: i.try_into().unwrap(),
-                        span: f.span(),
-                    };
-                    quote_spanned! { f.ty.span() =>
-                        self.#i.accept_points(visitor)
-                    }
-                });
-                quote! {
-                    #(#accept_points);*
-                }
-            }
-            syn::Fields::Unit => quote! {},
-        },
-        Data::Enum(data) => {
-            Error::new_spanned(data.enum_token, "`enum`s are not supported").to_compile_error()
-        }
-        Data::Union(data) => {
-            Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
-        }
-    }
 }
 
 fn gen_parse(data: &Data) -> proc_macro2::TokenStream {

@@ -7,12 +7,14 @@ impl<A: ToOutput, B: ToOutput> ToOutput for (A, B) {
     }
 }
 
-impl<A: Inline, B: Object> Object for (A, B) {
+impl<A: Topological, B: Topological> Topological for (A, B) {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.0.accept_points(visitor);
         self.1.accept_points(visitor);
     }
+}
 
+impl<A: Inline, B: Object> Object for (A, B) {
     fn parse(mut input: Input) -> crate::Result<Self> {
         Ok((input.parse_inline()?, input.parse()?))
     }
@@ -50,13 +52,15 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput> ToOutput for (A, B, C) {
     }
 }
 
-impl<A: Inline, B: Inline, C: Object> Object for (A, B, C) {
+impl<A: Topological, B: Topological, C: Topological> Topological for (A, B, C) {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.0.accept_points(visitor);
         self.1.accept_points(visitor);
         self.2.accept_points(visitor);
     }
+}
 
+impl<A: Inline, B: Inline, C: Object> Object for (A, B, C) {
     fn parse(mut input: Input) -> crate::Result<Self> {
         Ok((input.parse_inline()?, input.parse_inline()?, input.parse()?))
     }
@@ -103,14 +107,16 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput> ToOutput for (A, B, C, 
     }
 }
 
-impl<A: Inline, B: Inline, C: Inline, D: Object> Object for (A, B, C, D) {
+impl<A: Topological, B: Topological, C: Topological, D: Topological> Topological for (A, B, C, D) {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.0.accept_points(visitor);
         self.1.accept_points(visitor);
         self.2.accept_points(visitor);
         self.3.accept_points(visitor);
     }
+}
 
+impl<A: Inline, B: Inline, C: Inline, D: Object> Object for (A, B, C, D) {
     fn parse(mut input: Input) -> crate::Result<Self> {
         Ok((
             input.parse_inline()?,
@@ -174,7 +180,9 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput> ToOutput f
     }
 }
 
-impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Object> Object for (A, B, C, D, E) {
+impl<A: Topological, B: Topological, C: Topological, D: Topological, E: Topological> Topological
+    for (A, B, C, D, E)
+{
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.0.accept_points(visitor);
         self.1.accept_points(visitor);
@@ -182,7 +190,9 @@ impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Object> Object for (A, B, C,
         self.3.accept_points(visitor);
         self.4.accept_points(visitor);
     }
+}
 
+impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Object> Object for (A, B, C, D, E) {
     fn parse(mut input: Input) -> crate::Result<Self> {
         Ok((
             input.parse_inline()?,
@@ -253,8 +263,8 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutpu
     }
 }
 
-impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Object> Object
-    for (A, B, C, D, E, F)
+impl<A: Topological, B: Topological, C: Topological, D: Topological, E: Topological, F: Topological>
+    Topological for (A, B, C, D, E, F)
 {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.0.accept_points(visitor);
@@ -264,7 +274,11 @@ impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Object> Object
         self.4.accept_points(visitor);
         self.5.accept_points(visitor);
     }
+}
 
+impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Object> Object
+    for (A, B, C, D, E, F)
+{
     fn parse(mut input: Input) -> crate::Result<Self> {
         Ok((
             input.parse_inline()?,
@@ -357,8 +371,15 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutpu
     }
 }
 
-impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Object> Object
-    for (A, B, C, D, E, F, G)
+impl<
+    A: Topological,
+    B: Topological,
+    C: Topological,
+    D: Topological,
+    E: Topological,
+    F: Topological,
+    G: Topological,
+> Topological for (A, B, C, D, E, F, G)
 {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.0.accept_points(visitor);
@@ -369,7 +390,11 @@ impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Object
         self.5.accept_points(visitor);
         self.6.accept_points(visitor);
     }
+}
 
+impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Object> Object
+    for (A, B, C, D, E, F, G)
+{
     fn parse(mut input: Input) -> crate::Result<Self> {
         Ok((
             input.parse_inline()?,
@@ -485,8 +510,16 @@ impl<
     }
 }
 
-impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline, H: Object> Object
-    for (A, B, C, D, E, F, G, H)
+impl<
+    A: Topological,
+    B: Topological,
+    C: Topological,
+    D: Topological,
+    E: Topological,
+    F: Topological,
+    G: Topological,
+    H: Topological,
+> Topological for (A, B, C, D, E, F, G, H)
 {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.0.accept_points(visitor);
@@ -498,7 +531,11 @@ impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline
         self.6.accept_points(visitor);
         self.7.accept_points(visitor);
     }
+}
 
+impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline, H: Object> Object
+    for (A, B, C, D, E, F, G, H)
+{
     fn parse(mut input: Input) -> crate::Result<Self> {
         Ok((
             input.parse_inline()?,
@@ -627,16 +664,16 @@ impl<
 }
 
 impl<
-    A: Inline,
-    B: Inline,
-    C: Inline,
-    D: Inline,
-    E: Inline,
-    F: Inline,
-    G: Inline,
-    H: Inline,
-    I: Object,
-> Object for (A, B, C, D, E, F, G, H, I)
+    A: Topological,
+    B: Topological,
+    C: Topological,
+    D: Topological,
+    E: Topological,
+    F: Topological,
+    G: Topological,
+    H: Topological,
+    I: Topological,
+> Topological for (A, B, C, D, E, F, G, H, I)
 {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.0.accept_points(visitor);
@@ -649,7 +686,20 @@ impl<
         self.7.accept_points(visitor);
         self.8.accept_points(visitor);
     }
+}
 
+impl<
+    A: Inline,
+    B: Inline,
+    C: Inline,
+    D: Inline,
+    E: Inline,
+    F: Inline,
+    G: Inline,
+    H: Inline,
+    I: Object,
+> Object for (A, B, C, D, E, F, G, H, I)
+{
     fn parse(mut input: Input) -> crate::Result<Self> {
         Ok((
             input.parse_inline()?,
@@ -796,17 +846,17 @@ impl<
 }
 
 impl<
-    A: Inline,
-    B: Inline,
-    C: Inline,
-    D: Inline,
-    E: Inline,
-    F: Inline,
-    G: Inline,
-    H: Inline,
-    I: Inline,
-    J: Object,
-> Object for (A, B, C, D, E, F, G, H, I, J)
+    A: Topological,
+    B: Topological,
+    C: Topological,
+    D: Topological,
+    E: Topological,
+    F: Topological,
+    G: Topological,
+    H: Topological,
+    I: Topological,
+    J: Topological,
+> Topological for (A, B, C, D, E, F, G, H, I, J)
 {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.0.accept_points(visitor);
@@ -820,7 +870,21 @@ impl<
         self.8.accept_points(visitor);
         self.9.accept_points(visitor);
     }
+}
 
+impl<
+    A: Inline,
+    B: Inline,
+    C: Inline,
+    D: Inline,
+    E: Inline,
+    F: Inline,
+    G: Inline,
+    H: Inline,
+    I: Inline,
+    J: Object,
+> Object for (A, B, C, D, E, F, G, H, I, J)
+{
     fn parse(mut input: Input) -> crate::Result<Self> {
         Ok((
             input.parse_inline()?,
@@ -985,18 +1049,18 @@ impl<
 }
 
 impl<
-    A: Inline,
-    B: Inline,
-    C: Inline,
-    D: Inline,
-    E: Inline,
-    F: Inline,
-    G: Inline,
-    H: Inline,
-    I: Inline,
-    J: Inline,
-    K: Object,
-> Object for (A, B, C, D, E, F, G, H, I, J, K)
+    A: Topological,
+    B: Topological,
+    C: Topological,
+    D: Topological,
+    E: Topological,
+    F: Topological,
+    G: Topological,
+    H: Topological,
+    I: Topological,
+    J: Topological,
+    K: Topological,
+> Topological for (A, B, C, D, E, F, G, H, I, J, K)
 {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.0.accept_points(visitor);
@@ -1011,7 +1075,22 @@ impl<
         self.9.accept_points(visitor);
         self.10.accept_points(visitor);
     }
+}
 
+impl<
+    A: Inline,
+    B: Inline,
+    C: Inline,
+    D: Inline,
+    E: Inline,
+    F: Inline,
+    G: Inline,
+    H: Inline,
+    I: Inline,
+    J: Inline,
+    K: Object,
+> Object for (A, B, C, D, E, F, G, H, I, J, K)
+{
     fn parse(mut input: Input) -> crate::Result<Self> {
         Ok((
             input.parse_inline()?,
@@ -1198,19 +1277,19 @@ impl<
 }
 
 impl<
-    A: Inline,
-    B: Inline,
-    C: Inline,
-    D: Inline,
-    E: Inline,
-    F: Inline,
-    G: Inline,
-    H: Inline,
-    I: Inline,
-    J: Inline,
-    K: Inline,
-    L: Object,
-> Object for (A, B, C, D, E, F, G, H, I, J, K, L)
+    A: Topological,
+    B: Topological,
+    C: Topological,
+    D: Topological,
+    E: Topological,
+    F: Topological,
+    G: Topological,
+    H: Topological,
+    I: Topological,
+    J: Topological,
+    K: Topological,
+    L: Topological,
+> Topological for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.0.accept_points(visitor);
@@ -1226,7 +1305,23 @@ impl<
         self.10.accept_points(visitor);
         self.11.accept_points(visitor);
     }
+}
 
+impl<
+    A: Inline,
+    B: Inline,
+    C: Inline,
+    D: Inline,
+    E: Inline,
+    F: Inline,
+    G: Inline,
+    H: Inline,
+    I: Inline,
+    J: Inline,
+    K: Inline,
+    L: Object,
+> Object for (A, B, C, D, E, F, G, H, I, J, K, L)
+{
     fn parse(mut input: Input) -> crate::Result<Self> {
         Ok((
             input.parse_inline()?,
