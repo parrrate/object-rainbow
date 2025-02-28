@@ -1,8 +1,8 @@
 use proc_macro::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::{
-    Data, DeriveInput, Error, Generics, Ident, Index, parse::Parse, parse_macro_input, parse_quote,
-    parse_quote_spanned, spanned::Spanned, token::Comma,
+    Attribute, Data, DeriveInput, Error, Generics, Ident, Index, LitStr, parse::Parse,
+    parse_macro_input, parse_quote, parse_quote_spanned, spanned::Spanned, token::Comma,
 };
 
 #[proc_macro_derive(ToOutput)]
@@ -190,7 +190,7 @@ pub fn derive_tagged(input: TokenStream) -> TokenStream {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let tags = gen_tags(&input.data);
+    let tags = gen_tags(&input.data, &input.attrs, &mut errors);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let errors = errors.into_iter().map(|e| e.into_compile_error());
     let output = quote! {
@@ -265,10 +265,35 @@ fn bounds_tagged(
     Ok(generics)
 }
 
-fn gen_tags(data: &Data) -> proc_macro2::TokenStream {
+struct StructTagArgs {
+    tags: Vec<LitStr>,
+}
+
+impl Parse for StructTagArgs {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let mut tags = Vec::new();
+        while !input.is_empty() {
+            let tag = input.parse::<LitStr>()?;
+            tags.push(tag);
+            if !input.is_empty() {
+                input.parse::<Comma>()?;
+            }
+        }
+        Ok(Self { tags })
+    }
+}
+
+fn gen_tags(data: &Data, attrs: &[Attribute], errors: &mut Vec<Error>) -> proc_macro2::TokenStream {
     match data {
         Data::Struct(data) => {
-            let tags = data.fields.iter().filter_map(|f| {
+            let mut tags = Vec::new();
+            for attr in attrs {
+                match attr.parse_args::<StructTagArgs>() {
+                    Ok(mut args) => tags.append(&mut args.tags),
+                    Err(e) => errors.push(e),
+                }
+            }
+            let nested = data.fields.iter().filter_map(|f| {
                 let mut skip = false;
                 for attr in &f.attrs {
                     skip |= attr.parse_args::<FieldTagArgs>().ok()?.skip;
@@ -277,7 +302,7 @@ fn gen_tags(data: &Data) -> proc_macro2::TokenStream {
                 (!skip).then_some(quote! { &<#ty as ::object_rainbow::Tagged>::TAGS })
             });
             quote! {
-                ::object_rainbow::Tags(&[], &[#(#tags),*])
+                ::object_rainbow::Tags(&[#(#tags),*], &[#(#nested),*])
             }
         }
         Data::Enum(data) => {

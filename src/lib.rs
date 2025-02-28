@@ -827,6 +827,7 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
     Parse,
     ParseInline,
 )]
+#[tags("example")]
 pub struct DeriveExample<A, B> {
     a: A,
     #[tags(skip)]
