@@ -1,8 +1,8 @@
 use proc_macro::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::{
-    Attribute, Data, DeriveInput, Error, Generics, Ident, LitStr, parse::Parse, parse_macro_input,
-    parse_quote, parse_quote_spanned, spanned::Spanned, token::Comma,
+    Attribute, Data, DeriveInput, Error, Generics, Ident, LitStr, Type, parse::Parse,
+    parse_macro_input, parse_quote, parse_quote_spanned, spanned::Spanned, token::Comma,
 };
 
 #[proc_macro_derive(ToOutput)]
@@ -1001,7 +1001,11 @@ fn bounds_parse_as_inline(mut generics: Generics, name: &Ident) -> syn::Result<G
     Ok(generics)
 }
 
-#[proc_macro_derive(Enum)]
+fn parse_path(attr: &Attribute) -> syn::Result<Type> {
+    attr.parse_args::<LitStr>()?.parse()
+}
+
+#[proc_macro_derive(Enum, attributes(enumtag))]
 pub fn derive_enum(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
@@ -1014,8 +1018,26 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
     let from_tag = gen_from_tag(&input.data);
     let kind = gen_kind(&input.data);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
+    let mut errors = Vec::new();
+    let mut enumtag = None;
+    for attr in &input.attrs {
+        match parse_path(attr) {
+            Ok(path) => {
+                if enumtag.is_some() {
+                    errors.push(Error::new_spanned(path, "duplicate tag"));
+                } else {
+                    enumtag = Some(path);
+                }
+            }
+            Err(e) => errors.push(e),
+        }
+    }
+    let enumtag = enumtag.unwrap_or_else(|| parse_quote!(::object_rainbow::numeric::Le<u8>));
+    let errors = errors.into_iter().map(|e| e.into_compile_error());
     let output = quote! {
         const _: () = {
+            #(#errors)*
+
             use ::object_rainbow::enumkind::EnumKind;
 
             #[derive(Clone, Copy, ::object_rainbow::ParseAsInline)]
@@ -1025,7 +1047,7 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
 
             impl ::object_rainbow::enumkind::EnumKind for __Kind {
                 type Tag = ::object_rainbow::enumkind::EnumTag<
-                    ::object_rainbow::numeric::Le<u8>,
+                    #enumtag,
                     #variant_count,
                 >;
 
