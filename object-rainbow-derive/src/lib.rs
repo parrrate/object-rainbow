@@ -367,7 +367,7 @@ fn gen_tags(data: &Data, attrs: &[Attribute], errors: &mut Vec<Error>) -> proc_m
                 }
             } else {
                 quote! {
-                    ::object_rainbow::Tags(&[#(#tags),*], &[&#(#nested),*])
+                    ::object_rainbow::Tags(&[#(#tags),*], &[#(&#nested),*])
                 }
             }
         }
