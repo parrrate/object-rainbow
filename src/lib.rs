@@ -82,6 +82,12 @@ pub trait FetchBytes {
 pub trait Fetch: Send + Sync + FetchBytes {
     type T;
     fn fetch(&self) -> FailFuture<Self::T>;
+    fn is_local(&self) -> bool {
+        false
+    }
+    fn get_mut(&mut self) -> Option<&mut Self::T> {
+        None
+    }
 }
 
 #[derive(ParseAsInline)]
@@ -514,12 +520,54 @@ impl HashOutput {
     }
 }
 
+pub struct PointMut<'a, T: Object> {
+    hash: &'a mut Hash,
+    object: &'a mut T,
+}
+
+impl<T: Object> Deref for PointMut<'_, T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        self.object
+    }
+}
+
+impl<T: Object> DerefMut for PointMut<'_, T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.object
+    }
+}
+
+impl<T: Object> Drop for PointMut<'_, T> {
+    fn drop(&mut self) {
+        *self.hash = self.object.full_hash();
+    }
+}
+
 impl<T: Object + Clone> Point<T> {
     pub fn from_object(object: T) -> Self {
         Self {
             hash: object.full_hash(),
             origin: Arc::new(LocalOrigin(object)),
         }
+    }
+
+    fn yolo_mut(&mut self) -> bool {
+        self.origin.is_local()
+            && Arc::get_mut(&mut self.origin).is_some_and(|origin| origin.get_mut().is_some())
+    }
+
+    pub async fn get_mut(&mut self) -> crate::Result<PointMut<T>> {
+        if !self.yolo_mut() {
+            let object = self.origin.fetch().await?;
+            self.origin = Arc::new(LocalOrigin(object));
+        }
+        assert!(self.origin.is_local());
+        Ok(PointMut {
+            hash: &mut self.hash,
+            object: Arc::get_mut(&mut self.origin).unwrap().get_mut().unwrap(),
+        })
     }
 }
 
@@ -530,6 +578,14 @@ impl<T: Object + Clone> Fetch for LocalOrigin<T> {
 
     fn fetch(&self) -> FailFuture<Self::T> {
         Box::pin(ready(Ok(self.0.clone())))
+    }
+
+    fn is_local(&self) -> bool {
+        true
+    }
+
+    fn get_mut(&mut self) -> Option<&mut Self::T> {
+        Some(&mut self.0)
     }
 }
 
