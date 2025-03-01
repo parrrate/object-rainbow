@@ -591,21 +591,32 @@ fn bounds_refless_inline(mut generics: Generics, data: &Data) -> syn::Result<Gen
 pub fn derive_size(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
-    let generics = match bounds_size(input.generics, &input.data) {
+    let size_arr = gen_size_arr(&input.data);
+    let size = gen_size(&input.data);
+    let generics = match bounds_size(input.generics, &input.data, &size_arr) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let size = gen_size(&input.data);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let output = quote! {
-        impl #impl_generics ::object_rainbow::Size for #name #ty_generics #where_clause {
-            const SIZE: usize = #size;
-        }
+        const _: () = {
+            use ::typenum::tarr;
+
+            impl #impl_generics ::object_rainbow::Size for #name #ty_generics #where_clause {
+                const SIZE: usize = #size;
+
+                type Size = <#size_arr as ::typenum::FoldAdd>::Output;
+            }
+        };
     };
     TokenStream::from(output)
 }
 
-fn bounds_size(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+fn bounds_size(
+    mut generics: Generics,
+    data: &Data,
+    size_arr: &proc_macro2::TokenStream,
+) -> syn::Result<Generics> {
     match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
@@ -631,7 +642,33 @@ fn bounds_size(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
             ));
         }
     }
+    generics.make_where_clause().predicates.push(parse_quote!(
+        #size_arr: ::typenum::FoldAdd<Output: ::typenum::Unsigned>
+    ));
     Ok(generics)
+}
+
+fn gen_size_arr(data: &Data) -> proc_macro2::TokenStream {
+    match data {
+        Data::Struct(data) => {
+            if data.fields.is_empty() {
+                return quote! {0};
+            }
+            let size = data.fields.iter().map(|f| {
+                let ty = &f.ty;
+                quote! { <#ty as ::object_rainbow::Size>::Size }
+            });
+            quote! {
+                tarr![#(#size),*]
+            }
+        }
+        Data::Enum(data) => {
+            Error::new_spanned(data.enum_token, "`enum`s are not supported").into_compile_error()
+        }
+        Data::Union(data) => {
+            Error::new_spanned(data.union_token, "`union`s are not supported").into_compile_error()
+        }
+    }
 }
 
 fn gen_size(data: &Data) -> proc_macro2::TokenStream {

@@ -14,6 +14,7 @@ pub use object_rainbow_derive::{
     Tagged, ToOutput, Topological,
 };
 use sha2::{Digest, Sha256};
+use typenum::Unsigned;
 
 pub use self::enumkind::Enum;
 
@@ -101,6 +102,7 @@ impl<T> Clone for Point<T> {
 
 impl<T> Size for Point<T> {
     const SIZE: usize = HASH_SIZE;
+    type Size = typenum::generic_const_mappings::U<HASH_SIZE>;
 }
 
 impl<T: Object> Point<T> {
@@ -581,6 +583,7 @@ impl<T> Fetch for Point<T> {
 
 pub trait Size {
     const SIZE: usize;
+    type Size: Unsigned;
 }
 
 pub trait Fixed: Size + Inline {}

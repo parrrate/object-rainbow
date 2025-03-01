@@ -52,4 +52,5 @@ impl<T: ReflessInline> ReflessInline for Arc<T> {}
 
 impl<T: Size> Size for Arc<T> {
     const SIZE: usize = T::SIZE;
+    type Size = T::Size;
 }

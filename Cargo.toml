@@ -15,6 +15,7 @@ object-rainbow-derive.path = "object-rainbow-derive"
 anyhow = "1.0.96"
 sha2 = "0.10.8"
 thiserror = "2.0.11"
+typenum = { version = "1.18.0", features = ["const-generics"] }
 
 [dev-dependencies]
 hex = "0.4.3"
