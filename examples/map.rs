@@ -134,10 +134,10 @@ fn main() -> anyhow::Result<()> {
         assert_eq!(point.fetch().await?.0.fetch().await?.0.1, *b"feistel");
         assert_eq!(point.fetch().await?.1.fetch().await?.0, [1, 2, 3, 4]);
         println!("{}", hex::encode(point.full_hash()));
-        point.get_mut().await?.1.get_mut().await?.0[3] = 5;
+        point.fetch_mut().await?.1.fetch_mut().await?.0[3] = 5;
         assert_eq!(point.fetch().await?.1.fetch().await?.0, [1, 2, 3, 5]);
         println!("{}", hex::encode(point.full_hash()));
-        point.get_mut().await?.1.get_mut().await?.0[3] = 4;
+        point.fetch_mut().await?.1.fetch_mut().await?.0[3] = 4;
         assert_eq!(point.fetch().await?.1.fetch().await?.0, [1, 2, 3, 4]);
         println!("{}", hex::encode(point.full_hash()));
         Ok(())
