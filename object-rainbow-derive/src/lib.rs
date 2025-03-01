@@ -306,9 +306,11 @@ fn bounds_tagged(
             for f in data.fields.iter() {
                 let mut skip = false;
                 for attr in &f.attrs {
-                    match attr.parse_args::<FieldTagArgs>() {
-                        Ok(args) => skip |= args.skip,
-                        Err(e) => errors.push(e),
+                    if attr_str(attr).as_deref() == Some("tags") {
+                        match attr.parse_args::<FieldTagArgs>() {
+                            Ok(args) => skip |= args.skip,
+                            Err(e) => errors.push(e),
+                        }
                     }
                 }
                 if !skip {
@@ -322,10 +324,27 @@ fn bounds_tagged(
             }
         }
         Data::Enum(data) => {
-            return Err(Error::new_spanned(
-                data.enum_token,
-                "`enum`s are not supported",
-            ));
+            for v in data.variants.iter() {
+                for f in v.fields.iter() {
+                    let mut skip = false;
+                    for attr in &f.attrs {
+                        if attr_str(attr).as_deref() == Some("tags") {
+                            match attr.parse_args::<FieldTagArgs>() {
+                                Ok(args) => skip |= args.skip,
+                                Err(e) => errors.push(e),
+                            }
+                        }
+                    }
+                    if !skip {
+                        let ty = &f.ty;
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { ty.span() =>
+                                #ty: ::object_rainbow::Tagged
+                            },
+                        );
+                    }
+                }
+            }
         }
         Data::Union(data) => {
             return Err(Error::new_spanned(
@@ -355,28 +374,35 @@ impl Parse for StructTagArgs {
     }
 }
 
+fn fields_tags(fields: &syn::Fields) -> Vec<proc_macro2::TokenStream> {
+    fields
+        .iter()
+        .filter_map(|f| {
+            let mut skip = false;
+            for attr in &f.attrs {
+                if attr_str(attr).as_deref() == Some("tags") {
+                    skip |= attr.parse_args::<FieldTagArgs>().ok()?.skip;
+                }
+            }
+            let ty = &f.ty;
+            (!skip).then_some(quote! { <#ty as ::object_rainbow::Tagged>::TAGS })
+        })
+        .collect()
+}
+
 fn gen_tags(data: &Data, attrs: &[Attribute], errors: &mut Vec<Error>) -> proc_macro2::TokenStream {
     match data {
         Data::Struct(data) => {
             let mut tags = Vec::new();
             for attr in attrs {
-                match attr.parse_args::<StructTagArgs>() {
-                    Ok(mut args) => tags.append(&mut args.tags),
-                    Err(e) => errors.push(e),
+                if attr_str(attr).as_deref() == Some("tags") {
+                    match attr.parse_args::<StructTagArgs>() {
+                        Ok(mut args) => tags.append(&mut args.tags),
+                        Err(e) => errors.push(e),
+                    }
                 }
             }
-            let nested = data
-                .fields
-                .iter()
-                .filter_map(|f| {
-                    let mut skip = false;
-                    for attr in &f.attrs {
-                        skip |= attr.parse_args::<FieldTagArgs>().ok()?.skip;
-                    }
-                    let ty = &f.ty;
-                    (!skip).then_some(quote! { <#ty as ::object_rainbow::Tagged>::TAGS })
-                })
-                .collect::<Vec<_>>();
+            let nested = fields_tags(&data.fields);
             if nested.len() == 1 && tags.is_empty() {
                 let nested = nested.into_iter().next().unwrap();
                 quote! {
@@ -389,7 +415,45 @@ fn gen_tags(data: &Data, attrs: &[Attribute], errors: &mut Vec<Error>) -> proc_m
             }
         }
         Data::Enum(data) => {
-            Error::new_spanned(data.enum_token, "`enum`s are not supported").into_compile_error()
+            let mut tags = Vec::new();
+            for attr in attrs {
+                if attr_str(attr).as_deref() == Some("tags") {
+                    match attr.parse_args::<StructTagArgs>() {
+                        Ok(mut args) => tags.append(&mut args.tags),
+                        Err(e) => errors.push(e),
+                    }
+                }
+            }
+            let mut nested: Vec<_> = data
+                .variants
+                .iter()
+                .flat_map(|v| fields_tags(&v.fields))
+                .collect();
+            let kind_tags = quote! {
+                <
+                    <
+                        <
+                            Self
+                            as
+                            ::object_rainbow::Enum
+                        >::Kind
+                        as
+                        ::object_rainbow::enumkind::EnumKind
+                    >::Tag
+                    as  ::object_rainbow::Tagged
+                >::TAGS
+            };
+            nested.insert(0, kind_tags);
+            if nested.len() == 1 && tags.is_empty() {
+                let nested = nested.into_iter().next().unwrap();
+                quote! {
+                    #nested
+                }
+            } else {
+                quote! {
+                    ::object_rainbow::Tags(&[#(#tags),*], &[#(&#nested),*])
+                }
+            }
         }
         Data::Union(data) => {
             Error::new_spanned(data.union_token, "`union`s are not supported").into_compile_error()
@@ -1038,6 +1102,10 @@ fn parse_path(attr: &Attribute) -> syn::Result<Type> {
     attr.parse_args::<LitStr>()?.parse()
 }
 
+fn attr_str(attr: &Attribute) -> Option<String> {
+    Some(attr.path().get_ident()?.to_string())
+}
+
 #[proc_macro_derive(Enum, attributes(enumtag))]
 pub fn derive_enum(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -1054,15 +1122,17 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
     let mut errors = Vec::new();
     let mut enumtag = None;
     for attr in &input.attrs {
-        match parse_path(attr) {
-            Ok(path) => {
-                if enumtag.is_some() {
-                    errors.push(Error::new_spanned(path, "duplicate tag"));
-                } else {
-                    enumtag = Some(path);
+        if attr_str(attr).as_deref() == Some("enumtag") {
+            match parse_path(attr) {
+                Ok(path) => {
+                    if enumtag.is_some() {
+                        errors.push(Error::new_spanned(path, "duplicate tag"));
+                    } else {
+                        enumtag = Some(path);
+                    }
                 }
+                Err(e) => errors.push(e),
             }
-            Err(e) => errors.push(e),
         }
     }
     let enumtag = enumtag.unwrap_or_else(|| parse_quote!(::object_rainbow::numeric::Le<u8>));
