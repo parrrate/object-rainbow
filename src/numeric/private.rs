@@ -73,8 +73,8 @@ macro_rules! ae {
             }
         }
 
-        impl ParseInline<ReflessInput<'_>> for Ae<$n> {
-            fn parse_inline(input: &mut ReflessInput<'_>) -> crate::Result<Self> {
+        impl<I: ParseInput> ParseInline<I> for Ae<$n> {
+            fn parse_inline(input: &mut I) -> crate::Result<Self> {
                 Ok(Self(<$n>::from_le_bytes(*input.parse_chunk()?)))
             }
         }
@@ -83,9 +83,15 @@ macro_rules! ae {
             const SIZE: usize = std::mem::size_of::<$n>();
         }
 
+        impl Topological for Ae<$n> {
+            fn accept_points(&self, _: &mut impl PointVisitor) {}
+        }
+
         impl Tagged for Ae<$n> {}
         impl ReflessObject for Ae<$n> {}
         impl ReflessInline for Ae<$n> {}
+        impl Object for Ae<$n> {}
+        impl Inline for Ae<$n> {}
     };
 }
 
@@ -111,14 +117,14 @@ macro_rules! lebe {
             }
         }
 
-        impl ParseInline<ReflessInput<'_>> for Le<$n> {
-            fn parse_inline(input: &mut ReflessInput<'_>) -> crate::Result<Self> {
+        impl<I: ParseInput> ParseInline<I> for Le<$n> {
+            fn parse_inline(input: &mut I) -> crate::Result<Self> {
                 Ok(Self(<$n>::from_le_bytes(*input.parse_chunk()?)))
             }
         }
 
-        impl ParseInline<ReflessInput<'_>> for Be<$n> {
-            fn parse_inline(input: &mut ReflessInput<'_>) -> crate::Result<Self> {
+        impl<I: ParseInput> ParseInline<I> for Be<$n> {
+            fn parse_inline(input: &mut I) -> crate::Result<Self> {
                 Ok(Self(<$n>::from_be_bytes(*input.parse_chunk()?)))
             }
         }
@@ -131,12 +137,24 @@ macro_rules! lebe {
             const SIZE: usize = std::mem::size_of::<$n>();
         }
 
+        impl Topological for Le<$n> {
+            fn accept_points(&self, _: &mut impl PointVisitor) {}
+        }
+
+        impl Topological for Be<$n> {
+            fn accept_points(&self, _: &mut impl PointVisitor) {}
+        }
+
         impl Tagged for Le<$n> {}
         impl Tagged for Be<$n> {}
         impl ReflessObject for Le<$n> {}
         impl ReflessObject for Be<$n> {}
         impl ReflessInline for Le<$n> {}
         impl ReflessInline for Be<$n> {}
+        impl Object for Le<$n> {}
+        impl Object for Be<$n> {}
+        impl Inline for Le<$n> {}
+        impl Inline for Be<$n> {}
     };
 }
 
