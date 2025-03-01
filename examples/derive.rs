@@ -1,4 +1,4 @@
-use object_rainbow::*;
+use object_rainbow::{numeric::Le, *};
 
 #[derive(
     ToOutput,
@@ -23,8 +23,9 @@ fn main() {
     println!("{}", hex::encode(DeriveExample::<(), ()>::HASH));
 }
 
-#[derive(Enum)]
+#[derive(Enum, ToOutput)]
 enum _Test {
     A,
-    B { x: i32 },
+    B(Le<i32>),
+    C { x: Le<i32> },
 }
