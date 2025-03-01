@@ -3,18 +3,19 @@ extern crate self as object_rainbow;
 use std::{
     future::ready,
     marker::PhantomData,
-    ops::{Deref, DerefMut},
+    ops::{Add, Deref, DerefMut, Not},
     pin::Pin,
     sync::Arc,
 };
 
 pub use anyhow::anyhow;
+use generic_array::{ArrayLength, GenericArray, sequence::Concat};
 pub use object_rainbow_derive::{
     Enum, Inline, Object, Parse, ParseAsInline, ParseInline, ReflessInline, ReflessObject, Size,
     Tagged, ToOutput, Topological,
 };
 use sha2::{Digest, Sha256};
-use typenum::Unsigned;
+use typenum::{ATerm, B0, B1, Bit, Sum, TArr, U0, U1, Unsigned, tarr};
 
 pub use self::enumkind::Enum;
 
@@ -785,4 +786,165 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
         input.empty()?;
         Ok(object)
     }
+}
+
+pub trait MaybeHasNiche: Size {
+    type MnArray;
+}
+
+struct NoNiche<N>(N);
+struct AndNiche<N, T>(N, T);
+struct NicheAnd<T, N>(T, N);
+pub struct SomeNiche<T>(T);
+
+trait Niche {
+    type NeedsTag: Bit;
+    type N: ArrayLength;
+    fn niche() -> GenericArray<u8, Self::N>;
+}
+
+trait MaybeNiche {
+    type N: Unsigned;
+}
+
+trait AsTailOf<U: MaybeNiche>: MaybeNiche {
+    type WithHead: MaybeNiche;
+}
+
+trait AsHeadOf<U: MaybeNiche>: MaybeNiche {
+    type WithTail: MaybeNiche;
+}
+
+impl<N: ArrayLength> Niche for NoNiche<N> {
+    type NeedsTag = B1;
+    type N = N;
+    fn niche() -> GenericArray<u8, Self::N> {
+        GenericArray::default()
+    }
+}
+
+impl<N: Unsigned> MaybeNiche for NoNiche<N> {
+    type N = N;
+}
+
+impl<U: MaybeNiche<N: Add<N, Output: Unsigned>>, N: Unsigned> AsTailOf<U> for NoNiche<N> {
+    type WithHead = NoNiche<Sum<U::N, N>>;
+}
+
+impl<N: Unsigned, U: AsTailOf<Self>> AsHeadOf<U> for NoNiche<N> {
+    type WithTail = U::WithHead;
+}
+
+impl<N: ArrayLength + Add<T::N, Output: ArrayLength>, T: Niche> Niche for AndNiche<N, T> {
+    type NeedsTag = T::NeedsTag;
+    type N = Sum<N, T::N>;
+
+    fn niche() -> GenericArray<u8, Self::N> {
+        Concat::concat(GenericArray::<u8, N>::default(), T::niche())
+    }
+}
+
+impl<N: Unsigned, T: MaybeNiche> MaybeNiche for AndNiche<N, T>
+where
+    N: Add<T::N, Output: Unsigned>,
+{
+    type N = Sum<N, T::N>;
+}
+
+impl<U: MaybeNiche<N: Add<Sum<N, T::N>, Output: Unsigned>>, N: Unsigned, T: MaybeNiche> AsTailOf<U>
+    for AndNiche<N, T>
+where
+    N: Add<T::N, Output: Unsigned>,
+{
+    type WithHead = AndNiche<U::N, Self>;
+}
+
+impl<N: Unsigned, T: MaybeNiche, U: MaybeNiche> AsHeadOf<U> for AndNiche<N, T>
+where
+    N: Add<T::N, Output: Unsigned>,
+    Sum<N, T::N>: Add<U::N, Output: Unsigned>,
+{
+    type WithTail = NicheAnd<Self, U::N>;
+}
+
+impl<T: Niche<N: Add<N, Output: ArrayLength>>, N: ArrayLength> Niche for NicheAnd<T, N> {
+    type NeedsTag = T::NeedsTag;
+    type N = Sum<T::N, N>;
+
+    fn niche() -> GenericArray<u8, Self::N> {
+        Concat::concat(T::niche(), GenericArray::<u8, N>::default())
+    }
+}
+
+impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, N: Unsigned> MaybeNiche for NicheAnd<T, N> {
+    type N = Sum<T::N, N>;
+}
+
+impl<
+    U: MaybeNiche<N: Add<Sum<T::N, N>, Output: Unsigned>>,
+    T: MaybeNiche<N: Add<N, Output: Unsigned>>,
+    N: Unsigned,
+> AsTailOf<U> for NicheAnd<T, N>
+{
+    type WithHead = AndNiche<U::N, Self>;
+}
+
+impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, N: Unsigned, U: MaybeNiche> AsHeadOf<U>
+    for NicheAnd<T, N>
+where
+    Sum<T::N, N>: Add<U::N, Output: Unsigned>,
+{
+    type WithTail = NicheAnd<Self, U::N>;
+}
+
+impl<T: Niche> Niche for SomeNiche<T> {
+    type NeedsTag = T::NeedsTag;
+    type N = T::N;
+    fn niche() -> GenericArray<u8, Self::N> {
+        T::niche()
+    }
+}
+
+impl<T: Niche> MaybeNiche for SomeNiche<T> {
+    type N = T::N;
+}
+
+impl<U: MaybeNiche<N: Add<T::N, Output: Unsigned>>, T: Niche> AsTailOf<U> for SomeNiche<T> {
+    type WithHead = AndNiche<U::N, SomeNiche<T>>;
+}
+
+impl<T: Niche<N: Add<U::N, Output: Unsigned>>, U: MaybeNiche> AsHeadOf<U> for SomeNiche<T> {
+    type WithTail = NicheAnd<SomeNiche<T>, U::N>;
+}
+
+trait MnArray {
+    type MaybeNiche: MaybeNiche;
+}
+
+impl MnArray for ATerm {
+    type MaybeNiche = NoNiche<U0>;
+}
+
+impl<T: MaybeNiche> MnArray for T {
+    type MaybeNiche = T;
+}
+
+impl<T: AsHeadOf<R::MaybeNiche>, R: MnArray> MnArray for TArr<T, R> {
+    type MaybeNiche = T::WithTail;
+}
+
+#[test]
+fn options() {
+    type T0 = bool;
+    type T1 = Option<T0>;
+    type T2 = Option<T1>;
+    type T3 = Option<T2>;
+    type T4 = Option<T3>;
+    type T5 = Option<T4>;
+    assert_eq!(T0::SIZE, 1);
+    assert_eq!(T1::SIZE, 1);
+    assert_eq!(T2::SIZE, 2);
+    assert_eq!(T3::SIZE, 2);
+    assert_eq!(T4::SIZE, 3);
+    assert_eq!(T5::SIZE, 3);
 }
