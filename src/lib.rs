@@ -10,12 +10,14 @@ use std::{
 
 pub use anyhow::anyhow;
 pub use object_rainbow_derive::{
-    Inline, Object, Parse, ParseAsInline, ParseInline, ReflessInline, ReflessObject, Size, Tagged,
-    ToOutput, Topological,
+    Enum, Inline, Object, Parse, ParseAsInline, ParseInline, ReflessInline, ReflessObject, Size,
+    Tagged, ToOutput, Topological,
 };
 use sha2::{Digest, Sha256};
 
-pub mod enumtag;
+pub use self::enumkind::Enum;
+
+pub mod enumkind;
 mod impls;
 pub mod numeric;
 mod sha2_const;
