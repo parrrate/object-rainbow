@@ -27,6 +27,10 @@ impl<T: Topological> Topological for Option<T> {
     }
 }
 
+impl<T: Tagged> Tagged for Option<T> {
+    const TAGS: Tags = T::TAGS;
+}
+
 impl<
     T: MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B>>, Size: Add<B, Output = N>>,
     B: Bit,
