@@ -1440,7 +1440,8 @@ fn gen_mn_array(data: &Data) -> proc_macro2::TokenStream {
                             as
                             ::object_rainbow::enumkind::EnumKind
                         >::Tag
-                        as  ::object_rainbow::MaybeHasNiche
+                        as
+                        ::object_rainbow::MaybeHasNiche
                     >::MnArray
                     as
                     ::object_rainbow::MnArray
