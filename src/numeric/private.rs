@@ -113,7 +113,7 @@ macro_rules! ae {
         }
 
         impl MaybeHasNiche for Ae<$n> {
-            type MnArray = NoNiche<Self::Size>;
+            type MnArray = NoNiche<<Self as Size>::Size>;
         }
 
         impl Topological for Ae<$n> {
@@ -202,11 +202,11 @@ macro_rules! lebe {
         }
 
         impl MaybeHasNiche for Le<$n> {
-            type MnArray = NoNiche<Self::Size>;
+            type MnArray = NoNiche<<Self as Size>::Size>;
         }
 
         impl MaybeHasNiche for Be<$n> {
-            type MnArray = NoNiche<Self::Size>;
+            type MnArray = NoNiche<<Self as Size>::Size>;
         }
 
         impl Topological for Le<$n> {

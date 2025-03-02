@@ -32,7 +32,7 @@ impl<T: Tagged> Tagged for Option<T> {
 }
 
 impl<
-    T: MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B>>, Size: Add<B, Output = N>>,
+    T: MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B, N: Add<B, Output = N>>>>,
     B: Bit,
     N: Unsigned,
 > Size for Option<T>
@@ -66,11 +66,10 @@ impl OptionNicheWrapper for B1 {
 
 impl<
     T: MaybeHasNiche<
-            MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B>>,
-            Size: Add<B, Output: ArrayLength>,
-        >,
+        MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B, N: Add<B, Output: ArrayLength>>>,
+    >,
     B: OptionNicheWrapper,
 > MaybeHasNiche for Option<T>
 {
-    type MnArray = B::Wrap<Self::Size>;
+    type MnArray = B::Wrap<<Self as Size>::Size>;
 }

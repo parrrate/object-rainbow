@@ -14,6 +14,7 @@ use object_rainbow::{
     Size,
     Parse,
     ParseInline,
+    MaybeHasNiche,
 )]
 #[tags("example")]
 pub struct DeriveExample<A, B> {
