@@ -69,6 +69,33 @@ pub trait AsBe {
 
 macro_rules! ae {
     ($n:ty) => {
+        impl crate::enumkind::UsizeTag for $n {
+            fn from_usize(n: usize) -> Self {
+                n.try_into().expect("discriminant out of range")
+            }
+            fn to_usize(&self) -> usize {
+                (*self).try_into().expect("discriminant out of range")
+            }
+        }
+
+        impl crate::enumkind::UsizeTag for NonZero<$n> {
+            fn from_usize(n: usize) -> Self {
+                Self::new(
+                    n.checked_add(1)
+                        .expect("discriminant out of range")
+                        .try_into()
+                        .expect("discriminant out of range"),
+                )
+                .unwrap()
+            }
+            fn to_usize(&self) -> usize {
+                usize::try_from(self.get())
+                    .expect("discriminant out of range")
+                    .checked_sub(1)
+                    .unwrap()
+            }
+        }
+
         impl AsLe for $n {
             type Le = Ae<$n>;
         }
@@ -131,6 +158,33 @@ macro_rules! ae {
 
 macro_rules! lebe {
     ($n:ty) => {
+        impl crate::enumkind::UsizeTag for $n {
+            fn from_usize(n: usize) -> Self {
+                n.try_into().expect("discriminant out of range")
+            }
+            fn to_usize(&self) -> usize {
+                (*self).try_into().expect("discriminant out of range")
+            }
+        }
+
+        impl crate::enumkind::UsizeTag for NonZero<$n> {
+            fn from_usize(n: usize) -> Self {
+                Self::new(
+                    n.checked_add(1)
+                        .expect("discriminant out of range")
+                        .try_into()
+                        .expect("discriminant out of range"),
+                )
+                .unwrap()
+            }
+            fn to_usize(&self) -> usize {
+                usize::try_from(self.get())
+                    .expect("discriminant out of range")
+                    .checked_sub(1)
+                    .unwrap()
+            }
+        }
+
         impl AsLe for $n {
             type Le = Le<$n>;
         }
