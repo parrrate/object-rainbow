@@ -10,6 +10,7 @@ use std::{
 
 pub use anyhow::anyhow;
 use futures_util::TryFutureExt;
+use generic_array::{ArrayLength, GenericArray};
 pub use object_rainbow_derive::{
     Enum, Inline, MaybeHasNiche, Object, Parse, ParseAsInline, ParseInline, ReflessInline,
     ReflessObject, Size, Tagged, ToOutput, Topological,
@@ -719,6 +720,39 @@ impl<T: Object> Fetch for Point<T> {
 pub trait Size {
     const SIZE: usize = <Self::Size as Unsigned>::USIZE;
     type Size: Unsigned;
+}
+
+pub trait SizeExt: Size<Size: ArrayLength> + ToOutput {
+    fn to_array(&self) -> GenericArray<u8, Self::Size> {
+        let mut array = GenericArray::default();
+        let mut output = ArrayOutput {
+            data: &mut array,
+            offset: 0,
+        };
+        self.to_output(&mut output);
+        output.finalize();
+        array
+    }
+}
+
+impl<T: Size<Size: ArrayLength> + ToOutput> SizeExt for T {}
+
+struct ArrayOutput<'a> {
+    data: &'a mut [u8],
+    offset: usize,
+}
+
+impl ArrayOutput<'_> {
+    fn finalize(self) {
+        assert_eq!(self.offset, self.data.len());
+    }
+}
+
+impl Output for ArrayOutput<'_> {
+    fn write(&mut self, data: &[u8]) {
+        self.data[self.offset..][..data.len()].copy_from_slice(data);
+        self.offset += data.len();
+    }
 }
 
 pub trait Fixed: Size + Inline {}
