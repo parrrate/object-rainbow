@@ -53,3 +53,13 @@ impl<K: Tagged, V: Tagged> Tagged for BTreeMap<K, V> {
 impl<K: Inline + Ord, V: Inline> Object for BTreeMap<K, V> {}
 
 impl<K: ReflessInline + Ord, V: ReflessInline> ReflessObject for BTreeMap<K, V> {}
+
+impl<K: Ord> Equivalent<BTreeMap<K, ()>> for BTreeSet<K> {
+    fn into_equivalent(self) -> BTreeMap<K, ()> {
+        self.into_iter().map(|k| (k, ())).collect()
+    }
+
+    fn from_equivalent(object: BTreeMap<K, ()>) -> Self {
+        object.into_iter().map(|(k, ())| k).collect()
+    }
+}
