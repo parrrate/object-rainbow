@@ -73,3 +73,13 @@ impl<
 {
     type MnArray = B::Wrap<<Self as Size>::Size>;
 }
+
+impl Equivalent<bool> for Option<()> {
+    fn into_equivalent(self) -> bool {
+        self.is_some()
+    }
+
+    fn from_equivalent(object: bool) -> Self {
+        object.then_some(())
+    }
+}
