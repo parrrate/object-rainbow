@@ -49,6 +49,14 @@ impl<II: ParseInput, A: ParseInline<II>, B: ParseInline<II>> ParseInline<II> for
     }
 }
 
+impl<A: MaybeHasNiche, B: MaybeHasNiche> MaybeHasNiche for (A, B)
+where
+    Self: Size,
+    tarr![A::MnArray, B::MnArray,]: MnArray,
+{
+    type MnArray = tarr![A::MnArray, B::MnArray,];
+}
+
 impl<A: ToOutput, B: ToOutput, C: ToOutput> ToOutput for (A, B, C) {
     fn to_output(&self, output: &mut dyn Output) {
         self.0.to_output(output);
@@ -102,6 +110,14 @@ impl<II: ParseInput, A: ParseInline<II>, B: ParseInline<II>, C: ParseInline<II>>
             input.parse_inline()?,
         ))
     }
+}
+
+impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche> MaybeHasNiche for (A, B, C)
+where
+    Self: Size,
+    tarr![A::MnArray, B::MnArray, C::MnArray,]: MnArray,
+{
+    type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray,];
 }
 
 impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput> ToOutput for (A, B, C, D) {
@@ -173,6 +189,15 @@ impl<II: ParseInput, A: ParseInline<II>, B: ParseInline<II>, C: ParseInline<II>,
             input.parse_inline()?,
         ))
     }
+}
+
+impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche, D: MaybeHasNiche> MaybeHasNiche
+    for (A, B, C, D)
+where
+    Self: Size,
+    tarr![A::MnArray, B::MnArray, C::MnArray, D::MnArray,]: MnArray,
+{
+    type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray, D::MnArray,];
 }
 
 impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput> ToOutput for (A, B, C, D, E) {
@@ -262,6 +287,15 @@ impl<
             input.parse_inline()?,
         ))
     }
+}
+
+impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche, D: MaybeHasNiche, E: MaybeHasNiche>
+    MaybeHasNiche for (A, B, C, D, E)
+where
+    Self: Size,
+    tarr![A::MnArray, B::MnArray, C::MnArray, D::MnArray, E::MnArray,]: MnArray,
+{
+    type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray, D::MnArray, E::MnArray,];
 }
 
 impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutput> ToOutput
@@ -384,6 +418,35 @@ impl<
             input.parse_inline()?,
         ))
     }
+}
+
+impl<
+    A: MaybeHasNiche,
+    B: MaybeHasNiche,
+    C: MaybeHasNiche,
+    D: MaybeHasNiche,
+    E: MaybeHasNiche,
+    F: MaybeHasNiche,
+> MaybeHasNiche for (A, B, C, D, E, F)
+where
+    Self: Size,
+    tarr![
+        A::MnArray,
+        B::MnArray,
+        C::MnArray,
+        D::MnArray,
+        E::MnArray,
+        F::MnArray,
+    ]: MnArray,
+{
+    type MnArray = tarr![
+        A::MnArray,
+        B::MnArray,
+        C::MnArray,
+        D::MnArray,
+        E::MnArray,
+        F::MnArray,
+    ];
 }
 
 impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutput, G: ToOutput>
@@ -543,6 +606,38 @@ impl<
             input.parse_inline()?,
         ))
     }
+}
+
+impl<
+    A: MaybeHasNiche,
+    B: MaybeHasNiche,
+    C: MaybeHasNiche,
+    D: MaybeHasNiche,
+    E: MaybeHasNiche,
+    F: MaybeHasNiche,
+    G: MaybeHasNiche,
+> MaybeHasNiche for (A, B, C, D, E, F, G)
+where
+    Self: Size,
+    tarr![
+        A::MnArray,
+        B::MnArray,
+        C::MnArray,
+        D::MnArray,
+        E::MnArray,
+        F::MnArray,
+        G::MnArray,
+    ]: MnArray,
+{
+    type MnArray = tarr![
+        A::MnArray,
+        B::MnArray,
+        C::MnArray,
+        D::MnArray,
+        E::MnArray,
+        F::MnArray,
+        G::MnArray,
+    ];
 }
 
 impl<
@@ -724,6 +819,41 @@ impl<
             input.parse_inline()?,
         ))
     }
+}
+
+impl<
+    A: MaybeHasNiche,
+    B: MaybeHasNiche,
+    C: MaybeHasNiche,
+    D: MaybeHasNiche,
+    E: MaybeHasNiche,
+    F: MaybeHasNiche,
+    G: MaybeHasNiche,
+    H: MaybeHasNiche,
+> MaybeHasNiche for (A, B, C, D, E, F, G, H)
+where
+    Self: Size,
+    tarr![
+        A::MnArray,
+        B::MnArray,
+        C::MnArray,
+        D::MnArray,
+        E::MnArray,
+        F::MnArray,
+        G::MnArray,
+        H::MnArray,
+    ]: MnArray,
+{
+    type MnArray = tarr![
+        A::MnArray,
+        B::MnArray,
+        C::MnArray,
+        D::MnArray,
+        E::MnArray,
+        F::MnArray,
+        G::MnArray,
+        H::MnArray,
+    ];
 }
 
 impl<
@@ -945,6 +1075,44 @@ impl<
             input.parse_inline()?,
         ))
     }
+}
+
+impl<
+    A: MaybeHasNiche,
+    B: MaybeHasNiche,
+    C: MaybeHasNiche,
+    D: MaybeHasNiche,
+    E: MaybeHasNiche,
+    F: MaybeHasNiche,
+    G: MaybeHasNiche,
+    H: MaybeHasNiche,
+    I: MaybeHasNiche,
+> MaybeHasNiche for (A, B, C, D, E, F, G, H, I)
+where
+    Self: Size,
+    tarr![
+        A::MnArray,
+        B::MnArray,
+        C::MnArray,
+        D::MnArray,
+        E::MnArray,
+        F::MnArray,
+        G::MnArray,
+        H::MnArray,
+        I::MnArray,
+    ]: MnArray,
+{
+    type MnArray = tarr![
+        A::MnArray,
+        B::MnArray,
+        C::MnArray,
+        D::MnArray,
+        E::MnArray,
+        F::MnArray,
+        G::MnArray,
+        H::MnArray,
+        I::MnArray,
+    ];
 }
 
 impl<
@@ -1190,6 +1358,47 @@ impl<
             input.parse_inline()?,
         ))
     }
+}
+
+impl<
+    A: MaybeHasNiche,
+    B: MaybeHasNiche,
+    C: MaybeHasNiche,
+    D: MaybeHasNiche,
+    E: MaybeHasNiche,
+    F: MaybeHasNiche,
+    G: MaybeHasNiche,
+    H: MaybeHasNiche,
+    I: MaybeHasNiche,
+    J: MaybeHasNiche,
+> MaybeHasNiche for (A, B, C, D, E, F, G, H, I, J)
+where
+    Self: Size,
+    tarr![
+        A::MnArray,
+        B::MnArray,
+        C::MnArray,
+        D::MnArray,
+        E::MnArray,
+        F::MnArray,
+        G::MnArray,
+        H::MnArray,
+        I::MnArray,
+        J::MnArray,
+    ]: MnArray,
+{
+    type MnArray = tarr![
+        A::MnArray,
+        B::MnArray,
+        C::MnArray,
+        D::MnArray,
+        E::MnArray,
+        F::MnArray,
+        G::MnArray,
+        H::MnArray,
+        I::MnArray,
+        J::MnArray,
+    ];
 }
 
 impl<
@@ -1463,6 +1672,50 @@ impl<
             input.parse_inline()?,
         ))
     }
+}
+
+impl<
+    A: MaybeHasNiche,
+    B: MaybeHasNiche,
+    C: MaybeHasNiche,
+    D: MaybeHasNiche,
+    E: MaybeHasNiche,
+    F: MaybeHasNiche,
+    G: MaybeHasNiche,
+    H: MaybeHasNiche,
+    I: MaybeHasNiche,
+    J: MaybeHasNiche,
+    K: MaybeHasNiche,
+> MaybeHasNiche for (A, B, C, D, E, F, G, H, I, J, K)
+where
+    Self: Size,
+    tarr![
+        A::MnArray,
+        B::MnArray,
+        C::MnArray,
+        D::MnArray,
+        E::MnArray,
+        F::MnArray,
+        G::MnArray,
+        H::MnArray,
+        I::MnArray,
+        J::MnArray,
+        K::MnArray,
+    ]: MnArray,
+{
+    type MnArray = tarr![
+        A::MnArray,
+        B::MnArray,
+        C::MnArray,
+        D::MnArray,
+        E::MnArray,
+        F::MnArray,
+        G::MnArray,
+        H::MnArray,
+        I::MnArray,
+        J::MnArray,
+        K::MnArray,
+    ];
 }
 
 impl<
@@ -1754,4 +2007,51 @@ impl<
             input.parse_inline()?,
         ))
     }
+}
+
+impl<
+    A: MaybeHasNiche,
+    B: MaybeHasNiche,
+    C: MaybeHasNiche,
+    D: MaybeHasNiche,
+    E: MaybeHasNiche,
+    F: MaybeHasNiche,
+    G: MaybeHasNiche,
+    H: MaybeHasNiche,
+    I: MaybeHasNiche,
+    J: MaybeHasNiche,
+    K: MaybeHasNiche,
+    L: MaybeHasNiche,
+> MaybeHasNiche for (A, B, C, D, E, F, G, H, I, J, K, L)
+where
+    Self: Size,
+    tarr![
+        A::MnArray,
+        B::MnArray,
+        C::MnArray,
+        D::MnArray,
+        E::MnArray,
+        F::MnArray,
+        G::MnArray,
+        H::MnArray,
+        I::MnArray,
+        J::MnArray,
+        K::MnArray,
+        L::MnArray,
+    ]: MnArray,
+{
+    type MnArray = tarr![
+        A::MnArray,
+        B::MnArray,
+        C::MnArray,
+        D::MnArray,
+        E::MnArray,
+        F::MnArray,
+        G::MnArray,
+        H::MnArray,
+        I::MnArray,
+        J::MnArray,
+        K::MnArray,
+        L::MnArray,
+    ];
 }
