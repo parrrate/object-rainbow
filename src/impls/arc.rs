@@ -58,3 +58,13 @@ impl<T: Size> Size for Arc<T> {
 impl<T: MaybeHasNiche> MaybeHasNiche for Arc<T> {
     type MnArray = T::MnArray;
 }
+
+impl<T: Clone> Equivalent<T> for Arc<T> {
+    fn into_equivalent(self) -> T {
+        (*self).clone()
+    }
+
+    fn from_equivalent(object: T) -> Self {
+        Arc::new(object)
+    }
+}
