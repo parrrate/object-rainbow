@@ -88,6 +88,13 @@ enum Either<L, R> {
     Right(R),
 }
 
+#[derive(Enum, ToOutput, Topological, Tagged, Size, Parse, ParseInline, MaybeHasNiche)]
+#[enumtag("Le<u8>")]
+enum Abc {
+    NoNiche(bool),
+    Niche(bool),
+}
+
 fn main() {
     println!("{}", hex::encode(DeriveExample::<(), ()>::HASH));
     println!("{}", DeriveExample::<Be<u8>, Le<u8>>::SIZE);
@@ -97,4 +104,6 @@ fn main() {
     println!("{}", Option::<Stuff<bool>>::SIZE);
     println!("{:?}", None::<Stuff<(bool, ())>>.output::<Vec<u8>>());
     println!("{}", Option::<Either<bool, Option<Option<()>>>>::SIZE);
+    println!("{:?}", None::<Abc>.output::<Vec<u8>>());
+    println!("{:?}", None::<(bool, bool)>.output::<Vec<u8>>());
 }
