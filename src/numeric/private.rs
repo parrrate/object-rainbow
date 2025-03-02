@@ -76,6 +76,9 @@ macro_rules! ae {
             fn to_usize(&self) -> usize {
                 (*self).try_into().expect("discriminant out of range")
             }
+            fn try_to_usize(&self) -> Option<usize> {
+                (*self).try_into().ok()
+            }
         }
 
         impl UsizeTag for NonZero<$n> {
@@ -94,6 +97,9 @@ macro_rules! ae {
                     .checked_sub(1)
                     .unwrap()
             }
+            fn try_to_usize(&self) -> Option<usize> {
+                usize::try_from(self.get()).ok()?.checked_sub(1)
+            }
         }
 
         impl AsLe for $n {
@@ -110,6 +116,12 @@ macro_rules! ae {
 
         impl AsBe for NonZero<$n> {
             type Be = Nz<Ae<$n>>;
+        }
+
+        impl From<NonZero<$n>> for Nz<Ae<$n>> {
+            fn from(nz: NonZero<$n>) -> Self {
+                Self(nz)
+            }
         }
 
         impl NonZeroable for Ae<$n> {
@@ -165,6 +177,9 @@ macro_rules! lebe {
             fn to_usize(&self) -> usize {
                 (*self).try_into().expect("discriminant out of range")
             }
+            fn try_to_usize(&self) -> Option<usize> {
+                (*self).try_into().ok()
+            }
         }
 
         impl UsizeTag for NonZero<$n> {
@@ -182,6 +197,9 @@ macro_rules! lebe {
                     .expect("discriminant out of range")
                     .checked_sub(1)
                     .unwrap()
+            }
+            fn try_to_usize(&self) -> Option<usize> {
+                usize::try_from(self.get()).ok()?.checked_sub(1)
             }
         }
 
@@ -218,6 +236,18 @@ macro_rules! lebe {
             }
             fn from_nz(nz: &Self::Nz) -> Self {
                 Self(nz.get())
+            }
+        }
+
+        impl From<NonZero<$n>> for Nz<Le<$n>> {
+            fn from(nz: NonZero<$n>) -> Self {
+                Self(nz)
+            }
+        }
+
+        impl From<NonZero<$n>> for Nz<Be<$n>> {
+            fn from(nz: NonZero<$n>) -> Self {
+                Self(nz)
             }
         }
 

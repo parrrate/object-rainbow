@@ -3,6 +3,7 @@ use crate::*;
 pub trait UsizeTag: Sized {
     fn from_usize(n: usize) -> Self;
     fn to_usize(&self) -> usize;
+    fn try_to_usize(&self) -> Option<usize>;
 }
 
 #[derive(ToOutput, Topological, Tagged, ParseAsInline, Size, MaybeHasNiche)]
@@ -22,12 +23,12 @@ where
     }
 }
 
-impl<T: ParseInline<I> + Deref<Target: Copy + TryInto<usize>>, I: ParseInput, const MAX: usize>
-    ParseInline<I> for EnumTag<T, MAX>
+impl<T: ParseInline<I> + Deref<Target: UsizeTag>, I: ParseInput, const MAX: usize> ParseInline<I>
+    for EnumTag<T, MAX>
 {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         let n_raw = T::parse_inline(input)?;
-        let n: Option<usize> = (*n_raw).try_into().ok();
+        let n: Option<usize> = n_raw.try_to_usize();
         if let Some(n) = n {
             if n < MAX {
                 return Ok(Self(n_raw));
