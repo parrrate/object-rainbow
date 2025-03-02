@@ -1012,3 +1012,38 @@ impl<N> FoldMax for TArr<N, ATerm> {
 impl<N: Max<A::Max>, A: FoldMax> FoldMax for TArr<N, A> {
     type Max = N::Output;
 }
+pub trait NicheOr<U: MaybeNiche>: MaybeNiche {
+    type NicheOr: MaybeNiche;
+}
+
+impl<N: Unsigned, U: MaybeNiche<N = N>> NicheOr<U> for NoNiche<N> {
+    type NicheOr = U;
+}
+
+impl<N: Unsigned + Add<T::N, Output = U::N>, T: MaybeNiche, U: MaybeNiche> NicheOr<U>
+    for AndNiche<N, T>
+{
+    type NicheOr = Self;
+}
+
+impl<T: MaybeNiche<N: Add<N, Output = U::N>>, N: Unsigned, U: MaybeNiche> NicheOr<U>
+    for NicheAnd<T, N>
+{
+    type NicheOr = Self;
+}
+
+impl<T: Niche<NeedsTag = B0>, U: MaybeNiche<N = T::N>> NicheOr<U> for SomeNiche<T> {
+    type NicheOr = Self;
+}
+
+pub trait NicheFoldOr {
+    type Or;
+}
+
+impl<T> NicheFoldOr for TArr<T, ATerm> {
+    type Or = T;
+}
+
+impl<T: NicheOr<A::Or>, A: NicheFoldOr<Or: MaybeNiche>> NicheFoldOr for TArr<T, A> {
+    type Or = T::NicheOr;
+}
