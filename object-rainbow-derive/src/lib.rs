@@ -695,11 +695,16 @@ pub fn derive_size(input: TokenStream) -> TokenStream {
     let name = input.ident;
     let size_arr = gen_size_arr(&input.data);
     let size = gen_size(&input.data);
-    let generics = match bounds_size(input.generics, &input.data, &size_arr) {
+    let generics = match bounds_size(input.generics.clone(), &input.data, &size_arr) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let (_, ty_generics, where_clause) = generics.split_for_impl();
+    let mut generics = input.generics;
+    generics.params.push(parse_quote!(
+        __Output: ::typenum::Unsigned
+    ));
+    let (impl_generics, _, _) = generics.split_for_impl();
     let output = quote! {
         const _: () = {
             use ::typenum::tarr;
@@ -745,7 +750,7 @@ fn bounds_size(
             for v in data.variants.iter().skip(1) {
                 let arr = fields_size_arr(&v.fields, true);
                 generics.make_where_clause().predicates.push(parse_quote!(
-                    #arr: ::typenum::FoldAdd<Output = <#size_arr as ::typenum::FoldAdd>::Output>
+                    #arr: ::typenum::FoldAdd<Output = __Output>
                 ));
             }
         }
@@ -757,7 +762,7 @@ fn bounds_size(
         }
     }
     generics.make_where_clause().predicates.push(parse_quote!(
-        #size_arr: ::typenum::FoldAdd<Output: ::typenum::Unsigned>
+        #size_arr: ::typenum::FoldAdd<Output = __Output>
     ));
     Ok(generics)
 }
@@ -779,9 +784,9 @@ fn fields_size_arr(fields: &syn::Fields, as_enum: bool) -> proc_macro2::TokenStr
     };
     if fields.is_empty() {
         return if as_enum {
-            quote! { tarr![#kind_size] }
+            quote! { tarr![#kind_size, ::typenum::consts::U0] }
         } else {
-            quote! { tarr![::typenum::const::U0] }
+            quote! { tarr![::typenum::consts::U0] }
         };
     }
     let size_arr = fields.iter().map(|f| {
@@ -1327,11 +1332,12 @@ pub fn derive_maybe_has_niche(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
     let mn_array = gen_mn_array(&input.data);
-    let generics = match bounds_maybe_has_niche(input.generics, &input.data) {
+    let (_, ty_generics, _) = input.generics.split_for_impl();
+    let generics = match bounds_maybe_has_niche(input.generics.clone(), &input.data) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let (impl_generics, _, where_clause) = generics.split_for_impl();
     let output = quote! {
         const _: () = {
             use ::typenum::tarr;
@@ -1353,15 +1359,41 @@ fn bounds_maybe_has_niche(mut generics: Generics, data: &Data) -> syn::Result<Ge
                     .make_where_clause()
                     .predicates
                     .push(parse_quote_spanned! { ty.span() =>
-                        #ty: ::object_rainbow::MaybeHasNiche
+                        #ty: ::object_rainbow::MaybeHasNiche<
+                            MnArray: ::object_rainbow::MnArray<
+                                MaybeNiche: ::object_rainbow::MaybeNiche
+                            >
+                        >
                     });
             }
         }
         Data::Enum(data) => {
-            return Err(Error::new_spanned(
-                data.enum_token,
-                "`enum`s are not supported",
+            generics.params.push(parse_quote!(
+                __N: ::typenum::Unsigned
             ));
+            for v in data.variants.iter() {
+                let mn_array = fields_mn_array(&v.fields);
+                generics
+                    .make_where_clause()
+                    .predicates
+                    .push(parse_quote_spanned! { v.span() =>
+                        #mn_array: ::object_rainbow::MnArray<
+                            MaybeNiche: ::object_rainbow::NicheOr<N = __N>
+                        >
+                    });
+                for f in v.fields.iter() {
+                    let ty = &f.ty;
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: ::object_rainbow::MaybeHasNiche<
+                                MnArray: ::object_rainbow::MnArray<
+                                    MaybeNiche: ::object_rainbow::MaybeNiche
+                                >
+                            >
+                        },
+                    );
+                }
+            }
         }
         Data::Union(data) => {
             return Err(Error::new_spanned(
@@ -1376,7 +1408,17 @@ fn bounds_maybe_has_niche(mut generics: Generics, data: &Data) -> syn::Result<Ge
 fn fields_mn_array(fields: &syn::Fields) -> proc_macro2::TokenStream {
     let mn_array = fields.iter().map(|f| {
         let ty = &f.ty;
-        quote! { <#ty as ::object_rainbow::MaybeHasNiche>::MnArray }
+        quote! {
+            <
+                <
+                    #ty
+                    as
+                    ::object_rainbow::MaybeHasNiche
+                >::MnArray
+                as
+                ::object_rainbow::MnArray
+            >::MaybeNiche
+        }
     });
     quote! { tarr![#(#mn_array),*] }
 }
@@ -1385,7 +1427,38 @@ fn gen_mn_array(data: &Data) -> proc_macro2::TokenStream {
     match data {
         Data::Struct(data) => fields_mn_array(&data.fields),
         Data::Enum(data) => {
-            Error::new_spanned(data.enum_token, "`enum`s are not supported").into_compile_error()
+            let kind_niche = quote! {
+                <
+                    <
+                        <
+                            <
+                                Self
+                                as
+                                ::object_rainbow::Enum
+                            >::Kind
+                            as
+                            ::object_rainbow::enumkind::EnumKind
+                        >::Tag
+                        as  ::object_rainbow::MaybeHasNiche
+                    >::MnArray
+                    as
+                    ::object_rainbow::MnArray
+                >::MaybeNiche
+            };
+            let mn_array = data.variants.iter().map(|v| {
+                let mn_array = fields_mn_array(&v.fields);
+                quote! { <#mn_array as ::object_rainbow::MnArray>::MaybeNiche }
+            });
+            quote! {
+                tarr![
+                    #kind_niche,
+                    <
+                        ::object_rainbow::NicheFoldOrArray<tarr![#(#mn_array),*]>
+                        as
+                        ::object_rainbow::MnArray
+                    >::MaybeNiche,
+                ]
+            }
         }
         Data::Union(data) => {
             Error::new_spanned(data.union_token, "`union`s are not supported").into_compile_error()

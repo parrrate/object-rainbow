@@ -799,8 +799,8 @@ pub trait MaybeHasNiche {
 }
 
 pub struct NoNiche<N>(N);
-struct AndNiche<N, T>(N, T);
-struct NicheAnd<T, N>(T, N);
+pub struct AndNiche<N, T>(N, T);
+pub struct NicheAnd<T, N>(T, N);
 pub struct SomeNiche<T>(T);
 
 pub trait Niche {
@@ -813,11 +813,11 @@ pub trait MaybeNiche {
     type N: Unsigned;
 }
 
-trait AsTailOf<U: MaybeNiche>: MaybeNiche {
+pub trait AsTailOf<U: MaybeNiche>: MaybeNiche {
     type WithHead: MaybeNiche;
 }
 
-trait AsHeadOf<U: MaybeNiche>: MaybeNiche {
+pub trait AsHeadOf<U: MaybeNiche>: MaybeNiche {
     type WithTail: MaybeNiche;
 }
 
@@ -927,7 +927,7 @@ impl<T: Niche<N: Add<U::N, Output: Unsigned>, NeedsTag = B0>, U: MaybeNiche> AsH
     type WithTail = NicheAnd<SomeNiche<T>, U::N>;
 }
 
-trait MnArray {
+pub trait MnArray {
     type MaybeNiche: MaybeNiche;
 }
 
@@ -1012,38 +1012,41 @@ impl<N> FoldMax for TArr<N, ATerm> {
 impl<N: Max<A::Max>, A: FoldMax> FoldMax for TArr<N, A> {
     type Max = N::Output;
 }
-pub trait NicheOr<U: MaybeNiche>: MaybeNiche {
-    type NicheOr: MaybeNiche;
+
+pub trait NicheOr: MaybeNiche {
+    type NicheOr<U: NicheOr<N = Self::N>>: NicheOr<N = Self::N>;
 }
 
-impl<N: Unsigned, U: MaybeNiche<N = N>> NicheOr<U> for NoNiche<N> {
-    type NicheOr = U;
+impl<N: Unsigned> NicheOr for NoNiche<N> {
+    type NicheOr<U: NicheOr<N = Self::N>> = U;
 }
 
-impl<N: Unsigned + Add<T::N, Output = U::N>, T: MaybeNiche, U: MaybeNiche> NicheOr<U>
-    for AndNiche<N, T>
-{
-    type NicheOr = Self;
+impl<N: Unsigned + Add<T::N, Output: Unsigned>, T: MaybeNiche> NicheOr for AndNiche<N, T> {
+    type NicheOr<U: NicheOr<N = Self::N>> = Self;
 }
 
-impl<T: MaybeNiche<N: Add<N, Output = U::N>>, N: Unsigned, U: MaybeNiche> NicheOr<U>
-    for NicheAnd<T, N>
-{
-    type NicheOr = Self;
+impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, N: Unsigned> NicheOr for NicheAnd<T, N> {
+    type NicheOr<U: NicheOr<N = Self::N>> = Self;
 }
 
-impl<T: Niche<NeedsTag = B0>, U: MaybeNiche<N = T::N>> NicheOr<U> for SomeNiche<T> {
-    type NicheOr = Self;
+impl<T: Niche<NeedsTag = B0>> NicheOr for SomeNiche<T> {
+    type NicheOr<U: NicheOr<N = Self::N>> = Self;
 }
 
 pub trait NicheFoldOr {
-    type Or;
+    type Or: NicheOr;
 }
 
-impl<T> NicheFoldOr for TArr<T, ATerm> {
-    type Or = T;
+impl<T: MnArray<MaybeNiche: NicheOr>> NicheFoldOr for TArr<T, ATerm> {
+    type Or = T::MaybeNiche;
 }
 
-impl<T: NicheOr<A::Or>, A: NicheFoldOr<Or: MaybeNiche>> NicheFoldOr for TArr<T, A> {
-    type Or = T::NicheOr;
+impl<T: NicheOr, A: NicheFoldOr<Or: MaybeNiche<N = T::N>>> NicheFoldOr for TArr<T, A> {
+    type Or = T::NicheOr<A::Or>;
+}
+
+pub struct NicheFoldOrArray<T>(T);
+
+impl<T: NicheFoldOr> MnArray for NicheFoldOrArray<T> {
+    type MaybeNiche = T::Or;
 }
