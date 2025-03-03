@@ -1299,7 +1299,7 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
             use ::object_rainbow::enumkind::EnumKind;
 
             #[derive(Clone, Copy, ::object_rainbow::ParseAsInline)]
-            enum __Kind {
+            pub enum __Kind {
                 #variants
             }
 
