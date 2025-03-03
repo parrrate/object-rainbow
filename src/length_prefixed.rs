@@ -69,7 +69,7 @@ fn prefixed() {
     assert_eq!(*a, *b);
 }
 
-#[derive(ParseAsInline)]
+#[derive(Debug, Clone, ParseAsInline, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct LpBytes(pub Vec<u8>);
 
 impl Deref for LpBytes {
