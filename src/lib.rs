@@ -757,14 +757,6 @@ impl Output for ArrayOutput<'_> {
     }
 }
 
-pub trait Fixed: Size + Inline {}
-
-impl<T: Size + Inline> Fixed for T {}
-
-pub trait ReflessFixed: Size + ReflessInline {}
-
-impl<T: Size + ReflessInline> ReflessFixed for T {}
-
 trait RainbowIterator: Sized + IntoIterator {
     fn iter_to_output(self, output: &mut dyn Output)
     where
