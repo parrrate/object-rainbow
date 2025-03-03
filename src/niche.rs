@@ -324,3 +324,13 @@ impl NicheAuto for B1 {
 pub type AutoNiche<T> = <<T as Niche>::NeedsTag as NicheAuto>::Auto<T>;
 
 pub type AutoEnumNiche<E, const X: usize> = AutoNiche<EnumNiche<E, X>>;
+
+pub struct HackNiche<const X: usize>;
+
+impl<const X: usize> Niche for HackNiche<X> {
+    type NeedsTag = B1;
+    type N = U0;
+    fn niche() -> GenericArray<u8, Self::N> {
+        GenericArray::default()
+    }
+}
