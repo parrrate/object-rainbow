@@ -81,10 +81,10 @@ impl<
 
 impl Equivalent<bool> for Option<()> {
     fn into_equivalent(self) -> bool {
-        self.is_some()
+        self.is_none()
     }
 
     fn from_equivalent(object: bool) -> Self {
-        object.then_some(())
+        (!object).then_some(())
     }
 }
