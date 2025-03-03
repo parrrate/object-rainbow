@@ -126,6 +126,7 @@ pub trait FetchBytes {
 
 pub trait Fetch: Send + Sync + FetchBytes {
     type T;
+    fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)>;
     fn fetch(&self) -> FailFuture<Self::T>;
     fn get(&self) -> Option<&Self::T> {
         None
@@ -206,6 +207,18 @@ struct ByAddress<T> {
 
 impl<T: Object> Fetch for ByAddress<T> {
     type T = T;
+
+    fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)> {
+        Box::pin(async {
+            let (data, resolve) = self.resolve.resolve(self.address).await?;
+            let object = T::parse_slice(&data, &resolve)?;
+            if self.address.hash != object.full_hash() {
+                Err(Error::DataMismatch)
+            } else {
+                Ok((object, resolve))
+            }
+        })
+    }
 
     fn fetch(&self) -> FailFuture<Self::T> {
         Box::pin(async {
@@ -730,6 +743,15 @@ impl<T> DerefMut for LocalOrigin<T> {
 impl<T: Object + Clone> Fetch for LocalOrigin<T> {
     type T = T;
 
+    fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)> {
+        Box::pin(ready(Ok((
+            self.0.clone(),
+            Arc::new(ByTopology {
+                topology: self.0.topology(),
+            }) as _,
+        ))))
+    }
+
     fn fetch(&self) -> FailFuture<Self::T> {
         Box::pin(ready(Ok(self.0.clone())))
     }
@@ -784,6 +806,10 @@ impl Resolve for ByTopology {
 
 impl<T: Object> Fetch for Point<T> {
     type T = T;
+
+    fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)> {
+        self.origin.fetch_full()
+    }
 
     fn fetch(&self) -> FailFuture<Self::T> {
         self.origin.fetch()
@@ -969,6 +995,45 @@ impl<T, U, F: Fn(T) -> U> Map1<T> for F {
 
 impl<T, F: 'static + Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
     type T = F::U;
+
+    fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)> {
+        Box::pin(self.origin.fetch_full().map_ok(|(x, r)| ((self.map)(x), r)))
+    }
+
+    fn fetch(&self) -> FailFuture<Self::T> {
+        Box::pin(self.origin.fetch().map_ok(&self.map))
+    }
+}
+
+impl<T: 'static + ToOutput> Point<T> {
+    pub fn map<U>(self, f: impl 'static + Send + Sync + Fn(T) -> U) -> Point<U> {
+        Point {
+            hash: self.hash,
+            origin: Arc::new(Map {
+                origin: self.origin,
+                map: f,
+            }),
+        }
+    }
+}
+
+struct Map<T, F> {
+    origin: Arc<dyn Fetch<T = T>>,
+    map: F,
+}
+
+impl<T: ToOutput, F> FetchBytes for Map<T, F> {
+    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+        Box::pin(self.origin.fetch_full().map_ok(|(x, r)| (x.output(), r)))
+    }
+}
+
+impl<T: ToOutput, F: 'static + Send + Sync + Map1<T>> Fetch for Map<T, F> {
+    type T = F::U;
+
+    fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)> {
+        Box::pin(self.origin.fetch_full().map_ok(|(x, r)| ((self.map)(x), r)))
+    }
 
     fn fetch(&self) -> FailFuture<Self::T> {
         Box::pin(self.origin.fetch().map_ok(&self.map))
