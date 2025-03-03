@@ -73,6 +73,8 @@ pub enum Error {
     OutOfBounds,
     #[error("length out of bounds")]
     LenOutOfBounds,
+    #[error(transparent)]
+    Utf8(std::string::FromUtf8Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
