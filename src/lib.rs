@@ -1,6 +1,7 @@
 extern crate self as object_rainbow;
 
 use std::{
+    cell::Cell,
     future::ready,
     marker::PhantomData,
     ops::{Deref, DerefMut},
@@ -29,6 +30,7 @@ pub use self::niche::{MaybeNiche, MnArray, NicheFoldOrArray, NicheOr};
 
 pub mod enumkind;
 mod impls;
+pub mod length_prefixed;
 mod niche;
 pub mod numeric;
 mod sha2_const;
@@ -69,6 +71,8 @@ pub enum Error {
     Zero,
     #[error("out of bounds")]
     OutOfBounds,
+    #[error("length out of bounds")]
+    LenOutOfBounds,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -234,13 +238,12 @@ impl<F: FnMut(Hash)> PointVisitor for HashVisitor<F> {
 
 pub struct ReflessInput<'a> {
     data: &'a [u8],
-    at: usize,
 }
 
 pub struct Input<'a> {
     refless: ReflessInput<'a>,
     resolve: &'a Arc<dyn Resolve>,
-    index: &'a mut usize,
+    index: &'a Cell<usize>,
 }
 
 impl<'a> Deref for Input<'a> {
@@ -265,7 +268,6 @@ impl ParseInput for ReflessInput<'_> {
         match self.data.split_first_chunk() {
             Some((chunk, data)) => {
                 self.data = data;
-                self.at += N;
                 Ok(chunk)
             }
             None => Err(Error::EndOfInput),
@@ -279,11 +281,17 @@ impl ParseInput for ReflessInput<'_> {
         match self.data.split_at_checked(n) {
             Some((chunk, data)) => {
                 self.data = data;
-                self.at += n;
                 Ok(chunk)
             }
             None => Err(Error::EndOfInput),
         }
+    }
+
+    fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
+        let input = ReflessInput {
+            data: self.parse_n(n)?,
+        };
+        T::parse(input)
     }
 
     fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
@@ -291,7 +299,6 @@ impl ParseInput for ReflessInput<'_> {
             Some((chunk, data)) => {
                 if chunk == c {
                     self.data = data;
-                    self.at += n;
                     Ok(None)
                 } else {
                     self.parse_inline().map(Some)
@@ -340,12 +347,22 @@ impl ParseInput for Input<'_> {
         (**self).parse_n(n)
     }
 
+    fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
+        let input = Input {
+            refless: ReflessInput {
+                data: self.parse_n(n)?,
+            },
+            resolve: self.resolve,
+            index: self.index,
+        };
+        T::parse(input)
+    }
+
     fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
         match self.data.split_at_checked(n) {
             Some((chunk, data)) => {
                 if chunk == c {
                     self.data = data;
-                    self.at += n;
                     Ok(None)
                 } else {
                     self.parse_inline().map(Some)
@@ -375,8 +392,8 @@ impl ParseInput for Input<'_> {
 impl Input<'_> {
     fn parse_address(&mut self) -> crate::Result<Address> {
         let hash = *self.parse_chunk()?;
-        let index = *self.index;
-        *self.index += 1;
+        let index = self.index.get();
+        self.index.set(index + 1);
         Ok(Address { hash, index })
     }
 
@@ -433,9 +450,9 @@ pub trait Object:
 {
     fn parse_slice(data: &[u8], resolve: &Arc<dyn Resolve>) -> crate::Result<Self> {
         let input = Input {
-            refless: ReflessInput { data, at: 0 },
+            refless: ReflessInput { data },
             resolve,
-            index: &mut 0,
+            index: &Cell::new(0),
         };
         let object = Self::parse(input)?;
         Ok(object)
@@ -545,7 +562,7 @@ pub trait ReflessObject:
     'static + Sized + Send + Sync + ToOutput + Tagged + for<'a> Parse<ReflessInput<'a>>
 {
     fn parse_slice(data: &[u8]) -> crate::Result<Self> {
-        let input = ReflessInput { data, at: 0 };
+        let input = ReflessInput { data };
         let object = Self::parse(input)?;
         Ok(object)
     }
@@ -848,6 +865,7 @@ pub trait ParseInput: Sized {
     fn parse_n<'a>(&mut self, n: usize) -> crate::Result<&'a [u8]>
     where
         Self: 'a;
+    fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T>;
     fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>>;
     fn parse_all<'a>(self) -> &'a [u8]
     where
