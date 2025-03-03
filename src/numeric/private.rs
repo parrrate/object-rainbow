@@ -186,10 +186,7 @@ macro_rules! ae {
             type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
         }
 
-        impl Topological for Ae<$n> {
-            fn accept_points(&self, _: &mut impl PointVisitor) {}
-        }
-
+        impl Topological for Ae<$n> {}
         impl Tagged for Ae<$n> {}
         impl Tagged for Ae<NonZero<$n>> {}
         impl ReflessObject for Ae<$n> {}
@@ -363,14 +360,8 @@ macro_rules! lebe {
             type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
         }
 
-        impl Topological for Le<$n> {
-            fn accept_points(&self, _: &mut impl PointVisitor) {}
-        }
-
-        impl Topological for Be<$n> {
-            fn accept_points(&self, _: &mut impl PointVisitor) {}
-        }
-
+        impl Topological for Le<$n> {}
+        impl Topological for Be<$n> {}
         impl Tagged for Le<$n> {}
         impl Tagged for Be<$n> {}
         impl ReflessObject for Le<$n> {}
@@ -487,10 +478,7 @@ impl<T: NonZeroable + Size> MaybeHasNiche for Nz<T> {
     type MnArray = SomeNiche<ZeroNiche<T::Size>>;
 }
 
-impl<T: NonZeroable> Topological for Nz<T> {
-    fn accept_points(&self, _: &mut impl PointVisitor) {}
-}
-
+impl<T: NonZeroable> Topological for Nz<T> {}
 impl<T: NonZeroable> Tagged for Nz<T> {}
 impl<T: NonZeroable + ReflessInline> ReflessObject for Nz<T> {}
 impl<T: NonZeroable + ReflessInline> ReflessInline for Nz<T> {}
