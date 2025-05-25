@@ -6,10 +6,11 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, Input, Object, Parse, ParseInput,
-    ParseSlice, Point, PointVisitor, RawPoint, Resolve, Tagged, ToOutput, ToOutputExt, Topological,
-    length_prefixed::Lp,
+    Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, Hash, Input, Object, Parse,
+    ParseInput, ParseSlice, Point, PointVisitor, RawPoint, Resolve, Singular, Tagged, ToOutput,
+    ToOutputExt, Topological, length_prefixed::Lp,
 };
+use sha2::{Digest, Sha256};
 
 pub trait Key: 'static + Sized + Send + Sync + Clone {
     fn encrypt(&self, data: &[u8]) -> Vec<u8>;
@@ -58,11 +59,25 @@ impl<K: Key, T: Topological> Topological for EncryptedInner<K, T> {
             visitor,
         });
     }
+
+    fn topology_hash(&self) -> Hash {
+        let mut hasher = Sha256::new();
+        for point in self.resolution.iter() {
+            hasher.update(point.hash());
+        }
+        hasher.finalize().into()
+    }
 }
 
 pub struct Encrypted<K, T> {
     key: K,
     inner: EncryptedInner<K, T>,
+}
+
+impl<K, T: Clone> Encrypted<K, T> {
+    pub fn into_inner(self) -> T {
+        Arc::unwrap_or_clone(self.inner.decrypted)
+    }
 }
 
 impl<K, T> Deref for Encrypted<K, T> {
@@ -86,6 +101,10 @@ impl<K: Key, T: Topological> Topological for Encrypted<K, T> {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.inner.accept_points(visitor);
     }
+
+    fn topology_hash(&self) -> Hash {
+        self.inner.topology_hash()
+    }
 }
 
 impl<K: Key, T: ToOutput> ToOutput for Encrypted<K, T> {
@@ -95,6 +114,7 @@ impl<K: Key, T: ToOutput> ToOutput for Encrypted<K, T> {
     }
 }
 
+#[derive(Clone)]
 struct Decrypt<K> {
     key: K,
     resolution: Resolution<K>,
@@ -142,6 +162,10 @@ impl<K: Key> Resolve for Decrypt<K> {
         } else {
             Err(Error::UnknownExtension)
         }
+    }
+
+    fn name(&self) -> &str {
+        "decrypt"
     }
 }
 
@@ -202,6 +226,10 @@ pub async fn encrypt_point<K: Key, T: Object>(
     key: K,
     point: Point<T>,
 ) -> object_rainbow::Result<Point<Encrypted<K, T>>> {
+    if let Some((address, decrypt)) = point.extract_resolve::<Decrypt<K>>() {
+        let point = decrypt.resolution.get(address.index).ok_or(Error::AddressOutOfBounds)?;
+        return Ok(point.clone().cast().point());
+    }
     let decrypted = point.fetch().await?;
     let encrypted = encrypt(key, decrypted).await?;
     let point = Point::from_object(encrypted);
