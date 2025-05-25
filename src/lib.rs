@@ -1,6 +1,7 @@
 extern crate self as object_rainbow;
 
 use std::{
+    any::Any,
     cell::Cell,
     future::ready,
     marker::PhantomData,
@@ -116,7 +117,52 @@ pub type FailFuture<'a, T> = Pin<Box<dyn 'a + Send + Future<Output = Result<T>>>
 
 pub type ByteNode = (Vec<u8>, Arc<dyn Resolve>);
 
-pub trait Resolve: Send + Sync {
+pub trait AsAny {
+    fn any_ref(&self) -> &dyn Any
+    where
+        Self: 'static;
+    fn any_mut(&mut self) -> &mut dyn Any
+    where
+        Self: 'static;
+    fn any_box(self: Box<Self>) -> Box<dyn Any>
+    where
+        Self: 'static;
+    fn any_arc(self: Arc<Self>) -> Arc<dyn Any>
+    where
+        Self: 'static;
+}
+
+impl<T> AsAny for T {
+    fn any_ref(&self) -> &dyn Any
+    where
+        Self: 'static,
+    {
+        self
+    }
+
+    fn any_mut(&mut self) -> &mut dyn Any
+    where
+        Self: 'static,
+    {
+        self
+    }
+
+    fn any_box(self: Box<Self>) -> Box<dyn Any>
+    where
+        Self: 'static,
+    {
+        self
+    }
+
+    fn any_arc(self: Arc<Self>) -> Arc<dyn Any>
+    where
+        Self: 'static,
+    {
+        self
+    }
+}
+
+pub trait Resolve: Send + Sync + AsAny {
     fn resolve(&self, address: Address) -> FailFuture<ByteNode>;
 }
 
