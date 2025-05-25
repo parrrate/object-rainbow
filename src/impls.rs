@@ -5,6 +5,7 @@ mod boxed;
 mod btree;
 mod bytes;
 mod option;
+mod phantom;
 mod refs;
 mod tuple;
 mod tuple1;
