@@ -167,7 +167,7 @@ pub trait Resolve: Send + Sync + AsAny {
     fn resolve(&self, address: Address) -> FailFuture<ByteNode>;
 }
 
-pub trait FetchBytes {
+pub trait FetchBytes: AsAny {
     fn fetch_bytes(&self) -> FailFuture<ByteNode>;
 }
 
