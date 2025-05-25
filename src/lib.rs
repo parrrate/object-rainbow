@@ -192,22 +192,32 @@ pub trait Fetch: Send + Sync + FetchBytes {
         None
     }
     fn get_mut_finalize(&mut self) {}
+    fn as_raw_point(&self) -> Option<&RawPoint<Self::T>> {
+        None
+    }
 }
 
-#[derive(Clone)]
 pub struct RawPoint<T = Infallible> {
     hash: Hash,
     origin: Arc<dyn Send + Sync + FetchBytes>,
     _object: PhantomData<fn() -> T>,
 }
 
+impl<T> Clone for RawPoint<T> {
+    fn clone(&self) -> Self {
+        Self {
+            hash: self.hash,
+            origin: self.origin.clone(),
+            _object: PhantomData,
+        }
+    }
+}
+
 impl<T> Point<T> {
     pub fn raw(self) -> RawPoint<T> {
         {
-            let origin: &dyn FetchBytes = self.origin.as_ref();
-            let origin: &dyn AsAny = origin;
-            if let Some(raw) = origin.any_ref().downcast_ref::<RawPoint>() {
-                return raw.clone().cast();
+            if let Some(raw) = self.origin.as_raw_point() {
+                return raw.clone();
             }
         }
         RawPoint {
@@ -259,6 +269,10 @@ impl<T: Object> Fetch for RawPoint<T> {
                 Ok(object)
             }
         })
+    }
+
+    fn as_raw_point(&self) -> Option<&RawPoint<Self::T>> {
+        Some(self)
     }
 }
 
