@@ -274,6 +274,15 @@ impl<T> RawPoint<T> {
     }
 }
 
+impl<T: Object> RawPoint<T> {
+    pub fn point(self) -> Point<T> {
+        Point {
+            hash: self.inner.hash.into(),
+            origin: Arc::new(self),
+        }
+    }
+}
+
 impl FetchBytes for RawPointInner {
     fn fetch_bytes(&self) -> FailFuture<ByteNode> {
         self.origin.fetch_bytes()
