@@ -202,7 +202,7 @@ impl<T: Object> Point<T> {
 struct ByAddress<T> {
     address: Address,
     resolve: Arc<dyn Resolve>,
-    _object: PhantomData<T>,
+    _object: PhantomData<fn() -> T>,
 }
 
 impl<T: Object> Fetch for ByAddress<T> {
