@@ -183,6 +183,21 @@ pub trait Fetch: Send + Sync + FetchBytes {
     fn get_mut_finalize(&mut self) {}
 }
 
+#[derive(Clone)]
+pub struct TypelessPoint {
+    pub hash: Hash,
+    pub origin: Arc<dyn FetchBytes>,
+}
+
+impl<T> Point<T> {
+    pub fn typeless(self) -> TypelessPoint {
+        TypelessPoint {
+            hash: *self.hash(),
+            origin: self.origin,
+        }
+    }
+}
+
 #[derive(ParseAsInline)]
 pub struct Point<T> {
     hash: OptionalHash,
