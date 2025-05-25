@@ -131,6 +131,9 @@ pub trait AsAny {
     fn any_arc(self: Arc<Self>) -> Arc<dyn Any>
     where
         Self: 'static;
+    fn any_arc_sync(self: Arc<Self>) -> Arc<dyn Send + Sync + Any>
+    where
+        Self: 'static + Send + Sync;
 }
 
 impl<T> AsAny for T {
@@ -158,6 +161,13 @@ impl<T> AsAny for T {
     fn any_arc(self: Arc<Self>) -> Arc<dyn Any>
     where
         Self: 'static,
+    {
+        self
+    }
+
+    fn any_arc_sync(self: Arc<Self>) -> Arc<dyn Send + Sync + Any>
+    where
+        Self: 'static + Send + Sync,
     {
         self
     }
