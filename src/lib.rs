@@ -184,7 +184,7 @@ impl<T> AsAny for T {
 }
 
 pub trait Resolve: Send + Sync + AsAny {
-    fn resolve(&self, address: Address) -> FailFuture<ByteNode>;
+    fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode>;
     fn resolve_extension(&self, address: Address, typeid: TypeId) -> crate::Result<&dyn Any> {
         let _ = address;
         let _ = typeid;
@@ -198,7 +198,7 @@ pub trait Resolve: Send + Sync + AsAny {
 }
 
 pub trait FetchBytes: AsAny {
-    fn fetch_bytes(&self) -> FailFuture<ByteNode>;
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode>;
     fn as_inner(&self) -> Option<&dyn Any> {
         None
     }
@@ -210,8 +210,8 @@ pub trait FetchBytes: AsAny {
 
 pub trait Fetch: Send + Sync + FetchBytes {
     type T;
-    fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)>;
-    fn fetch(&self) -> FailFuture<Self::T>;
+    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)>;
+    fn fetch(&'_ self) -> FailFuture<'_, Self::T>;
     fn get(&self) -> Option<&Self::T> {
         None
     }
@@ -334,7 +334,7 @@ impl<T: Object> RawPoint<T> {
 }
 
 impl FetchBytes for RawPointInner {
-    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.origin.fetch_bytes()
     }
 
@@ -344,7 +344,7 @@ impl FetchBytes for RawPointInner {
 }
 
 impl<T> FetchBytes for RawPoint<T> {
-    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.inner.fetch_bytes()
     }
 
@@ -360,7 +360,7 @@ impl<T> FetchBytes for RawPoint<T> {
 impl<T: Object> Fetch for RawPoint<T> {
     type T = T;
 
-    fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)> {
+    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         Box::pin(async {
             let (data, resolve) = self.inner.origin.fetch_bytes().await?;
             let object = T::parse_slice(&data, &resolve)?;
@@ -372,7 +372,7 @@ impl<T: Object> Fetch for RawPoint<T> {
         })
     }
 
-    fn fetch(&self) -> FailFuture<Self::T> {
+    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
             let (data, resolve) = self.inner.origin.fetch_bytes().await?;
             let object = T::parse_slice(&data, &resolve)?;
@@ -462,7 +462,7 @@ struct ByAddressInner {
 }
 
 impl FetchBytes for ByAddressInner {
-    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.resolve.resolve(self.address)
     }
 
@@ -488,7 +488,7 @@ impl<T> FromInner for ByAddress<T> {
 }
 
 impl<T> FetchBytes for ByAddress<T> {
-    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.inner.fetch_bytes()
     }
 
@@ -504,7 +504,7 @@ impl<T> FetchBytes for ByAddress<T> {
 impl<T: Object> Fetch for ByAddress<T> {
     type T = T;
 
-    fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)> {
+    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
             let object = T::parse_slice(&data, &resolve)?;
@@ -516,7 +516,7 @@ impl<T: Object> Fetch for ByAddress<T> {
         })
     }
 
-    fn fetch(&self) -> FailFuture<Self::T> {
+    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
             let object = T::parse_slice(&data, &resolve)?;
@@ -871,7 +871,7 @@ impl PointVisitor for TopoVec {
 }
 
 impl<T> FetchBytes for Point<T> {
-    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.origin.fetch_bytes()
     }
 
@@ -1033,7 +1033,7 @@ impl<T: Object + Clone> Point<T> {
             && Arc::get_mut(&mut self.origin).is_some_and(|origin| origin.get_mut().is_some())
     }
 
-    pub async fn fetch_mut(&mut self) -> crate::Result<PointMut<T>> {
+    pub async fn fetch_mut(&'_ mut self) -> crate::Result<PointMut<'_, T>> {
         if !self.yolo_mut() {
             let object = self.origin.fetch().await?;
             self.origin = Arc::new(LocalOrigin(object));
@@ -1067,7 +1067,7 @@ impl<T> DerefMut for LocalOrigin<T> {
 impl<T: Object + Clone> Fetch for LocalOrigin<T> {
     type T = T;
 
-    fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)> {
+    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         let extension = self.0.clone();
         Box::pin(ready(Ok((
             self.0.clone(),
@@ -1078,7 +1078,7 @@ impl<T: Object + Clone> Fetch for LocalOrigin<T> {
         ))))
     }
 
-    fn fetch(&self) -> FailFuture<Self::T> {
+    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(ready(Ok(self.0.clone())))
     }
 
@@ -1092,7 +1092,7 @@ impl<T: Object + Clone> Fetch for LocalOrigin<T> {
 }
 
 impl<T: Object + Clone> FetchBytes for LocalOrigin<T> {
-    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         let extension = self.0.clone();
         Box::pin(ready(Ok((
             self.0.output(),
@@ -1124,7 +1124,7 @@ struct ByTopology {
 }
 
 impl ByTopology {
-    fn try_resolve(&self, address: Address) -> Result<FailFuture<ByteNode>> {
+    fn try_resolve(&'_ self, address: Address) -> Result<FailFuture<'_, ByteNode>> {
         let point = self
             .topology
             .get(address.index)
@@ -1138,7 +1138,7 @@ impl ByTopology {
 }
 
 impl Resolve for ByTopology {
-    fn resolve(&self, address: Address) -> FailFuture<ByteNode> {
+    fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode> {
         self.try_resolve(address)
             .map_err(Err)
             .map_err(ready)
@@ -1165,11 +1165,11 @@ impl Resolve for ByTopology {
 impl<T: Object> Fetch for Point<T> {
     type T = T;
 
-    fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)> {
+    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         self.origin.fetch_full()
     }
 
-    fn fetch(&self) -> FailFuture<Self::T> {
+    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         self.origin.fetch()
     }
 
@@ -1338,7 +1338,7 @@ struct MapEquivalent<T, F> {
 }
 
 impl<T, F> FetchBytes for MapEquivalent<T, F> {
-    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.origin.fetch_bytes()
     }
 
@@ -1358,11 +1358,11 @@ impl<T, U, F: Fn(T) -> U> Map1<T> for F {
 impl<T, F: 'static + Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
     type T = F::U;
 
-    fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)> {
+    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         Box::pin(self.origin.fetch_full().map_ok(|(x, r)| ((self.map)(x), r)))
     }
 
-    fn fetch(&self) -> FailFuture<Self::T> {
+    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(self.origin.fetch().map_ok(&self.map))
     }
 }
@@ -1385,7 +1385,7 @@ struct Map<T, F> {
 }
 
 impl<T: ToOutput, F> FetchBytes for Map<T, F> {
-    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         Box::pin(self.origin.fetch_full().map_ok(|(x, r)| (x.output(), r)))
     }
 }
@@ -1393,11 +1393,11 @@ impl<T: ToOutput, F> FetchBytes for Map<T, F> {
 impl<T: ToOutput, F: 'static + Send + Sync + Map1<T>> Fetch for Map<T, F> {
     type T = F::U;
 
-    fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)> {
+    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         Box::pin(self.origin.fetch_full().map_ok(|(x, r)| ((self.map)(x), r)))
     }
 
-    fn fetch(&self) -> FailFuture<Self::T> {
+    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(self.origin.fetch().map_ok(&self.map))
     }
 }
