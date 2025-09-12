@@ -2,6 +2,12 @@ use std::num::NonZero;
 
 use crate::{enumkind::UsizeTag, *};
 
+pub trait HasOtherSign {
+    type OtherSign;
+}
+
+type Os<T> = <T as HasOtherSign>::OtherSign;
+
 #[derive(ParseAsInline)]
 pub struct Ae<T>(T);
 #[derive(ParseAsInline)]
@@ -65,6 +71,17 @@ pub trait AsLe {
 
 pub trait AsBe {
     type Be;
+}
+
+macro_rules! signs {
+    ($u:ty, $i:ty) => {
+        impl HasOtherSign for $u {
+            type OtherSign = $i;
+        }
+        impl HasOtherSign for $i {
+            type OtherSign = $u;
+        }
+    };
 }
 
 macro_rules! ae {
@@ -172,6 +189,15 @@ macro_rules! ae {
             }
             fn from_equivalent(object: Ae<$n>) -> Self {
                 NonZero::new(object.0).map(Ae)
+            }
+        }
+
+        impl Equivalent<Ae<Os<$n>>> for Ae<$n> {
+            fn into_equivalent(self) -> Ae<Os<$n>> {
+                Ae(self.0 as _)
+            }
+            fn from_equivalent(object: Ae<Os<$n>>) -> Self {
+                Ae(object.0 as _)
             }
         }
     };
@@ -338,8 +364,50 @@ macro_rules! lebe {
                 NonZero::new(object.0).map(Be)
             }
         }
+
+        impl Equivalent<Le<Os<$n>>> for Le<$n> {
+            fn into_equivalent(self) -> Le<Os<$n>> {
+                Le(self.0 as _)
+            }
+            fn from_equivalent(object: Le<Os<$n>>) -> Self {
+                Le(object.0 as _)
+            }
+        }
+
+        impl Equivalent<Be<Os<$n>>> for Be<$n> {
+            fn into_equivalent(self) -> Be<Os<$n>> {
+                Be(self.0 as _)
+            }
+            fn from_equivalent(object: Be<Os<$n>>) -> Self {
+                Be(object.0 as _)
+            }
+        }
+
+        impl Equivalent<Le<NonZero<Os<$n>>>> for Le<NonZero<$n>> {
+            fn into_equivalent(self) -> Le<NonZero<Os<$n>>> {
+                Le(NonZero::new(self.0.get() as _).unwrap())
+            }
+            fn from_equivalent(object: Le<NonZero<Os<$n>>>) -> Self {
+                Le(NonZero::new(object.0.get() as _).unwrap())
+            }
+        }
+
+        impl Equivalent<Be<NonZero<Os<$n>>>> for Be<NonZero<$n>> {
+            fn into_equivalent(self) -> Be<NonZero<Os<$n>>> {
+                Be(NonZero::new(self.0.get() as _).unwrap())
+            }
+            fn from_equivalent(object: Be<NonZero<Os<$n>>>) -> Self {
+                Be(NonZero::new(object.0.get() as _).unwrap())
+            }
+        }
     };
 }
+
+signs!(u8, i8);
+signs!(u16, i16);
+signs!(u32, i32);
+signs!(u64, i64);
+signs!(u128, i128);
 
 ae!(u8);
 ae!(i8);
