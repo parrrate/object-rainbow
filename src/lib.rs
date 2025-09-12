@@ -9,6 +9,7 @@ use std::{
 };
 
 pub use anyhow::anyhow;
+use futures_util::TryFutureExt;
 use generic_array::{ArrayLength, GenericArray, sequence::Concat};
 pub use object_rainbow_derive::{
     Enum, Inline, MaybeHasNiche, Object, Parse, ParseAsInline, ParseInline, ReflessInline,
@@ -1049,4 +1050,77 @@ pub struct NicheFoldOrArray<T>(T);
 
 impl<T: NicheFoldOr> MnArray for NicheFoldOrArray<T> {
     type MaybeNiche = T::Or;
+}
+
+pub trait Equivalent<T>: Sized {
+    fn into_equivalent(self) -> T;
+    fn from_equivalent(object: T) -> Self;
+}
+
+impl<U: 'static + Equivalent<T>, T: 'static> Equivalent<Point<T>> for Point<U> {
+    fn into_equivalent(self) -> Point<T> {
+        Point {
+            hash: self.hash,
+            origin: Arc::new(IntoEquivalent {
+                origin: self.origin,
+                _map: PhantomData,
+            }),
+        }
+    }
+
+    fn from_equivalent(object: Point<T>) -> Self {
+        Point {
+            hash: object.hash,
+            origin: Arc::new(FromEquivalent {
+                origin: object.origin,
+                _map: PhantomData,
+            }),
+        }
+    }
+}
+
+trait IgnoreSendness {
+    type T: 'static + Send + Sync;
+}
+
+impl<T: ?Sized> IgnoreSendness for T {
+    type T = ();
+}
+
+struct IntoEquivalent<U, T> {
+    origin: Arc<dyn Fetch<T = U>>,
+    _map: PhantomData<<T as IgnoreSendness>::T>,
+}
+
+impl<U, T> FetchBytes for IntoEquivalent<U, T> {
+    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+        self.origin.fetch_bytes()
+    }
+}
+
+impl<U: Equivalent<T>, T> Fetch for IntoEquivalent<U, T> {
+    type T = T;
+
+    fn fetch(&self) -> FailFuture<Self::T> {
+        Box::pin(self.origin.fetch().map_ok(U::into_equivalent))
+    }
+}
+
+struct FromEquivalent<U, T> {
+    origin: Arc<dyn Fetch<T = T>>,
+    _map: PhantomData<<U as IgnoreSendness>::T>,
+}
+
+impl<U, T> FetchBytes for FromEquivalent<U, T> {
+    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+        self.origin.fetch_bytes()
+    }
+}
+
+impl<U: Equivalent<T>, T> Fetch for FromEquivalent<U, T> {
+    type T = U;
+
+    fn fetch(&self) -> FailFuture<Self::T> {
+        Box::pin(self.origin.fetch().map_ok(U::from_equivalent))
+    }
 }
