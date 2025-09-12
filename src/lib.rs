@@ -122,13 +122,13 @@ impl<T> FetchBytes for ByAddress<T> {
     }
 }
 
-pub trait RefVisitor {
+pub trait PointVisitor {
     fn visit<T: Object>(&mut self, point: &Point<T>);
 }
 
 pub struct HashVisitor<F>(F);
 
-impl<F: FnMut(Hash)> RefVisitor for HashVisitor<F> {
+impl<F: FnMut(Hash)> PointVisitor for HashVisitor<F> {
     fn visit<T: Object>(&mut self, point: &Point<T>) {
         self.0(point.hash);
     }
@@ -238,7 +238,7 @@ pub trait ToOutput {
 }
 
 pub trait Object: 'static + Sized + Send + Sync + ToOutput {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor);
+    fn accept_points(&self, visitor: &mut impl PointVisitor);
     fn parse(input: Input) -> crate::Result<Self>;
 
     fn parse_slice(data: &[u8], resolve: &Arc<dyn Resolve>) -> crate::Result<Self> {
@@ -253,7 +253,7 @@ pub trait Object: 'static + Sized + Send + Sync + ToOutput {
 
     fn topology_hash(&self) -> Hash {
         let mut hasher = Sha256::new();
-        self.accept_refs(&mut HashVisitor(|hash| hasher.update(hash)));
+        self.accept_points(&mut HashVisitor(|hash| hasher.update(hash)));
         hasher.finalize().into()
     }
 
@@ -271,7 +271,7 @@ pub trait Object: 'static + Sized + Send + Sync + ToOutput {
 
     fn topology(&self) -> TopoVec {
         let mut topolog = TopoVec::new();
-        self.accept_refs(&mut topolog);
+        self.accept_points(&mut topolog);
         topolog
     }
 
@@ -321,7 +321,7 @@ pub trait Inline: Object {
 }
 
 impl<T: Object> Object for Point<T> {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor) {
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
         visitor.visit(self);
     }
 
@@ -357,7 +357,7 @@ pub trait Singular: Send + Sync + FetchBytes {
 
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
-impl RefVisitor for TopoVec {
+impl PointVisitor for TopoVec {
     fn visit<T: Object>(&mut self, point: &Point<T>) {
         self.push(Arc::new(point.clone()));
     }
@@ -428,7 +428,7 @@ impl<T: ToOutput> ToOutput for Refless<T> {
 }
 
 impl<T: ReflessObject> Object for Refless<T> {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor) {
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
         let _ = visitor;
     }
 
@@ -448,7 +448,7 @@ impl ToOutput for () {
 }
 
 impl Object for () {
-    fn accept_refs(&self, _: &mut impl RefVisitor) {}
+    fn accept_points(&self, _: &mut impl PointVisitor) {}
 
     fn parse(input: Input) -> crate::Result<Self> {
         Inline::parse_as_inline(input)
@@ -480,8 +480,8 @@ impl<T: ToOutput> ToOutput for (T,) {
 }
 
 impl<T: Object> Object for (T,) {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor) {
-        self.0.accept_refs(visitor);
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        self.0.accept_points(visitor);
     }
 
     fn parse(input: Input) -> crate::Result<Self> {
@@ -635,8 +635,8 @@ impl<T: ToOutput> ToOutput for Arc<T> {
 }
 
 impl<T: Object> Object for Arc<T> {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor) {
-        (**self).accept_refs(visitor);
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        (**self).accept_points(visitor);
     }
 
     fn parse(input: Input) -> crate::Result<Self> {
