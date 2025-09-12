@@ -18,13 +18,14 @@ pub use object_rainbow_derive::{
 use sha2::{Digest, Sha256};
 #[doc(hidden)]
 pub use typenum;
-use typenum::{ATerm, Max, TArr, Unsigned, tarr};
+use typenum::Unsigned;
 
 pub use self::enumkind::Enum;
 pub use self::niche::{
-    AutoEnumNiche, HackNiche, MaybeHasNiche, MaybeNiche, MnArray, Niche, NicheFoldOrArray, NicheOr,
-    NoNiche, SomeNiche, ZeroNiche, ZeroNoNiche,
+    AutoEnumNiche, HackNiche, MaybeHasNiche, Niche, NoNiche, SomeNiche, ZeroNiche, ZeroNoNiche,
 };
+#[doc(hidden)]
+pub use self::niche::{MaybeNiche, MnArray, NicheFoldOrArray, NicheOr};
 
 pub mod enumkind;
 mod impls;
@@ -203,7 +204,7 @@ pub trait PointVisitor {
     fn visit<T: Object>(&mut self, point: &Point<T>);
 }
 
-pub struct HashVisitor<F>(F);
+struct HashVisitor<F>(F);
 
 impl<F: FnMut(Hash)> PointVisitor for HashVisitor<F> {
     fn visit<T: Object>(&mut self, point: &Point<T>) {
@@ -871,18 +872,6 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
         input.empty()?;
         Ok(object)
     }
-}
-
-pub trait FoldMax {
-    type Max;
-}
-
-impl<N> FoldMax for TArr<N, ATerm> {
-    type Max = N;
-}
-
-impl<N: Max<A::Max>, A: FoldMax> FoldMax for TArr<N, A> {
-    type Max = N::Output;
 }
 
 pub trait Equivalent<T>: Sized {
