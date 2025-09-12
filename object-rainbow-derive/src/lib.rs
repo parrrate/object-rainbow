@@ -630,10 +630,22 @@ fn bounds_size(
             }
         }
         Data::Enum(data) => {
-            return Err(Error::new_spanned(
-                data.enum_token,
-                "`enum`s are not supported",
-            ));
+            for v in data.variants.iter() {
+                for f in v.fields.iter() {
+                    let ty = &f.ty;
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: ::object_rainbow::Size
+                        },
+                    );
+                }
+            }
+            for v in data.variants.iter().skip(1) {
+                let arr = fields_size_arr(&v.fields);
+                generics.make_where_clause().predicates.push(parse_quote!(
+                    #arr: ::typenum::FoldAdd<Output = <#size_arr as ::typenum::FoldAdd>::Output>
+                ));
+            }
         }
         Data::Union(data) => {
             return Err(Error::new_spanned(
@@ -648,22 +660,31 @@ fn bounds_size(
     Ok(generics)
 }
 
+fn fields_size_arr(fields: &syn::Fields) -> proc_macro2::TokenStream {
+    if fields.is_empty() {
+        return quote! {
+            tarr![::typenum::consts::U0]
+        };
+    }
+    let size_arr = fields.iter().map(|f| {
+        let ty = &f.ty;
+        quote! { <#ty as ::object_rainbow::Size>::Size }
+    });
+    quote! {
+        tarr![#(#size_arr),*]
+    }
+}
+
 fn gen_size_arr(data: &Data) -> proc_macro2::TokenStream {
     match data {
-        Data::Struct(data) => {
-            if data.fields.is_empty() {
-                return quote! {0};
-            }
-            let size = data.fields.iter().map(|f| {
-                let ty = &f.ty;
-                quote! { <#ty as ::object_rainbow::Size>::Size }
-            });
-            quote! {
-                tarr![#(#size),*]
-            }
-        }
+        Data::Struct(data) => fields_size_arr(&data.fields),
         Data::Enum(data) => {
-            Error::new_spanned(data.enum_token, "`enum`s are not supported").into_compile_error()
+            if let Some(v) = data.variants.first() {
+                fields_size_arr(&v.fields)
+            } else {
+                Error::new_spanned(data.enum_token, "empty `enum`s are not supported")
+                    .into_compile_error()
+            }
         }
         Data::Union(data) => {
             Error::new_spanned(data.union_token, "`union`s are not supported").into_compile_error()
@@ -671,22 +692,29 @@ fn gen_size_arr(data: &Data) -> proc_macro2::TokenStream {
     }
 }
 
+fn fields_size(fields: &syn::Fields) -> proc_macro2::TokenStream {
+    if fields.is_empty() {
+        return quote! {0};
+    }
+    let size = fields.iter().map(|f| {
+        let ty = &f.ty;
+        quote! { <#ty as ::object_rainbow::Size>::SIZE }
+    });
+    quote! {
+        #(#size)+*
+    }
+}
+
 fn gen_size(data: &Data) -> proc_macro2::TokenStream {
     match data {
-        Data::Struct(data) => {
-            if data.fields.is_empty() {
-                return quote! {0};
-            }
-            let size = data.fields.iter().map(|f| {
-                let ty = &f.ty;
-                quote! { <#ty as ::object_rainbow::Size>::SIZE }
-            });
-            quote! {
-                #(#size)+*
-            }
-        }
+        Data::Struct(data) => fields_size(&data.fields),
         Data::Enum(data) => {
-            Error::new_spanned(data.enum_token, "`enum`s are not supported").into_compile_error()
+            if let Some(v) = data.variants.first() {
+                fields_size(&v.fields)
+            } else {
+                Error::new_spanned(data.enum_token, "empty `enum`s are not supported")
+                    .into_compile_error()
+            }
         }
         Data::Union(data) => {
             Error::new_spanned(data.union_token, "`union`s are not supported").into_compile_error()
