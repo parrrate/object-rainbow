@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(ToOutput, ParseAsInline, Topological, Size)]
+#[derive(ToOutput, Topological, Tagged, ParseAsInline, Size)]
 pub struct EnumTag<T, const MAX: usize>(T);
 
 impl<T: Deref, const MAX: usize> Deref for EnumTag<T, MAX> {
