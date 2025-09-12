@@ -933,6 +933,24 @@ impl<T: AsHeadOf<R::MaybeNiche>, R: MnArray> MnArray for TArr<T, R> {
     type MaybeNiche = T::WithTail;
 }
 
+mod point_niche {
+    use crate::*;
+
+    pub struct PointNiche;
+
+    impl Niche for PointNiche {
+        type NeedsTag = B0;
+        type N = typenum::generic_const_mappings::U<HASH_SIZE>;
+        fn niche() -> GenericArray<u8, Self::N> {
+            GenericArray::default()
+        }
+    }
+
+    impl<T> MaybeHasNiche for Point<T> {
+        type MnArray = SomeNiche<PointNiche>;
+    }
+}
+
 #[test]
 fn options() {
     type T0 = bool;
@@ -961,4 +979,5 @@ fn options() {
     assert_eq!(Some(Some(None::<bool>)).output::<Vec<u8>>(), [0, 2]);
     assert_eq!(Some(None::<Option<bool>>).output::<Vec<u8>>(), [1, 0]);
     assert_eq!(None::<Option<Option<bool>>>.output::<Vec<u8>>(), [2, 0]);
+    assert_eq!(Option::<Point<()>>::SIZE, HASH_SIZE);
 }
