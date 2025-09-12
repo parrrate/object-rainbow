@@ -1178,7 +1178,8 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
             }
         }
     }
-    let enumtag = enumtag.unwrap_or_else(|| parse_quote!(::object_rainbow::numeric::Le<u8>));
+    let enumtag = enumtag
+        .unwrap_or_else(|| parse_quote!(::object_rainbow::numeric::Le<::core::num::NonZero<u8>>));
     let errors = errors.into_iter().map(|e| e.into_compile_error());
     let output = quote! {
         const _: () = {
