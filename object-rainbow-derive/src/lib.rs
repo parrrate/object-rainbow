@@ -497,10 +497,23 @@ fn bounds_object(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
             }
         }
         Data::Enum(data) => {
-            return Err(Error::new_spanned(
-                data.enum_token,
-                "`enum`s are not supported",
-            ));
+            for v in data.variants.iter() {
+                let last_at = v.fields.len().checked_sub(1).unwrap_or_default();
+                for (i, f) in v.fields.iter().enumerate() {
+                    let last = i == last_at;
+                    let ty = &f.ty;
+                    let tr = if last {
+                        quote!(::object_rainbow::Object)
+                    } else {
+                        quote!(::object_rainbow::Inline)
+                    };
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: #tr
+                        },
+                    );
+                }
+            }
         }
         Data::Union(data) => {
             return Err(Error::new_spanned(
