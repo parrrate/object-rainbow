@@ -3,7 +3,7 @@ extern crate self as object_rainbow;
 use std::{
     future::ready,
     marker::PhantomData,
-    ops::{Add, Deref, DerefMut, Not},
+    ops::{Add, Deref, DerefMut},
     pin::Pin,
     sync::Arc,
 };
@@ -797,13 +797,13 @@ struct AndNiche<N, T>(N, T);
 struct NicheAnd<T, N>(T, N);
 pub struct SomeNiche<T>(T);
 
-trait Niche {
+pub trait Niche {
     type NeedsTag: Bit;
     type N: ArrayLength;
     fn niche() -> GenericArray<u8, Self::N>;
 }
 
-trait MaybeNiche {
+pub trait MaybeNiche {
     type N: Unsigned;
 }
 
@@ -897,7 +897,7 @@ where
     type WithTail = NicheAnd<Self, U::N>;
 }
 
-impl<T: Niche> Niche for SomeNiche<T> {
+impl<T: Niche<NeedsTag = B0>> Niche for SomeNiche<T> {
     type NeedsTag = T::NeedsTag;
     type N = T::N;
     fn niche() -> GenericArray<u8, Self::N> {
@@ -905,15 +905,19 @@ impl<T: Niche> Niche for SomeNiche<T> {
     }
 }
 
-impl<T: Niche> MaybeNiche for SomeNiche<T> {
+impl<T: Niche<NeedsTag = B0>> MaybeNiche for SomeNiche<T> {
     type N = T::N;
 }
 
-impl<U: MaybeNiche<N: Add<T::N, Output: Unsigned>>, T: Niche> AsTailOf<U> for SomeNiche<T> {
+impl<U: MaybeNiche<N: Add<T::N, Output: Unsigned>>, T: Niche<NeedsTag = B0>> AsTailOf<U>
+    for SomeNiche<T>
+{
     type WithHead = AndNiche<U::N, SomeNiche<T>>;
 }
 
-impl<T: Niche<N: Add<U::N, Output: Unsigned>>, U: MaybeNiche> AsHeadOf<U> for SomeNiche<T> {
+impl<T: Niche<N: Add<U::N, Output: Unsigned>, NeedsTag = B0>, U: MaybeNiche> AsHeadOf<U>
+    for SomeNiche<T>
+{
     type WithTail = NicheAnd<SomeNiche<T>, U::N>;
 }
 
@@ -980,4 +984,13 @@ fn options() {
     assert_eq!(Some(None::<Option<bool>>).output::<Vec<u8>>(), [1, 0]);
     assert_eq!(None::<Option<Option<bool>>>.output::<Vec<u8>>(), [2, 0]);
     assert_eq!(Option::<Point<()>>::SIZE, HASH_SIZE);
+    assert_eq!(Some(()).output::<Vec<u8>>(), [0]);
+    assert_eq!(Some(((), ())).output::<Vec<u8>>(), [0]);
+    assert_eq!(Some(((), true)).output::<Vec<u8>>(), [1]);
+    assert_eq!(Some((true, true)).output::<Vec<u8>>(), [1, 1]);
+    assert_eq!(Some((Some(true), true)).output::<Vec<u8>>(), [1, 1]);
+    assert_eq!(
+        Some(Some((Some(true), Some(true)))).output::<Vec<u8>>(),
+        [0, 1, 1],
+    );
 }

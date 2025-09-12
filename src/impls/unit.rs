@@ -36,5 +36,5 @@ impl Size for () {
 }
 
 impl MaybeHasNiche for () {
-    type MnArray = SomeNiche<NoNiche<Self::Size>>;
+    type MnArray = NoNiche<Self::Size>;
 }
