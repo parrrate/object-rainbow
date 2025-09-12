@@ -198,6 +198,12 @@ impl<T> Point<T> {
     }
 }
 
+impl FetchBytes for TypelessPoint {
+    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+        self.origin.fetch_bytes()
+    }
+}
+
 #[derive(ParseAsInline)]
 pub struct Point<T> {
     hash: OptionalHash,
