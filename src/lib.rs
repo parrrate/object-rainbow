@@ -10,8 +10,8 @@ use std::{
 
 pub use anyhow::anyhow;
 pub use object_rainbow_derive::{
-    Inline, Object, Parse, ParseInline, ReflessInline, ReflessObject, Size, Tagged, ToOutput,
-    Topological,
+    Inline, Object, Parse, ParseAsInline, ParseInline, ReflessInline, ReflessObject, Size, Tagged,
+    ToOutput, Topological,
 };
 use sha2::{Digest, Sha256};
 
@@ -77,6 +77,7 @@ pub trait Fetch: Send + Sync + FetchBytes {
     fn fetch(&self) -> FailFuture<Self::T>;
 }
 
+#[derive(ParseAsInline)]
 pub struct Point<T> {
     hash: Hash,
     origin: Arc<dyn Fetch<T = T>>,
@@ -331,12 +332,6 @@ pub trait Inline: Object + for<'a> ParseInline<Input<'a>> {}
 impl<T: Object> Topological for Point<T> {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         visitor.visit(self);
-    }
-}
-
-impl<T: Object> Parse<Input<'_>> for Point<T> {
-    fn parse(input: Input) -> crate::Result<Self> {
-        ParseInline::parse_as_inline(input)
     }
 }
 

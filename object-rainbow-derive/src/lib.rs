@@ -776,3 +776,37 @@ fn gen_parse_inline(data: &Data) -> proc_macro2::TokenStream {
         }
     }
 }
+
+#[proc_macro_derive(ParseAsInline)]
+pub fn derive_parse_as_inline(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+    let generics = input.generics.clone();
+    let (_, ty_generics, _) = generics.split_for_impl();
+    let generics = match bounds_parse_as_inline(input.generics, &name) {
+        Ok(g) => g,
+        Err(e) => return e.into_compile_error().into(),
+    };
+    let (impl_generics, _, where_clause) = generics.split_for_impl();
+    let output = quote! {
+        impl #impl_generics ::object_rainbow::Parse<__I> for #name #ty_generics #where_clause {
+            fn parse(input: __I) -> ::object_rainbow::Result<Self> {
+                ::object_rainbow::ParseInline::<__I>::parse_as_inline(input)
+            }
+        }
+    };
+    TokenStream::from(output)
+}
+
+fn bounds_parse_as_inline(mut generics: Generics, name: &Ident) -> syn::Result<Generics> {
+    generics
+        .make_where_clause()
+        .predicates
+        .push(parse_quote_spanned! { name.span() =>
+            Self: ::object_rainbow::ParseInline::<__I>
+        });
+    generics
+        .params
+        .push(parse_quote!(__I: ::object_rainbow::ParseInput));
+    Ok(generics)
+}

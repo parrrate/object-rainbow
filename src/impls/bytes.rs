@@ -17,11 +17,13 @@ impl<const N: usize> ParseInline<ReflessInput<'_>> for [u8; N] {
         input.parse_chunk().copied()
     }
 }
+
 impl<const N: usize> Tagged for [u8; N] {}
 
 impl<const N: usize> ReflessObject for [u8; N] {}
 
 impl<const N: usize> ReflessInline for [u8; N] {}
+
 impl<T: Size, const N: usize> Size for [T; N] {
     const SIZE: usize = T::SIZE * N;
 }
