@@ -21,6 +21,7 @@ pub mod enumkind;
 mod impls;
 pub mod numeric;
 mod sha2_const;
+pub mod size;
 
 #[macro_export]
 macro_rules! error_parse {
