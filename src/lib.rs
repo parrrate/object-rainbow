@@ -9,7 +9,7 @@ use std::{
 };
 
 pub use anyhow::anyhow;
-pub use object_rainbow_derive::ToOutput;
+pub use object_rainbow_derive::{Object, ToOutput};
 use sha2::{Digest, Sha256};
 
 mod tuple;
@@ -298,7 +298,7 @@ pub trait Object: 'static + Sized + Send + Sync + ToOutput {
     const TAGS: Tags = Tags(&[], &[]);
 }
 
-pub struct Tags(&'static [&'static str], &'static [&'static Self]);
+pub struct Tags(pub &'static [&'static str], pub &'static [&'static Self]);
 
 impl Tags {
     fn hash(&self, f: &mut impl FnMut(&'static str)) {
@@ -689,3 +689,6 @@ impl<T: Size, const N: usize> Size for [T; N] {
 impl<const N: usize> Size for [u8; N] {
     const SIZE: usize = N;
 }
+
+#[derive(ToOutput, Object)]
+pub struct DeriveExample<A, B>(A, B);
