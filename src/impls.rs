@@ -1,6 +1,7 @@
 mod arc;
 mod array;
 mod bool;
+mod boxed;
 mod btree;
 mod bytes;
 mod option;
