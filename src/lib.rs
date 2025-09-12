@@ -67,6 +67,29 @@ pub struct Address {
     pub hash: Hash,
 }
 
+#[derive(Debug, Clone, Copy)]
+struct OptionalHash(Hash);
+
+impl From<Hash> for OptionalHash {
+    fn from(hash: Hash) -> Self {
+        Self(hash)
+    }
+}
+
+impl OptionalHash {
+    fn get(&self) -> Option<&Hash> {
+        (self.0 != Hash::default()).then_some(&self.0)
+    }
+
+    fn unwrap(&self) -> &Hash {
+        self.get().unwrap()
+    }
+
+    fn clear(&mut self) {
+        self.0 = Hash::default();
+    }
+}
+
 pub type FailFuture<'a, T> = Pin<Box<dyn 'a + Send + Future<Output = Result<T>>>>;
 
 pub type ByteNode = (Vec<u8>, Arc<dyn Resolve>);
@@ -82,17 +105,18 @@ pub trait FetchBytes {
 pub trait Fetch: Send + Sync + FetchBytes {
     type T;
     fn fetch(&self) -> FailFuture<Self::T>;
-    fn is_local(&self) -> bool {
-        false
+    fn get(&self) -> Option<&Self::T> {
+        None
     }
     fn get_mut(&mut self) -> Option<&mut Self::T> {
         None
     }
+    fn get_mut_finalize(&mut self) {}
 }
 
 #[derive(ParseAsInline)]
 pub struct Point<T> {
-    hash: Hash,
+    hash: OptionalHash,
     origin: Arc<dyn Fetch<T = T>>,
 }
 
@@ -105,6 +129,15 @@ impl<T> Clone for Point<T> {
     }
 }
 
+impl<T> Point<T> {
+    fn from_origin(hash: Hash, origin: Arc<dyn Fetch<T = T>>) -> Self {
+        Self {
+            hash: hash.into(),
+            origin,
+        }
+    }
+}
+
 impl<T> Size for Point<T> {
     const SIZE: usize = HASH_SIZE;
     type Size = typenum::generic_const_mappings::U<HASH_SIZE>;
@@ -112,14 +145,14 @@ impl<T> Size for Point<T> {
 
 impl<T: Object> Point<T> {
     pub fn from_address(address: Address, resolve: Arc<dyn Resolve>) -> Self {
-        Self {
-            hash: address.hash,
-            origin: Arc::new(ByAddress {
+        Self::from_origin(
+            address.hash,
+            Arc::new(ByAddress {
                 address,
                 resolve,
                 _object: PhantomData,
             }),
-        }
+        )
     }
 }
 
@@ -155,7 +188,7 @@ pub struct HashVisitor<F>(F);
 
 impl<F: FnMut(Hash)> PointVisitor for HashVisitor<F> {
     fn visit<T: Object>(&mut self, point: &Point<T>) {
-        self.0(point.hash);
+        self.0(*point.hash());
     }
 }
 
@@ -371,7 +404,7 @@ impl<T: Object> Object for Point<T> {}
 
 impl<T> ToOutput for Point<T> {
     fn to_output(&self, output: &mut dyn Output) {
-        output.write(&self.hash);
+        output.write(self.hash());
     }
 }
 
@@ -406,7 +439,7 @@ impl<T> FetchBytes for Point<T> {
 
 impl<T> Singular for Point<T> {
     fn hash(&self) -> &Hash {
-        &self.hash
+        self.hash.unwrap()
     }
 }
 
@@ -521,57 +554,71 @@ impl HashOutput {
 }
 
 pub struct PointMut<'a, T: Object> {
-    hash: &'a mut Hash,
-    object: &'a mut T,
+    hash: &'a mut OptionalHash,
+    origin: &'a mut dyn Fetch<T = T>,
 }
 
 impl<T: Object> Deref for PointMut<'_, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        self.object
+        self.origin.get().unwrap()
     }
 }
 
 impl<T: Object> DerefMut for PointMut<'_, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        self.object
+        self.origin.get_mut().unwrap()
     }
 }
 
 impl<T: Object> Drop for PointMut<'_, T> {
     fn drop(&mut self) {
-        *self.hash = self.object.full_hash();
+        self.origin.get_mut_finalize();
+        self.hash.0 = self.full_hash();
     }
 }
 
 impl<T: Object + Clone> Point<T> {
     pub fn from_object(object: T) -> Self {
-        Self {
-            hash: object.full_hash(),
-            origin: Arc::new(LocalOrigin(object)),
-        }
+        Self::from_origin(object.full_hash(), Arc::new(LocalOrigin(object)))
     }
 
     fn yolo_mut(&mut self) -> bool {
-        self.origin.is_local()
+        self.origin.get().is_some()
             && Arc::get_mut(&mut self.origin).is_some_and(|origin| origin.get_mut().is_some())
     }
 
-    pub async fn get_mut(&mut self) -> crate::Result<PointMut<T>> {
+    pub async fn fetch_mut(&mut self) -> crate::Result<PointMut<T>> {
         if !self.yolo_mut() {
             let object = self.origin.fetch().await?;
             self.origin = Arc::new(LocalOrigin(object));
         }
-        assert!(self.origin.is_local());
+        let origin = Arc::get_mut(&mut self.origin).unwrap();
+        assert!(origin.get_mut().is_some());
+        self.hash.clear();
         Ok(PointMut {
             hash: &mut self.hash,
-            object: Arc::get_mut(&mut self.origin).unwrap().get_mut().unwrap(),
+            origin,
         })
     }
 }
 
 struct LocalOrigin<T>(T);
+
+impl<T> Deref for LocalOrigin<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<T> DerefMut for LocalOrigin<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
 
 impl<T: Object + Clone> Fetch for LocalOrigin<T> {
     type T = T;
@@ -580,12 +627,12 @@ impl<T: Object + Clone> Fetch for LocalOrigin<T> {
         Box::pin(ready(Ok(self.0.clone())))
     }
 
-    fn is_local(&self) -> bool {
-        true
+    fn get(&self) -> Option<&Self::T> {
+        Some(self)
     }
 
     fn get_mut(&mut self) -> Option<&mut Self::T> {
-        Some(&mut self.0)
+        Some(self)
     }
 }
 
@@ -628,11 +675,25 @@ impl Resolve for ByTopology {
     }
 }
 
-impl<T> Fetch for Point<T> {
+impl<T: Object> Fetch for Point<T> {
     type T = T;
 
     fn fetch(&self) -> FailFuture<Self::T> {
         self.origin.fetch()
+    }
+
+    fn get(&self) -> Option<&Self::T> {
+        self.origin.get()
+    }
+
+    fn get_mut(&mut self) -> Option<&mut Self::T> {
+        Arc::get_mut(&mut self.origin)?.get_mut()
+    }
+
+    fn get_mut_finalize(&mut self) {
+        let origin = Arc::get_mut(&mut self.origin).unwrap();
+        origin.get_mut_finalize();
+        self.hash.0 = origin.get().unwrap().full_hash();
     }
 }
 
