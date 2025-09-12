@@ -16,6 +16,7 @@ pub use object_rainbow_derive::{
 use sha2::{Digest, Sha256};
 
 mod impls;
+pub mod numeric;
 mod sha2_const;
 
 #[macro_export]
