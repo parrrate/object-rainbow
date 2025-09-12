@@ -227,7 +227,10 @@ pub async fn encrypt_point<K: Key, T: Object>(
     point: Point<T>,
 ) -> object_rainbow::Result<Point<Encrypted<K, T>>> {
     if let Some((address, decrypt)) = point.extract_resolve::<Decrypt<K>>() {
-        let point = decrypt.resolution.get(address.index).ok_or(Error::AddressOutOfBounds)?;
+        let point = decrypt
+            .resolution
+            .get(address.index)
+            .ok_or(Error::AddressOutOfBounds)?;
         return Ok(point.clone().cast().point());
     }
     let decrypted = point.fetch().await?;
@@ -242,10 +245,7 @@ pub async fn encrypt<K: Key, T: Object>(
 ) -> object_rainbow::Result<Encrypted<K, T>> {
     let mut futures = Vec::new();
     decrypted.accept_points(&mut ExtractResolution(&mut futures, &key));
-    let mut resolution = Vec::new();
-    for future in futures {
-        resolution.push(future.await?);
-    }
+    let resolution = futures_util::future::try_join_all(futures).await?;
     let resolution = Arc::new(Lp(resolution));
     let decrypted = Arc::new(decrypted);
     let inner = EncryptedInner {
