@@ -265,8 +265,10 @@ impl ParseInput for ReflessInput<'_> {
 
     fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
         match self.data.split_at_checked(n) {
-            Some((chunk, _)) => {
+            Some((chunk, data)) => {
                 if chunk == c {
+                    self.data = data;
+                    self.at += n;
                     Ok(None)
                 } else {
                     self.parse_inline().map(Some)
@@ -320,8 +322,10 @@ impl ParseInput for Input<'_> {
 
     fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
         match self.data.split_at_checked(n) {
-            Some((chunk, _)) => {
+            Some((chunk, data)) => {
                 if chunk == c {
+                    self.data = data;
+                    self.at += n;
                     Ok(None)
                 } else {
                     self.parse_inline().map(Some)
