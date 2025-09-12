@@ -424,7 +424,9 @@ pub trait ToOutputExt: ToOutput {
 impl<T: ?Sized + ToOutput> ToOutputExt for T {}
 
 pub trait Topological {
-    fn accept_points(&self, visitor: &mut impl PointVisitor);
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        let _ = visitor;
+    }
 
     fn topology_hash(&self) -> Hash {
         let mut hasher = Sha256::new();
@@ -599,10 +601,6 @@ impl<T: ToOutput> ToOutput for Refless<T> {
     }
 }
 
-impl<T> Topological for Refless<T> {
-    fn accept_points(&self, _: &mut impl PointVisitor) {}
-}
-
 impl<'a, T: Parse<ReflessInput<'a>>> Parse<Input<'a>> for Refless<T> {
     fn parse(input: Input<'a>) -> crate::Result<Self> {
         T::parse(input.refless).map(Self)
@@ -619,8 +617,8 @@ impl<T: Tagged> Tagged for Refless<T> {
     const TAGS: Tags = T::TAGS;
 }
 
+impl<T> Topological for Refless<T> {}
 impl<T: ReflessObject> Object for Refless<T> {}
-
 impl<T: ReflessInline> Inline for Refless<T> {}
 
 pub trait Output {

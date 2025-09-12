@@ -69,7 +69,7 @@ fn prefixed() {
     assert_eq!(*a, *b);
 }
 
-#[derive(Topological, Tagged, Object, Inline, ReflessObject, ReflessInline, ParseAsInline)]
+#[derive(ParseAsInline)]
 pub struct LpBytes(pub Vec<u8>);
 
 impl Deref for LpBytes {
@@ -106,3 +106,10 @@ impl<I: ParseInput> ParseInline<I> for LpBytes {
         Ok(Self(input.parse_n(len)?.into()))
     }
 }
+
+impl Topological for LpBytes {}
+impl Tagged for LpBytes {}
+impl Object for LpBytes {}
+impl Inline for LpBytes {}
+impl ReflessObject for LpBytes {}
+impl ReflessInline for LpBytes {}
