@@ -1,6 +1,6 @@
 use std::num::NonZero;
 
-use crate::*;
+use crate::{enumkind::UsizeTag, *};
 
 #[derive(ParseAsInline)]
 pub struct Ae<T>(T);
@@ -69,7 +69,7 @@ pub trait AsBe {
 
 macro_rules! ae {
     ($n:ty) => {
-        impl crate::enumkind::UsizeTag for $n {
+        impl UsizeTag for $n {
             fn from_usize(n: usize) -> Self {
                 n.try_into().expect("discriminant out of range")
             }
@@ -78,7 +78,7 @@ macro_rules! ae {
             }
         }
 
-        impl crate::enumkind::UsizeTag for NonZero<$n> {
+        impl UsizeTag for NonZero<$n> {
             fn from_usize(n: usize) -> Self {
                 Self::new(
                     n.checked_add(1)
@@ -158,7 +158,7 @@ macro_rules! ae {
 
 macro_rules! lebe {
     ($n:ty) => {
-        impl crate::enumkind::UsizeTag for $n {
+        impl UsizeTag for $n {
             fn from_usize(n: usize) -> Self {
                 n.try_into().expect("discriminant out of range")
             }
@@ -167,7 +167,7 @@ macro_rules! lebe {
             }
         }
 
-        impl crate::enumkind::UsizeTag for NonZero<$n> {
+        impl UsizeTag for NonZero<$n> {
             fn from_usize(n: usize) -> Self {
                 Self::new(
                     n.checked_add(1)
@@ -298,6 +298,14 @@ lebe!(i64);
 
 lebe!(u128);
 lebe!(i128);
+
+impl<T: NonZeroable> Deref for Nz<T> {
+    type Target = T::Nz;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 impl<T: NonZeroable + ToOutput> ToOutput for Nz<T> {
     fn to_output(&self, output: &mut dyn Output) {
