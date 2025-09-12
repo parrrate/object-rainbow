@@ -64,6 +64,8 @@ pub enum Error {
     DiscriminantOverflow,
     #[error("zero")]
     Zero,
+    #[error("out of bounds")]
+    OutOfBounds,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
