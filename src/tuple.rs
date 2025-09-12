@@ -1,4 +1,4 @@
-use super::*;
+use crate::*;
 
 impl<A: ToOutput, B: ToOutput> ToOutput for (A, B) {
     fn to_output(&self, output: &mut dyn Output) {

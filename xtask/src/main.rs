@@ -276,7 +276,7 @@ fn per_n(n: usize) -> String {
 }
 
 fn main() {
-    println!("use super::*;");
+    println!("use crate::*;");
     println!();
 
     for i in 2..=12 {
