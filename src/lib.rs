@@ -9,10 +9,12 @@ use std::{
 };
 
 pub use anyhow::anyhow;
-pub use object_rainbow_derive::{Inline, Object, ReflessInline, ReflessObject, Size, ToOutput};
+pub use object_rainbow_derive::{
+    Inline, Object, ReflessInline, ReflessObject, Size, ToOutput, Topological,
+};
 use sha2::{Digest, Sha256};
 
-mod tuple;
+mod impls;
 
 #[macro_export]
 macro_rules! error_parse {
@@ -148,7 +150,7 @@ pub struct ReflessInput<'a> {
 pub struct Input<'a> {
     refless: ReflessInput<'a>,
     resolve: &'a Arc<dyn Resolve>,
-    index: usize,
+    index: &'a mut usize,
 }
 
 impl<'a> Deref for Input<'a> {
@@ -172,6 +174,36 @@ impl<'a> ReflessInput<'a> {
         } else {
             Err(Error::ExtraInputLeft)
         }
+    }
+
+    fn non_empty(self) -> Option<Self> {
+        if self.data.is_empty() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
+    fn _consume(self, f: impl FnMut(&mut Self) -> crate::Result<()>) -> crate::Result<()> {
+        self.collect(f)
+    }
+
+    fn collect_parse<T: ReflessInline, B: FromIterator<T>>(self) -> crate::Result<B> {
+        self.collect(|input| input.parse_inline())
+    }
+
+    fn collect<T, B: FromIterator<T>>(self, f: impl FnMut(&mut Self) -> T) -> B {
+        self.iter(f).collect()
+    }
+
+    fn iter<T>(self, mut f: impl FnMut(&mut Self) -> T) -> impl Iterator<Item = T> {
+        let mut state = Some(self);
+        std::iter::from_fn(move || {
+            let mut input = state.take()?.non_empty()?;
+            let item = f(&mut input);
+            state = Some(input);
+            Some(item)
+        })
     }
 
     pub fn parse_chunk<const N: usize>(&mut self) -> crate::Result<&'a [u8; N]> {
@@ -218,10 +250,37 @@ impl Input<'_> {
         self.refless.empty()
     }
 
+    fn non_empty(mut self) -> Option<Self> {
+        self.refless = self.refless.non_empty()?;
+        Some(self)
+    }
+
+    fn _consume(self, f: impl FnMut(&mut Self) -> crate::Result<()>) -> crate::Result<()> {
+        self.collect(f)
+    }
+
+    fn collect_parse<T: Inline, B: FromIterator<T>>(self) -> crate::Result<B> {
+        self.collect(|input| input.parse_inline())
+    }
+
+    fn collect<T, B: FromIterator<T>>(self, f: impl FnMut(&mut Self) -> T) -> B {
+        self.iter(f).collect()
+    }
+
+    fn iter<T>(self, mut f: impl FnMut(&mut Self) -> T) -> impl Iterator<Item = T> {
+        let mut state = Some(self);
+        std::iter::from_fn(move || {
+            let mut input = state.take()?.non_empty()?;
+            let item = f(&mut input);
+            state = Some(input);
+            Some(item)
+        })
+    }
+
     fn parse_address(&mut self) -> crate::Result<Address> {
         let hash = *self.parse_chunk()?;
-        let index = self.index;
-        self.index += 1;
+        let index = *self.index;
+        *self.index += 1;
         Ok(Address { hash, index })
     }
 
@@ -243,24 +302,33 @@ pub trait ToOutput {
     fn to_output(&self, output: &mut dyn Output);
 }
 
-pub trait Object: 'static + Sized + Send + Sync + ToOutput {
+pub trait Topological {
     fn accept_points(&self, visitor: &mut impl PointVisitor);
+
+    fn topology_hash(&self) -> Hash {
+        let mut hasher = Sha256::new();
+        self.accept_points(&mut HashVisitor(|hash| hasher.update(hash)));
+        hasher.finalize().into()
+    }
+
+    fn topology(&self) -> TopoVec {
+        let mut topolog = TopoVec::new();
+        self.accept_points(&mut topolog);
+        topolog
+    }
+}
+
+pub trait Object: 'static + Sized + Send + Sync + ToOutput + Topological {
     fn parse(input: Input) -> crate::Result<Self>;
 
     fn parse_slice(data: &[u8], resolve: &Arc<dyn Resolve>) -> crate::Result<Self> {
         let input = Input {
             refless: ReflessInput { data, at: 0 },
             resolve,
-            index: 0,
+            index: &mut 0,
         };
         let object = Self::parse(input)?;
         Ok(object)
-    }
-
-    fn topology_hash(&self) -> Hash {
-        let mut hasher = Sha256::new();
-        self.accept_points(&mut HashVisitor(|hash| hasher.update(hash)));
-        hasher.finalize().into()
     }
 
     fn tag_hash(&self) -> Hash {
@@ -273,12 +341,6 @@ pub trait Object: 'static + Sized + Send + Sync + ToOutput {
             })
         });
         hasher.finalize().into()
-    }
-
-    fn topology(&self) -> TopoVec {
-        let mut topolog = TopoVec::new();
-        self.accept_points(&mut topolog);
-        topolog
     }
 
     fn output<T: Output + Default>(&self) -> T {
@@ -326,11 +388,13 @@ pub trait Inline: Object {
     }
 }
 
-impl<T: Object> Object for Point<T> {
+impl<T: Object> Topological for Point<T> {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         visitor.visit(self);
     }
+}
 
+impl<T: Object> Object for Point<T> {
     fn parse(input: Input) -> crate::Result<Self> {
         Self::parse_as_inline(input)
     }
@@ -433,11 +497,11 @@ impl<T: ToOutput> ToOutput for Refless<T> {
     }
 }
 
-impl<T: ReflessObject> Object for Refless<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        let _ = visitor;
-    }
+impl<T> Topological for Refless<T> {
+    fn accept_points(&self, _: &mut impl PointVisitor) {}
+}
 
+impl<T: ReflessObject> Object for Refless<T> {
     fn parse(input: Input) -> crate::Result<Self> {
         T::parse(input.refless).map(Self)
     }
@@ -453,9 +517,11 @@ impl ToOutput for () {
     fn to_output(&self, _: &mut dyn Output) {}
 }
 
-impl Object for () {
+impl Topological for () {
     fn accept_points(&self, _: &mut impl PointVisitor) {}
+}
 
+impl Object for () {
     fn parse(input: Input) -> crate::Result<Self> {
         Inline::parse_as_inline(input)
     }
@@ -489,11 +555,13 @@ impl<T: ToOutput> ToOutput for (T,) {
     }
 }
 
-impl<T: Object> Object for (T,) {
+impl<T: Topological> Topological for (T,) {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.0.accept_points(visitor);
     }
+}
 
+impl<T: Object> Object for (T,) {
     fn parse(input: Input) -> crate::Result<Self> {
         Ok((input.parse()?,))
     }
@@ -644,13 +712,9 @@ impl<T: ToOutput> ToOutput for Arc<T> {
     }
 }
 
-impl<T: Object> Object for Arc<T> {
+impl<T: Topological> Topological for Arc<T> {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         (**self).accept_points(visitor);
-    }
-
-    fn parse(input: Input) -> crate::Result<Self> {
-        T::parse(input).map(Self::new)
     }
 
     fn topology_hash(&self) -> Hash {
@@ -659,6 +723,12 @@ impl<T: Object> Object for Arc<T> {
 
     fn topology(&self) -> TopoVec {
         (**self).topology()
+    }
+}
+
+impl<T: Object> Object for Arc<T> {
+    fn parse(input: Input) -> crate::Result<Self> {
+        T::parse(input).map(Self::new)
     }
 
     fn full_hash(&self) -> Hash {
@@ -722,5 +792,24 @@ impl<const N: usize> Size for [u8; N] {
     const SIZE: usize = N;
 }
 
-#[derive(ToOutput, Object, Inline, ReflessObject, ReflessInline, Size)]
+#[derive(ToOutput, Topological, Object, Inline, ReflessObject, ReflessInline, Size)]
 pub struct DeriveExample;
+
+trait RainbowIterator: Sized + IntoIterator {
+    fn iter_to_output(self, output: &mut dyn Output)
+    where
+        Self::Item: ToOutput,
+    {
+        self.into_iter().for_each(|item| item.to_output(output));
+    }
+
+    fn iter_accept_points(self, visitor: &mut impl PointVisitor)
+    where
+        Self::Item: Topological,
+    {
+        self.into_iter()
+            .for_each(|item| item.accept_points(visitor));
+    }
+}
+
+impl<T: Sized + IntoIterator> RainbowIterator for T {}

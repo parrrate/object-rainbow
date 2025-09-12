@@ -227,13 +227,16 @@ fn per_n(n: usize) -> String {
             )],
         },
         Impl {
+            header: "Topological".bound().last("Topological").header(n),
+            members: vec![Box::new(
+                "accept_points"
+                    .method("visitor", "&mut impl PointVisitor")
+                    .out(n),
+            )],
+        },
+        Impl {
             header: "Inline".bound().last("Object").header(n),
             members: vec![
-                Box::new(
-                    "accept_points"
-                        .method("visitor", "&mut impl PointVisitor")
-                        .out(n),
-                ),
                 Box::new(
                     "parse"
                         .method("input", "Input")
