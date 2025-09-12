@@ -1,5 +1,5 @@
 [workspace]
-members = ["object-rainbow-derive", "xtask"]
+members = ["object-rainbow-derive", "object-rainbow-json", "xtask"]
 
 [workspace.package]
 edition = "2024"
