@@ -201,13 +201,15 @@ pub trait Fetch: Send + Sync + FetchBytes {
         None
     }
     fn get_mut_finalize(&mut self) {}
-    fn as_raw_point(&self) -> Option<RawPoint<Self::T>> {
-        self.as_inner()?
-            .downcast_ref::<RawPointInner>()
-            .cloned()
-            .map(RawPointInner::cast)
+}
+
+trait FetchBytesExt: FetchBytes {
+    fn inner_cast<T: FromInner>(&self) -> Option<T> {
+        self.as_inner()?.downcast_ref().cloned().map(T::from_inner)
     }
 }
+
+impl<T: ?Sized + FetchBytes> FetchBytesExt for T {}
 
 #[derive(Clone)]
 pub struct RawPointInner {
@@ -252,7 +254,7 @@ impl<T> Clone for RawPoint<T> {
 impl<T> Point<T> {
     pub fn raw(self) -> RawPoint<T> {
         {
-            if let Some(raw) = self.origin.as_raw_point() {
+            if let Some(raw) = self.origin.inner_cast() {
                 return raw;
             }
         }
@@ -313,10 +315,6 @@ impl<T: Object> Fetch for RawPoint<T> {
                 Ok(object)
             }
         })
-    }
-
-    fn as_raw_point(&self) -> Option<RawPoint<Self::T>> {
-        Some(self.clone())
     }
 }
 
