@@ -114,7 +114,7 @@ impl Inline for LpBytes {}
 impl ReflessObject for LpBytes {}
 impl ReflessInline for LpBytes {}
 
-#[derive(ParseAsInline)]
+#[derive(Debug, Clone, ParseAsInline, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct LpString(pub String);
 
 impl Deref for LpString {
