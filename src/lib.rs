@@ -989,6 +989,10 @@ fn options() {
     assert_eq!(Some(((), true)).output::<Vec<u8>>(), [1]);
     assert_eq!(Some((true, true)).output::<Vec<u8>>(), [1, 1]);
     assert_eq!(Some((Some(true), true)).output::<Vec<u8>>(), [1, 1]);
+    assert_eq!(Some((None::<bool>, true)).output::<Vec<u8>>(), [2, 1]);
+    assert_eq!(Some((true, None::<bool>)).output::<Vec<u8>>(), [1, 2]);
+    assert_eq!(None::<(Option<bool>, bool)>.output::<Vec<u8>>(), [0, 2]);
+    assert_eq!(None::<(bool, Option<bool>)>.output::<Vec<u8>>(), [2, 0]);
     assert_eq!(
         Some(Some((Some(true), Some(true)))).output::<Vec<u8>>(),
         [0, 1, 1],
