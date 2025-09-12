@@ -8,8 +8,8 @@ pub trait MaybeHasNiche {
 }
 
 pub struct NoNiche<N>(N);
-pub struct AndNiche<N, T>(N, T);
-pub struct NicheAnd<T, N>(T, N);
+pub struct AndNiche<V, T>(V, T);
+pub struct NicheAnd<T, V>(T, V);
 pub struct SomeNiche<T>(T);
 
 pub trait Niche {
@@ -50,66 +50,77 @@ impl<N: Unsigned, U: AsTailOf<Self>> AsHeadOf<U> for NoNiche<N> {
     type WithTail = U::WithHead;
 }
 
-impl<N: ArrayLength + Add<T::N, Output: ArrayLength>, T: Niche> Niche for AndNiche<N, T> {
+impl<V: Niche<N = N>, N: ArrayLength + Add<T::N, Output: ArrayLength>, T: Niche> Niche
+    for AndNiche<V, T>
+{
     type NeedsTag = T::NeedsTag;
     type N = Sum<N, T::N>;
 
     fn niche() -> GenericArray<u8, Self::N> {
-        Concat::concat(GenericArray::<u8, N>::default(), T::niche())
+        Concat::concat(V::niche(), T::niche())
     }
 }
 
-impl<N: Unsigned, T: MaybeNiche> MaybeNiche for AndNiche<N, T>
+impl<V: MaybeNiche<N = N>, N: Unsigned, T: MaybeNiche> MaybeNiche for AndNiche<V, T>
 where
     N: Add<T::N, Output: Unsigned>,
 {
     type N = Sum<N, T::N>;
 }
 
-impl<U: MaybeNiche<N: Add<Sum<N, T::N>, Output: Unsigned>>, N: Unsigned, T: MaybeNiche> AsTailOf<U>
-    for AndNiche<N, T>
+impl<
+    U: MaybeNiche<N: Add<Sum<N, T::N>, Output: Unsigned>>,
+    V: MaybeNiche<N = N>,
+    N: Unsigned,
+    T: MaybeNiche,
+> AsTailOf<U> for AndNiche<V, T>
 where
     N: Add<T::N, Output: Unsigned>,
 {
-    type WithHead = AndNiche<U::N, Self>;
+    type WithHead = AndNiche<U, Self>;
 }
 
-impl<N: Unsigned, T: MaybeNiche, U: MaybeNiche> AsHeadOf<U> for AndNiche<N, T>
+impl<V: MaybeNiche<N = N>, N: Unsigned, T: MaybeNiche, U: MaybeNiche> AsHeadOf<U> for AndNiche<V, T>
 where
     N: Add<T::N, Output: Unsigned>,
     Sum<N, T::N>: Add<U::N, Output: Unsigned>,
 {
-    type WithTail = NicheAnd<Self, U::N>;
+    type WithTail = NicheAnd<Self, U>;
 }
 
-impl<T: Niche<N: Add<N, Output: ArrayLength>>, N: ArrayLength> Niche for NicheAnd<T, N> {
+impl<T: Niche<N: Add<N, Output: ArrayLength>>, V: Niche<N = N>, N: ArrayLength> Niche
+    for NicheAnd<T, V>
+{
     type NeedsTag = T::NeedsTag;
     type N = Sum<T::N, N>;
 
     fn niche() -> GenericArray<u8, Self::N> {
-        Concat::concat(T::niche(), GenericArray::<u8, N>::default())
+        Concat::concat(T::niche(), V::niche())
     }
 }
 
-impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, N: Unsigned> MaybeNiche for NicheAnd<T, N> {
+impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, V: MaybeNiche<N = N>, N: Unsigned> MaybeNiche
+    for NicheAnd<T, V>
+{
     type N = Sum<T::N, N>;
 }
 
 impl<
     U: MaybeNiche<N: Add<Sum<T::N, N>, Output: Unsigned>>,
     T: MaybeNiche<N: Add<N, Output: Unsigned>>,
+    V: MaybeNiche<N = N>,
     N: Unsigned,
-> AsTailOf<U> for NicheAnd<T, N>
+> AsTailOf<U> for NicheAnd<T, V>
 {
-    type WithHead = AndNiche<U::N, Self>;
+    type WithHead = AndNiche<U, Self>;
 }
 
-impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, N: Unsigned, U: MaybeNiche> AsHeadOf<U>
-    for NicheAnd<T, N>
+impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, V: MaybeNiche<N = N>, N: Unsigned, U: MaybeNiche>
+    AsHeadOf<U> for NicheAnd<T, V>
 where
     Sum<T::N, N>: Add<U::N, Output: Unsigned>,
 {
-    type WithTail = NicheAnd<Self, U::N>;
+    type WithTail = NicheAnd<Self, U>;
 }
 
 impl<T: Niche<NeedsTag = B0>> Niche for SomeNiche<T> {
@@ -127,13 +138,13 @@ impl<T: Niche<NeedsTag = B0>> MaybeNiche for SomeNiche<T> {
 impl<U: MaybeNiche<N: Add<T::N, Output: Unsigned>>, T: Niche<NeedsTag = B0>> AsTailOf<U>
     for SomeNiche<T>
 {
-    type WithHead = AndNiche<U::N, SomeNiche<T>>;
+    type WithHead = AndNiche<U, SomeNiche<T>>;
 }
 
 impl<T: Niche<N: Add<U::N, Output: Unsigned>, NeedsTag = B0>, U: MaybeNiche> AsHeadOf<U>
     for SomeNiche<T>
 {
-    type WithTail = NicheAnd<SomeNiche<T>, U::N>;
+    type WithTail = NicheAnd<SomeNiche<T>, U>;
 }
 
 pub trait MnArray {
@@ -174,14 +185,18 @@ impl<N: Unsigned> NicheOr for NoNiche<N> {
     }
 }
 
-impl<N: Unsigned + Add<T::N, Output: Unsigned>, T: MaybeNiche> NicheOr for AndNiche<N, T> {
+impl<V: MaybeNiche<N = N>, N: Unsigned + Add<T::N, Output: Unsigned>, T: MaybeNiche> NicheOr
+    for AndNiche<V, T>
+{
     type NicheOr<U: NicheOr<N = Self::N>> = Self;
     fn index(_: usize) -> usize {
         0
     }
 }
 
-impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, N: Unsigned> NicheOr for NicheAnd<T, N> {
+impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, V: MaybeNiche<N = N>, N: Unsigned> NicheOr
+    for NicheAnd<T, V>
+{
     type NicheOr<U: NicheOr<N = Self::N>> = Self;
     fn index(_: usize) -> usize {
         0
