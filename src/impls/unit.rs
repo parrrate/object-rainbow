@@ -34,3 +34,7 @@ impl Size for () {
     const SIZE: usize = 0;
     type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
 }
+
+impl MaybeHasNiche for () {
+    type MnArray = SomeNiche<NoNiche<Self::Size>>;
+}

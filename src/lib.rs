@@ -792,7 +792,7 @@ pub trait MaybeHasNiche: Size {
     type MnArray;
 }
 
-struct NoNiche<N>(N);
+pub struct NoNiche<N>(N);
 struct AndNiche<N, T>(N, T);
 struct NicheAnd<T, N>(T, N);
 pub struct SomeNiche<T>(T);
