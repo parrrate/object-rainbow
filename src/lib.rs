@@ -10,7 +10,7 @@ use std::{
 
 pub use anyhow::anyhow;
 pub use object_rainbow_derive::{
-    Inline, Object, ReflessInline, ReflessObject, Size, ToOutput, Topological,
+    Inline, Object, Parse, ParseInline, ReflessInline, ReflessObject, Size, ToOutput, Topological,
 };
 use sha2::{Digest, Sha256};
 
@@ -820,9 +820,6 @@ impl<const N: usize> Size for [u8; N] {
     const SIZE: usize = N;
 }
 
-#[derive(ToOutput, Topological, Object, Inline, ReflessObject, ReflessInline, Size)]
-pub struct DeriveExample;
-
 trait RainbowIterator: Sized + IntoIterator {
     fn iter_to_output(self, output: &mut dyn Output)
     where
@@ -888,4 +885,12 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
         input.empty()?;
         Ok(object)
     }
+}
+
+#[derive(
+    ToOutput, Topological, Object, Inline, ReflessObject, ReflessInline, Size, Parse, ParseInline,
+)]
+pub struct DeriveExample<A, B> {
+    a: A,
+    b: B,
 }

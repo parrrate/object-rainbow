@@ -1,7 +1,7 @@
 use proc_macro::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::{
-    Data, DeriveInput, Error, Generics, Index, parse_macro_input, parse_quote_spanned,
+    Data, DeriveInput, Error, Generics, Index, parse_macro_input, parse_quote, parse_quote_spanned,
     spanned::Spanned,
 };
 
@@ -570,4 +570,119 @@ fn gen_size(data: &Data) -> proc_macro2::TokenStream {
             Error::new_spanned(data.union_token, "`union`s are not supported").into_compile_error()
         }
     }
+}
+
+#[proc_macro_derive(Parse)]
+pub fn derive_parse(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+    let generics = input.generics.clone();
+    let (_, ty_generics, _) = generics.split_for_impl();
+    let generics = match bounds_parse(input.generics, &input.data) {
+        Ok(g) => g,
+        Err(e) => return e.into_compile_error().into(),
+    };
+    let parse = gen_parse(&input.data);
+    let (impl_generics, _, where_clause) = generics.split_for_impl();
+    let output = quote! {
+        impl #impl_generics ::object_rainbow::Parse<__I> for #name #ty_generics #where_clause {
+            fn parse(mut input: __I) -> ::object_rainbow::Result<Self> {
+                #parse
+            }
+        }
+    };
+    TokenStream::from(output)
+}
+
+fn bounds_parse(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    match data {
+        Data::Struct(data) => {
+            let last_at = data.fields.len().checked_sub(1).unwrap_or_default();
+            for (i, f) in data.fields.iter().enumerate() {
+                let last = i == last_at;
+                let ty = &f.ty;
+                let tr = if last {
+                    quote!(::object_rainbow::Parse<__I>)
+                } else {
+                    quote!(::object_rainbow::ParseInline<__I>)
+                };
+                generics
+                    .make_where_clause()
+                    .predicates
+                    .push(parse_quote_spanned! { ty.span() =>
+                        #ty: #tr
+                    });
+            }
+        }
+        Data::Enum(data) => {
+            return Err(Error::new_spanned(
+                data.enum_token,
+                "`enum`s are not supported",
+            ));
+        }
+        Data::Union(data) => {
+            return Err(Error::new_spanned(
+                data.union_token,
+                "`union`s are not supported",
+            ));
+        }
+    }
+    generics
+        .params
+        .push(parse_quote!(__I: ::object_rainbow::ParseInput));
+    Ok(generics)
+}
+
+#[proc_macro_derive(ParseInline)]
+pub fn derive_parse_inline(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+    let generics = input.generics.clone();
+    let (_, ty_generics, _) = generics.split_for_impl();
+    let generics = match bounds_parse_inline(input.generics, &input.data) {
+        Ok(g) => g,
+        Err(e) => return e.into_compile_error().into(),
+    };
+    let parse_inline = gen_parse_inline(&input.data);
+    let (impl_generics, _, where_clause) = generics.split_for_impl();
+    let output = quote! {
+        impl #impl_generics ::object_rainbow::ParseInline<__I> for #name #ty_generics #where_clause {
+            fn parse_inline(input: &mut __I) -> ::object_rainbow::Result<Self> {
+                #parse_inline
+            }
+        }
+    };
+    TokenStream::from(output)
+}
+
+fn bounds_parse_inline(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    match data {
+        Data::Struct(data) => {
+            for f in data.fields.iter() {
+                let ty = &f.ty;
+                generics
+                    .make_where_clause()
+                    .predicates
+                    .push(parse_quote_spanned! { ty.span() =>
+                        #ty: ::object_rainbow::ParseInline<__I>
+                    });
+            }
+        }
+        Data::Enum(data) => {
+            return Err(Error::new_spanned(
+                data.enum_token,
+                "`enum`s are not supported",
+            ));
+        }
+        Data::Union(data) => {
+            return Err(Error::new_spanned(
+                data.union_token,
+                "`union`s are not supported",
+            ));
+        }
+    }
+    generics
+        .params
+        .push(parse_quote!(__I: ::object_rainbow::ParseInput));
+    Ok(generics)
 }
