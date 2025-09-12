@@ -497,7 +497,7 @@ impl Tags {
         }
         {
             let mut i = 0;
-            while i < self.0.len() {
+            while i < self.1.len() {
                 hasher = self.1[i].const_hash(hasher);
                 i += 1;
             }
