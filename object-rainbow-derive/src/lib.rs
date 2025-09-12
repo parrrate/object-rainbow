@@ -1321,3 +1321,74 @@ fn gen_kind(data: &Data) -> proc_macro2::TokenStream {
         }
     }
 }
+
+#[proc_macro_derive(MaybeHasNiche)]
+pub fn derive_maybe_has_niche(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+    let mn_array = gen_mn_array(&input.data);
+    let generics = match bounds_maybe_has_niche(input.generics, &input.data) {
+        Ok(g) => g,
+        Err(e) => return e.into_compile_error().into(),
+    };
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let output = quote! {
+        const _: () = {
+            use ::typenum::tarr;
+
+            impl #impl_generics ::object_rainbow::MaybeHasNiche for #name #ty_generics #where_clause {
+                type MnArray = #mn_array;
+            }
+        };
+    };
+    TokenStream::from(output)
+}
+
+fn bounds_maybe_has_niche(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    match data {
+        Data::Struct(data) => {
+            for f in data.fields.iter() {
+                let ty = &f.ty;
+                generics
+                    .make_where_clause()
+                    .predicates
+                    .push(parse_quote_spanned! { ty.span() =>
+                        #ty: ::object_rainbow::MaybeHasNiche
+                    });
+            }
+        }
+        Data::Enum(data) => {
+            return Err(Error::new_spanned(
+                data.enum_token,
+                "`enum`s are not supported",
+            ));
+        }
+        Data::Union(data) => {
+            return Err(Error::new_spanned(
+                data.union_token,
+                "`union`s are not supported",
+            ));
+        }
+    }
+    Ok(generics)
+}
+
+fn fields_mn_array(fields: &syn::Fields) -> proc_macro2::TokenStream {
+    let mn_array = fields.iter().map(|f| {
+        let ty = &f.ty;
+        quote! { <#ty as ::object_rainbow::MaybeHasNiche>::MnArray }
+    });
+    quote! { tarr![#(#mn_array),*] }
+}
+
+fn gen_mn_array(data: &Data) -> proc_macro2::TokenStream {
+    match data {
+        Data::Struct(data) => fields_mn_array(&data.fields),
+        Data::Enum(data) => {
+            Error::new_spanned(data.enum_token, "`enum`s are not supported").into_compile_error()
+        }
+        Data::Union(data) => {
+            Error::new_spanned(data.union_token, "`union`s are not supported").into_compile_error()
+        }
+    }
+}

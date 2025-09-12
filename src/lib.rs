@@ -11,8 +11,8 @@ use std::{
 pub use anyhow::anyhow;
 use generic_array::{ArrayLength, GenericArray, sequence::Concat};
 pub use object_rainbow_derive::{
-    Enum, Inline, Object, Parse, ParseAsInline, ParseInline, ReflessInline, ReflessObject, Size,
-    Tagged, ToOutput, Topological,
+    Enum, Inline, MaybeHasNiche, Object, Parse, ParseAsInline, ParseInline, ReflessInline,
+    ReflessObject, Size, Tagged, ToOutput, Topological,
 };
 use sha2::{Digest, Sha256};
 use typenum::{ATerm, B0, B1, Bit, Max, Sum, TArr, U0, U1, Unsigned, tarr};
@@ -794,7 +794,7 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
     }
 }
 
-pub trait MaybeHasNiche: Size {
+pub trait MaybeHasNiche {
     type MnArray;
 }
 
@@ -954,7 +954,7 @@ impl<N: ArrayLength> Niche for ZeroNiche<N> {
 }
 
 impl<T> MaybeHasNiche for Point<T> {
-    type MnArray = SomeNiche<ZeroNiche<Self::Size>>;
+    type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
 }
 
 #[test]
