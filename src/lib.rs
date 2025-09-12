@@ -6,9 +6,17 @@ use std::{
     sync::Arc,
 };
 
+pub use anyhow::anyhow;
 use sha2::{Digest, Sha256};
 
 mod tuple;
+
+#[macro_export]
+macro_rules! error {
+    ($($t:tt)*) => {
+        $crate::Error::Other(::anyhow::anyhow!($($t)*))
+    };
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
