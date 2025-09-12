@@ -10,7 +10,7 @@ version = "0.0.0-a.0"
 edition.workspace = true
 
 [dependencies]
-object-rainbow-derive.path = "object-rainbow-derive"
+object-rainbow-derive = { version = "0.0.0-a.0", path = "object-rainbow-derive" }
 
 anyhow = "1.0.96"
 sha2 = "0.10.8"
