@@ -7,7 +7,7 @@ pub trait MaybeHasNiche {
     type MnArray;
 }
 
-pub struct NoNiche<N>(N);
+pub struct NoNiche<V>(V);
 pub struct AndNiche<V, T>(V, T);
 pub struct NicheAnd<T, V>(T, V);
 pub struct SomeNiche<T>(T);
@@ -30,23 +30,25 @@ pub trait AsHeadOf<U: MaybeNiche>: MaybeNiche {
     type WithTail: MaybeNiche;
 }
 
-impl<N: ArrayLength> Niche for NoNiche<N> {
+impl<V: Niche<NeedsTag = B1>> Niche for NoNiche<V> {
     type NeedsTag = B1;
-    type N = N;
+    type N = V::N;
     fn niche() -> GenericArray<u8, Self::N> {
-        GenericArray::default()
+        V::niche()
     }
 }
 
-impl<N: Unsigned> MaybeNiche for NoNiche<N> {
-    type N = N;
+impl<V: Niche<NeedsTag = B1>> MaybeNiche for NoNiche<V> {
+    type N = V::N;
 }
 
-impl<U: MaybeNiche<N: Add<N, Output: Unsigned>>, N: Unsigned> AsTailOf<U> for NoNiche<N> {
-    type WithHead = NoNiche<Sum<U::N, N>>;
+impl<U: MaybeNiche<N: Add<V::N, Output: Unsigned>>, V: Niche<NeedsTag = B1>> AsTailOf<U>
+    for NoNiche<V>
+{
+    type WithHead = AndNiche<U, Self>;
 }
 
-impl<N: Unsigned, U: AsTailOf<Self>> AsHeadOf<U> for NoNiche<N> {
+impl<V: Niche<NeedsTag = B1>, U: AsTailOf<Self>> AsHeadOf<U> for NoNiche<V> {
     type WithTail = U::WithHead;
 }
 
@@ -138,13 +140,13 @@ impl<T: Niche<NeedsTag = B0>> MaybeNiche for SomeNiche<T> {
 impl<U: MaybeNiche<N: Add<T::N, Output: Unsigned>>, T: Niche<NeedsTag = B0>> AsTailOf<U>
     for SomeNiche<T>
 {
-    type WithHead = AndNiche<U, SomeNiche<T>>;
+    type WithHead = AndNiche<U, Self>;
 }
 
 impl<T: Niche<N: Add<U::N, Output: Unsigned>, NeedsTag = B0>, U: MaybeNiche> AsHeadOf<U>
     for SomeNiche<T>
 {
-    type WithTail = NicheAnd<SomeNiche<T>, U>;
+    type WithTail = NicheAnd<Self, U>;
 }
 
 pub trait MnArray {
@@ -152,7 +154,7 @@ pub trait MnArray {
 }
 
 impl MnArray for ATerm {
-    type MaybeNiche = NoNiche<U0>;
+    type MaybeNiche = NoNiche<ZeroNoNiche<U0>>;
 }
 
 impl<T: MaybeNiche> MnArray for T {
@@ -161,6 +163,16 @@ impl<T: MaybeNiche> MnArray for T {
 
 impl<T: AsHeadOf<R::MaybeNiche>, R: MnArray> MnArray for TArr<T, R> {
     type MaybeNiche = T::WithTail;
+}
+
+pub struct ZeroNoNiche<N>(N);
+
+impl<N: ArrayLength> Niche for ZeroNoNiche<N> {
+    type NeedsTag = B1;
+    type N = N;
+    fn niche() -> GenericArray<u8, Self::N> {
+        GenericArray::default()
+    }
 }
 
 pub struct ZeroNiche<N>(N);
@@ -178,7 +190,7 @@ pub trait NicheOr: MaybeNiche {
     fn index(index: usize) -> usize;
 }
 
-impl<N: Unsigned> NicheOr for NoNiche<N> {
+impl<V: Niche<NeedsTag = B1>> NicheOr for NoNiche<V> {
     type NicheOr<U: NicheOr<N = Self::N>> = U;
     fn index(index: usize) -> usize {
         index + 1

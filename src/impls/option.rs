@@ -62,7 +62,7 @@ pub trait OptionNicheWrapper: Bit {
 }
 
 impl OptionNicheWrapper for B0 {
-    type Wrap<N: ArrayLength> = NoNiche<N>;
+    type Wrap<N: ArrayLength> = NoNiche<ZeroNoNiche<N>>;
 }
 
 impl OptionNicheWrapper for B1 {

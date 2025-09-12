@@ -21,7 +21,7 @@ use typenum::{ATerm, Max, TArr, Unsigned};
 pub use self::enumkind::Enum;
 pub use self::niche::{
     MaybeHasNiche, MaybeNiche, MnArray, Niche, NicheFoldOrArray, NicheOr, NoNiche, SomeNiche,
-    ZeroNiche,
+    ZeroNiche, ZeroNoNiche,
 };
 
 pub mod enumkind;
