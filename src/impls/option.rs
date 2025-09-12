@@ -79,16 +79,6 @@ impl<
     type MnArray = B::Wrap<<Self as Size>::Size>;
 }
 
-impl Equivalent<bool> for Option<()> {
-    fn into_equivalent(self) -> bool {
-        self.is_none()
-    }
-
-    fn from_equivalent(object: bool) -> Self {
-        (!object).then_some(())
-    }
-}
-
 impl<
     T: ParseInline<I> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
     N: Niche<NeedsTag = B>,
@@ -145,4 +135,26 @@ impl<
     B: Bit,
 > ReflessInline for Option<T>
 {
+}
+
+impl Equivalent<bool> for Option<()> {
+    fn into_equivalent(self) -> bool {
+        self.is_none()
+    }
+
+    fn from_equivalent(object: bool) -> Self {
+        (!object).then_some(())
+    }
+}
+
+#[test]
+fn equivalent() {
+    assert_eq!(
+        false.output::<Vec<u8>>(),
+        Option::from_equivalent(false).output::<Vec<u8>>(),
+    );
+    assert_eq!(
+        true.output::<Vec<u8>>(),
+        Option::from_equivalent(true).output::<Vec<u8>>(),
+    );
 }
