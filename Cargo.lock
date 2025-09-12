@@ -402,6 +402,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "object-rainbow-encrypted"
+version = "0.0.0-a.0"
+dependencies = [
+ "object-rainbow",
+]
+
+[[package]]
 name = "object-rainbow-json"
 version = "0.0.0-a.0"
 dependencies = [
