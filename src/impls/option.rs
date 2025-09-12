@@ -1,18 +1,18 @@
 use crate::*;
 
-impl<T: ToOutput + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag: ArrayLength>>
+impl<T: ToOutput + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag = B>, B: Bit>
     ToOutput for Option<T>
 {
     fn to_output(&self, output: &mut dyn Output) {
         match self {
             Some(value) => {
-                if N::NeedsTag::BOOL {
+                if B::BOOL {
                     output.write(&[0]);
                 }
                 value.to_output(output);
             }
             None => {
-                if N::NeedsTag::BOOL {
+                if B::BOOL {
                     output.write(&[1]);
                 }
                 output.write(N::niche().as_slice());
