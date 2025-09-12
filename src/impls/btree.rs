@@ -16,7 +16,7 @@ impl<T: Topological> Topological for BTreeSet<T> {
 
 impl<T: ParseInline<I> + Ord, I: ParseInput> Parse<I> for BTreeSet<T> {
     fn parse(input: I) -> crate::Result<Self> {
-        input.collect_parse()
+        input.parse_collect()
     }
 }
 
@@ -42,7 +42,7 @@ impl<K: Topological, V: Topological> Topological for BTreeMap<K, V> {
 
 impl<K: ParseInline<I> + Ord, V: ParseInline<I>, I: ParseInput> Parse<I> for BTreeMap<K, V> {
     fn parse(input: I) -> crate::Result<Self> {
-        input.collect_parse()
+        input.parse_collect()
     }
 }
 
