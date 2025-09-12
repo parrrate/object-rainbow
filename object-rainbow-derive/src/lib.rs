@@ -39,10 +39,16 @@ fn bounds_to_output(mut generics: Generics, data: &Data) -> syn::Result<Generics
             }
         }
         Data::Enum(data) => {
-            return Err(Error::new_spanned(
-                data.enum_token,
-                "`enum`s are not supported",
-            ));
+            for v in data.variants.iter() {
+                for f in v.fields.iter() {
+                    let ty = &f.ty;
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: ::object_rainbow::ToOutput
+                        },
+                    );
+                }
+            }
         }
         Data::Union(data) => {
             return Err(Error::new_spanned(
@@ -58,34 +64,83 @@ fn gen_to_output(data: &Data) -> proc_macro2::TokenStream {
     match data {
         Data::Struct(data) => match &data.fields {
             syn::Fields::Named(fields) => {
-                let to_output = fields.named.iter().map(|f| {
-                    let i = f.ident.as_ref().unwrap();
+                let let_self = fields.named.iter().map(|f| f.ident.as_ref().unwrap());
+                let to_output = let_self.clone().zip(fields.named.iter()).map(|(i, f)| {
                     quote_spanned! { f.ty.span() =>
-                        self.#i.to_output(output)
+                        #i.to_output(output)
                     }
                 });
                 quote! {
+                    let Self { #(#let_self),* } = self;
                     #(#to_output);*
                 }
             }
             syn::Fields::Unnamed(fields) => {
-                let to_output = fields.unnamed.iter().enumerate().map(|(i, f)| {
-                    let i: Index = Index {
-                        index: i.try_into().unwrap(),
-                        span: f.span(),
-                    };
+                let let_self = fields
+                    .unnamed
+                    .iter()
+                    .enumerate()
+                    .map(|(i, f)| Ident::new(&format!("field{i}"), f.ty.span()));
+                let to_output = let_self.clone().zip(fields.unnamed.iter()).map(|(i, f)| {
                     quote_spanned! { f.ty.span() =>
-                        self.#i.to_output(output)
+                        #i.to_output(output)
                     }
                 });
                 quote! {
+                    let Self(#(#let_self),*) = self;
                     #(#to_output);*
                 }
             }
             syn::Fields::Unit => quote! {},
         },
         Data::Enum(data) => {
-            Error::new_spanned(data.enum_token, "`enum`s are not supported").to_compile_error()
+            let to_output = data.variants.iter().map(|v| {
+                let ident = &v.ident;
+                match &v.fields {
+                    syn::Fields::Named(fields) => {
+                        let let_self = fields.named.iter().map(|f| f.ident.as_ref().unwrap());
+                        let to_output = let_self.clone().zip(fields.named.iter()).map(|(i, f)| {
+                            quote_spanned! { f.ty.span() =>
+                                #i.to_output(output)
+                            }
+                        });
+                        quote! {
+                            Self::#ident { #(#let_self),* } => {
+                                #(#to_output);*
+                            }
+                        }
+                    }
+                    syn::Fields::Unnamed(fields) => {
+                        let let_self = fields
+                            .unnamed
+                            .iter()
+                            .enumerate()
+                            .map(|(i, f)| Ident::new(&format!("field{i}"), f.ty.span()));
+                        let to_output =
+                            let_self.clone().zip(fields.unnamed.iter()).map(|(i, f)| {
+                                quote_spanned! { f.ty.span() =>
+                                    #i.to_output(output)
+                                }
+                            });
+                        quote! {
+                            Self::#ident(#(#let_self),*) => {
+                                #(#to_output);*
+                            }
+                        }
+                    }
+                    syn::Fields::Unit => quote! {
+                        Self::#ident => {}
+                    },
+                }
+            });
+            quote! {
+                let kind = ::object_rainbow::Enum::kind(self);
+                let tag = ::object_rainbow::enumkind::EnumKind::to_tag(kind);
+                tag.to_output(output);
+                match self {
+                    #(#to_output)*
+                }
+            }
         }
         Data::Union(data) => {
             Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
