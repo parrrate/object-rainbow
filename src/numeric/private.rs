@@ -9,11 +9,11 @@ pub trait HasOtherSign {
 type Os<T> = <T as HasOtherSign>::OtherSign;
 
 #[derive(ParseAsInline)]
-pub struct Ae<T>(T);
+pub struct Ae<T>(pub T);
 #[derive(ParseAsInline)]
-pub struct Le<T>(T);
+pub struct Le<T>(pub T);
 #[derive(ParseAsInline)]
-pub struct Be<T>(T);
+pub struct Be<T>(pub T);
 #[derive(ParseAsInline)]
 pub struct Nz<T: NonZeroable>(T::Nz);
 
@@ -67,10 +67,12 @@ impl<T> Deref for Be<T> {
 
 pub trait AsLe {
     type Le;
+    fn construct(self) -> Self::Le;
 }
 
 pub trait AsBe {
     type Be;
+    fn construct(self) -> Self::Be;
 }
 
 macro_rules! signs {
@@ -121,18 +123,30 @@ macro_rules! ae {
 
         impl AsLe for $n {
             type Le = Ae<$n>;
+            fn construct(self) -> Self::Le {
+                Ae(self)
+            }
         }
 
         impl AsLe for NonZero<$n> {
             type Le = Nz<Ae<$n>>;
+            fn construct(self) -> Self::Le {
+                Nz(self)
+            }
         }
 
         impl AsBe for $n {
             type Be = Ae<$n>;
+            fn construct(self) -> Self::Be {
+                Ae(self)
+            }
         }
 
         impl AsBe for NonZero<$n> {
             type Be = Nz<Ae<$n>>;
+            fn construct(self) -> Self::Be {
+                Nz(self)
+            }
         }
 
         impl From<NonZero<$n>> for Nz<Ae<$n>> {
@@ -249,18 +263,30 @@ macro_rules! lebe {
 
         impl AsLe for $n {
             type Le = Le<$n>;
+            fn construct(self) -> Self::Le {
+                Le(self)
+            }
         }
 
         impl AsLe for NonZero<$n> {
             type Le = Nz<Le<$n>>;
+            fn construct(self) -> Self::Le {
+                Nz(self)
+            }
         }
 
         impl AsBe for $n {
             type Be = Be<$n>;
+            fn construct(self) -> Self::Be {
+                Be(self)
+            }
         }
 
         impl AsBe for NonZero<$n> {
             type Be = Nz<Be<$n>>;
+            fn construct(self) -> Self::Be {
+                Nz(self)
+            }
         }
 
         impl NonZeroable for Le<$n> {
