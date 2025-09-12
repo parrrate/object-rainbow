@@ -1,4 +1,4 @@
-use object_rainbow::{numeric::Le, *};
+use object_rainbow::*;
 
 #[derive(
     ToOutput,
@@ -24,8 +24,8 @@ fn main() {
 }
 
 #[derive(Enum, ToOutput)]
-enum _Test {
+enum _Test<U, V> {
     A,
-    B(Le<i32>),
-    C { x: Le<i32> },
+    B(U),
+    C { x: V },
 }

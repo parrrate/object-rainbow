@@ -60,78 +60,59 @@ fn bounds_to_output(mut generics: Generics, data: &Data) -> syn::Result<Generics
     Ok(generics)
 }
 
+fn fields_to_output(fields: &syn::Fields) -> proc_macro2::TokenStream {
+    match fields {
+        syn::Fields::Named(fields) => {
+            let let_self = fields.named.iter().map(|f| f.ident.as_ref().unwrap());
+            let to_output = let_self.clone().zip(fields.named.iter()).map(|(i, f)| {
+                quote_spanned! { f.ty.span() =>
+                    #i.to_output(output)
+                }
+            });
+            quote! {
+                { #(#let_self),* } => {
+                    #(#to_output);*
+                }
+            }
+        }
+        syn::Fields::Unnamed(fields) => {
+            let let_self = fields
+                .unnamed
+                .iter()
+                .enumerate()
+                .map(|(i, f)| Ident::new(&format!("field{i}"), f.ty.span()));
+            let to_output = let_self.clone().zip(fields.unnamed.iter()).map(|(i, f)| {
+                quote_spanned! { f.ty.span() =>
+                    #i.to_output(output)
+                }
+            });
+            quote! {
+                (#(#let_self),*) => {
+                    #(#to_output);*
+                }
+            }
+        }
+        syn::Fields::Unit => quote! {
+            => {}
+        },
+    }
+}
+
 fn gen_to_output(data: &Data) -> proc_macro2::TokenStream {
     match data {
-        Data::Struct(data) => match &data.fields {
-            syn::Fields::Named(fields) => {
-                let let_self = fields.named.iter().map(|f| f.ident.as_ref().unwrap());
-                let to_output = let_self.clone().zip(fields.named.iter()).map(|(i, f)| {
-                    quote_spanned! { f.ty.span() =>
-                        #i.to_output(output)
-                    }
-                });
-                quote! {
-                    let Self { #(#let_self),* } = self;
-                    #(#to_output);*
+        Data::Struct(data) => {
+            let arm = fields_to_output(&data.fields);
+            quote! {
+                match self {
+                    Self #arm
                 }
             }
-            syn::Fields::Unnamed(fields) => {
-                let let_self = fields
-                    .unnamed
-                    .iter()
-                    .enumerate()
-                    .map(|(i, f)| Ident::new(&format!("field{i}"), f.ty.span()));
-                let to_output = let_self.clone().zip(fields.unnamed.iter()).map(|(i, f)| {
-                    quote_spanned! { f.ty.span() =>
-                        #i.to_output(output)
-                    }
-                });
-                quote! {
-                    let Self(#(#let_self),*) = self;
-                    #(#to_output);*
-                }
-            }
-            syn::Fields::Unit => quote! {},
-        },
+        }
         Data::Enum(data) => {
             let to_output = data.variants.iter().map(|v| {
                 let ident = &v.ident;
-                match &v.fields {
-                    syn::Fields::Named(fields) => {
-                        let let_self = fields.named.iter().map(|f| f.ident.as_ref().unwrap());
-                        let to_output = let_self.clone().zip(fields.named.iter()).map(|(i, f)| {
-                            quote_spanned! { f.ty.span() =>
-                                #i.to_output(output)
-                            }
-                        });
-                        quote! {
-                            Self::#ident { #(#let_self),* } => {
-                                #(#to_output);*
-                            }
-                        }
-                    }
-                    syn::Fields::Unnamed(fields) => {
-                        let let_self = fields
-                            .unnamed
-                            .iter()
-                            .enumerate()
-                            .map(|(i, f)| Ident::new(&format!("field{i}"), f.ty.span()));
-                        let to_output =
-                            let_self.clone().zip(fields.unnamed.iter()).map(|(i, f)| {
-                                quote_spanned! { f.ty.span() =>
-                                    #i.to_output(output)
-                                }
-                            });
-                        quote! {
-                            Self::#ident(#(#let_self),*) => {
-                                #(#to_output);*
-                            }
-                        }
-                    }
-                    syn::Fields::Unit => quote! {
-                        Self::#ident => {}
-                    },
-                }
+                let arm = fields_to_output(&v.fields);
+                quote! { Self::#ident #arm }
             });
             quote! {
                 let kind = ::object_rainbow::Enum::kind(self);
@@ -146,6 +127,26 @@ fn gen_to_output(data: &Data) -> proc_macro2::TokenStream {
             Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
         }
     }
+}
+
+#[proc_macro_derive(Topological)]
+pub fn derive_topological(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+    let generics = match bounds_topological(input.generics, &input.data) {
+        Ok(g) => g,
+        Err(e) => return e.into_compile_error().into(),
+    };
+    let accept_points = gen_accept_points(&input.data);
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let output = quote! {
+        impl #impl_generics ::object_rainbow::Topological for #name #ty_generics #where_clause {
+            fn accept_points(&self, visitor: &mut impl ::object_rainbow::PointVisitor) {
+                #accept_points
+            }
+        }
+    };
+    TokenStream::from(output)
 }
 
 fn bounds_topological(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
@@ -175,26 +176,6 @@ fn bounds_topological(mut generics: Generics, data: &Data) -> syn::Result<Generi
         }
     }
     Ok(generics)
-}
-
-#[proc_macro_derive(Topological)]
-pub fn derive_topological(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let name = input.ident;
-    let generics = match bounds_topological(input.generics, &input.data) {
-        Ok(g) => g,
-        Err(e) => return e.into_compile_error().into(),
-    };
-    let accept_points = gen_accept_points(&input.data);
-    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
-    let output = quote! {
-        impl #impl_generics ::object_rainbow::Topological for #name #ty_generics #where_clause {
-            fn accept_points(&self, visitor: &mut impl ::object_rainbow::PointVisitor) {
-                #accept_points
-            }
-        }
-    };
-    TokenStream::from(output)
 }
 
 fn gen_accept_points(data: &Data) -> proc_macro2::TokenStream {
