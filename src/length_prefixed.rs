@@ -113,3 +113,47 @@ impl Object for LpBytes {}
 impl Inline for LpBytes {}
 impl ReflessObject for LpBytes {}
 impl ReflessInline for LpBytes {}
+
+#[derive(ParseAsInline)]
+pub struct LpString(pub String);
+
+impl Deref for LpString {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for LpString {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl ToOutput for LpString {
+    fn to_output(&self, output: &mut dyn crate::Output) {
+        let data = self.0.as_bytes();
+        let len = data.len();
+        let len = len as u64;
+        assert_ne!(len, u64::MAX);
+        let prefix = Le::<u64>(len);
+        prefix.to_output(output);
+        data.to_output(output);
+    }
+}
+
+impl<I: ParseInput> ParseInline<I> for LpString {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        String::from_utf8(input.parse_inline::<LpBytes>()?.0)
+            .map_err(Error::Utf8)
+            .map(Self)
+    }
+}
+
+impl Topological for LpString {}
+impl Tagged for LpString {}
+impl Object for LpString {}
+impl Inline for LpString {}
+impl ReflessObject for LpString {}
+impl ReflessInline for LpString {}

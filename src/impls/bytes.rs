@@ -64,3 +64,9 @@ impl Topological for Vec<u8> {}
 impl Tagged for Vec<u8> {}
 impl Object for Vec<u8> {}
 impl ReflessObject for Vec<u8> {}
+
+impl ToOutput for [u8] {
+    fn to_output(&self, output: &mut dyn Output) {
+        output.write(self);
+    }
+}
