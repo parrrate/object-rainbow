@@ -617,3 +617,15 @@ impl ReflessObject for Vec<u8> {
         Ok(input.parse_all()?.into())
     }
 }
+
+pub trait Size {
+    const SIZE: usize;
+}
+
+pub trait Fixed: Size + Inline {}
+
+impl<T: Size + Inline> Fixed for T {}
+
+pub trait ReflessFixed: Size + ReflessInline {}
+
+impl<T: Size + ReflessInline> ReflessFixed for T {}

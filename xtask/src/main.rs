@@ -3,6 +3,7 @@ use std::fmt::Display;
 trait StrExt {
     fn bound(&self) -> Bound;
     fn method(&self, arg: &'static str, aty: &'static str) -> Method;
+    fn co(&self) -> Const;
 }
 
 impl StrExt for &'static str {
@@ -19,6 +20,10 @@ impl StrExt for &'static str {
             arg,
             aty,
         }
+    }
+
+    fn co(&self) -> Const {
+        Const { name: self }
     }
 }
 
@@ -134,9 +139,42 @@ impl Display for ParseMethod {
     }
 }
 
+struct Const {
+    name: &'static str,
+}
+
+impl Const {
+    fn add(self, n: usize, ty: &'static str) -> AddConst {
+        AddConst { co: self, n, ty }
+    }
+}
+
+struct AddConst {
+    co: Const,
+    n: usize,
+    ty: &'static str,
+}
+
+impl Display for AddConst {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(
+            f,
+            "    const {}: {} = {};",
+            self.co.name,
+            self.ty,
+            LETTERS
+                .iter()
+                .take(self.n)
+                .map(|c| format!("{c}::{}", self.co.name))
+                .collect::<Vec<_>>()
+                .join(" + "),
+        )
+    }
+}
+
 struct Impl {
     header: Header,
-    methods: Vec<Box<dyn Display>>,
+    members: Vec<Box<dyn Display>>,
 }
 
 fn join(s: impl IntoIterator<Item: Display>) -> String {
@@ -149,7 +187,7 @@ fn join(s: impl IntoIterator<Item: Display>) -> String {
 impl Display for Impl {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "{} {{", self.header)?;
-        write!(f, "{}", join(&self.methods))?;
+        write!(f, "{}", join(&self.members))?;
         writeln!(f, "}}")?;
         Ok(())
     }
@@ -159,13 +197,13 @@ fn per_n(n: usize) -> String {
     join([
         Impl {
             header: "ToOutput".bound().header(n),
-            methods: vec![Box::new(
+            members: vec![Box::new(
                 "to_output".method("output", "&mut dyn Output").out(n),
             )],
         },
         Impl {
             header: "Inline".bound().last("Object").header(n),
-            methods: vec![
+            members: vec![
                 Box::new(
                     "accept_refs"
                         .method("visitor", "&mut impl RefVisitor")
@@ -181,7 +219,7 @@ fn per_n(n: usize) -> String {
         },
         Impl {
             header: "Inline".bound().header(n),
-            methods: vec![Box::new(
+            members: vec![Box::new(
                 "parse_inline"
                     .method("input", "&mut Input")
                     .parse(n, "parse_inline"),
@@ -189,7 +227,7 @@ fn per_n(n: usize) -> String {
         },
         Impl {
             header: "ReflessInline".bound().last("ReflessObject").header(n),
-            methods: vec![Box::new(
+            members: vec![Box::new(
                 "parse"
                     .method("input", "ReflessInput")
                     .parse(n, "parse_inline")
@@ -198,16 +236,23 @@ fn per_n(n: usize) -> String {
         },
         Impl {
             header: "ReflessInline".bound().header(n),
-            methods: vec![Box::new(
+            members: vec![Box::new(
                 "parse_inline"
                     .method("input", "&mut ReflessInput")
                     .parse(n, "parse_inline"),
             )],
         },
+        Impl {
+            header: "Size".bound().header(n),
+            members: vec![Box::new("SIZE".co().add(n, "usize"))],
+        },
     ])
 }
 
 fn main() {
+    println!("use super::*;");
+    println!();
+
     for i in 2..=12 {
         println!("{}", per_n(i));
     }
