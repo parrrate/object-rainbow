@@ -39,7 +39,11 @@ impl Bound {
     }
 
     fn header(self, n: usize) -> Header {
-        Header { bound: self, n }
+        Header {
+            bound: self,
+            n,
+            prefix: "",
+        }
     }
 }
 
@@ -48,11 +52,19 @@ const LETTERS: &[char] = &['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'
 struct Header {
     bound: Bound,
     n: usize,
+    prefix: &'static str,
+}
+
+impl Header {
+    fn prefix(mut self, prefix: &'static str) -> Self {
+        self.prefix = prefix;
+        self
+    }
 }
 
 impl Display for Header {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "impl<")?;
+        write!(f, "impl<{}", self.prefix)?;
         let last = LETTERS[self.n - 1];
         for c in LETTERS.iter().take(self.n - 1) {
             write!(f, "{c}: {}, ", self.bound.most)?;
@@ -275,6 +287,30 @@ fn per_n(n: usize) -> String {
             header: "Size".bound().header(n),
             members: vec![Box::new("SIZE".co().add(n, "usize"))],
         },
+        Impl {
+            header: "ParseInline<II>"
+                .bound()
+                .last("Parse<II>")
+                .header(n)
+                .prefix("II: ParseInput,"),
+            members: vec![Box::new(
+                "parse"
+                    .method("input", "II")
+                    .parse(n, "parse_inline")
+                    .last("parse"),
+            )],
+        },
+        Impl {
+            header: "ParseInline<II>"
+                .bound()
+                .header(n)
+                .prefix("II: ParseInput,"),
+            members: vec![Box::new(
+                "parse_inline"
+                    .method("input", "&mut II")
+                    .parse(n, "parse_inline"),
+            )],
+        },
     ])
 }
 
@@ -283,6 +319,9 @@ fn main() {
     println!();
 
     for i in 2..=12 {
-        println!("{}", per_n(i));
+        if i > 2 {
+            println!();
+        }
+        print!("{}", per_n(i));
     }
 }
