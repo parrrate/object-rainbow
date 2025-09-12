@@ -6,13 +6,31 @@ pub trait UsizeTag: Sized {
     fn try_to_usize(&self) -> Option<usize>;
 }
 
+impl UsizeTag for bool {
+    fn from_usize(n: usize) -> Self {
+        match n {
+            0 => false,
+            1 => true,
+            _ => panic!("out of bounds"),
+        }
+    }
+
+    fn to_usize(&self) -> usize {
+        *self as _
+    }
+
+    fn try_to_usize(&self) -> Option<usize> {
+        Some(self.to_usize())
+    }
+}
+
 #[derive(ToOutput, Topological, Tagged, ParseAsInline, Size, MaybeHasNiche)]
 pub struct EnumTag<T, const MAX: usize>(T);
 
-impl<T: Deref<Target: UsizeTag> + From<T::Target>, const MAX: usize> UsizeTag for EnumTag<T, MAX> {
+impl<T: UsizeTag, const MAX: usize> UsizeTag for EnumTag<T, MAX> {
     fn from_usize(n: usize) -> Self {
         assert!(n < MAX);
-        Self(T::from(UsizeTag::from_usize(n)))
+        Self(UsizeTag::from_usize(n))
     }
 
     fn to_usize(&self) -> usize {
@@ -24,18 +42,18 @@ impl<T: Deref<Target: UsizeTag> + From<T::Target>, const MAX: usize> UsizeTag fo
     }
 }
 
-impl<T: Deref<Target: UsizeTag> + From<T::Target>, const MAX: usize> EnumTag<T, MAX> {
+impl<T: UsizeTag, const MAX: usize> EnumTag<T, MAX> {
     pub fn to_usize(&self) -> usize {
         self.0.to_usize()
     }
 
     pub fn from_const<const N: usize>() -> Self {
         assert!(N < MAX);
-        Self(T::from(UsizeTag::from_usize(N)))
+        Self(UsizeTag::from_usize(N))
     }
 }
 
-impl<T: ParseInline<I> + Deref<Target: UsizeTag>, I: ParseInput, const MAX: usize> ParseInline<I>
+impl<T: ParseInline<I> + UsizeTag, I: ParseInput, const MAX: usize> ParseInline<I>
     for EnumTag<T, MAX>
 {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {

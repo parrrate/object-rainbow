@@ -492,3 +492,59 @@ fn nonzero() {
     assert_eq!(Option::<Le<u16>>::SIZE, 3);
     assert_eq!(Option::<Nz<Le<u16>>>::SIZE, 2);
 }
+
+impl<T: UsizeTag> UsizeTag for Ae<T> {
+    fn from_usize(n: usize) -> Self {
+        Self(UsizeTag::from_usize(n))
+    }
+
+    fn to_usize(&self) -> usize {
+        self.0.to_usize()
+    }
+
+    fn try_to_usize(&self) -> Option<usize> {
+        self.0.try_to_usize()
+    }
+}
+
+impl<T: UsizeTag> UsizeTag for Le<T> {
+    fn from_usize(n: usize) -> Self {
+        Self(UsizeTag::from_usize(n))
+    }
+
+    fn to_usize(&self) -> usize {
+        self.0.to_usize()
+    }
+
+    fn try_to_usize(&self) -> Option<usize> {
+        self.0.try_to_usize()
+    }
+}
+
+impl<T: UsizeTag> UsizeTag for Be<T> {
+    fn from_usize(n: usize) -> Self {
+        Self(UsizeTag::from_usize(n))
+    }
+
+    fn to_usize(&self) -> usize {
+        self.0.to_usize()
+    }
+
+    fn try_to_usize(&self) -> Option<usize> {
+        self.0.try_to_usize()
+    }
+}
+
+impl<T: NonZeroable<Nz: UsizeTag>> UsizeTag for Nz<T> {
+    fn from_usize(n: usize) -> Self {
+        Self(UsizeTag::from_usize(n))
+    }
+
+    fn to_usize(&self) -> usize {
+        self.0.to_usize()
+    }
+
+    fn try_to_usize(&self) -> Option<usize> {
+        self.0.try_to_usize()
+    }
+}
