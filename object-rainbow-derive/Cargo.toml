@@ -1,0 +1,12 @@
+[package]
+name = "object-rainbow-derive"
+version = "0.1.0"
+edition.workspace = true
+
+[lib]
+crate-type = ["proc-macro"]
+
+[dependencies]
+proc-macro2 = "1.0.93"
+quote = "1.0.38"
+syn = "2.0.98"

@@ -1,3 +1,5 @@
+extern crate self as object_rainbow;
+
 use std::{
     future::ready,
     marker::PhantomData,
@@ -7,6 +9,7 @@ use std::{
 };
 
 pub use anyhow::anyhow;
+pub use object_rainbow_derive::ToOutput;
 use sha2::{Digest, Sha256};
 
 mod tuple;

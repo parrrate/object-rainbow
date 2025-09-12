@@ -1,5 +1,5 @@
 [workspace]
-members = ["xtask"]
+members = ["object-rainbow-derive", "xtask"]
 
 [workspace.package]
 edition = "2024"
@@ -10,6 +10,8 @@ version = "0.1.0"
 edition.workspace = true
 
 [dependencies]
+object-rainbow-derive.path = "object-rainbow-derive"
+
 anyhow = "1.0.96"
 sha2 = "0.10.8"
 thiserror = "2.0.11"
