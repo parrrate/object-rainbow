@@ -20,8 +20,8 @@ use typenum::{ATerm, Max, TArr, Unsigned, tarr};
 
 pub use self::enumkind::Enum;
 pub use self::niche::{
-    AutoEnumNiche, MaybeHasNiche, MaybeNiche, MnArray, Niche, NicheFoldOrArray, NicheOr, NoNiche,
-    SomeNiche, ZeroNiche, ZeroNoNiche,
+    AutoEnumNiche, HackNiche, MaybeHasNiche, MaybeNiche, MnArray, Niche, NicheFoldOrArray, NicheOr,
+    NoNiche, SomeNiche, ZeroNiche, ZeroNoNiche,
 };
 
 pub mod enumkind;

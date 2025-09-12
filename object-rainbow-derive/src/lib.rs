@@ -1425,7 +1425,7 @@ fn fields_mn_array(fields: &syn::Fields, variant: Option<usize>) -> proc_macro2:
         let kind_niche = quote! {
             ::object_rainbow::AutoEnumNiche<Self, #variant>
         };
-        quote! { tarr![#kind_niche, #(#mn_array),*] }
+        quote! { tarr![#kind_niche, ::object_rainbow::NoNiche<::object_rainbow::HackNiche<#variant>>, #(#mn_array),*] }
     } else {
         quote! { tarr![#(#mn_array),*] }
     }
