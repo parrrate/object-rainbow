@@ -88,7 +88,20 @@ enum Either<L, R> {
     Right(R),
 }
 
-#[derive(Enum, ToOutput, Topological, Tagged, Size, Parse, ParseInline, MaybeHasNiche)]
+#[derive(
+    Enum,
+    ToOutput,
+    Topological,
+    Tagged,
+    Object,
+    Inline,
+    ReflessObject,
+    ReflessInline,
+    Size,
+    Parse,
+    ParseInline,
+    MaybeHasNiche,
+)]
 #[enumtag("Le<u8>")]
 enum Abc {
     NoNiche(Le<u8>),
@@ -106,4 +119,5 @@ fn main() {
     println!("{}", Option::<Either<bool, Option<Option<()>>>>::SIZE);
     println!("{:?}", None::<Abc>.output::<Vec<u8>>());
     println!("{:?}", None::<(bool, bool)>.output::<Vec<u8>>());
+    <Option<Abc> as ReflessObject>::parse_slice(&[1, 2]).unwrap();
 }
