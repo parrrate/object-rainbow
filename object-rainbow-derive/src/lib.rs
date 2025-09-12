@@ -1,8 +1,8 @@
 use proc_macro::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::{
-    Attribute, Data, DeriveInput, Error, Generics, Ident, Index, LitStr, parse::Parse,
-    parse_macro_input, parse_quote, parse_quote_spanned, spanned::Spanned, token::Comma,
+    Attribute, Data, DeriveInput, Error, Generics, Ident, LitStr, parse::Parse, parse_macro_input,
+    parse_quote, parse_quote_spanned, spanned::Spanned, token::Comma,
 };
 
 #[proc_macro_derive(ToOutput)]
@@ -163,10 +163,16 @@ fn bounds_topological(mut generics: Generics, data: &Data) -> syn::Result<Generi
             }
         }
         Data::Enum(data) => {
-            return Err(Error::new_spanned(
-                data.enum_token,
-                "`enum`s are not supported",
-            ));
+            for v in data.variants.iter() {
+                for f in v.fields.iter() {
+                    let ty = &f.ty;
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: ::object_rainbow::Topological
+                        },
+                    );
+                }
+            }
         }
         Data::Union(data) => {
             return Err(Error::new_spanned(
@@ -178,38 +184,65 @@ fn bounds_topological(mut generics: Generics, data: &Data) -> syn::Result<Generi
     Ok(generics)
 }
 
+fn fields_accept_points(fields: &syn::Fields) -> proc_macro2::TokenStream {
+    match fields {
+        syn::Fields::Named(fields) => {
+            let let_self = fields.named.iter().map(|f| f.ident.as_ref().unwrap());
+            let accept_points = let_self.clone().zip(fields.named.iter()).map(|(i, f)| {
+                quote_spanned! { f.ty.span() =>
+                    #i.accept_points(visitor)
+                }
+            });
+            quote! {
+                { #(#let_self),* } => {
+                    #(#accept_points);*
+                }
+            }
+        }
+        syn::Fields::Unnamed(fields) => {
+            let let_self = fields
+                .unnamed
+                .iter()
+                .enumerate()
+                .map(|(i, f)| Ident::new(&format!("field{i}"), f.ty.span()));
+            let accept_points = let_self.clone().zip(fields.unnamed.iter()).map(|(i, f)| {
+                quote_spanned! { f.ty.span() =>
+                    #i.accept_points(visitor)
+                }
+            });
+            quote! {
+                (#(#let_self),*) => {
+                    #(#accept_points);*
+                }
+            }
+        }
+        syn::Fields::Unit => quote! {
+            => {}
+        },
+    }
+}
+
 fn gen_accept_points(data: &Data) -> proc_macro2::TokenStream {
     match data {
-        Data::Struct(data) => match &data.fields {
-            syn::Fields::Named(fields) => {
-                let accept_points = fields.named.iter().map(|f| {
-                    let i = f.ident.as_ref().unwrap();
-                    quote_spanned! { f.ty.span() =>
-                        self.#i.accept_points(visitor)
-                    }
-                });
-                quote! {
-                    #(#accept_points);*
+        Data::Struct(data) => {
+            let arm = fields_accept_points(&data.fields);
+            quote! {
+                match self {
+                    Self #arm
                 }
             }
-            syn::Fields::Unnamed(fields) => {
-                let accept_points = fields.unnamed.iter().enumerate().map(|(i, f)| {
-                    let i: Index = Index {
-                        index: i.try_into().unwrap(),
-                        span: f.span(),
-                    };
-                    quote_spanned! { f.ty.span() =>
-                        self.#i.accept_points(visitor)
-                    }
-                });
-                quote! {
-                    #(#accept_points);*
-                }
-            }
-            syn::Fields::Unit => quote! {},
-        },
+        }
         Data::Enum(data) => {
-            Error::new_spanned(data.enum_token, "`enum`s are not supported").to_compile_error()
+            let to_output = data.variants.iter().map(|v| {
+                let ident = &v.ident;
+                let arm = fields_accept_points(&v.fields);
+                quote! { Self::#ident #arm }
+            });
+            quote! {
+                match self {
+                    #(#to_output)*
+                }
+            }
         }
         Data::Union(data) => {
             Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
