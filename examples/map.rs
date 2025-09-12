@@ -82,6 +82,10 @@ impl Resolve for MapResolver {
             None => Err(error_parse!("hash not found")),
         }))
     }
+
+    fn name(&self) -> &str {
+        "map resolver"
+    }
 }
 
 async fn iterate<T: Object>(object: T) -> Point<T> {

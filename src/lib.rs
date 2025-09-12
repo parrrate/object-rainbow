@@ -194,6 +194,7 @@ pub trait Resolve: Send + Sync + AsAny {
         let _ = typeid;
         Err(Error::UnknownExtension)
     }
+    fn name(&self) -> &str;
 }
 
 pub trait FetchBytes: AsAny {
@@ -259,6 +260,18 @@ impl ToOutput for RawPointInner {
 impl ParseInline<Input<'_>> for RawPointInner {
     fn parse_inline(input: &mut Input<'_>) -> crate::Result<Self> {
         input.parse_raw_point_inner()
+    }
+}
+
+impl Singular for RawPointInner {
+    fn hash(&self) -> &Hash {
+        &self.hash
+    }
+}
+
+impl<T> Singular for RawPoint<T> {
+    fn hash(&self) -> &Hash {
+        self.inner.hash()
     }
 }
 
@@ -369,6 +382,15 @@ impl<T: Object> Fetch for RawPoint<T> {
                 Ok(object)
             }
         })
+    }
+}
+
+impl<T> Point<T> {
+    pub fn extract_resolve<R: Any>(&self) -> Option<(&Address, &R)> {
+        let ByAddressInner { address, resolve } =
+            self.origin.as_inner()?.downcast_ref::<ByAddressInner>()?;
+        let resolve = resolve.as_ref().any_ref().downcast_ref::<R>()?;
+        Some((address, resolve))
     }
 }
 
@@ -734,9 +756,9 @@ pub trait Topological {
     }
 
     fn topology(&self) -> TopoVec {
-        let mut topolog = TopoVec::new();
-        self.accept_points(&mut topolog);
-        topolog
+        let mut topology = TopoVec::new();
+        self.accept_points(&mut topology);
+        topology
     }
 }
 
@@ -1133,6 +1155,10 @@ impl Resolve for ByTopology {
 
     fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
         self.extension.extension(typeid)
+    }
+
+    fn name(&self) -> &str {
+        "by topology"
     }
 }
 

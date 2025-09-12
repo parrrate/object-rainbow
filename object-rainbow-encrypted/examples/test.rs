@@ -127,6 +127,10 @@ impl Resolve for MapResolver {
             Err(Error::UnknownExtension)
         }
     }
+
+    fn name(&self) -> &str {
+        "map resolver"
+    }
 }
 
 async fn iterate<T: Object>(object: T) -> Point<T> {
@@ -174,13 +178,22 @@ fn main() -> anyhow::Result<()> {
     tracing::info!("starting");
     smol::block_on(async move {
         let point = Point::from_object((
-            Point::from_object(Refless((*b"alisa", *b"feistel"))),
+            Point::from_object(Point::from_object(Refless((*b"alisa", *b"feistel")))),
             Point::from_object(Refless([1, 2, 3, 4])),
         ));
         let point = encrypt_point(Test(std::array::from_fn(|i| i as _)), point).await?;
         let point = iterate(point).await.fetch().await?;
-        assert_eq!(point.fetch().await?.0.fetch().await?.0.0, *b"alisa");
-        assert_eq!(point.fetch().await?.0.fetch().await?.0.1, *b"feistel");
+        let point = Point::from_object(point.fetch().await?.into_inner());
+        let point = encrypt_point(Test(std::array::from_fn(|i| i as _)), point).await?;
+        let point = Point::from_object(point.fetch().await?.into_inner());
+        assert_eq!(
+            point.fetch().await?.0.fetch().await?.fetch().await?.0.0,
+            *b"alisa",
+        );
+        assert_eq!(
+            point.fetch().await?.0.fetch().await?.fetch().await?.0.1,
+            *b"feistel",
+        );
         println!("all right");
         Ok(())
     })
