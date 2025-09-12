@@ -5,12 +5,12 @@ members = ["object-rainbow-derive", "xtask"]
 edition = "2024"
 rust-version = "1.85"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/parrrate/ruchei"
+repository = "https://github.com/parrrate/object-rainbow"
 authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 
 [package]
 name = "object-rainbow"
-version = "0.0.0-a.2"
+version = "0.0.0-a.3"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
