@@ -12,24 +12,33 @@ use sha2::{Digest, Sha256};
 mod tuple;
 
 #[macro_export]
-macro_rules! error {
+macro_rules! error_parse {
     ($($t:tt)*) => {
-        $crate::Error::Other(::anyhow::anyhow!($($t)*))
+        $crate::Error::Parse(::anyhow::anyhow!($($t)*))
+    };
+}
+
+#[macro_export]
+macro_rules! error_fetch {
+    ($($t:tt)*) => {
+        $crate::Error::Fetch(::anyhow::anyhow!($($t)*))
     };
 }
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[error("not empty")]
-    NotEmpty,
-    #[error("eof")]
-    Eof,
-    #[error("out of bounds")]
-    OutOfBounds,
-    #[error("mismatch")]
-    Mismatch,
+    #[error("extra input left")]
+    ExtraInputLeft,
+    #[error("end of input")]
+    EndOfInput,
+    #[error("address index out of bounds")]
+    AddressOutOfBounds,
+    #[error("hash resolution mismatch")]
+    HashMismatch,
     #[error(transparent)]
-    Other(#[from] anyhow::Error),
+    Parse(anyhow::Error),
+    #[error(transparent)]
+    Fetch(anyhow::Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -152,7 +161,7 @@ impl<'a> ReflessInput<'a> {
         if self.data.is_empty() {
             Ok(())
         } else {
-            Err(Error::NotEmpty)
+            Err(Error::ExtraInputLeft)
         }
     }
 
@@ -163,7 +172,7 @@ impl<'a> ReflessInput<'a> {
                 self.at += N;
                 Ok(chunk)
             }
-            None => Err(Error::Eof),
+            None => Err(Error::EndOfInput),
         }
     }
 
@@ -174,7 +183,7 @@ impl<'a> ReflessInput<'a> {
                 self.at += n;
                 Ok(chunk)
             }
-            None => Err(Error::Eof),
+            None => Err(Error::EndOfInput),
         }
     }
 
@@ -568,9 +577,12 @@ struct ByTopology {
 
 impl ByTopology {
     fn try_resolve(&self, address: Address) -> Result<FailFuture<ByteNode>> {
-        let point = self.topology.get(address.index).ok_or(Error::OutOfBounds)?;
+        let point = self
+            .topology
+            .get(address.index)
+            .ok_or(Error::AddressOutOfBounds)?;
         if *point.hash() != address.hash {
-            Err(Error::Mismatch)
+            Err(Error::HashMismatch)
         } else {
             Ok(point.fetch_bytes())
         }
