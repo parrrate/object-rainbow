@@ -14,9 +14,11 @@ impl<A: Topological, B: Topological> Topological for (A, B) {
     }
 }
 
-impl<A: Inline, B: Object> Object for (A, B) {
+impl<A: Tagged, B: Tagged> Tagged for (A, B) {
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS]);
 }
+
+impl<A: Inline, B: Object> Object for (A, B) {}
 
 impl<A: Inline, B: Inline> Inline for (A, B) {}
 
@@ -56,9 +58,11 @@ impl<A: Topological, B: Topological, C: Topological> Topological for (A, B, C) {
     }
 }
 
-impl<A: Inline, B: Inline, C: Object> Object for (A, B, C) {
+impl<A: Tagged, B: Tagged, C: Tagged> Tagged for (A, B, C) {
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS]);
 }
+
+impl<A: Inline, B: Inline, C: Object> Object for (A, B, C) {}
 
 impl<A: Inline, B: Inline, C: Inline> Inline for (A, B, C) {}
 
@@ -106,9 +110,11 @@ impl<A: Topological, B: Topological, C: Topological, D: Topological> Topological
     }
 }
 
-impl<A: Inline, B: Inline, C: Inline, D: Object> Object for (A, B, C, D) {
+impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged> Tagged for (A, B, C, D) {
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS]);
 }
+
+impl<A: Inline, B: Inline, C: Inline, D: Object> Object for (A, B, C, D) {}
 
 impl<A: Inline, B: Inline, C: Inline, D: Inline> Inline for (A, B, C, D) {}
 
@@ -174,9 +180,11 @@ impl<A: Topological, B: Topological, C: Topological, D: Topological, E: Topologi
     }
 }
 
-impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Object> Object for (A, B, C, D, E) {
+impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged> Tagged for (A, B, C, D, E) {
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS, &E::TAGS]);
 }
+
+impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Object> Object for (A, B, C, D, E) {}
 
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline> Inline for (A, B, C, D, E) {}
 
@@ -260,13 +268,18 @@ impl<A: Topological, B: Topological, C: Topological, D: Topological, E: Topologi
     }
 }
 
-impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Object> Object
+impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged, F: Tagged> Tagged
     for (A, B, C, D, E, F)
 {
     const TAGS: Tags = Tags(
         &[],
         &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS, &E::TAGS, &F::TAGS],
     );
+}
+
+impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Object> Object
+    for (A, B, C, D, E, F)
+{
 }
 
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline> Inline
@@ -379,7 +392,7 @@ impl<
     }
 }
 
-impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Object> Object
+impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged, F: Tagged, G: Tagged> Tagged
     for (A, B, C, D, E, F, G)
 {
     const TAGS: Tags = Tags(
@@ -394,6 +407,11 @@ impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Object
             &G::TAGS,
         ],
     );
+}
+
+impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Object> Object
+    for (A, B, C, D, E, F, G)
+{
 }
 
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline> Inline
@@ -523,7 +541,7 @@ impl<
     }
 }
 
-impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline, H: Object> Object
+impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged, F: Tagged, G: Tagged, H: Tagged> Tagged
     for (A, B, C, D, E, F, G, H)
 {
     const TAGS: Tags = Tags(
@@ -539,6 +557,11 @@ impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline
             &H::TAGS,
         ],
     );
+}
+
+impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline, H: Object> Object
+    for (A, B, C, D, E, F, G, H)
+{
 }
 
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline, H: Inline> Inline
@@ -682,16 +705,16 @@ impl<
 }
 
 impl<
-    A: Inline,
-    B: Inline,
-    C: Inline,
-    D: Inline,
-    E: Inline,
-    F: Inline,
-    G: Inline,
-    H: Inline,
-    I: Object,
-> Object for (A, B, C, D, E, F, G, H, I)
+    A: Tagged,
+    B: Tagged,
+    C: Tagged,
+    D: Tagged,
+    E: Tagged,
+    F: Tagged,
+    G: Tagged,
+    H: Tagged,
+    I: Tagged,
+> Tagged for (A, B, C, D, E, F, G, H, I)
 {
     const TAGS: Tags = Tags(
         &[],
@@ -707,6 +730,20 @@ impl<
             &I::TAGS,
         ],
     );
+}
+
+impl<
+    A: Inline,
+    B: Inline,
+    C: Inline,
+    D: Inline,
+    E: Inline,
+    F: Inline,
+    G: Inline,
+    H: Inline,
+    I: Object,
+> Object for (A, B, C, D, E, F, G, H, I)
+{
 }
 
 impl<
@@ -869,17 +906,17 @@ impl<
 }
 
 impl<
-    A: Inline,
-    B: Inline,
-    C: Inline,
-    D: Inline,
-    E: Inline,
-    F: Inline,
-    G: Inline,
-    H: Inline,
-    I: Inline,
-    J: Object,
-> Object for (A, B, C, D, E, F, G, H, I, J)
+    A: Tagged,
+    B: Tagged,
+    C: Tagged,
+    D: Tagged,
+    E: Tagged,
+    F: Tagged,
+    G: Tagged,
+    H: Tagged,
+    I: Tagged,
+    J: Tagged,
+> Tagged for (A, B, C, D, E, F, G, H, I, J)
 {
     const TAGS: Tags = Tags(
         &[],
@@ -896,6 +933,21 @@ impl<
             &J::TAGS,
         ],
     );
+}
+
+impl<
+    A: Inline,
+    B: Inline,
+    C: Inline,
+    D: Inline,
+    E: Inline,
+    F: Inline,
+    G: Inline,
+    H: Inline,
+    I: Inline,
+    J: Object,
+> Object for (A, B, C, D, E, F, G, H, I, J)
+{
 }
 
 impl<
@@ -1077,18 +1129,18 @@ impl<
 }
 
 impl<
-    A: Inline,
-    B: Inline,
-    C: Inline,
-    D: Inline,
-    E: Inline,
-    F: Inline,
-    G: Inline,
-    H: Inline,
-    I: Inline,
-    J: Inline,
-    K: Object,
-> Object for (A, B, C, D, E, F, G, H, I, J, K)
+    A: Tagged,
+    B: Tagged,
+    C: Tagged,
+    D: Tagged,
+    E: Tagged,
+    F: Tagged,
+    G: Tagged,
+    H: Tagged,
+    I: Tagged,
+    J: Tagged,
+    K: Tagged,
+> Tagged for (A, B, C, D, E, F, G, H, I, J, K)
 {
     const TAGS: Tags = Tags(
         &[],
@@ -1106,6 +1158,22 @@ impl<
             &K::TAGS,
         ],
     );
+}
+
+impl<
+    A: Inline,
+    B: Inline,
+    C: Inline,
+    D: Inline,
+    E: Inline,
+    F: Inline,
+    G: Inline,
+    H: Inline,
+    I: Inline,
+    J: Inline,
+    K: Object,
+> Object for (A, B, C, D, E, F, G, H, I, J, K)
+{
 }
 
 impl<
@@ -1310,19 +1378,19 @@ impl<
 }
 
 impl<
-    A: Inline,
-    B: Inline,
-    C: Inline,
-    D: Inline,
-    E: Inline,
-    F: Inline,
-    G: Inline,
-    H: Inline,
-    I: Inline,
-    J: Inline,
-    K: Inline,
-    L: Object,
-> Object for (A, B, C, D, E, F, G, H, I, J, K, L)
+    A: Tagged,
+    B: Tagged,
+    C: Tagged,
+    D: Tagged,
+    E: Tagged,
+    F: Tagged,
+    G: Tagged,
+    H: Tagged,
+    I: Tagged,
+    J: Tagged,
+    K: Tagged,
+    L: Tagged,
+> Tagged for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
     const TAGS: Tags = Tags(
         &[],
@@ -1341,6 +1409,23 @@ impl<
             &L::TAGS,
         ],
     );
+}
+
+impl<
+    A: Inline,
+    B: Inline,
+    C: Inline,
+    D: Inline,
+    E: Inline,
+    F: Inline,
+    G: Inline,
+    H: Inline,
+    I: Inline,
+    J: Inline,
+    K: Inline,
+    L: Object,
+> Object for (A, B, C, D, E, F, G, H, I, J, K, L)
+{
 }
 
 impl<

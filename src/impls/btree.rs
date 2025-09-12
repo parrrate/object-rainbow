@@ -20,9 +20,12 @@ impl<T: ParseInline<I> + Ord, I: ParseInput> Parse<I> for BTreeSet<T> {
     }
 }
 
-impl<T: Inline + Ord> Object for BTreeSet<T> {
+impl<T: Tagged> Tagged for BTreeSet<T> {
     const TAGS: Tags = T::TAGS;
 }
+
+impl<T: Inline + Ord> Object for BTreeSet<T> {}
+
 impl<T: ReflessInline + Ord> ReflessObject for BTreeSet<T> {}
 
 impl<K: ToOutput, V: ToOutput> ToOutput for BTreeMap<K, V> {
@@ -43,8 +46,10 @@ impl<K: ParseInline<I> + Ord, V: ParseInline<I>, I: ParseInput> Parse<I> for BTr
     }
 }
 
-impl<K: Inline + Ord, V: Inline> Object for BTreeMap<K, V> {
+impl<K: Tagged, V: Tagged> Tagged for BTreeMap<K, V> {
     const TAGS: Tags = Tags(&[], &[&K::TAGS, &V::TAGS]);
 }
+
+impl<K: Inline + Ord, V: Inline> Object for BTreeMap<K, V> {}
 
 impl<K: ReflessInline + Ord, V: ReflessInline> ReflessObject for BTreeMap<K, V> {}
