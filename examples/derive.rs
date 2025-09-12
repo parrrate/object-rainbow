@@ -23,7 +23,7 @@ fn main() {
     println!("{}", hex::encode(DeriveExample::<(), ()>::HASH));
 }
 
-#[derive(Enum, ToOutput, Topological)]
+#[derive(Enum, ToOutput, Topological, Parse, ParseInline)]
 enum _Test<U, V> {
     A,
     B(U),

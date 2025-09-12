@@ -700,10 +700,23 @@ fn bounds_parse(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
             }
         }
         Data::Enum(data) => {
-            return Err(Error::new_spanned(
-                data.enum_token,
-                "`enum`s are not supported",
-            ));
+            for v in data.variants.iter() {
+                let last_at = v.fields.len().checked_sub(1).unwrap_or_default();
+                for (i, f) in v.fields.iter().enumerate() {
+                    let last = i == last_at;
+                    let ty = &f.ty;
+                    let tr = if last {
+                        quote!(::object_rainbow::Parse<__I>)
+                    } else {
+                        quote!(::object_rainbow::ParseInline<__I>)
+                    };
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: #tr
+                        },
+                    );
+                }
+            }
         }
         Data::Union(data) => {
             return Err(Error::new_spanned(
@@ -720,52 +733,63 @@ fn bounds_parse(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
 
 fn gen_parse(data: &Data) -> proc_macro2::TokenStream {
     match data {
-        Data::Struct(data) => match &data.fields {
-            syn::Fields::Named(fields) => {
-                let last_at = fields.named.len().checked_sub(1).unwrap();
-                let parse = fields.named.iter().enumerate().map(|(i, f)| {
-                    let last = i == last_at;
-                    let i = f.ident.as_ref().unwrap();
-                    let method = if last {
-                        quote!(parse)
-                    } else {
-                        quote!(parse_inline)
-                    };
-                    quote_spanned! { f.ty.span() =>
-                        #i: input.#method()?
-                    }
-                });
-                quote! {
-                    Ok(Self { #(#parse),* })
-                }
-            }
-            syn::Fields::Unnamed(fields) => {
-                let last_at = fields.unnamed.len().checked_sub(1).unwrap();
-                let parse = fields.unnamed.iter().enumerate().map(|(i, f)| {
-                    let last = i == last_at;
-                    let method = if last {
-                        quote!(parse)
-                    } else {
-                        quote!(parse_inline)
-                    };
-                    quote_spanned! { f.ty.span() =>
-                        input.#method()?
-                    }
-                });
-                quote! {
-                    Ok(Self(#(#parse),*))
-                }
-            }
-            syn::Fields::Unit => quote! {
-                Ok(Self)
-            },
-        },
+        Data::Struct(data) => {
+            let arm = fields_parse(&data.fields);
+            quote! { Ok(Self #arm)}
+        }
         Data::Enum(data) => {
-            Error::new_spanned(data.enum_token, "`enum`s are not supported").to_compile_error()
+            let parse = data.variants.iter().map(|v| {
+                let ident = &v.ident;
+                let arm = fields_parse(&v.fields);
+                quote! {
+                    <Self as ::object_rainbow::Enum>::Kind::#ident => Self::#ident #arm,
+                }
+            });
+            quote! {
+                Ok(match input.parse_inline()? {
+                    #(#parse)*
+                })
+            }
         }
         Data::Union(data) => {
             Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
         }
+    }
+}
+
+fn fields_parse(fields: &syn::Fields) -> proc_macro2::TokenStream {
+    let last_at = fields.len().checked_sub(1).unwrap_or_default();
+    match fields {
+        syn::Fields::Named(fields) => {
+            let parse = fields.named.iter().enumerate().map(|(i, f)| {
+                let last = i == last_at;
+                let i = f.ident.as_ref().unwrap();
+                let method = if last {
+                    quote!(parse)
+                } else {
+                    quote!(parse_inline)
+                };
+                quote_spanned! { f.ty.span() =>
+                    #i: input.#method()?
+                }
+            });
+            quote! { { #(#parse),* } }
+        }
+        syn::Fields::Unnamed(fields) => {
+            let parse = fields.unnamed.iter().enumerate().map(|(i, f)| {
+                let last = i == last_at;
+                let method = if last {
+                    quote!(parse)
+                } else {
+                    quote!(parse_inline)
+                };
+                quote_spanned! { f.ty.span() =>
+                    input.#method()?
+                }
+            });
+            quote! { (#(#parse),*) }
+        }
+        syn::Fields::Unit => quote! {},
     }
 }
 
@@ -805,10 +829,16 @@ fn bounds_parse_inline(mut generics: Generics, data: &Data) -> syn::Result<Gener
             }
         }
         Data::Enum(data) => {
-            return Err(Error::new_spanned(
-                data.enum_token,
-                "`enum`s are not supported",
-            ));
+            for v in data.variants.iter() {
+                for f in v.fields.iter() {
+                    let ty = &f.ty;
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: ::object_rainbow::ParseInline<__I>
+                        },
+                    );
+                }
+            }
         }
         Data::Union(data) => {
             return Err(Error::new_spanned(
@@ -823,36 +853,48 @@ fn bounds_parse_inline(mut generics: Generics, data: &Data) -> syn::Result<Gener
     Ok(generics)
 }
 
+fn fields_parse_inline(fields: &syn::Fields) -> proc_macro2::TokenStream {
+    match fields {
+        syn::Fields::Named(fields) => {
+            let parse = fields.named.iter().map(|f| {
+                let i = f.ident.as_ref().unwrap();
+                quote_spanned! { f.ty.span() =>
+                    #i: input.parse_inline()?
+                }
+            });
+            quote! { { #(#parse),* } }
+        }
+        syn::Fields::Unnamed(fields) => {
+            let parse = fields.unnamed.iter().map(|f| {
+                quote_spanned! { f.ty.span() =>
+                    input.parse_inline()?
+                }
+            });
+            quote! { (#(#parse),*) }
+        }
+        syn::Fields::Unit => quote! {},
+    }
+}
+
 fn gen_parse_inline(data: &Data) -> proc_macro2::TokenStream {
     match data {
-        Data::Struct(data) => match &data.fields {
-            syn::Fields::Named(fields) => {
-                let parse = fields.named.iter().map(|f| {
-                    let i = f.ident.as_ref().unwrap();
-                    quote_spanned! { f.ty.span() =>
-                        #i: input.parse_inline()?
-                    }
-                });
-                quote! {
-                    Ok(Self { #(#parse),* })
-                }
-            }
-            syn::Fields::Unnamed(fields) => {
-                let parse = fields.unnamed.iter().map(|f| {
-                    quote_spanned! { f.ty.span() =>
-                        input.parse_inline()?
-                    }
-                });
-                quote! {
-                    Ok(Self(#(#parse),*))
-                }
-            }
-            syn::Fields::Unit => quote! {
-                Ok(Self)
-            },
-        },
+        Data::Struct(data) => {
+            let arm = fields_parse_inline(&data.fields);
+            quote! { Ok(Self #arm) }
+        }
         Data::Enum(data) => {
-            Error::new_spanned(data.enum_token, "`enum`s are not supported").to_compile_error()
+            let parse_inline = data.variants.iter().map(|v| {
+                let ident = &v.ident;
+                let arm = fields_parse_inline(&v.fields);
+                quote! {
+                    <Self as ::object_rainbow::Enum>::Kind::#ident => Self::#ident #arm,
+                }
+            });
+            quote! {
+                Ok(match input.parse_inline()? {
+                    #(#parse_inline)*
+                })
+            }
         }
         Data::Union(data) => {
             Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
@@ -909,7 +951,9 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
     let (impl_generics, _, where_clause) = generics.split_for_impl();
     let output = quote! {
         const _: () = {
-            #[derive(Clone, Copy)]
+            use ::object_rainbow::enumkind::EnumKind;
+
+            #[derive(Clone, Copy, ::object_rainbow::ParseAsInline)]
             enum __Kind {
                 #variants
             }
@@ -926,6 +970,12 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
 
                 fn from_tag(tag: Self::Tag) -> Self {
                     #from_tag
+                }
+            }
+
+            impl<I: ::object_rainbow::ParseInput> ::object_rainbow::ParseInline<I> for __Kind {
+                fn parse_inline(input: &mut I) -> ::object_rainbow::Result<Self> {
+                    Ok(::object_rainbow::enumkind::EnumKind::from_tag(input.parse_inline()?))
                 }
             }
 
