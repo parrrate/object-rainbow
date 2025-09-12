@@ -165,6 +165,15 @@ macro_rules! ae {
         impl ReflessInline for Ae<$n> {}
         impl Object for Ae<$n> {}
         impl Inline for Ae<$n> {}
+
+        impl Equivalent<Ae<$n>> for Option<Ae<NonZero<$n>>> {
+            fn into_equivalent(self) -> Ae<$n> {
+                Ae(self.map(|object| object.0.get()).unwrap_or_default())
+            }
+            fn from_equivalent(object: Ae<$n>) -> Self {
+                NonZero::new(object.0).map(Ae)
+            }
+        }
     };
 }
 
@@ -311,6 +320,24 @@ macro_rules! lebe {
         impl Object for Be<$n> {}
         impl Inline for Le<$n> {}
         impl Inline for Be<$n> {}
+
+        impl Equivalent<Le<$n>> for Option<Le<NonZero<$n>>> {
+            fn into_equivalent(self) -> Le<$n> {
+                Le(self.map(|object| object.0.get()).unwrap_or_default())
+            }
+            fn from_equivalent(object: Le<$n>) -> Self {
+                NonZero::new(object.0).map(Le)
+            }
+        }
+
+        impl Equivalent<Be<$n>> for Option<Be<NonZero<$n>>> {
+            fn into_equivalent(self) -> Be<$n> {
+                Be(self.map(|object| object.0.get()).unwrap_or_default())
+            }
+            fn from_equivalent(object: Be<$n>) -> Self {
+                NonZero::new(object.0).map(Be)
+            }
+        }
     };
 }
 
