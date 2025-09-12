@@ -9,10 +9,7 @@ pub trait UsizeTag: Sized {
 #[derive(ToOutput, Topological, Tagged, ParseAsInline, Size, MaybeHasNiche)]
 pub struct EnumTag<T, const MAX: usize>(T);
 
-impl<T: Deref + From<T::Target>, const MAX: usize> EnumTag<T, MAX>
-where
-    T::Target: UsizeTag,
-{
+impl<T: Deref<Target: UsizeTag> + From<T::Target>, const MAX: usize> EnumTag<T, MAX> {
     pub fn to_usize(&self) -> usize {
         self.0.to_usize()
     }
