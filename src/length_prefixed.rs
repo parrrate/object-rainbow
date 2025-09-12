@@ -68,3 +68,41 @@ fn prefixed() {
     let b = <Lp<Vec<u8>> as ReflessObject>::parse_slice(&data).unwrap();
     assert_eq!(*a, *b);
 }
+
+#[derive(Topological, Tagged, Object, Inline, ReflessObject, ReflessInline, ParseAsInline)]
+pub struct LpBytes(pub Vec<u8>);
+
+impl Deref for LpBytes {
+    type Target = Vec<u8>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for LpBytes {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl ToOutput for LpBytes {
+    fn to_output(&self, output: &mut dyn crate::Output) {
+        let data = &self.0;
+        let len = data.len();
+        let len = len as u64;
+        assert_ne!(len, u64::MAX);
+        let prefix = Le::<u64>(len);
+        prefix.to_output(output);
+        data.to_output(output);
+    }
+}
+
+impl<I: ParseInput> ParseInline<I> for LpBytes {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        let prefix: Le<u64> = input.parse_inline()?;
+        let len = prefix.0;
+        let len = len.try_into().map_err(|_| Error::LenOutOfBounds)?;
+        Ok(Self(input.parse_n(len)?.into()))
+    }
+}
