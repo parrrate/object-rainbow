@@ -61,7 +61,7 @@ impl<T: MaybeHasNiche> MaybeHasNiche for Arc<T> {
 
 impl<T: Clone> Equivalent<T> for Arc<T> {
     fn into_equivalent(self) -> T {
-        (*self).clone()
+        Arc::unwrap_or_clone(self)
     }
 
     fn from_equivalent(object: T) -> Self {
