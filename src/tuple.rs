@@ -16,6 +16,8 @@ impl<A: Inline, B: Object> Object for (A, B) {
     fn parse(mut input: Input) -> crate::Result<Self> {
         Ok((input.parse_inline()?, input.parse()?))
     }
+
+    const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS]);
 }
 
 impl<A: Inline, B: Inline> Inline for (A, B) {
@@ -58,6 +60,8 @@ impl<A: Inline, B: Inline, C: Object> Object for (A, B, C) {
     fn parse(mut input: Input) -> crate::Result<Self> {
         Ok((input.parse_inline()?, input.parse_inline()?, input.parse()?))
     }
+
+    const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS]);
 }
 
 impl<A: Inline, B: Inline, C: Inline> Inline for (A, B, C) {
@@ -115,6 +119,8 @@ impl<A: Inline, B: Inline, C: Inline, D: Object> Object for (A, B, C, D) {
             input.parse()?,
         ))
     }
+
+    const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS]);
 }
 
 impl<A: Inline, B: Inline, C: Inline, D: Inline> Inline for (A, B, C, D) {
@@ -186,6 +192,8 @@ impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Object> Object for (A, B, C,
             input.parse()?,
         ))
     }
+
+    const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS, &E::TAGS]);
 }
 
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline> Inline for (A, B, C, D, E) {
@@ -267,6 +275,11 @@ impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Object> Object
             input.parse()?,
         ))
     }
+
+    const TAGS: Tags = Tags(
+        &[],
+        &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS, &E::TAGS, &F::TAGS],
+    );
 }
 
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline> Inline
@@ -368,6 +381,19 @@ impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Object
             input.parse()?,
         ))
     }
+
+    const TAGS: Tags = Tags(
+        &[],
+        &[
+            &A::TAGS,
+            &B::TAGS,
+            &C::TAGS,
+            &D::TAGS,
+            &E::TAGS,
+            &F::TAGS,
+            &G::TAGS,
+        ],
+    );
 }
 
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline> Inline
@@ -485,6 +511,20 @@ impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline
             input.parse()?,
         ))
     }
+
+    const TAGS: Tags = Tags(
+        &[],
+        &[
+            &A::TAGS,
+            &B::TAGS,
+            &C::TAGS,
+            &D::TAGS,
+            &E::TAGS,
+            &F::TAGS,
+            &G::TAGS,
+            &H::TAGS,
+        ],
+    );
 }
 
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline, H: Inline> Inline
@@ -623,6 +663,21 @@ impl<
             input.parse()?,
         ))
     }
+
+    const TAGS: Tags = Tags(
+        &[],
+        &[
+            &A::TAGS,
+            &B::TAGS,
+            &C::TAGS,
+            &D::TAGS,
+            &E::TAGS,
+            &F::TAGS,
+            &G::TAGS,
+            &H::TAGS,
+            &I::TAGS,
+        ],
+    );
 }
 
 impl<
@@ -780,6 +835,22 @@ impl<
             input.parse()?,
         ))
     }
+
+    const TAGS: Tags = Tags(
+        &[],
+        &[
+            &A::TAGS,
+            &B::TAGS,
+            &C::TAGS,
+            &D::TAGS,
+            &E::TAGS,
+            &F::TAGS,
+            &G::TAGS,
+            &H::TAGS,
+            &I::TAGS,
+            &J::TAGS,
+        ],
+    );
 }
 
 impl<
@@ -956,6 +1027,23 @@ impl<
             input.parse()?,
         ))
     }
+
+    const TAGS: Tags = Tags(
+        &[],
+        &[
+            &A::TAGS,
+            &B::TAGS,
+            &C::TAGS,
+            &D::TAGS,
+            &E::TAGS,
+            &F::TAGS,
+            &G::TAGS,
+            &H::TAGS,
+            &I::TAGS,
+            &J::TAGS,
+            &K::TAGS,
+        ],
+    );
 }
 
 impl<
@@ -1155,6 +1243,24 @@ impl<
             input.parse()?,
         ))
     }
+
+    const TAGS: Tags = Tags(
+        &[],
+        &[
+            &A::TAGS,
+            &B::TAGS,
+            &C::TAGS,
+            &D::TAGS,
+            &E::TAGS,
+            &F::TAGS,
+            &G::TAGS,
+            &H::TAGS,
+            &I::TAGS,
+            &J::TAGS,
+            &K::TAGS,
+            &L::TAGS,
+        ],
+    );
 }
 
 impl<

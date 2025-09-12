@@ -147,6 +147,10 @@ impl Const {
     fn add(self, n: usize, ty: &'static str) -> AddConst {
         AddConst { co: self, n, ty }
     }
+
+    fn tags(self, n: usize) -> TagsConst {
+        TagsConst { co: self, n }
+    }
 }
 
 struct AddConst {
@@ -168,6 +172,27 @@ impl Display for AddConst {
                 .map(|c| format!("{c}::{}", self.co.name))
                 .collect::<Vec<_>>()
                 .join(" + "),
+        )
+    }
+}
+
+struct TagsConst {
+    co: Const,
+    n: usize,
+}
+
+impl Display for TagsConst {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(
+            f,
+            "    const {}: Tags = Tags(&[], &[{}]);",
+            self.co.name,
+            LETTERS
+                .iter()
+                .take(self.n)
+                .map(|c| format!("&{c}::{}", self.co.name))
+                .collect::<Vec<_>>()
+                .join(", "),
         )
     }
 }
@@ -215,6 +240,7 @@ fn per_n(n: usize) -> String {
                         .parse(n, "parse_inline")
                         .last("parse"),
                 ),
+                Box::new("TAGS".co().tags(n)),
             ],
         },
         Impl {

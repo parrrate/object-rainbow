@@ -247,13 +247,13 @@ pub trait Object: 'static + Sized + Send + Sync + ToOutput {
 
     fn tag_hash(&self) -> Hash {
         let mut hasher = Sha256::new();
-        self.to_output(&mut TagOutput(|tag| {
+        Self::TAGS.hash(&mut |tag| {
             hasher.update({
                 let mut hasher = Sha256::new();
                 hasher.update(tag);
                 hasher.finalize()
             })
-        }));
+        });
         hasher.finalize().into()
     }
 
@@ -281,6 +281,21 @@ pub trait Object: 'static + Sized + Send + Sync + ToOutput {
         output.hasher.update(self.data_hash());
         output.hasher.update(self.tag_hash());
         output.hash()
+    }
+
+    const TAGS: Tags = Tags(&[], &[]);
+}
+
+pub struct Tags(&'static [&'static str], &'static [&'static Self]);
+
+impl Tags {
+    fn hash(&self, f: &mut impl FnMut(&'static str)) {
+        for tag in self.0 {
+            f(tag);
+        }
+        for tags in self.1 {
+            tags.hash(f)
+        }
     }
 }
 
@@ -460,6 +475,8 @@ impl<T: Object> Object for (T,) {
     fn parse(input: Input) -> crate::Result<Self> {
         Ok((input.parse()?,))
     }
+
+    const TAGS: Tags = T::TAGS;
 }
 
 impl<T: Inline> Inline for (T,) {
@@ -482,9 +499,6 @@ impl<T: ReflessInline> ReflessInline for (T,) {
 
 pub trait Output {
     fn write(&mut self, data: &[u8]);
-    fn write_tag(&mut self, tag: &'static str) {
-        let _ = tag;
-    }
 }
 
 impl Output for Vec<u8> {
@@ -496,22 +510,6 @@ impl Output for Vec<u8> {
 impl Output for Vec<&'static str> {
     fn write(&mut self, data: &[u8]) {
         let _ = data;
-    }
-
-    fn write_tag(&mut self, tag: &'static str) {
-        self.push(tag);
-    }
-}
-
-pub struct TagOutput<F>(F);
-
-impl<F: FnMut(&'static str)> Output for TagOutput<F> {
-    fn write(&mut self, data: &[u8]) {
-        let _ = data;
-    }
-
-    fn write_tag(&mut self, tag: &'static str) {
-        self.0(tag);
     }
 }
 
@@ -641,6 +639,8 @@ impl<T: Object> Object for Arc<T> {
     fn full_hash(&self) -> Hash {
         (**self).full_hash()
     }
+
+    const TAGS: Tags = T::TAGS;
 }
 
 impl ToOutput for Vec<u8> {
