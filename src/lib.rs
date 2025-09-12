@@ -177,6 +177,20 @@ impl DerefMut for Input<'_> {
 }
 
 impl ParseInput for ReflessInput<'_> {
+    fn parse_chunk<'a, const N: usize>(&mut self) -> crate::Result<&'a [u8; N]>
+    where
+        Self: 'a,
+    {
+        match self.data.split_first_chunk() {
+            Some((chunk, data)) => {
+                self.data = data;
+                self.at += N;
+                Ok(chunk)
+            }
+            None => Err(Error::EndOfInput),
+        }
+    }
+
     fn empty(self) -> crate::Result<()> {
         if self.data.is_empty() {
             Ok(())
@@ -195,17 +209,6 @@ impl ParseInput for ReflessInput<'_> {
 }
 
 impl<'a> ReflessInput<'a> {
-    pub fn parse_chunk<const N: usize>(&mut self) -> crate::Result<&'a [u8; N]> {
-        match self.data.split_first_chunk() {
-            Some((chunk, data)) => {
-                self.data = data;
-                self.at += N;
-                Ok(chunk)
-            }
-            None => Err(Error::EndOfInput),
-        }
-    }
-
     pub fn parse_n(&mut self, n: usize) -> crate::Result<&'a [u8]> {
         match self.data.split_at_checked(n) {
             Some((chunk, data)) => {
@@ -227,6 +230,13 @@ impl<'a> ReflessInput<'a> {
 }
 
 impl ParseInput for Input<'_> {
+    fn parse_chunk<'a, const N: usize>(&mut self) -> crate::Result<&'a [u8; N]>
+    where
+        Self: 'a,
+    {
+        (**self).parse_chunk()
+    }
+
     fn empty(self) -> crate::Result<()> {
         self.refless.empty()
     }
@@ -598,6 +608,9 @@ trait RainbowIterator: Sized + IntoIterator {
 }
 
 pub trait ParseInput: Sized {
+    fn parse_chunk<'a, const N: usize>(&mut self) -> crate::Result<&'a [u8; N]>
+    where
+        Self: 'a;
     fn empty(self) -> crate::Result<()>;
     fn non_empty(self) -> Option<Self>;
 

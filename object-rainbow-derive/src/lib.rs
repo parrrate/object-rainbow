@@ -239,6 +239,9 @@ fn gen_accept_points(data: &Data) -> proc_macro2::TokenStream {
                 quote! { Self::#ident #arm }
             });
             quote! {
+                let kind = ::object_rainbow::Enum::kind(self);
+                let tag = ::object_rainbow::enumkind::EnumKind::to_tag(kind);
+                tag.accept_points(visitor);
                 match self {
                     #(#to_output)*
                 }
