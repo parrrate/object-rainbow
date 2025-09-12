@@ -723,8 +723,4 @@ impl<const N: usize> Size for [u8; N] {
 }
 
 #[derive(ToOutput, Object, Inline, ReflessObject, ReflessInline, Size)]
-pub struct DeriveExample<A, B> {
-    stuff: Arc<Point<Self>>,
-    field1: A,
-    field2: B,
-}
+pub struct DeriveExample;
