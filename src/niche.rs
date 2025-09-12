@@ -1,7 +1,12 @@
-use std::ops::Add;
+use std::ops::{Add, Deref};
 
 use generic_array::{ArrayLength, GenericArray, sequence::Concat};
 use typenum::{ATerm, B0, B1, Bit, Sum, TArr, U0, Unsigned};
+
+use crate::{
+    Enum, Size, SizeExt, ToOutput,
+    enumkind::{EnumKind, EnumTag, UsizeTag},
+};
 
 pub trait MaybeHasNiche {
     type MnArray;
@@ -281,3 +286,46 @@ pub struct NicheFoldOrArray<T>(T);
 impl<T: NicheFoldOr> MnArray for NicheFoldOrArray<T> {
     type MaybeNiche = T::Or;
 }
+
+pub struct EnumNiche<E, const X: usize>(E);
+
+impl<
+    E: Enum<Kind = K>,
+    K: EnumKind<Tag = EnumTag<T, M>>,
+    const M: usize,
+    T: Deref<Target: UsizeTag>
+        + From<T::Target>
+        + ToOutput
+        + Size<Size = N>
+        + MaybeHasNiche<MnArray: MnArray<MaybeNiche = V>>,
+    V: Niche<N = N>,
+    N: ArrayLength,
+    const X: usize,
+> Niche for EnumNiche<E, X>
+{
+    type NeedsTag = V::NeedsTag;
+    type N = N;
+    fn niche() -> GenericArray<u8, Self::N> {
+        if V::NeedsTag::BOOL {
+            T::from(UsizeTag::from_usize(X)).to_array()
+        } else {
+            V::niche()
+        }
+    }
+}
+
+pub trait NicheAuto: Bit {
+    type Auto<T: Niche<NeedsTag = Self>>: MaybeNiche;
+}
+
+impl NicheAuto for B0 {
+    type Auto<T: Niche<NeedsTag = Self>> = SomeNiche<T>;
+}
+
+impl NicheAuto for B1 {
+    type Auto<T: Niche<NeedsTag = Self>> = NoNiche<T>;
+}
+
+pub type AutoNiche<T> = <<T as Niche>::NeedsTag as NicheAuto>::Auto<T>;
+
+pub type AutoEnumNiche<E, const X: usize> = AutoNiche<EnumNiche<E, X>>;
