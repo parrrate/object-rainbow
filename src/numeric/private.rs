@@ -200,6 +200,15 @@ macro_rules! ae {
                 Ae(object.0 as _)
             }
         }
+
+        impl Equivalent<Ae<NonZero<Os<$n>>>> for Ae<NonZero<$n>> {
+            fn into_equivalent(self) -> Ae<NonZero<Os<$n>>> {
+                Ae(NonZero::new(self.0.get() as _).unwrap())
+            }
+            fn from_equivalent(object: Ae<NonZero<Os<$n>>>) -> Self {
+                Ae(NonZero::new(object.0.get() as _).unwrap())
+            }
+        }
     };
 }
 
