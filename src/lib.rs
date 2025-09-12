@@ -3,6 +3,7 @@ extern crate self as object_rainbow;
 use std::{
     any::Any,
     cell::Cell,
+    convert::Infallible,
     future::ready,
     marker::PhantomData,
     ops::{Deref, DerefMut},
@@ -184,7 +185,7 @@ pub trait Fetch: Send + Sync + FetchBytes {
 }
 
 #[derive(Clone)]
-pub struct RawPoint<T> {
+pub struct RawPoint<T = Infallible> {
     hash: Hash,
     origin: Arc<dyn Send + Sync + FetchBytes>,
     _object: PhantomData<fn() -> T>,
