@@ -821,3 +821,153 @@ fn bounds_parse_as_inline(mut generics: Generics, name: &Ident) -> syn::Result<G
         .push(parse_quote!(__I: ::object_rainbow::ParseInput));
     Ok(generics)
 }
+
+#[proc_macro_derive(Enum)]
+pub fn derive_enum(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+    let generics = input.generics.clone();
+    let (_, ty_generics, _) = generics.split_for_impl();
+    let generics = input.generics;
+    let variants = gen_variants(&input.data);
+    let variant_count = gen_variant_count(&input.data);
+    let to_tag = gen_to_tag(&input.data);
+    let from_tag = gen_from_tag(&input.data);
+    let kind = gen_kind(&input.data);
+    let (impl_generics, _, where_clause) = generics.split_for_impl();
+    let output = quote! {
+        const _: () = {
+            #[derive(Clone, Copy)]
+            enum __Kind {
+                #variants
+            }
+
+            impl ::object_rainbow::enumkind::EnumKind for __Kind {
+                type Tag = ::object_rainbow::enumkind::EnumTag<
+                    ::object_rainbow::numeric::Le<u8>,
+                    #variant_count,
+                >;
+
+                fn to_tag(self) -> Self::Tag {
+                    #to_tag
+                }
+
+                fn from_tag(tag: Self::Tag) -> Self {
+                    #from_tag
+                }
+            }
+
+            impl #impl_generics ::object_rainbow::Enum for #name #ty_generics #where_clause {
+                type Kind = __Kind;
+
+                fn kind(&self) -> Self::Kind {
+                    #kind
+                }
+            }
+        };
+    };
+    TokenStream::from(output)
+}
+
+fn gen_variants(data: &Data) -> proc_macro2::TokenStream {
+    match data {
+        Data::Struct(data) => {
+            Error::new_spanned(data.struct_token, "`struct`s are not supported").to_compile_error()
+        }
+        Data::Enum(data) => {
+            let variants = data.variants.iter().map(|v| &v.ident);
+            quote! { #(#variants),* }
+        }
+        Data::Union(data) => {
+            Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
+        }
+    }
+}
+
+fn gen_variant_count(data: &Data) -> proc_macro2::TokenStream {
+    match data {
+        Data::Struct(data) => {
+            Error::new_spanned(data.struct_token, "`struct`s are not supported").to_compile_error()
+        }
+        Data::Enum(data) => {
+            let variant_count = data.variants.len();
+            quote! { #variant_count }
+        }
+        Data::Union(data) => {
+            Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
+        }
+    }
+}
+
+fn gen_to_tag(data: &Data) -> proc_macro2::TokenStream {
+    match data {
+        Data::Struct(data) => {
+            Error::new_spanned(data.struct_token, "`struct`s are not supported").to_compile_error()
+        }
+        Data::Enum(data) => {
+            let to_tag = data.variants.iter().enumerate().map(|(i, v)| {
+                let ident = &v.ident;
+                quote_spanned! { ident.span() =>
+                    Self::#ident => ::object_rainbow::enumkind::EnumTag::from_const::<#i>(),
+                }
+            });
+            quote! {
+                match self {
+                    #(#to_tag)*
+                }
+            }
+        }
+        Data::Union(data) => {
+            Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
+        }
+    }
+}
+
+fn gen_from_tag(data: &Data) -> proc_macro2::TokenStream {
+    match data {
+        Data::Struct(data) => {
+            Error::new_spanned(data.struct_token, "`struct`s are not supported").to_compile_error()
+        }
+        Data::Enum(data) => {
+            let from_tag = data.variants.iter().enumerate().map(|(i, v)| {
+                let ident = &v.ident;
+                quote_spanned! { ident.span() =>
+                    #i => Self::#ident,
+                }
+            });
+            quote! {
+                match (*tag).try_into().unwrap() {
+                    #(#from_tag)*
+                    _ => unreachable!(),
+                }
+            }
+        }
+        Data::Union(data) => {
+            Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
+        }
+    }
+}
+
+fn gen_kind(data: &Data) -> proc_macro2::TokenStream {
+    match data {
+        Data::Struct(data) => {
+            Error::new_spanned(data.struct_token, "`struct`s are not supported").to_compile_error()
+        }
+        Data::Enum(data) => {
+            let variants = data.variants.iter().map(|v| {
+                let ident = &v.ident;
+                quote_spanned! { ident.span() =>
+                    Self::#ident {..} => __Kind::#ident,
+                }
+            });
+            quote! {
+                match self {
+                    #(#variants)*
+                }
+            }
+        }
+        Data::Union(data) => {
+            Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
+        }
+    }
+}

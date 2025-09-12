@@ -7,6 +7,24 @@ pub struct Le<T>(T);
 #[derive(ParseAsInline)]
 pub struct Be<T>(T);
 
+impl<T> From<T> for Ae<T> {
+    fn from(n: T) -> Self {
+        Self(n)
+    }
+}
+
+impl<T> From<T> for Be<T> {
+    fn from(n: T) -> Self {
+        Self(n)
+    }
+}
+
+impl<T> From<T> for Le<T> {
+    fn from(n: T) -> Self {
+        Self(n)
+    }
+}
+
 impl<T> Deref for Ae<T> {
     type Target = T;
 

@@ -22,3 +22,9 @@ pub struct DeriveExample<A, B> {
 fn main() {
     println!("{}", hex::encode(DeriveExample::<(), ()>::HASH));
 }
+
+#[derive(Enum)]
+enum _Test {
+    A,
+    B { x: i32 },
+}
