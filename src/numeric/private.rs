@@ -15,7 +15,7 @@ pub struct Le<T>(pub T);
 #[derive(ParseAsInline)]
 pub struct Be<T>(pub T);
 #[derive(ParseAsInline)]
-pub struct Nz<T: NonZeroable>(T::Nz);
+pub struct Nz<T: NonZeroable>(pub T::Nz);
 
 pub trait NonZeroable {
     type Nz: Send + Sync;
