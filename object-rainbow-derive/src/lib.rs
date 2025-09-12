@@ -702,17 +702,17 @@ pub fn derive_size(input: TokenStream) -> TokenStream {
     let (_, ty_generics, where_clause) = generics.split_for_impl();
     let mut generics = input.generics;
     generics.params.push(parse_quote!(
-        __Output: ::typenum::Unsigned
+        __Output: ::object_rainbow::typenum::Unsigned
     ));
     let (impl_generics, _, _) = generics.split_for_impl();
     let output = quote! {
         const _: () = {
-            use ::typenum::tarr;
+            use ::object_rainbow::typenum::tarr;
 
             impl #impl_generics ::object_rainbow::Size for #name #ty_generics #where_clause {
                 const SIZE: usize = #size;
 
-                type Size = <#size_arr as ::typenum::FoldAdd>::Output;
+                type Size = <#size_arr as ::object_rainbow::typenum::FoldAdd>::Output;
             }
         };
     };
@@ -750,7 +750,7 @@ fn bounds_size(
             for v in data.variants.iter().skip(1) {
                 let arr = fields_size_arr(&v.fields, true);
                 generics.make_where_clause().predicates.push(parse_quote!(
-                    #arr: ::typenum::FoldAdd<Output = __Output>
+                    #arr: ::object_rainbow::typenum::FoldAdd<Output = __Output>
                 ));
             }
         }
@@ -762,7 +762,7 @@ fn bounds_size(
         }
     }
     generics.make_where_clause().predicates.push(parse_quote!(
-        #size_arr: ::typenum::FoldAdd<Output = __Output>
+        #size_arr: ::object_rainbow::typenum::FoldAdd<Output = __Output>
     ));
     Ok(generics)
 }
@@ -784,9 +784,9 @@ fn fields_size_arr(fields: &syn::Fields, as_enum: bool) -> proc_macro2::TokenStr
     };
     if fields.is_empty() {
         return if as_enum {
-            quote! { tarr![#kind_size, ::typenum::consts::U0] }
+            quote! { tarr![#kind_size, ::object_rainbow::typenum::consts::U0] }
         } else {
-            quote! { tarr![::typenum::consts::U0] }
+            quote! { tarr![::object_rainbow::typenum::consts::U0] }
         };
     }
     let size_arr = fields.iter().map(|f| {
@@ -1341,7 +1341,7 @@ pub fn derive_maybe_has_niche(input: TokenStream) -> TokenStream {
     let (impl_generics, _, where_clause) = generics.split_for_impl();
     let output = quote! {
         const _: () = {
-            use ::typenum::tarr;
+            use ::object_rainbow::typenum::tarr;
 
             impl #impl_generics ::object_rainbow::MaybeHasNiche for #name #ty_generics #where_clause {
                 type MnArray = #mn_array;
@@ -1370,7 +1370,7 @@ fn bounds_maybe_has_niche(mut generics: Generics, data: &Data) -> syn::Result<Ge
         }
         Data::Enum(data) => {
             generics.params.push(parse_quote!(
-                __N: ::typenum::Unsigned
+                __N: ::object_rainbow::typenum::Unsigned
             ));
             for (i, v) in data.variants.iter().enumerate() {
                 let mn_array = fields_mn_array(&v.fields, Some(i));

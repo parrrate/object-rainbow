@@ -16,6 +16,8 @@ pub use object_rainbow_derive::{
     ReflessObject, Size, Tagged, ToOutput, Topological,
 };
 use sha2::{Digest, Sha256};
+#[doc(hidden)]
+pub use typenum;
 use typenum::{ATerm, Max, TArr, Unsigned, tarr};
 
 pub use self::enumkind::Enum;
