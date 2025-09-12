@@ -23,6 +23,7 @@ pub struct DeriveExample<A, B> {
 }
 
 #[derive(Enum, ToOutput, Topological, Parse, ParseInline, Size)]
+#[enumtag("Le<u16>")]
 enum Test<U, V, Y> {
     A,
     B(U),
