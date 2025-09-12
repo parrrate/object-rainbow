@@ -1,3 +1,5 @@
+use std::num::NonZero;
+
 use object_rainbow::{
     numeric::{Be, Le},
     *,
@@ -58,7 +60,7 @@ enum Test<U, V, Y> {
     ParseInline,
     MaybeHasNiche,
 )]
-#[enumtag("Le<u16>")]
+#[enumtag("Le<NonZero<u16>>")]
 enum Stuff<T> {
     A(T),
     B(T),
@@ -72,6 +74,7 @@ fn main() {
     println!("{}", DeriveExample::<Be<u8>, Le<u8>>::SIZE);
     println!("{}", Test::<(), (), ()>::SIZE);
     println!("{}", Option::<Test<(), (), ()>>::SIZE);
+    println!("{}", Option::<Stuff<()>>::SIZE);
     println!("{}", Option::<Stuff<bool>>::SIZE);
     println!("{:?}", None::<Stuff<(bool, ())>>.output::<Vec<u8>>());
 }
