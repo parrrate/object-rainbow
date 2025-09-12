@@ -662,6 +662,28 @@ impl<T: Object> Object for Arc<T> {
     const TAGS: Tags = T::TAGS;
 }
 
+impl<T: Inline> Inline for Arc<T> {
+    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
+        T::parse_inline(input).map(Arc::new)
+    }
+}
+
+impl<T: ReflessObject> ReflessObject for Arc<T> {
+    fn parse(input: ReflessInput) -> crate::Result<Self> {
+        T::parse(input).map(Arc::new)
+    }
+}
+
+impl<T: ReflessInline> ReflessInline for Arc<T> {
+    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
+        T::parse_inline(input).map(Arc::new)
+    }
+}
+
+impl<T: Size> Size for Arc<T> {
+    const SIZE: usize = T::SIZE;
+}
+
 impl ToOutput for Vec<u8> {
     fn to_output(&self, output: &mut dyn Output) {
         output.write(self);
@@ -696,7 +718,7 @@ impl<const N: usize> Size for [u8; N] {
 
 #[derive(ToOutput, Object, Inline, ReflessObject, ReflessInline, Size)]
 pub struct DeriveExample<A, B> {
-    stuff: (),
+    stuff: Arc<()>,
     field1: A,
     field2: B,
 }
