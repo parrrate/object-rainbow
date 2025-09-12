@@ -1,7 +1,9 @@
 mod arc;
 mod array;
+mod bool;
 mod btree;
 mod bytes;
+mod option;
 mod refs;
 mod tuple;
 mod tuple1;
