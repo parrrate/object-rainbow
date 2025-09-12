@@ -3,25 +3,29 @@ extern crate self as object_rainbow;
 use std::{
     future::ready,
     marker::PhantomData,
-    ops::{Add, Deref, DerefMut},
+    ops::{Deref, DerefMut},
     pin::Pin,
     sync::Arc,
 };
 
 pub use anyhow::anyhow;
 use futures_util::TryFutureExt;
-use generic_array::{ArrayLength, GenericArray, sequence::Concat};
 pub use object_rainbow_derive::{
     Enum, Inline, MaybeHasNiche, Object, Parse, ParseAsInline, ParseInline, ReflessInline,
     ReflessObject, Size, Tagged, ToOutput, Topological,
 };
 use sha2::{Digest, Sha256};
-use typenum::{ATerm, B0, B1, Bit, Max, Sum, TArr, U0, U1, Unsigned, tarr};
+use typenum::{ATerm, Max, TArr, Unsigned};
 
 pub use self::enumkind::Enum;
+pub use self::niche::{
+    MaybeHasNiche, MaybeNiche, MnArray, Niche, NicheFoldOrArray, NicheOr, NoNiche, SomeNiche,
+    ZeroNiche,
+};
 
 pub mod enumkind;
 mod impls;
+mod niche;
 pub mod numeric;
 mod sha2_const;
 
@@ -795,213 +799,6 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
     }
 }
 
-pub trait MaybeHasNiche {
-    type MnArray;
-}
-
-pub struct NoNiche<N>(N);
-pub struct AndNiche<N, T>(N, T);
-pub struct NicheAnd<T, N>(T, N);
-pub struct SomeNiche<T>(T);
-
-pub trait Niche {
-    type NeedsTag: Bit;
-    type N: ArrayLength;
-    fn niche() -> GenericArray<u8, Self::N>;
-}
-
-pub trait MaybeNiche {
-    type N: Unsigned;
-}
-
-pub trait AsTailOf<U: MaybeNiche>: MaybeNiche {
-    type WithHead: MaybeNiche;
-}
-
-pub trait AsHeadOf<U: MaybeNiche>: MaybeNiche {
-    type WithTail: MaybeNiche;
-}
-
-impl<N: ArrayLength> Niche for NoNiche<N> {
-    type NeedsTag = B1;
-    type N = N;
-    fn niche() -> GenericArray<u8, Self::N> {
-        GenericArray::default()
-    }
-}
-
-impl<N: Unsigned> MaybeNiche for NoNiche<N> {
-    type N = N;
-}
-
-impl<U: MaybeNiche<N: Add<N, Output: Unsigned>>, N: Unsigned> AsTailOf<U> for NoNiche<N> {
-    type WithHead = NoNiche<Sum<U::N, N>>;
-}
-
-impl<N: Unsigned, U: AsTailOf<Self>> AsHeadOf<U> for NoNiche<N> {
-    type WithTail = U::WithHead;
-}
-
-impl<N: ArrayLength + Add<T::N, Output: ArrayLength>, T: Niche> Niche for AndNiche<N, T> {
-    type NeedsTag = T::NeedsTag;
-    type N = Sum<N, T::N>;
-
-    fn niche() -> GenericArray<u8, Self::N> {
-        Concat::concat(GenericArray::<u8, N>::default(), T::niche())
-    }
-}
-
-impl<N: Unsigned, T: MaybeNiche> MaybeNiche for AndNiche<N, T>
-where
-    N: Add<T::N, Output: Unsigned>,
-{
-    type N = Sum<N, T::N>;
-}
-
-impl<U: MaybeNiche<N: Add<Sum<N, T::N>, Output: Unsigned>>, N: Unsigned, T: MaybeNiche> AsTailOf<U>
-    for AndNiche<N, T>
-where
-    N: Add<T::N, Output: Unsigned>,
-{
-    type WithHead = AndNiche<U::N, Self>;
-}
-
-impl<N: Unsigned, T: MaybeNiche, U: MaybeNiche> AsHeadOf<U> for AndNiche<N, T>
-where
-    N: Add<T::N, Output: Unsigned>,
-    Sum<N, T::N>: Add<U::N, Output: Unsigned>,
-{
-    type WithTail = NicheAnd<Self, U::N>;
-}
-
-impl<T: Niche<N: Add<N, Output: ArrayLength>>, N: ArrayLength> Niche for NicheAnd<T, N> {
-    type NeedsTag = T::NeedsTag;
-    type N = Sum<T::N, N>;
-
-    fn niche() -> GenericArray<u8, Self::N> {
-        Concat::concat(T::niche(), GenericArray::<u8, N>::default())
-    }
-}
-
-impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, N: Unsigned> MaybeNiche for NicheAnd<T, N> {
-    type N = Sum<T::N, N>;
-}
-
-impl<
-    U: MaybeNiche<N: Add<Sum<T::N, N>, Output: Unsigned>>,
-    T: MaybeNiche<N: Add<N, Output: Unsigned>>,
-    N: Unsigned,
-> AsTailOf<U> for NicheAnd<T, N>
-{
-    type WithHead = AndNiche<U::N, Self>;
-}
-
-impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, N: Unsigned, U: MaybeNiche> AsHeadOf<U>
-    for NicheAnd<T, N>
-where
-    Sum<T::N, N>: Add<U::N, Output: Unsigned>,
-{
-    type WithTail = NicheAnd<Self, U::N>;
-}
-
-impl<T: Niche<NeedsTag = B0>> Niche for SomeNiche<T> {
-    type NeedsTag = T::NeedsTag;
-    type N = T::N;
-    fn niche() -> GenericArray<u8, Self::N> {
-        T::niche()
-    }
-}
-
-impl<T: Niche<NeedsTag = B0>> MaybeNiche for SomeNiche<T> {
-    type N = T::N;
-}
-
-impl<U: MaybeNiche<N: Add<T::N, Output: Unsigned>>, T: Niche<NeedsTag = B0>> AsTailOf<U>
-    for SomeNiche<T>
-{
-    type WithHead = AndNiche<U::N, SomeNiche<T>>;
-}
-
-impl<T: Niche<N: Add<U::N, Output: Unsigned>, NeedsTag = B0>, U: MaybeNiche> AsHeadOf<U>
-    for SomeNiche<T>
-{
-    type WithTail = NicheAnd<SomeNiche<T>, U::N>;
-}
-
-pub trait MnArray {
-    type MaybeNiche: MaybeNiche;
-}
-
-impl MnArray for ATerm {
-    type MaybeNiche = NoNiche<U0>;
-}
-
-impl<T: MaybeNiche> MnArray for T {
-    type MaybeNiche = T;
-}
-
-impl<T: AsHeadOf<R::MaybeNiche>, R: MnArray> MnArray for TArr<T, R> {
-    type MaybeNiche = T::WithTail;
-}
-
-pub struct ZeroNiche<N>(N);
-
-impl<N: ArrayLength> Niche for ZeroNiche<N> {
-    type NeedsTag = B0;
-    type N = N;
-    fn niche() -> GenericArray<u8, Self::N> {
-        GenericArray::default()
-    }
-}
-
-impl<T> MaybeHasNiche for Point<T> {
-    type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
-}
-
-#[test]
-fn options() {
-    type T0 = bool;
-    type T1 = Option<T0>;
-    type T2 = Option<T1>;
-    type T3 = Option<T2>;
-    type T4 = Option<T3>;
-    type T5 = Option<T4>;
-    assert_eq!(T0::SIZE, 1);
-    assert_eq!(T1::SIZE, 1);
-    assert_eq!(T2::SIZE, 2);
-    assert_eq!(T3::SIZE, 2);
-    assert_eq!(T4::SIZE, 3);
-    assert_eq!(T5::SIZE, 3);
-    assert_eq!(false.output::<Vec<u8>>(), [0]);
-    assert_eq!(true.output::<Vec<u8>>(), [1]);
-    assert_eq!(Some(false).output::<Vec<u8>>(), [0]);
-    assert_eq!(Some(true).output::<Vec<u8>>(), [1]);
-    assert_eq!(None::<bool>.output::<Vec<u8>>(), [2]);
-    assert_eq!(Some(Some(false)).output::<Vec<u8>>(), [0, 0]);
-    assert_eq!(Some(Some(true)).output::<Vec<u8>>(), [0, 1]);
-    assert_eq!(Some(None::<bool>).output::<Vec<u8>>(), [0, 2]);
-    assert_eq!(None::<Option<bool>>.output::<Vec<u8>>(), [1, 0]);
-    assert_eq!(Some(Some(Some(false))).output::<Vec<u8>>(), [0, 0]);
-    assert_eq!(Some(Some(Some(true))).output::<Vec<u8>>(), [0, 1]);
-    assert_eq!(Some(Some(None::<bool>)).output::<Vec<u8>>(), [0, 2]);
-    assert_eq!(Some(None::<Option<bool>>).output::<Vec<u8>>(), [1, 0]);
-    assert_eq!(None::<Option<Option<bool>>>.output::<Vec<u8>>(), [2, 0]);
-    assert_eq!(Option::<Point<()>>::SIZE, HASH_SIZE);
-    assert_eq!(Some(()).output::<Vec<u8>>(), [0]);
-    assert_eq!(Some(((), ())).output::<Vec<u8>>(), [0]);
-    assert_eq!(Some(((), true)).output::<Vec<u8>>(), [1]);
-    assert_eq!(Some((true, true)).output::<Vec<u8>>(), [1, 1]);
-    assert_eq!(Some((Some(true), true)).output::<Vec<u8>>(), [1, 1]);
-    assert_eq!(Some((None::<bool>, true)).output::<Vec<u8>>(), [2, 1]);
-    assert_eq!(Some((true, None::<bool>)).output::<Vec<u8>>(), [1, 2]);
-    assert_eq!(None::<(Option<bool>, bool)>.output::<Vec<u8>>(), [0, 2]);
-    assert_eq!(None::<(bool, Option<bool>)>.output::<Vec<u8>>(), [2, 0]);
-    assert_eq!(
-        Some(Some((Some(true), Some(true)))).output::<Vec<u8>>(),
-        [0, 1, 1],
-    );
-}
-
 pub trait FoldMax {
     type Max;
 }
@@ -1012,44 +809,6 @@ impl<N> FoldMax for TArr<N, ATerm> {
 
 impl<N: Max<A::Max>, A: FoldMax> FoldMax for TArr<N, A> {
     type Max = N::Output;
-}
-
-pub trait NicheOr: MaybeNiche {
-    type NicheOr<U: NicheOr<N = Self::N>>: NicheOr<N = Self::N>;
-}
-
-impl<N: Unsigned> NicheOr for NoNiche<N> {
-    type NicheOr<U: NicheOr<N = Self::N>> = U;
-}
-
-impl<N: Unsigned + Add<T::N, Output: Unsigned>, T: MaybeNiche> NicheOr for AndNiche<N, T> {
-    type NicheOr<U: NicheOr<N = Self::N>> = Self;
-}
-
-impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, N: Unsigned> NicheOr for NicheAnd<T, N> {
-    type NicheOr<U: NicheOr<N = Self::N>> = Self;
-}
-
-impl<T: Niche<NeedsTag = B0>> NicheOr for SomeNiche<T> {
-    type NicheOr<U: NicheOr<N = Self::N>> = Self;
-}
-
-pub trait NicheFoldOr {
-    type Or: NicheOr;
-}
-
-impl<T: MnArray<MaybeNiche: NicheOr>> NicheFoldOr for TArr<T, ATerm> {
-    type Or = T::MaybeNiche;
-}
-
-impl<T: NicheOr, A: NicheFoldOr<Or: MaybeNiche<N = T::N>>> NicheFoldOr for TArr<T, A> {
-    type Or = T::NicheOr<A::Or>;
-}
-
-pub struct NicheFoldOrArray<T>(T);
-
-impl<T: NicheFoldOr> MnArray for NicheFoldOrArray<T> {
-    type MaybeNiche = T::Or;
 }
 
 pub trait Equivalent<T>: Sized {
@@ -1123,4 +882,52 @@ impl<U: Equivalent<T>, T> Fetch for FromEquivalent<U, T> {
     fn fetch(&self) -> FailFuture<Self::T> {
         Box::pin(self.origin.fetch().map_ok(U::from_equivalent))
     }
+}
+
+impl<T> MaybeHasNiche for Point<T> {
+    type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
+}
+
+#[test]
+fn options() {
+    type T0 = bool;
+    type T1 = Option<T0>;
+    type T2 = Option<T1>;
+    type T3 = Option<T2>;
+    type T4 = Option<T3>;
+    type T5 = Option<T4>;
+    assert_eq!(T0::SIZE, 1);
+    assert_eq!(T1::SIZE, 1);
+    assert_eq!(T2::SIZE, 2);
+    assert_eq!(T3::SIZE, 2);
+    assert_eq!(T4::SIZE, 3);
+    assert_eq!(T5::SIZE, 3);
+    assert_eq!(false.output::<Vec<u8>>(), [0]);
+    assert_eq!(true.output::<Vec<u8>>(), [1]);
+    assert_eq!(Some(false).output::<Vec<u8>>(), [0]);
+    assert_eq!(Some(true).output::<Vec<u8>>(), [1]);
+    assert_eq!(None::<bool>.output::<Vec<u8>>(), [2]);
+    assert_eq!(Some(Some(false)).output::<Vec<u8>>(), [0, 0]);
+    assert_eq!(Some(Some(true)).output::<Vec<u8>>(), [0, 1]);
+    assert_eq!(Some(None::<bool>).output::<Vec<u8>>(), [0, 2]);
+    assert_eq!(None::<Option<bool>>.output::<Vec<u8>>(), [1, 0]);
+    assert_eq!(Some(Some(Some(false))).output::<Vec<u8>>(), [0, 0]);
+    assert_eq!(Some(Some(Some(true))).output::<Vec<u8>>(), [0, 1]);
+    assert_eq!(Some(Some(None::<bool>)).output::<Vec<u8>>(), [0, 2]);
+    assert_eq!(Some(None::<Option<bool>>).output::<Vec<u8>>(), [1, 0]);
+    assert_eq!(None::<Option<Option<bool>>>.output::<Vec<u8>>(), [2, 0]);
+    assert_eq!(Option::<Point<()>>::SIZE, HASH_SIZE);
+    assert_eq!(Some(()).output::<Vec<u8>>(), [0]);
+    assert_eq!(Some(((), ())).output::<Vec<u8>>(), [0]);
+    assert_eq!(Some(((), true)).output::<Vec<u8>>(), [1]);
+    assert_eq!(Some((true, true)).output::<Vec<u8>>(), [1, 1]);
+    assert_eq!(Some((Some(true), true)).output::<Vec<u8>>(), [1, 1]);
+    assert_eq!(Some((None::<bool>, true)).output::<Vec<u8>>(), [2, 1]);
+    assert_eq!(Some((true, None::<bool>)).output::<Vec<u8>>(), [1, 2]);
+    assert_eq!(None::<(Option<bool>, bool)>.output::<Vec<u8>>(), [0, 2]);
+    assert_eq!(None::<(bool, Option<bool>)>.output::<Vec<u8>>(), [2, 0]);
+    assert_eq!(
+        Some(Some((Some(true), Some(true)))).output::<Vec<u8>>(),
+        [0, 1, 1],
+    );
 }

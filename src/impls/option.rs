@@ -1,3 +1,8 @@
+use std::ops::Add;
+
+use generic_array::{ArrayLength, GenericArray};
+use typenum::{B0, B1, Bit};
+
 use crate::*;
 
 impl<T: ToOutput + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag = B>, B: Bit>

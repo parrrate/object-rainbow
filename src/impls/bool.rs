@@ -1,3 +1,6 @@
+use generic_array::GenericArray;
+use typenum::U1;
+
 use crate::*;
 
 impl ToOutput for bool {
@@ -19,7 +22,7 @@ impl Size for bool {
 pub struct BoolNiche;
 
 impl Niche for BoolNiche {
-    type NeedsTag = B0;
+    type NeedsTag = typenum::B0;
     type N = U1;
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::from_array([2])
