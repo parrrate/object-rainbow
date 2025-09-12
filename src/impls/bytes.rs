@@ -1,3 +1,7 @@
+use std::ops::Mul;
+
+use typenum::ToUInt;
+
 use crate::*;
 
 impl<const N: usize> ToOutput for [u8; N] {
@@ -24,12 +28,21 @@ impl<const N: usize> ReflessObject for [u8; N] {}
 
 impl<const N: usize> ReflessInline for [u8; N] {}
 
-impl<T: Size, const N: usize> Size for [T; N] {
+impl<T: Size, const N: usize> Size for [T; N]
+where
+    typenum::generic_const_mappings::Const<N>:
+        ToUInt<Output: Unsigned> + Mul<T::Size, Output: Unsigned>,
+{
     const SIZE: usize = T::SIZE * N;
+    type Size = <typenum::generic_const_mappings::Const<N> as Mul<T::Size>>::Output;
 }
 
-impl<const N: usize> Size for [u8; N] {
+impl<const N: usize> Size for [u8; N]
+where
+    typenum::generic_const_mappings::Const<N>: ToUInt<Output: Unsigned>,
+{
     const SIZE: usize = N;
+    type Size = typenum::generic_const_mappings::U<N>;
 }
 
 impl ToOutput for Vec<u8> {

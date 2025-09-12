@@ -24,8 +24,8 @@ fn main() {
 }
 
 #[derive(Enum, ToOutput, Topological, Parse, ParseInline)]
-enum _Test<U, V> {
+enum _Test<U, V, Y> {
     A,
     B(U),
-    C { x: V },
+    C { y: Y, x: V },
 }

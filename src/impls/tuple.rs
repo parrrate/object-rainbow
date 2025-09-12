@@ -1,3 +1,5 @@
+use typenum::tarr;
+
 use crate::*;
 
 impl<A: ToOutput, B: ToOutput> ToOutput for (A, B) {
@@ -26,8 +28,13 @@ impl<A: ReflessInline, B: ReflessObject> ReflessObject for (A, B) {}
 
 impl<A: ReflessInline, B: ReflessInline> ReflessInline for (A, B) {}
 
-impl<A: Size, B: Size> Size for (A, B) {
+impl<A: Size, B: Size> Size for (A, B)
+where
+    tarr![A, B,]: typenum::FoldAdd<Output: Unsigned>,
+{
     const SIZE: usize = A::SIZE + B::SIZE;
+
+    type Size = <tarr![A, B,] as typenum::FoldAdd>::Output;
 }
 
 impl<II: ParseInput, A: ParseInline<II>, B: Parse<II>> Parse<II> for (A, B) {
@@ -70,8 +77,13 @@ impl<A: ReflessInline, B: ReflessInline, C: ReflessObject> ReflessObject for (A,
 
 impl<A: ReflessInline, B: ReflessInline, C: ReflessInline> ReflessInline for (A, B, C) {}
 
-impl<A: Size, B: Size, C: Size> Size for (A, B, C) {
+impl<A: Size, B: Size, C: Size> Size for (A, B, C)
+where
+    tarr![A, B, C,]: typenum::FoldAdd<Output: Unsigned>,
+{
     const SIZE: usize = A::SIZE + B::SIZE + C::SIZE;
+
+    type Size = <tarr![A, B, C,] as typenum::FoldAdd>::Output;
 }
 
 impl<II: ParseInput, A: ParseInline<II>, B: ParseInline<II>, C: Parse<II>> Parse<II> for (A, B, C) {
@@ -128,8 +140,13 @@ impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessInline> Ref
 {
 }
 
-impl<A: Size, B: Size, C: Size, D: Size> Size for (A, B, C, D) {
+impl<A: Size, B: Size, C: Size, D: Size> Size for (A, B, C, D)
+where
+    tarr![A, B, C, D,]: typenum::FoldAdd<Output: Unsigned>,
+{
     const SIZE: usize = A::SIZE + B::SIZE + C::SIZE + D::SIZE;
+
+    type Size = <tarr![A, B, C, D,] as typenum::FoldAdd>::Output;
 }
 
 impl<II: ParseInput, A: ParseInline<II>, B: ParseInline<II>, C: ParseInline<II>, D: Parse<II>>
@@ -198,8 +215,13 @@ impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessInline, E: 
 {
 }
 
-impl<A: Size, B: Size, C: Size, D: Size, E: Size> Size for (A, B, C, D, E) {
+impl<A: Size, B: Size, C: Size, D: Size, E: Size> Size for (A, B, C, D, E)
+where
+    tarr![A, B, C, D, E,]: typenum::FoldAdd<Output: Unsigned>,
+{
     const SIZE: usize = A::SIZE + B::SIZE + C::SIZE + D::SIZE + E::SIZE;
+
+    type Size = <tarr![A, B, C, D, E,] as typenum::FoldAdd>::Output;
 }
 
 impl<
@@ -309,8 +331,13 @@ impl<
 {
 }
 
-impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size> Size for (A, B, C, D, E, F) {
+impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size> Size for (A, B, C, D, E, F)
+where
+    tarr![A, B, C, D, E, F,]: typenum::FoldAdd<Output: Unsigned>,
+{
     const SIZE: usize = A::SIZE + B::SIZE + C::SIZE + D::SIZE + E::SIZE + F::SIZE;
+
+    type Size = <tarr![A, B, C, D, E, F,] as typenum::FoldAdd>::Output;
 }
 
 impl<
@@ -443,8 +470,13 @@ impl<
 {
 }
 
-impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size> Size for (A, B, C, D, E, F, G) {
+impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size> Size for (A, B, C, D, E, F, G)
+where
+    tarr![A, B, C, D, E, F, G,]: typenum::FoldAdd<Output: Unsigned>,
+{
     const SIZE: usize = A::SIZE + B::SIZE + C::SIZE + D::SIZE + E::SIZE + F::SIZE + G::SIZE;
+
+    type Size = <tarr![A, B, C, D, E, F, G,] as typenum::FoldAdd>::Output;
 }
 
 impl<
@@ -597,9 +629,13 @@ impl<
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size> Size
     for (A, B, C, D, E, F, G, H)
+where
+    tarr![A, B, C, D, E, F, G, H,]: typenum::FoldAdd<Output: Unsigned>,
 {
     const SIZE: usize =
         A::SIZE + B::SIZE + C::SIZE + D::SIZE + E::SIZE + F::SIZE + G::SIZE + H::SIZE;
+
+    type Size = <tarr![A, B, C, D, E, F, G, H,] as typenum::FoldAdd>::Output;
 }
 
 impl<
@@ -790,9 +826,13 @@ impl<
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size, I: Size> Size
     for (A, B, C, D, E, F, G, H, I)
+where
+    tarr![A, B, C, D, E, F, G, H, I,]: typenum::FoldAdd<Output: Unsigned>,
 {
     const SIZE: usize =
         A::SIZE + B::SIZE + C::SIZE + D::SIZE + E::SIZE + F::SIZE + G::SIZE + H::SIZE + I::SIZE;
+
+    type Size = <tarr![A, B, C, D, E, F, G, H, I,] as typenum::FoldAdd>::Output;
 }
 
 impl<
@@ -997,6 +1037,8 @@ impl<
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size, I: Size, J: Size> Size
     for (A, B, C, D, E, F, G, H, I, J)
+where
+    tarr![A, B, C, D, E, F, G, H, I, J,]: typenum::FoldAdd<Output: Unsigned>,
 {
     const SIZE: usize = A::SIZE
         + B::SIZE
@@ -1008,6 +1050,8 @@ impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size, I: 
         + H::SIZE
         + I::SIZE
         + J::SIZE;
+
+    type Size = <tarr![A, B, C, D, E, F, G, H, I, J,] as typenum::FoldAdd>::Output;
 }
 
 impl<
@@ -1237,6 +1281,8 @@ impl<
     J: Size,
     K: Size,
 > Size for (A, B, C, D, E, F, G, H, I, J, K)
+where
+    tarr![A, B, C, D, E, F, G, H, I, J, K,]: typenum::FoldAdd<Output: Unsigned>,
 {
     const SIZE: usize = A::SIZE
         + B::SIZE
@@ -1249,6 +1295,8 @@ impl<
         + I::SIZE
         + J::SIZE
         + K::SIZE;
+
+    type Size = <tarr![A, B, C, D, E, F, G, H, I, J, K,] as typenum::FoldAdd>::Output;
 }
 
 impl<
@@ -1493,6 +1541,8 @@ impl<
     K: Size,
     L: Size,
 > Size for (A, B, C, D, E, F, G, H, I, J, K, L)
+where
+    tarr![A, B, C, D, E, F, G, H, I, J, K, L,]: typenum::FoldAdd<Output: Unsigned>,
 {
     const SIZE: usize = A::SIZE
         + B::SIZE
@@ -1506,6 +1556,8 @@ impl<
         + J::SIZE
         + K::SIZE
         + L::SIZE;
+
+    type Size = <tarr![A, B, C, D, E, F, G, H, I, J, K, L,] as typenum::FoldAdd>::Output;
 }
 
 impl<

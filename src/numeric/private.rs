@@ -81,6 +81,7 @@ macro_rules! ae {
 
         impl Size for Ae<$n> {
             const SIZE: usize = std::mem::size_of::<$n>();
+            type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
         }
 
         impl Topological for Ae<$n> {
@@ -131,10 +132,12 @@ macro_rules! lebe {
 
         impl Size for Le<$n> {
             const SIZE: usize = std::mem::size_of::<$n>();
+            type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
         }
 
         impl Size for Be<$n> {
             const SIZE: usize = std::mem::size_of::<$n>();
+            type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
         }
 
         impl Topological for Le<$n> {
