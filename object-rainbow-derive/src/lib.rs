@@ -1286,7 +1286,7 @@ fn gen_from_tag(data: &Data) -> proc_macro2::TokenStream {
                 }
             });
             quote! {
-                match (*tag).try_into().unwrap() {
+                match tag.to_usize() {
                     #(#from_tag)*
                     _ => unreachable!(),
                 }
