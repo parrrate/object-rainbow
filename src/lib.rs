@@ -249,6 +249,33 @@ impl ParseInput for ReflessInput<'_> {
         }
     }
 
+    fn parse_n<'a>(&mut self, n: usize) -> crate::Result<&'a [u8]>
+    where
+        Self: 'a,
+    {
+        match self.data.split_at_checked(n) {
+            Some((chunk, data)) => {
+                self.data = data;
+                self.at += n;
+                Ok(chunk)
+            }
+            None => Err(Error::EndOfInput),
+        }
+    }
+
+    fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
+        match self.data.split_at_checked(n) {
+            Some((chunk, _)) => {
+                if chunk == c {
+                    Ok(None)
+                } else {
+                    self.parse_inline().map(Some)
+                }
+            }
+            None => Err(Error::EndOfInput),
+        }
+    }
+
     fn empty(self) -> crate::Result<()> {
         if self.data.is_empty() {
             Ok(())
@@ -267,17 +294,6 @@ impl ParseInput for ReflessInput<'_> {
 }
 
 impl<'a> ReflessInput<'a> {
-    pub fn parse_n(&mut self, n: usize) -> crate::Result<&'a [u8]> {
-        match self.data.split_at_checked(n) {
-            Some((chunk, data)) => {
-                self.data = data;
-                self.at += n;
-                Ok(chunk)
-            }
-            None => Err(Error::EndOfInput),
-        }
-    }
-
     pub fn parse_all(self) -> crate::Result<&'a [u8]> {
         Ok(self.data)
     }
@@ -293,6 +309,26 @@ impl ParseInput for Input<'_> {
         Self: 'a,
     {
         (**self).parse_chunk()
+    }
+
+    fn parse_n<'a>(&mut self, n: usize) -> crate::Result<&'a [u8]>
+    where
+        Self: 'a,
+    {
+        (**self).parse_n(n)
+    }
+
+    fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
+        match self.data.split_at_checked(n) {
+            Some((chunk, _)) => {
+                if chunk == c {
+                    Ok(None)
+                } else {
+                    self.parse_inline().map(Some)
+                }
+            }
+            None => Err(Error::EndOfInput),
+        }
     }
 
     fn empty(self) -> crate::Result<()> {
@@ -778,6 +814,10 @@ pub trait ParseInput: Sized {
     fn parse_chunk<'a, const N: usize>(&mut self) -> crate::Result<&'a [u8; N]>
     where
         Self: 'a;
+    fn parse_n<'a>(&mut self, n: usize) -> crate::Result<&'a [u8]>
+    where
+        Self: 'a;
+    fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>>;
     fn empty(self) -> crate::Result<()>;
     fn non_empty(self) -> Option<Self>;
 
