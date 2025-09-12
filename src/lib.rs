@@ -215,18 +215,6 @@ impl<'a> ReflessInput<'a> {
     pub fn tell(&self) -> usize {
         self.at
     }
-
-    pub fn parse_inline<T: ReflessInline>(&mut self) -> crate::Result<T> {
-        ReflessInline::parse_inline(self)
-    }
-
-    pub fn parse<T: ReflessObject>(self) -> crate::Result<T> {
-        ReflessObject::parse(self)
-    }
-
-    fn collect_parse<T: ReflessInline, B: FromIterator<T>>(self) -> crate::Result<B> {
-        self.collect(|input| input.parse_inline())
-    }
 }
 
 impl ParseInput for Input<'_> {
@@ -251,18 +239,6 @@ impl Input<'_> {
     fn parse_point<T: Object>(&mut self) -> crate::Result<Point<T>> {
         let address = self.parse_address()?;
         Ok(Point::from_address(address, self.resolve.clone()))
-    }
-
-    fn parse_inline<T: Inline>(&mut self) -> crate::Result<T> {
-        Inline::parse_inline(self)
-    }
-
-    fn parse<T: Object>(self) -> crate::Result<T> {
-        Object::parse(self)
-    }
-
-    fn collect_parse<T: Inline, B: FromIterator<T>>(self) -> crate::Result<B> {
-        self.collect(|input| input.parse_inline())
     }
 }
 
@@ -289,15 +265,13 @@ pub trait Topological {
 pub trait Object:
     'static + Sized + Send + Sync + ToOutput + Topological + for<'a> Parse<Input<'a>>
 {
-    fn parse(input: Input) -> crate::Result<Self>;
-
     fn parse_slice(data: &[u8], resolve: &Arc<dyn Resolve>) -> crate::Result<Self> {
         let input = Input {
             refless: ReflessInput { data, at: 0 },
             resolve,
             index: &mut 0,
         };
-        let object = Object::parse(input)?;
+        let object = Self::parse(input)?;
         Ok(object)
     }
 
@@ -349,14 +323,7 @@ impl Tags {
     }
 }
 
-pub trait Inline: Object + for<'a> ParseInline<Input<'a>> {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self>;
-    fn parse_as_inline(mut input: Input) -> crate::Result<Self> {
-        let object = Inline::parse_inline(&mut input)?;
-        input.empty()?;
-        Ok(object)
-    }
-}
+pub trait Inline: Object + for<'a> ParseInline<Input<'a>> {}
 
 impl<T: Object> Topological for Point<T> {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
@@ -376,11 +343,7 @@ impl<T: Object> ParseInline<Input<'_>> for Point<T> {
     }
 }
 
-impl<T: Object> Object for Point<T> {
-    fn parse(input: Input) -> crate::Result<Self> {
-        Inline::parse_as_inline(input)
-    }
-}
+impl<T: Object> Object for Point<T> {}
 
 impl<T> ToOutput for Point<T> {
     fn to_output(&self, output: &mut dyn Output) {
@@ -388,11 +351,7 @@ impl<T> ToOutput for Point<T> {
     }
 }
 
-impl<T: Object> Inline for Point<T> {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        input.parse_point()
-    }
-}
+impl<T: Object> Inline for Point<T> {}
 
 pub trait Topology: Send + Sync {
     fn len(&self) -> usize;
@@ -440,19 +399,16 @@ impl Topology for TopoVec {
 pub trait ReflessObject:
     'static + Sized + Send + Sync + ToOutput + for<'a> Parse<ReflessInput<'a>>
 {
-    fn parse(input: ReflessInput) -> crate::Result<Self>;
-
     fn parse_slice(data: &[u8]) -> crate::Result<Self> {
         let input = ReflessInput { data, at: 0 };
-        let object = ReflessObject::parse(input)?;
+        let object = Self::parse(input)?;
         Ok(object)
     }
 }
 
 pub trait ReflessInline: ReflessObject + for<'a> ParseInline<ReflessInput<'a>> {
-    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self>;
     fn parse_as_inline(mut input: ReflessInput) -> crate::Result<Self> {
-        let object = ReflessInline::parse_inline(&mut input)?;
+        let object = Self::parse_inline(&mut input)?;
         input.empty()?;
         Ok(object)
     }
@@ -497,17 +453,9 @@ impl<'a, T: ParseInline<ReflessInput<'a>>> ParseInline<Input<'a>> for Refless<T>
     }
 }
 
-impl<T: ReflessObject> Object for Refless<T> {
-    fn parse(input: Input) -> crate::Result<Self> {
-        ReflessObject::parse(input.refless).map(Self)
-    }
-}
+impl<T: ReflessObject> Object for Refless<T> {}
 
-impl<T: ReflessInline> Inline for Refless<T> {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        ReflessInline::parse_inline(input).map(Self)
-    }
-}
+impl<T: ReflessInline> Inline for Refless<T> {}
 
 impl ToOutput for () {
     fn to_output(&self, _: &mut dyn Output) {}
@@ -529,29 +477,13 @@ impl<I: ParseInput> ParseInline<I> for () {
     }
 }
 
-impl Object for () {
-    fn parse(input: Input) -> crate::Result<Self> {
-        Inline::parse_as_inline(input)
-    }
-}
+impl Object for () {}
 
-impl Inline for () {
-    fn parse_inline(_: &mut Input) -> crate::Result<Self> {
-        Ok(())
-    }
-}
+impl Inline for () {}
 
-impl ReflessObject for () {
-    fn parse(input: ReflessInput) -> crate::Result<Self> {
-        ReflessInline::parse_as_inline(input)
-    }
-}
+impl ReflessObject for () {}
 
-impl ReflessInline for () {
-    fn parse_inline(_: &mut ReflessInput) -> crate::Result<Self> {
-        Ok(())
-    }
-}
+impl ReflessInline for () {}
 
 impl Size for () {
     const SIZE: usize = 0;
@@ -582,30 +514,14 @@ impl<T: ParseInline<I>, I: ParseInput> ParseInline<I> for (T,) {
 }
 
 impl<T: Object> Object for (T,) {
-    fn parse(input: Input) -> crate::Result<Self> {
-        Ok((input.parse()?,))
-    }
-
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: Inline> Inline for (T,) {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        Ok((input.parse_inline()?,))
-    }
-}
+impl<T: Inline> Inline for (T,) {}
 
-impl<T: ReflessObject> ReflessObject for (T,) {
-    fn parse(input: ReflessInput) -> crate::Result<Self> {
-        Ok((input.parse()?,))
-    }
-}
+impl<T: ReflessObject> ReflessObject for (T,) {}
 
-impl<T: ReflessInline> ReflessInline for (T,) {
-    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
-        Ok((input.parse_inline()?,))
-    }
-}
+impl<T: ReflessInline> ReflessInline for (T,) {}
 
 pub trait Output {
     fn write(&mut self, data: &[u8]);
@@ -726,17 +642,9 @@ impl<const N: usize> ParseInline<ReflessInput<'_>> for [u8; N] {
     }
 }
 
-impl<const N: usize> ReflessObject for [u8; N] {
-    fn parse(input: ReflessInput) -> crate::Result<Self> {
-        ReflessInline::parse_as_inline(input)
-    }
-}
+impl<const N: usize> ReflessObject for [u8; N] {}
 
-impl<const N: usize> ReflessInline for [u8; N] {
-    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
-        input.parse_chunk().copied()
-    }
-}
+impl<const N: usize> ReflessInline for [u8; N] {}
 
 impl<T: ToOutput> ToOutput for Arc<T> {
     fn to_output(&self, output: &mut dyn Output) {
@@ -771,10 +679,6 @@ impl<T: Topological> Topological for Arc<T> {
 }
 
 impl<T: Object> Object for Arc<T> {
-    fn parse(input: Input) -> crate::Result<Self> {
-        Object::parse(input).map(Self::new)
-    }
-
     fn full_hash(&self) -> Hash {
         (**self).full_hash()
     }
@@ -782,23 +686,11 @@ impl<T: Object> Object for Arc<T> {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: Inline> Inline for Arc<T> {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        Inline::parse_inline(input).map(Self::new)
-    }
-}
+impl<T: Inline> Inline for Arc<T> {}
 
-impl<T: ReflessObject> ReflessObject for Arc<T> {
-    fn parse(input: ReflessInput) -> crate::Result<Self> {
-        ReflessObject::parse(input).map(Self::new)
-    }
-}
+impl<T: ReflessObject> ReflessObject for Arc<T> {}
 
-impl<T: ReflessInline> ReflessInline for Arc<T> {
-    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
-        ReflessInline::parse_inline(input).map(Self::new)
-    }
-}
+impl<T: ReflessInline> ReflessInline for Arc<T> {}
 
 impl<T: Size> Size for Arc<T> {
     const SIZE: usize = T::SIZE;
@@ -816,11 +708,7 @@ impl Parse<ReflessInput<'_>> for Vec<u8> {
     }
 }
 
-impl ReflessObject for Vec<u8> {
-    fn parse(input: ReflessInput) -> crate::Result<Self> {
-        Ok(input.parse_all()?.into())
-    }
-}
+impl ReflessObject for Vec<u8> {}
 
 pub trait Size {
     const SIZE: usize;

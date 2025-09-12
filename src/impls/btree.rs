@@ -21,17 +21,9 @@ impl<T: ParseInline<I> + Ord, I: ParseInput> Parse<I> for BTreeSet<T> {
 }
 
 impl<T: Inline + Ord> Object for BTreeSet<T> {
-    fn parse(input: Input) -> crate::Result<Self> {
-        input.collect_parse()
-    }
-
     const TAGS: Tags = T::TAGS;
 }
-impl<T: ReflessInline + Ord> ReflessObject for BTreeSet<T> {
-    fn parse(input: ReflessInput) -> crate::Result<Self> {
-        input.collect_parse()
-    }
-}
+impl<T: ReflessInline + Ord> ReflessObject for BTreeSet<T> {}
 
 impl<K: ToOutput, V: ToOutput> ToOutput for BTreeMap<K, V> {
     fn to_output(&self, output: &mut dyn Output) {
@@ -52,15 +44,7 @@ impl<K: ParseInline<I> + Ord, V: ParseInline<I>, I: ParseInput> Parse<I> for BTr
 }
 
 impl<K: Inline + Ord, V: Inline> Object for BTreeMap<K, V> {
-    fn parse(input: Input) -> crate::Result<Self> {
-        input.collect_parse()
-    }
-
     const TAGS: Tags = Tags(&[], &[&K::TAGS, &V::TAGS]);
 }
 
-impl<K: ReflessInline + Ord, V: ReflessInline> ReflessObject for BTreeMap<K, V> {
-    fn parse(input: ReflessInput) -> crate::Result<Self> {
-        input.collect_parse()
-    }
-}
+impl<K: ReflessInline + Ord, V: ReflessInline> ReflessObject for BTreeMap<K, V> {}

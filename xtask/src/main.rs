@@ -248,40 +248,19 @@ fn per_n(n: usize) -> String {
         },
         Impl {
             header: "Inline".bound().last("Object").header(n),
-            members: vec![
-                Box::new(
-                    "parse"
-                        .method("input", "Input")
-                        .parse(n, "parse_inline")
-                        .last("parse"),
-                ),
-                Box::new("TAGS".co().tags(n)),
-            ],
+            members: vec![Box::new("TAGS".co().tags(n))],
         },
         Impl {
             header: "Inline".bound().header(n),
-            members: vec![Box::new(
-                "parse_inline"
-                    .method("input", "&mut Input")
-                    .parse(n, "parse_inline"),
-            )],
+            members: vec![],
         },
         Impl {
             header: "ReflessInline".bound().last("ReflessObject").header(n),
-            members: vec![Box::new(
-                "parse"
-                    .method("input", "ReflessInput")
-                    .parse(n, "parse_inline")
-                    .last("parse"),
-            )],
+            members: vec![],
         },
         Impl {
             header: "ReflessInline".bound().header(n),
-            members: vec![Box::new(
-                "parse_inline"
-                    .method("input", "&mut ReflessInput")
-                    .parse(n, "parse_inline"),
-            )],
+            members: vec![],
         },
         Impl {
             header: "Size".bound().header(n),
