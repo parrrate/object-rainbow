@@ -1,9 +1,87 @@
+use std::collections::BTreeSet;
+
 use proc_macro::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::{
-    Attribute, Data, DeriveInput, Error, Generics, Ident, LitStr, Type, parse::Parse,
-    parse_macro_input, parse_quote, parse_quote_spanned, spanned::Spanned, token::Comma,
+    AngleBracketedGenericArguments, Attribute, Data, DeriveInput, Error, Expr, GenericParam,
+    Generics, Ident, LitStr, Path, Type, parse::Parse, parse_macro_input, parse_quote,
+    parse_quote_spanned, spanned::Spanned, token::Comma,
 };
+
+fn expr_contains_generics(g: &BTreeSet<Ident>, expr: &Expr) -> bool {
+    match expr {
+        Expr::Path(expr) => path_contains_generics(g, &expr.path),
+        _ => unimplemented!(),
+    }
+}
+
+fn args_contains_generics(g: &BTreeSet<Ident>, args: &AngleBracketedGenericArguments) -> bool {
+    args.args.iter().any(|arg| match arg {
+        syn::GenericArgument::Type(ty) => type_contains_generics(g, ty),
+        syn::GenericArgument::AssocType(ty) => {
+            ty.generics
+                .as_ref()
+                .is_some_and(|args| args_contains_generics(g, args))
+                || type_contains_generics(g, &ty.ty)
+        }
+        syn::GenericArgument::Const(expr) => expr_contains_generics(g, expr),
+        syn::GenericArgument::AssocConst(expr) => {
+            expr.generics
+                .as_ref()
+                .is_some_and(|args| args_contains_generics(g, args))
+                || expr_contains_generics(g, &expr.value)
+        }
+        _ => false,
+    })
+}
+
+fn path_contains_generics(g: &BTreeSet<Ident>, path: &Path) -> bool {
+    path.segments.iter().any(|seg| match &seg.arguments {
+        syn::PathArguments::None => g.contains(&seg.ident),
+        syn::PathArguments::AngleBracketed(args) => args_contains_generics(g, args),
+        syn::PathArguments::Parenthesized(args) => {
+            args.inputs.iter().any(|ty| type_contains_generics(g, ty))
+                || match &args.output {
+                    syn::ReturnType::Default => false,
+                    syn::ReturnType::Type(_, ty) => type_contains_generics(g, ty),
+                }
+        }
+    })
+}
+
+fn type_contains_generics(g: &BTreeSet<Ident>, ty: &Type) -> bool {
+    match ty {
+        Type::Array(ty) => type_contains_generics(g, &ty.elem),
+        Type::BareFn(ty) => {
+            ty.inputs.iter().any(|a| type_contains_generics(g, &a.ty))
+                || match &ty.output {
+                    syn::ReturnType::Default => false,
+                    syn::ReturnType::Type(_, ty) => type_contains_generics(g, ty),
+                }
+        }
+        Type::Group(ty) => type_contains_generics(g, &ty.elem),
+        Type::Macro(_) => true,
+        Type::Paren(ty) => type_contains_generics(g, &ty.elem),
+        Type::Path(ty) => path_contains_generics(g, &ty.path),
+        Type::Reference(ty) => type_contains_generics(g, &ty.elem),
+        Type::Slice(ty) => type_contains_generics(g, &ty.elem),
+        Type::Tuple(ty) => ty.elems.iter().any(|ty| type_contains_generics(g, ty)),
+        _ => false,
+    }
+}
+
+fn bounds_g(generics: &Generics) -> BTreeSet<Ident> {
+    generics
+        .params
+        .iter()
+        .filter_map(|param| match param {
+            GenericParam::Lifetime(_) => None,
+            GenericParam::Type(param) => Some(&param.ident),
+            GenericParam::Const(param) => Some(&param.ident),
+        })
+        .cloned()
+        .collect()
+}
 
 #[proc_macro_derive(ToOutput)]
 pub fn derive_to_output(input: TokenStream) -> TokenStream {
@@ -26,27 +104,31 @@ pub fn derive_to_output(input: TokenStream) -> TokenStream {
 }
 
 fn bounds_to_output(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    let g = bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
                 let ty = &f.ty;
-                generics
-                    .make_where_clause()
-                    .predicates
-                    .push(parse_quote_spanned! { ty.span() =>
-                        #ty: ::object_rainbow::ToOutput
-                    });
+                if type_contains_generics(&g, ty) {
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: ::object_rainbow::ToOutput
+                        },
+                    );
+                }
             }
         }
         Data::Enum(data) => {
             for v in data.variants.iter() {
                 for f in v.fields.iter() {
                     let ty = &f.ty;
-                    generics.make_where_clause().predicates.push(
-                        parse_quote_spanned! { ty.span() =>
-                            #ty: ::object_rainbow::ToOutput
-                        },
-                    );
+                    if type_contains_generics(&g, ty) {
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { ty.span() =>
+                                #ty: ::object_rainbow::ToOutput
+                            },
+                        );
+                    }
                 }
             }
         }
@@ -150,27 +232,31 @@ pub fn derive_topological(input: TokenStream) -> TokenStream {
 }
 
 fn bounds_topological(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    let g = bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
                 let ty = &f.ty;
-                generics
-                    .make_where_clause()
-                    .predicates
-                    .push(parse_quote_spanned! { ty.span() =>
-                        #ty: ::object_rainbow::Topological
-                    });
+                if type_contains_generics(&g, ty) {
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: ::object_rainbow::Topological
+                        },
+                    );
+                }
             }
         }
         Data::Enum(data) => {
             for v in data.variants.iter() {
                 for f in v.fields.iter() {
                     let ty = &f.ty;
-                    generics.make_where_clause().predicates.push(
-                        parse_quote_spanned! { ty.span() =>
-                            #ty: ::object_rainbow::Topological
-                        },
-                    );
+                    if type_contains_generics(&g, ty) {
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { ty.span() =>
+                                #ty: ::object_rainbow::Topological
+                            },
+                        );
+                    }
                 }
             }
         }
@@ -301,6 +387,7 @@ fn bounds_tagged(
     data: &Data,
     errors: &mut Vec<Error>,
 ) -> syn::Result<Generics> {
+    let g = bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
@@ -315,11 +402,13 @@ fn bounds_tagged(
                 }
                 if !skip {
                     let ty = &f.ty;
-                    generics.make_where_clause().predicates.push(
-                        parse_quote_spanned! { ty.span() =>
-                            #ty: ::object_rainbow::Tagged
-                        },
-                    );
+                    if type_contains_generics(&g, ty) {
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { ty.span() =>
+                                #ty: ::object_rainbow::Tagged
+                            },
+                        );
+                    }
                 }
             }
         }
@@ -337,11 +426,13 @@ fn bounds_tagged(
                     }
                     if !skip {
                         let ty = &f.ty;
-                        generics.make_where_clause().predicates.push(
-                            parse_quote_spanned! { ty.span() =>
-                                #ty: ::object_rainbow::Tagged
-                            },
-                        );
+                        if type_contains_generics(&g, ty) {
+                            generics.make_where_clause().predicates.push(
+                                parse_quote_spanned! { ty.span() =>
+                                    #ty: ::object_rainbow::Tagged
+                                },
+                            );
+                        }
                     }
                 }
             }
@@ -477,6 +568,7 @@ pub fn derive_object(input: TokenStream) -> TokenStream {
 }
 
 fn bounds_object(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    let g = bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             let last_at = data.fields.len().checked_sub(1).unwrap_or_default();
@@ -488,12 +580,13 @@ fn bounds_object(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
                 } else {
                     quote!(::object_rainbow::Inline)
                 };
-                generics
-                    .make_where_clause()
-                    .predicates
-                    .push(parse_quote_spanned! { ty.span() =>
-                        #ty: #tr
-                    });
+                if type_contains_generics(&g, ty) {
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: #tr
+                        },
+                    );
+                }
             }
         }
         Data::Enum(data) => {
@@ -507,11 +600,13 @@ fn bounds_object(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
                     } else {
                         quote!(::object_rainbow::Inline)
                     };
-                    generics.make_where_clause().predicates.push(
-                        parse_quote_spanned! { ty.span() =>
-                            #ty: #tr
-                        },
-                    );
+                    if type_contains_generics(&g, ty) {
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { ty.span() =>
+                                #ty: #tr
+                            },
+                        );
+                    }
                 }
             }
         }
@@ -541,27 +636,31 @@ pub fn derive_inline(input: TokenStream) -> TokenStream {
 }
 
 fn bounds_inline(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    let g = bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
                 let ty = &f.ty;
-                generics
-                    .make_where_clause()
-                    .predicates
-                    .push(parse_quote_spanned! { ty.span() =>
-                        #ty: ::object_rainbow::Inline
-                    });
+                if type_contains_generics(&g, ty) {
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: ::object_rainbow::Inline
+                        },
+                    );
+                }
             }
         }
         Data::Enum(data) => {
             for v in data.variants.iter() {
                 for f in v.fields.iter() {
                     let ty = &f.ty;
-                    generics.make_where_clause().predicates.push(
-                        parse_quote_spanned! { ty.span() =>
-                            #ty: ::object_rainbow::Inline
-                        },
-                    );
+                    if type_contains_generics(&g, ty) {
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { ty.span() =>
+                                #ty: ::object_rainbow::Inline
+                            },
+                        );
+                    }
                 }
             }
         }
@@ -591,6 +690,7 @@ pub fn derive_refless_object(input: TokenStream) -> TokenStream {
 }
 
 fn bounds_refless_object(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    let g = bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             let last_at = data.fields.len().checked_sub(1).unwrap_or_default();
@@ -602,12 +702,13 @@ fn bounds_refless_object(mut generics: Generics, data: &Data) -> syn::Result<Gen
                 } else {
                     quote!(::object_rainbow::ReflessInline)
                 };
-                generics
-                    .make_where_clause()
-                    .predicates
-                    .push(parse_quote_spanned! { ty.span() =>
-                        #ty: #tr
-                    });
+                if type_contains_generics(&g, ty) {
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: #tr
+                        },
+                    );
+                }
             }
         }
         Data::Enum(data) => {
@@ -621,11 +722,13 @@ fn bounds_refless_object(mut generics: Generics, data: &Data) -> syn::Result<Gen
                     } else {
                         quote!(::object_rainbow::ReflessInline)
                     };
-                    generics.make_where_clause().predicates.push(
-                        parse_quote_spanned! { ty.span() =>
-                            #ty: #tr
-                        },
-                    );
+                    if type_contains_generics(&g, ty) {
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { ty.span() =>
+                                #ty: #tr
+                            },
+                        );
+                    }
                 }
             }
         }
@@ -655,27 +758,31 @@ pub fn derive_refless_inline(input: TokenStream) -> TokenStream {
 }
 
 fn bounds_refless_inline(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    let g = bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
                 let ty = &f.ty;
-                generics
-                    .make_where_clause()
-                    .predicates
-                    .push(parse_quote_spanned! { ty.span() =>
-                        #ty: ::object_rainbow::ReflessInline
-                    });
+                if type_contains_generics(&g, ty) {
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: ::object_rainbow::ReflessInline
+                        },
+                    );
+                }
             }
         }
         Data::Enum(data) => {
             for v in data.variants.iter() {
                 for f in v.fields.iter() {
                     let ty = &f.ty;
-                    generics.make_where_clause().predicates.push(
-                        parse_quote_spanned! { ty.span() =>
-                            #ty: ::object_rainbow::ReflessInline
-                        },
-                    );
+                    if type_contains_generics(&g, ty) {
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { ty.span() =>
+                                #ty: ::object_rainbow::ReflessInline
+                            },
+                        );
+                    }
                 }
             }
         }
@@ -724,27 +831,31 @@ fn bounds_size(
     data: &Data,
     size_arr: &proc_macro2::TokenStream,
 ) -> syn::Result<Generics> {
+    let g = bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
                 let ty = &f.ty;
-                generics
-                    .make_where_clause()
-                    .predicates
-                    .push(parse_quote_spanned! { ty.span() =>
-                        #ty: ::object_rainbow::Size
-                    });
+                if type_contains_generics(&g, ty) {
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: ::object_rainbow::Size
+                        },
+                    );
+                }
             }
         }
         Data::Enum(data) => {
             for v in data.variants.iter() {
                 for f in v.fields.iter() {
                     let ty = &f.ty;
-                    generics.make_where_clause().predicates.push(
-                        parse_quote_spanned! { ty.span() =>
-                            #ty: ::object_rainbow::Size
-                        },
-                    );
+                    if type_contains_generics(&g, ty) {
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { ty.span() =>
+                                #ty: ::object_rainbow::Size
+                            },
+                        );
+                    }
                 }
             }
             for v in data.variants.iter().skip(1) {
