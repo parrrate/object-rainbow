@@ -1,11 +1,11 @@
-use std::ops::{Add, Deref};
+use std::ops::Add;
 
 use generic_array::{ArrayLength, GenericArray, sequence::Concat};
 use typenum::{ATerm, B0, B1, Bit, Sum, TArr, U0, Unsigned};
 
 use crate::{
     Enum, Size, SizeExt, ToOutput,
-    enumkind::{EnumKind, EnumTag, UsizeTag},
+    enumkind::{EnumKind, UsizeTag},
 };
 
 pub trait MaybeHasNiche {
@@ -291,13 +291,8 @@ pub struct EnumNiche<E, const X: usize>(E);
 
 impl<
     E: Enum<Kind = K>,
-    K: EnumKind<Tag = EnumTag<T, M>>,
-    const M: usize,
-    T: Deref<Target: UsizeTag>
-        + From<T::Target>
-        + ToOutput
-        + Size<Size = N>
-        + MaybeHasNiche<MnArray: MnArray<MaybeNiche = V>>,
+    K: EnumKind<Tag = T>,
+    T: UsizeTag + ToOutput + Size<Size = N> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = V>>,
     V: Niche<N = N>,
     N: ArrayLength,
     const X: usize,
@@ -307,7 +302,7 @@ impl<
     type N = N;
     fn niche() -> GenericArray<u8, Self::N> {
         if V::NeedsTag::BOOL {
-            T::from(UsizeTag::from_usize(X)).to_array()
+            T::from_usize(X).to_array()
         } else {
             V::niche()
         }
