@@ -469,16 +469,24 @@ impl<T: ReflessInline> ReflessInline for (T,) {
 
 pub trait Output {
     fn write(&mut self, data: &[u8]);
-    fn tell(&self) -> usize;
+    fn write_tag(&mut self, tag: &'static str) {
+        let _ = tag;
+    }
 }
 
 impl Output for Vec<u8> {
     fn write(&mut self, data: &[u8]) {
         self.extend_from_slice(data);
     }
+}
 
-    fn tell(&self) -> usize {
-        self.len()
+impl Output for Vec<&'static str> {
+    fn write(&mut self, data: &[u8]) {
+        let _ = data;
+    }
+
+    fn write_tag(&mut self, tag: &'static str) {
+        self.push(tag);
     }
 }
 
@@ -492,10 +500,6 @@ impl Output for HashOutput {
     fn write(&mut self, data: &[u8]) {
         self.hasher.update(data);
         self.at += data.len();
-    }
-
-    fn tell(&self) -> usize {
-        self.at
     }
 }
 
