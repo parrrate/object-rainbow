@@ -314,18 +314,22 @@ impl Input<'_> {
 pub trait ToOutput {
     fn to_output(&self, output: &mut dyn Output);
 
-    fn output<T: Output + Default>(&self) -> T {
-        let mut output = T::default();
-        self.to_output(&mut output);
-        output
-    }
-
     fn data_hash(&self) -> Hash {
         let mut output = HashOutput::default();
         self.to_output(&mut output);
         output.hash()
     }
 }
+
+pub trait ToOutputExt: ToOutput {
+    fn output<T: Output + Default>(&self) -> T {
+        let mut output = T::default();
+        self.to_output(&mut output);
+        output
+    }
+}
+
+impl<T: ?Sized + ToOutput> ToOutputExt for T {}
 
 pub trait Topological {
     fn accept_points(&self, visitor: &mut impl PointVisitor);
