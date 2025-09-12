@@ -38,14 +38,14 @@ mod sha2_const;
 #[macro_export]
 macro_rules! error_parse {
     ($($t:tt)*) => {
-        $crate::Error::Parse(::anyhow::anyhow!($($t)*))
+        $crate::Error::Parse($crate::anyhow!($($t)*))
     };
 }
 
 #[macro_export]
 macro_rules! error_fetch {
     ($($t:tt)*) => {
-        $crate::Error::Fetch(::anyhow::anyhow!($($t)*))
+        $crate::Error::Fetch($crate::anyhow!($($t)*))
     };
 }
 
