@@ -192,8 +192,14 @@ pub trait Fetch: Send + Sync + FetchBytes {
         None
     }
     fn get_mut_finalize(&mut self) {}
-    fn as_raw_point(&self) -> Option<&RawPoint<Self::T>> {
+    fn as_inner(&self) -> Option<&dyn Any> {
         None
+    }
+    fn as_raw_point(&self) -> Option<RawPoint<Self::T>> {
+        self.as_inner()?
+            .downcast_ref::<RawPointInner>()
+            .cloned()
+            .map(RawPointInner::cast)
     }
 }
 
@@ -201,6 +207,15 @@ pub trait Fetch: Send + Sync + FetchBytes {
 struct RawPointInner {
     hash: Hash,
     origin: Arc<dyn Send + Sync + FetchBytes>,
+}
+
+impl RawPointInner {
+    fn cast<T>(self) -> RawPoint<T> {
+        RawPoint {
+            inner: self,
+            _object: PhantomData,
+        }
+    }
 }
 
 pub struct RawPoint<T = Infallible> {
@@ -221,7 +236,7 @@ impl<T> Point<T> {
     pub fn raw(self) -> RawPoint<T> {
         {
             if let Some(raw) = self.origin.as_raw_point() {
-                return raw.clone();
+                return raw;
             }
         }
         RawPoint {
@@ -236,10 +251,7 @@ impl<T> Point<T> {
 
 impl<T> RawPoint<T> {
     pub fn cast<U>(self) -> RawPoint<U> {
-        RawPoint {
-            inner: self.inner,
-            _object: PhantomData,
-        }
+        self.inner.cast()
     }
 }
 
@@ -282,8 +294,12 @@ impl<T: Object> Fetch for RawPoint<T> {
         })
     }
 
-    fn as_raw_point(&self) -> Option<&RawPoint<Self::T>> {
-        Some(self)
+    fn as_inner(&self) -> Option<&dyn Any> {
+        Some(&self.inner)
+    }
+
+    fn as_raw_point(&self) -> Option<RawPoint<Self::T>> {
+        Some(self.clone())
     }
 }
 
