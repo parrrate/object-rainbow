@@ -121,7 +121,7 @@ struct Decrypt<K> {
 }
 
 impl<K: Key> Resolve for Decrypt<K> {
-    fn resolve(&self, address: Address) -> FailFuture<ByteNode> {
+    fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode> {
         Box::pin(async move {
             let Encrypted {
                 key,
