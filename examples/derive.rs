@@ -120,5 +120,5 @@ fn main() {
     println!("{}", Option::<Either<bool, Option<Option<()>>>>::SIZE);
     println!("{:?}", None::<Abc>.output::<Vec<u8>>());
     println!("{:?}", None::<(bool, bool)>.output::<Vec<u8>>());
-    <Option<Abc> as ReflessObject>::parse_slice(&[1, 2]).unwrap();
+    Option::<Abc>::parse_slice_refless(&[1, 2]).unwrap();
 }
