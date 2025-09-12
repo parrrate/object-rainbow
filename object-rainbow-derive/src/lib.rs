@@ -641,7 +641,7 @@ fn bounds_size(
                 }
             }
             for v in data.variants.iter().skip(1) {
-                let arr = fields_size_arr(&v.fields);
+                let arr = fields_size_arr(&v.fields, true);
                 generics.make_where_clause().predicates.push(parse_quote!(
                     #arr: ::typenum::FoldAdd<Output = <#size_arr as ::typenum::FoldAdd>::Output>
                 ));
@@ -660,27 +660,45 @@ fn bounds_size(
     Ok(generics)
 }
 
-fn fields_size_arr(fields: &syn::Fields) -> proc_macro2::TokenStream {
+fn fields_size_arr(fields: &syn::Fields, as_enum: bool) -> proc_macro2::TokenStream {
+    let kind_size = quote! {
+        <
+            <
+                <
+                    Self
+                    as
+                    ::object_rainbow::Enum
+                >::Kind
+                as
+                ::object_rainbow::enumkind::EnumKind
+            >::Tag
+            as  ::object_rainbow::Size
+        >::Size
+    };
     if fields.is_empty() {
-        return quote! {
-            tarr![::typenum::consts::U0]
+        return if as_enum {
+            quote! { tarr![#kind_size] }
+        } else {
+            quote! { tarr![::typenum::const::U0] }
         };
     }
     let size_arr = fields.iter().map(|f| {
         let ty = &f.ty;
         quote! { <#ty as ::object_rainbow::Size>::Size }
     });
-    quote! {
-        tarr![#(#size_arr),*]
+    if as_enum {
+        quote! { tarr![#kind_size, #(#size_arr),*] }
+    } else {
+        quote! { tarr![#(#size_arr),*] }
     }
 }
 
 fn gen_size_arr(data: &Data) -> proc_macro2::TokenStream {
     match data {
-        Data::Struct(data) => fields_size_arr(&data.fields),
+        Data::Struct(data) => fields_size_arr(&data.fields, false),
         Data::Enum(data) => {
             if let Some(v) = data.variants.first() {
-                fields_size_arr(&v.fields)
+                fields_size_arr(&v.fields, true)
             } else {
                 Error::new_spanned(data.enum_token, "empty `enum`s are not supported")
                     .into_compile_error()
@@ -710,7 +728,22 @@ fn gen_size(data: &Data) -> proc_macro2::TokenStream {
         Data::Struct(data) => fields_size(&data.fields),
         Data::Enum(data) => {
             if let Some(v) = data.variants.first() {
-                fields_size(&v.fields)
+                let size = fields_size(&v.fields);
+                let kind_size = quote! {
+                    <
+                        <
+                            <
+                                Self
+                                as
+                                ::object_rainbow::Enum
+                            >::Kind
+                            as
+                            ::object_rainbow::enumkind::EnumKind
+                        >::Tag
+                        as  ::object_rainbow::Size
+                    >::SIZE
+                };
+                quote! { #kind_size + #size }
             } else {
                 Error::new_spanned(data.enum_token, "empty `enum`s are not supported")
                     .into_compile_error()
