@@ -371,6 +371,12 @@ struct ByAddress<T> {
     _object: PhantomData<fn() -> T>,
 }
 
+impl<T> FetchBytes for ByAddress<T> {
+    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+        self.resolve.resolve(self.address)
+    }
+}
+
 impl<T: Object> Fetch for ByAddress<T> {
     type T = T;
 
@@ -396,12 +402,6 @@ impl<T: Object> Fetch for ByAddress<T> {
                 Ok(object)
             }
         })
-    }
-}
-
-impl<T> FetchBytes for ByAddress<T> {
-    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
-        self.resolve.resolve(self.address)
     }
 }
 
