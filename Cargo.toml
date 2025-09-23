@@ -4,6 +4,7 @@ members = [
     "object-rainbow-encrypted",
     "object-rainbow-json",
     "xtask",
+    "xtask-release",
 ]
 
 [workspace.package]
