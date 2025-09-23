@@ -24,6 +24,7 @@ repository.workspace = true
 authors.workspace = true
 description = "distributed object model"
 documentation = "https://docs.rs/object-rainbow"
+exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 
 [dependencies]
 object-rainbow-derive = { version = "0.0.0-a.3", path = "object-rainbow-derive" }
