@@ -1,11 +1,12 @@
 [package]
 name = "object-rainbow-encrypted"
-version = "0.0.0-a.0"
+version = "0.0.0-a.0+ci.0"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
+description = "encryption for object-rainbow"
 
 [dependencies]
 object-rainbow.workspace = true
