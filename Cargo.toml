@@ -2,7 +2,7 @@
 members = [
     "object-rainbow-derive",
     "object-rainbow-encrypted",
-    "object-rainbow-json",
+    "object-rainbow-json", "object-rainbow-sled",
     "xtask",
     "xtask-release",
 ]
