@@ -34,17 +34,5 @@ impl<const N: usize> Inline for [u8; N] {}
 impl<const N: usize> ReflessObject for [u8; N] {}
 impl<const N: usize> ReflessInline for [u8; N] {}
 
-impl Parse<Input<'_>> for Vec<u8> {
-    fn parse(input: Input) -> crate::Result<Self> {
-        Ok(input.parse_all().into())
-    }
-}
-
-impl Parse<ReflessInput<'_>> for Vec<u8> {
-    fn parse(input: ReflessInput) -> crate::Result<Self> {
-        Ok(input.parse_all().into())
-    }
-}
-
 impl Object for Vec<u8> {}
 impl ReflessObject for Vec<u8> {}
