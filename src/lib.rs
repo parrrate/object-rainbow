@@ -546,10 +546,11 @@ pub struct ReflessInput<'a> {
     data: &'a [u8],
 }
 
-pub struct Input<'a> {
+pub struct Input<'a, Extra = ()> {
     refless: ReflessInput<'a>,
     resolve: &'a Arc<dyn Resolve>,
     index: &'a Cell<usize>,
+    extra: &'a Extra,
 }
 
 impl<'a> Deref for Input<'a> {
@@ -660,6 +661,7 @@ impl ParseInput for Input<'_> {
             },
             resolve: self.resolve,
             index: self.index,
+            extra: self.extra,
         };
         T::parse(input)
     }
@@ -765,6 +767,7 @@ pub trait ParseSlice: for<'a> Parse<Input<'a>> {
             refless: ReflessInput { data },
             resolve,
             index: &Cell::new(0),
+            extra: &(),
         };
         let object = Self::parse(input)?;
         Ok(object)
