@@ -7,8 +7,8 @@ use std::{
 
 use object_rainbow::{
     Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, Hash, Input, Object, Parse,
-    ParseInput, ParseSlice, Point, PointVisitor, RawPoint, Resolve, Singular, Tagged, ToOutput,
-    ToOutputExt, Topological, length_prefixed::Lp,
+    ParseInput, ParseSlice, Point, PointInput, PointVisitor, RawPoint, Resolve, Singular, Tagged,
+    ToOutput, ToOutputExt, Topological, length_prefixed::Lp,
 };
 use sha2::{Digest, Sha256};
 
