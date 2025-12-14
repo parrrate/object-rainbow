@@ -37,11 +37,7 @@ impl<T: ?Sized + Tagged> Tagged for Arc<T> {
     const HASH: Hash = T::HASH;
 }
 
-impl<T: Object> Object for Arc<T> {
-    fn full_hash(&self) -> Hash {
-        (**self).full_hash()
-    }
-}
+impl<T: Object> Object for Arc<T> {}
 
 impl<T: Inline> Inline for Arc<T> {}
 

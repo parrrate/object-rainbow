@@ -773,9 +773,7 @@ pub trait ParseSlice: for<'a> Parse<Input<'a>> {
 
 impl<T: for<'a> Parse<Input<'a>>> ParseSlice for T {}
 
-pub trait Object:
-    'static + Sized + Send + Sync + ToOutput + Topological + Tagged + for<'a> Parse<Input<'a>>
-{
+pub trait FullHash: ToOutput + Topological + Tagged {
     fn full_hash(&self) -> Hash {
         let mut output = HashOutput::default();
         output.hasher.update(Self::HASH);
@@ -783,7 +781,11 @@ pub trait Object:
         output.hasher.update(self.data_hash());
         output.hash()
     }
+}
 
+impl<T: ?Sized + ToOutput + Topological + Tagged> FullHash for T {}
+
+pub trait Object: 'static + Sized + Send + Sync + FullHash + for<'a> Parse<Input<'a>> {
     fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
         let _ = typeid;
         Err(Error::UnknownExtension)
