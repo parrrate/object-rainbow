@@ -553,7 +553,7 @@ pub struct Input<'a, Extra = ()> {
     extra: &'a Extra,
 }
 
-impl<'a> Deref for Input<'a> {
+impl<'a, Extra> Deref for Input<'a, Extra> {
     type Target = ReflessInput<'a>;
 
     fn deref(&self) -> &Self::Target {
