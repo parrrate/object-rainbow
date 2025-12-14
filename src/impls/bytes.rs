@@ -33,5 +33,3 @@ impl<const N: usize> Object for [u8; N] {}
 impl<const N: usize> Inline for [u8; N] {}
 impl<const N: usize> ReflessObject for [u8; N] {}
 impl<const N: usize> ReflessInline for [u8; N] {}
-
-impl ReflessObject for Vec<u8> {}

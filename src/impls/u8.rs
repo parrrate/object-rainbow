@@ -34,3 +34,4 @@ impl Tagged for u8 {}
 impl Object for u8 {}
 impl Inline for u8 {}
 impl ReflessObject for u8 {}
+impl ReflessInline for u8 {}
