@@ -32,3 +32,4 @@ impl<I: ParseInput> ParseInline<I> for u8 {
 impl Topological for u8 {}
 impl Tagged for u8 {}
 impl Object for u8 {}
+impl ReflessObject for u8 {}
