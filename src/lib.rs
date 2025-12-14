@@ -707,7 +707,7 @@ impl PointInput for Input<'_> {
 impl Input<'_> {
     fn parse_point<T: Object>(&mut self) -> crate::Result<Point<T>> {
         let address = self.parse_address()?;
-        Ok(Point::from_address(address, self.resolve.clone()))
+        Ok(Point::from_address(address, self.resolve()))
     }
 
     fn parse_raw_point_inner(&mut self) -> crate::Result<RawPointInner> {
