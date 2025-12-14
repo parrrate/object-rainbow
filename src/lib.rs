@@ -1298,6 +1298,8 @@ pub trait ParseInput: Sized {
     }
 }
 
+pub trait PointInput: ParseInput {}
+
 impl<T: Sized + IntoIterator> RainbowIterator for T {}
 
 pub trait Parse<I: ParseInput>: Sized {
