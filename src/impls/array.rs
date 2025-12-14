@@ -6,7 +6,7 @@ use crate::*;
 
 impl<T: ToOutput, const N: usize> ToOutput for [T; N] {
     fn to_output(&self, output: &mut dyn Output) {
-        self.iter_to_output(output);
+        T::slice_to_output(self, output);
     }
 }
 
