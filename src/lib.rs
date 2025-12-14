@@ -561,7 +561,7 @@ impl<'a, Extra> Deref for Input<'a, Extra> {
     }
 }
 
-impl DerefMut for Input<'_> {
+impl<Extra> DerefMut for Input<'_, Extra> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.refless
     }
