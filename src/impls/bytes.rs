@@ -14,14 +14,6 @@ impl<const N: usize, I: ParseInput> ParseInline<I> for [u8; N] {
     }
 }
 
-impl<const N: usize> Size for [u8; N]
-where
-    typenum::generic_const_mappings::Const<N>: ToUInt<Output: Unsigned>,
-{
-    const SIZE: usize = N;
-    type Size = typenum::generic_const_mappings::U<N>;
-}
-
 impl<const N: usize> MaybeHasNiche for [u8; N]
 where
     typenum::generic_const_mappings::Const<N>: ToUInt<Output: ArrayLength>,
