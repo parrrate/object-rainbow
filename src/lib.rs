@@ -258,8 +258,8 @@ impl ToOutput for RawPointInner {
     }
 }
 
-impl ParseInline<Input<'_>> for RawPointInner {
-    fn parse_inline(input: &mut Input<'_>) -> crate::Result<Self> {
+impl<I: PointInput> ParseInline<I> for RawPointInner {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
         input.parse_raw_point_inner()
     }
 }
