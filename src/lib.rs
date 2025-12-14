@@ -724,7 +724,7 @@ impl Input<'_> {
     }
 
     pub fn extension<T: Any>(&self) -> crate::Result<&T> {
-        self.resolve
+        self.resolve_ref()
             .extension(TypeId::of::<T>())?
             .downcast_ref()
             .ok_or(Error::ExtensionType)
