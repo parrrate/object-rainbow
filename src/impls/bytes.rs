@@ -2,12 +2,6 @@ use typenum::ToUInt;
 
 use crate::*;
 
-impl<const N: usize> ToOutput for [u8; N] {
-    fn to_output(&self, output: &mut dyn Output) {
-        output.write(self);
-    }
-}
-
 impl<const N: usize, I: ParseInput> Parse<I> for [u8; N] {
     fn parse(input: I) -> crate::Result<Self> {
         ParseInline::parse_as_inline(input)
@@ -42,12 +36,6 @@ impl<const N: usize> Inline for [u8; N] {}
 impl<const N: usize> ReflessObject for [u8; N] {}
 impl<const N: usize> ReflessInline for [u8; N] {}
 
-impl ToOutput for Vec<u8> {
-    fn to_output(&self, output: &mut dyn Output) {
-        output.write(self);
-    }
-}
-
 impl Parse<Input<'_>> for Vec<u8> {
     fn parse(input: Input) -> crate::Result<Self> {
         Ok(input.parse_all().into())
@@ -64,9 +52,3 @@ impl Topological for Vec<u8> {}
 impl Tagged for Vec<u8> {}
 impl Object for Vec<u8> {}
 impl ReflessObject for Vec<u8> {}
-
-impl ToOutput for [u8] {
-    fn to_output(&self, output: &mut dyn Output) {
-        output.write(self);
-    }
-}
