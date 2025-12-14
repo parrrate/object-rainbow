@@ -788,7 +788,9 @@ pub trait FullHash: ToOutput + Topological + Tagged {
 
 impl<T: ?Sized + ToOutput + Topological + Tagged> FullHash for T {}
 
-pub trait Object: 'static + Sized + Send + Sync + FullHash + for<'a> Parse<Input<'a>> {
+pub trait Object<Extra = ()>:
+    'static + Sized + Send + Sync + FullHash + for<'a> Parse<Input<'a, Extra>>
+{
     fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
         let _ = typeid;
         Err(Error::UnknownExtension)
