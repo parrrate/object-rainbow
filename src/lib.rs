@@ -709,11 +709,6 @@ impl PointInput for Input<'_> {
 }
 
 impl Input<'_> {
-    fn parse_raw_point_inner(&mut self) -> crate::Result<RawPointInner> {
-        let address = self.parse_address()?;
-        Ok(RawPointInner::from_address(address, self.resolve()))
-    }
-
     pub fn extension<T: Any>(&self) -> crate::Result<&T> {
         self.resolve_ref()
             .extension(TypeId::of::<T>())?
@@ -1307,6 +1302,10 @@ pub trait PointInput: ParseInput {
     fn parse_point<T: Object>(&mut self) -> crate::Result<Point<T>> {
         let address = self.parse_address()?;
         Ok(Point::from_address(address, self.resolve()))
+    }
+    fn parse_raw_point_inner(&mut self) -> crate::Result<RawPointInner> {
+        let address = self.parse_address()?;
+        Ok(RawPointInner::from_address(address, self.resolve()))
     }
 }
 
