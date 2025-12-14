@@ -1,4 +1,4 @@
-use crate::{ToOutput, Topological};
+use crate::{Tagged, ToOutput, Topological};
 
 impl ToOutput for u8 {
     fn to_output(&self, output: &mut dyn crate::Output) {
@@ -14,3 +14,4 @@ impl ToOutput for u8 {
 }
 
 impl Topological for u8 {}
+impl Tagged for u8 {}
