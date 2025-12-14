@@ -25,7 +25,6 @@ impl<T: Tagged> Tagged for Vec<T> {
 }
 
 impl<T: Inline> Object for Vec<T> {}
-
 impl<T: ReflessInline> ReflessObject for Vec<T> {}
 
 impl<T: ToOutput> ToOutput for VecDeque<T> {
@@ -53,5 +52,4 @@ impl<T: Tagged> Tagged for VecDeque<T> {
 }
 
 impl<T: Inline> Object for VecDeque<T> {}
-
 impl<T: ReflessInline> ReflessObject for VecDeque<T> {}
