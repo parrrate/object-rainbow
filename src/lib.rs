@@ -1412,8 +1412,10 @@ pub trait Equivalent<T>: Sized {
     fn from_equivalent(object: T) -> Self;
 }
 
-impl<U: 'static + Equivalent<T>, T: 'static> Equivalent<Point<T>> for Point<U> {
-    fn into_equivalent(self) -> Point<T> {
+impl<U: 'static + Equivalent<T>, T: 'static, Extra: 'static> Equivalent<Point<T, Extra>>
+    for Point<U, Extra>
+{
+    fn into_equivalent(self) -> Point<T, Extra> {
         Point {
             hash: self.hash,
             origin: Arc::new(MapEquivalent {
@@ -1423,7 +1425,7 @@ impl<U: 'static + Equivalent<T>, T: 'static> Equivalent<Point<T>> for Point<U> {
         }
     }
 
-    fn from_equivalent(object: Point<T>) -> Self {
+    fn from_equivalent(object: Point<T, Extra>) -> Self {
         Point {
             hash: object.hash,
             origin: Arc::new(MapEquivalent {
