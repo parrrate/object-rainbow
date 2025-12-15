@@ -330,7 +330,7 @@ fn per_n(n: usize) -> String {
             members: vec![],
         },
         Impl {
-            header: "Inline".bound().header(n),
+            header: "Inline<Extra>".bound().header(n).prefix("Extra: 'static,"),
             members: vec![],
         },
         Impl {
