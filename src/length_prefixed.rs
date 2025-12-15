@@ -103,10 +103,10 @@ impl<I: ParseInput> ParseInline<I> for LpBytes {
     }
 }
 
-impl Topological for LpBytes {}
 impl Tagged for LpBytes {}
-impl Object for LpBytes {}
-impl Inline for LpBytes {}
+impl<E: 'static> Topological<E> for LpBytes {}
+impl<E: 'static> Object<E> for LpBytes {}
+impl<E: 'static> Inline<E> for LpBytes {}
 impl ReflessObject for LpBytes {}
 impl ReflessInline for LpBytes {}
 
