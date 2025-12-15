@@ -318,7 +318,7 @@ impl<T, Extra: 'static + Clone> Point<T, Extra> {
         }
         RawPointInner {
             hash: *self.hash.unwrap(),
-            extra: self.extra,
+            extra: self.origin.extra().clone(),
             origin: self.origin,
         }
         .cast()
@@ -335,7 +335,6 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> RawPoint<T, Extra> 
     pub fn point(self) -> Point<T, Extra> {
         Point {
             hash: self.inner.hash.into(),
-            extra: self.inner.extra.clone(),
             origin: Arc::new(self),
         }
     }
@@ -416,7 +415,6 @@ impl<T, Extra: 'static> Point<T, Extra> {
 #[derive(ParseAsInline)]
 pub struct Point<T, Extra = ()> {
     hash: OptionalHash,
-    extra: Extra,
     origin: Arc<dyn Fetch<T = T, Extra = Extra>>,
 }
 
@@ -440,21 +438,19 @@ impl<T> PartialEq for Point<T> {
     }
 }
 
-impl<T, Extra: Clone> Clone for Point<T, Extra> {
+impl<T, Extra> Clone for Point<T, Extra> {
     fn clone(&self) -> Self {
         Self {
             hash: self.hash,
-            extra: self.extra.clone(),
             origin: self.origin.clone(),
         }
     }
 }
 
 impl<T, Extra> Point<T, Extra> {
-    fn from_origin(hash: Hash, origin: Arc<dyn Fetch<T = T, Extra = Extra>>, extra: Extra) -> Self {
+    fn from_origin(hash: Hash, origin: Arc<dyn Fetch<T = T, Extra = Extra>>) -> Self {
         Self {
             hash: hash.into(),
-            extra,
             origin,
         }
     }
@@ -477,10 +473,9 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Point<T, Extra> {
             address.hash,
             Arc::new(ByAddress::from_inner(ByAddressInner {
                 address,
-                extra: extra.clone(),
+                extra,
                 resolve,
             })),
-            extra,
         )
     }
 }
@@ -1079,7 +1074,6 @@ impl<T: Object + Clone> Point<T> {
         Self::from_origin(
             object.full_hash(),
             Arc::new(LocalOrigin { object, extra: () }),
-            (),
         )
     }
 }
@@ -1095,7 +1089,7 @@ impl<T: Object<Extra> + Clone, Extra: 'static + Send + Sync + Clone> Point<T, Ex
             let object = self.origin.fetch().await?;
             self.origin = Arc::new(LocalOrigin {
                 object,
-                extra: self.extra.clone(),
+                extra: self.origin.extra().clone(),
             });
         }
         let origin = Arc::get_mut(&mut self.origin).unwrap();
@@ -1258,7 +1252,7 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for Point<T, Extra> {
     }
 
     fn extra(&self) -> &Self::Extra {
-        &self.extra
+        self.origin.extra()
     }
 }
 
@@ -1425,7 +1419,6 @@ impl<U: 'static + Equivalent<T>, T: 'static> Equivalent<Point<T>> for Point<U> {
     fn into_equivalent(self) -> Point<T> {
         Point {
             hash: self.hash,
-            extra: self.extra,
             origin: Arc::new(MapEquivalent {
                 origin: self.origin,
                 map: U::into_equivalent,
@@ -1436,7 +1429,6 @@ impl<U: 'static + Equivalent<T>, T: 'static> Equivalent<Point<T>> for Point<U> {
     fn from_equivalent(object: Point<T>) -> Self {
         Point {
             hash: object.hash,
-            extra: object.extra,
             origin: Arc::new(MapEquivalent {
                 origin: object.origin,
                 map: U::from_equivalent,
@@ -1489,7 +1481,6 @@ impl<T: 'static + ToOutput> Point<T> {
     pub fn map<U>(self, f: impl 'static + Send + Sync + Fn(T) -> U) -> Point<U> {
         Point {
             hash: self.hash,
-            extra: self.extra,
             origin: Arc::new(Map {
                 origin: self.origin,
                 map: f,
