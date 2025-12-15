@@ -923,7 +923,7 @@ impl<T, Extra> FetchBytes for Point<T, Extra> {
     }
 }
 
-impl<T> Singular for Point<T> {
+impl<T, Extra> Singular for Point<T, Extra> {
     fn hash(&self) -> &Hash {
         self.hash.unwrap()
     }
