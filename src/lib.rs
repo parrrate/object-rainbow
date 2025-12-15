@@ -286,10 +286,7 @@ impl<T> FromInner for RawPoint<T> {
     type Inner = RawPointInner;
 
     fn from_inner(inner: Self::Inner) -> Self {
-        Self {
-            inner,
-            _object: PhantomData,
-        }
+        inner.cast()
     }
 }
 
