@@ -18,8 +18,8 @@ impl<T: ParseInline<I>, I: ParseInput> ParseInline<I> for Arc<T> {
     }
 }
 
-impl<T: ?Sized + Topological> Topological for Arc<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+impl<T: ?Sized + Topological<E>, E: 'static> Topological<E> for Arc<T> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<E>) {
         (**self).accept_points(visitor);
     }
 
@@ -37,12 +37,9 @@ impl<T: ?Sized + Tagged> Tagged for Arc<T> {
     const HASH: Hash = T::HASH;
 }
 
-impl<T: Object> Object for Arc<T> {}
-
-impl<T: Inline> Inline for Arc<T> {}
-
+impl<T: Object<E>, E: 'static> Object<E> for Arc<T> {}
+impl<T: Inline<E>, E: 'static> Inline<E> for Arc<T> {}
 impl<T: ReflessObject> ReflessObject for Arc<T> {}
-
 impl<T: ReflessInline> ReflessInline for Arc<T> {}
 
 impl<T: ?Sized + Size> Size for Arc<T> {
