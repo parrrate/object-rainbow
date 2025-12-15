@@ -769,6 +769,24 @@ impl<'a, Extra: 'static + Send + Sync + Clone> PointInput for Input<'a, Extra> {
     fn extra(&self) -> &Self::Extra {
         self.extra
     }
+
+    fn map_extra<E: 'static + Send + Sync + Clone>(
+        self,
+        f: impl FnOnce(&Self::Extra) -> &E,
+    ) -> Self::WithExtra<E> {
+        let Self {
+            refless,
+            resolve,
+            index,
+            extra,
+        } = self;
+        Input {
+            refless,
+            resolve,
+            index,
+            extra: f(extra),
+        }
+    }
 }
 
 pub trait ToOutput {
@@ -1416,6 +1434,10 @@ pub trait PointInput: ParseInput {
             .ok_or(Error::ExtensionType)
     }
     fn extra(&self) -> &Self::Extra;
+    fn map_extra<E: 'static + Send + Sync + Clone>(
+        self,
+        f: impl FnOnce(&Self::Extra) -> &E,
+    ) -> Self::WithExtra<E>;
 }
 
 impl<T: Sized + IntoIterator> RainbowIterator for T {}
