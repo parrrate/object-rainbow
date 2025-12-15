@@ -489,7 +489,7 @@ impl<Extra> FetchBytes for ByAddressInner<Extra> {
     }
 }
 
-struct ByAddress<T, Extra = ()> {
+struct ByAddress<T, Extra> {
     inner: ByAddressInner<Extra>,
     _object: PhantomData<fn() -> T>,
 }
