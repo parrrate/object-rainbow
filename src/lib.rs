@@ -452,7 +452,7 @@ impl<T, Extra> Point<T, Extra> {
     }
 }
 
-impl<T> Size for Point<T> {
+impl<T, Extra> Size for Point<T, Extra> {
     const SIZE: usize = HASH_SIZE;
     type Size = typenum::generic_const_mappings::U<HASH_SIZE>;
 }
