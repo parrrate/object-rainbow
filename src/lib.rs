@@ -1474,8 +1474,8 @@ impl<T, F: 'static + Send + Sync + Map1<T>, Extra> Fetch for MapEquivalent<T, F,
     }
 }
 
-impl<T: 'static + ToOutput> Point<T> {
-    pub fn map<U>(self, f: impl 'static + Send + Sync + Fn(T) -> U) -> Point<U> {
+impl<T: 'static + ToOutput, Extra: 'static> Point<T, Extra> {
+    pub fn map<U>(self, f: impl 'static + Send + Sync + Fn(T) -> U) -> Point<U, Extra> {
         Point {
             hash: self.hash,
             origin: Arc::new(Map {
