@@ -600,6 +600,17 @@ impl<Extra> DerefMut for Input<'_, Extra> {
     }
 }
 
+impl<'a, Extra> Input<'a, Extra> {
+    pub fn replace_extra<E>(self, extra: &'a E) -> Input<'a, E> {
+        Input {
+            refless: self.refless,
+            resolve: self.resolve,
+            index: self.index,
+            extra,
+        }
+    }
+}
+
 impl ParseInput for ReflessInput<'_> {
     fn parse_chunk<'a, const N: usize>(&mut self) -> crate::Result<&'a [u8; N]>
     where
