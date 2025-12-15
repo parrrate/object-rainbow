@@ -467,8 +467,9 @@ impl FetchBytes for ByAddressInner {
     }
 }
 
-struct ByAddress<T> {
+struct ByAddress<T, Extra = ()> {
     inner: ByAddressInner,
+    extra: Extra,
     _object: PhantomData<fn() -> T>,
 }
 
@@ -478,12 +479,13 @@ impl<T> FromInner for ByAddress<T> {
     fn from_inner(inner: Self::Inner) -> Self {
         Self {
             inner,
+            extra: (),
             _object: PhantomData,
         }
     }
 }
 
-impl<T> FetchBytes for ByAddress<T> {
+impl<T, Extra> FetchBytes for ByAddress<T, Extra> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.inner.fetch_bytes()
     }
@@ -497,13 +499,13 @@ impl<T> FetchBytes for ByAddress<T> {
     }
 }
 
-impl<T: Object> Fetch for ByAddress<T> {
+impl<T: Object<Extra>, Extra: Send + Sync> Fetch for ByAddress<T, Extra> {
     type T = T;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
-            let object = T::parse_slice(&data, &resolve)?;
+            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
             if self.inner.address.hash != object.full_hash() {
                 Err(Error::DataMismatch)
             } else {
@@ -515,7 +517,7 @@ impl<T: Object> Fetch for ByAddress<T> {
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
-            let object = T::parse_slice(&data, &resolve)?;
+            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
             if self.inner.address.hash != object.full_hash() {
                 Err(Error::DataMismatch)
             } else {
