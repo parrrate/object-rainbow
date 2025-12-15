@@ -1349,9 +1349,9 @@ trait RainbowIterator: Sized + IntoIterator {
         self.into_iter().for_each(|item| item.to_output(output));
     }
 
-    fn iter_accept_points(self, visitor: &mut impl PointVisitor)
+    fn iter_accept_points<Extra: 'static>(self, visitor: &mut impl PointVisitor<Extra>)
     where
-        Self::Item: Topological,
+        Self::Item: Topological<Extra>,
     {
         self.into_iter()
             .for_each(|item| item.accept_points(visitor));
