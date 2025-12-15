@@ -325,11 +325,11 @@ impl<T> RawPoint<T> {
     }
 }
 
-impl<T: Object> RawPoint<T> {
-    pub fn point(self) -> Point<T> {
+impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> RawPoint<T, Extra> {
+    pub fn point(self) -> Point<T, Extra> {
         Point {
             hash: self.inner.hash.into(),
-            extra: (),
+            extra: self.inner.extra.clone(),
             origin: Arc::new(self),
         }
     }
