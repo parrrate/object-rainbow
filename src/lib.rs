@@ -433,11 +433,11 @@ impl<T, Extra: Clone> Clone for Point<T, Extra> {
     }
 }
 
-impl<T> Point<T> {
-    fn from_origin(hash: Hash, origin: Arc<dyn Fetch<T = T>>) -> Self {
+impl<T, Extra> Point<T, Extra> {
+    fn from_origin(hash: Hash, origin: Arc<dyn Fetch<T = T>>, extra: Extra) -> Self {
         Self {
             hash: hash.into(),
-            extra: (),
+            extra,
             origin,
         }
     }
@@ -453,6 +453,7 @@ impl<T: Object> Point<T> {
         Self::from_origin(
             address.hash,
             Arc::new(ByAddress::from_inner(ByAddressInner { address, resolve })),
+            (),
         )
     }
 }
@@ -1044,7 +1045,7 @@ impl<T: Object> Drop for PointMut<'_, T> {
 
 impl<T: Object + Clone> Point<T> {
     pub fn from_object(object: T) -> Self {
-        Self::from_origin(object.full_hash(), Arc::new(LocalOrigin(object)))
+        Self::from_origin(object.full_hash(), Arc::new(LocalOrigin(object)), ())
     }
 
     fn yolo_mut(&mut self) -> bool {
