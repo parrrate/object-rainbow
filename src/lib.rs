@@ -709,6 +709,10 @@ impl<Extra> PointInput for Input<'_, Extra> {
     fn resolve_arc_ref(&self) -> &Arc<dyn Resolve> {
         self.resolve
     }
+
+    fn extra(&self) -> &Self::Extra {
+        self.extra
+    }
 }
 
 pub trait ToOutput {
@@ -1325,6 +1329,7 @@ pub trait PointInput: ParseInput {
             .downcast_ref()
             .ok_or(Error::ExtensionType)
     }
+    fn extra(&self) -> &Self::Extra;
 }
 
 impl<T: Sized + IntoIterator> RainbowIterator for T {}
