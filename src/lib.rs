@@ -391,13 +391,16 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for RawPoint<T, Extra
     }
 }
 
-impl<T> Point<T> {
+impl<T, Extra: 'static> Point<T, Extra> {
     pub fn extract_resolve<R: Any>(&self) -> Option<(&Address, &R)> {
         let ByAddressInner {
             address,
             resolve,
-            extra: (),
-        } = self.origin.as_inner()?.downcast_ref::<ByAddressInner>()?;
+            extra: _,
+        } = self
+            .origin
+            .as_inner()?
+            .downcast_ref::<ByAddressInner<Extra>>()?;
         let resolve = resolve.as_ref().any_ref().downcast_ref::<R>()?;
         Some((address, resolve))
     }
