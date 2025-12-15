@@ -275,7 +275,7 @@ impl Singular for RawPointInner {
     }
 }
 
-impl<T> Singular for RawPoint<T> {
+impl<T, Extra: 'static + Send + Sync> Singular for RawPoint<T, Extra> {
     fn hash(&self) -> &Hash {
         self.inner.hash()
     }
