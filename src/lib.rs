@@ -697,7 +697,7 @@ impl<Extra> ParseInput for Input<'_, Extra> {
     }
 }
 
-impl PointInput for Input<'_> {
+impl<Extra> PointInput for Input<'_, Extra> {
     fn parse_address(&mut self) -> crate::Result<Address> {
         let hash = *self.parse_chunk()?;
         let index = self.index.get();
