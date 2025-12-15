@@ -819,7 +819,7 @@ impl Tags {
     }
 }
 
-pub trait Inline: Object + for<'a> ParseInline<Input<'a>> {}
+pub trait Inline<Extra = ()>: Object<Extra> + for<'a> ParseInline<Input<'a, Extra>> {}
 
 impl<T: Object> Topological for Point<T> {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
