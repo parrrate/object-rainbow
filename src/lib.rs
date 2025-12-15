@@ -281,11 +281,17 @@ impl<T, Extra: 'static + Send + Sync> Singular for RawPoint<T, Extra> {
     }
 }
 
-#[derive(ToOutput, ParseInline, ParseAsInline)]
+#[derive(ParseInline, ParseAsInline)]
 pub struct RawPoint<T = Infallible, Extra = ()> {
     inner: RawPointInner,
     extra: Extra,
     _object: PhantomData<fn() -> T>,
+}
+
+impl<T, Extra> ToOutput for RawPoint<T, Extra> {
+    fn to_output(&self, output: &mut dyn Output) {
+        self.inner.to_output(output);
+    }
 }
 
 impl<T, Extra: 'static + Clone> FromInner for RawPoint<T, Extra> {
