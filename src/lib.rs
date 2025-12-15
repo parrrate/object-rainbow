@@ -751,9 +751,9 @@ impl<Extra> ParseInput for Input<'_, Extra> {
     }
 }
 
-impl<'a, Extra: 'static + Send + Sync + Clone> PointInput for Input<'a, Extra> {
+impl<'a, Extra: 'static + Clone> PointInput for Input<'a, Extra> {
     type Extra = Extra;
-    type WithExtra<E: 'static + Send + Sync + Clone> = Input<'a, E>;
+    type WithExtra<E: 'static + Clone> = Input<'a, E>;
 
     fn parse_address(&mut self) -> crate::Result<Address> {
         let hash = *self.parse_chunk()?;
@@ -770,7 +770,7 @@ impl<'a, Extra: 'static + Send + Sync + Clone> PointInput for Input<'a, Extra> {
         self.extra
     }
 
-    fn map_extra<E: 'static + Send + Sync + Clone>(
+    fn map_extra<E: 'static + Clone>(
         self,
         f: impl FnOnce(&Self::Extra) -> &E,
     ) -> Self::WithExtra<E> {
@@ -921,7 +921,7 @@ impl<T: Object<Extra>, Extra: 'static> Topological<Extra> for Point<T, Extra> {
     }
 }
 
-impl<T: Object<I::Extra>, I: PointInput> ParseInline<I> for Point<T, I::Extra> {
+impl<T: Object<I::Extra>, I: PointInput<Extra: Send + Sync>> ParseInline<I> for Point<T, I::Extra> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         input.parse_point()
     }
@@ -1405,8 +1405,8 @@ pub trait ParseInput: Sized {
 }
 
 pub trait PointInput: ParseInput {
-    type Extra: 'static + Send + Sync + Clone;
-    type WithExtra<E: 'static + Send + Sync + Clone>: PointInput<Extra = E, WithExtra<Self::Extra> = Self>;
+    type Extra: 'static + Clone;
+    type WithExtra<E: 'static + Clone>: PointInput<Extra = E, WithExtra<Self::Extra> = Self>;
     fn parse_address(&mut self) -> crate::Result<Address>;
     fn resolve_arc_ref(&self) -> &Arc<dyn Resolve>;
     fn resolve(&self) -> Arc<dyn Resolve> {
@@ -1415,7 +1415,10 @@ pub trait PointInput: ParseInput {
     fn resolve_ref(&self) -> &dyn Resolve {
         self.resolve_arc_ref().as_ref()
     }
-    fn parse_point<T: Object<Self::Extra>>(&mut self) -> crate::Result<Point<T, Self::Extra>> {
+    fn parse_point<T: Object<Self::Extra>>(&mut self) -> crate::Result<Point<T, Self::Extra>>
+    where
+        Self::Extra: Send + Sync,
+    {
         let address = self.parse_address()?;
         Ok(Point::from_address_extra(
             address,
@@ -1434,7 +1437,7 @@ pub trait PointInput: ParseInput {
             .ok_or(Error::ExtensionType)
     }
     fn extra(&self) -> &Self::Extra;
-    fn map_extra<E: 'static + Send + Sync + Clone>(
+    fn map_extra<E: 'static + Clone>(
         self,
         f: impl FnOnce(&Self::Extra) -> &E,
     ) -> Self::WithExtra<E>;
