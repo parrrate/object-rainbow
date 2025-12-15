@@ -356,7 +356,7 @@ impl<T, Extra> FetchBytes for RawPoint<T, Extra> {
     }
 }
 
-impl<T: Object> Fetch for RawPoint<T> {
+impl<T: Object<Extra>, Extra: Send + Sync> Fetch for RawPoint<T, Extra> {
     type T = T;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
