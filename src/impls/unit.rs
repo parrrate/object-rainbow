@@ -16,10 +16,10 @@ impl<I: ParseInput> ParseInline<I> for () {
     }
 }
 
-impl Topological for () {}
+impl<E: 'static> Topological<E> for () {}
 impl Tagged for () {}
-impl Object for () {}
-impl Inline for () {}
+impl<E: 'static> Object<E> for () {}
+impl<E: 'static> Inline<E> for () {}
 impl ReflessObject for () {}
 impl ReflessInline for () {}
 
