@@ -34,8 +34,8 @@ impl<K: ToOutput, V: ToOutput> ToOutput for BTreeMap<K, V> {
     }
 }
 
-impl<K: Topological, V: Topological> Topological for BTreeMap<K, V> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+impl<K: Topological<E>, V: Topological<E>, E: 'static> Topological<E> for BTreeMap<K, V> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<E>) {
         self.iter_accept_points(visitor);
     }
 }
@@ -50,7 +50,7 @@ impl<K: Tagged, V: Tagged> Tagged for BTreeMap<K, V> {
     const TAGS: Tags = Tags(&[], &[&K::TAGS, &V::TAGS]);
 }
 
-impl<K: Inline + Ord, V: Inline> Object for BTreeMap<K, V> {}
+impl<K: Inline<E> + Ord, V: Inline<E>, E: 'static> Object<E> for BTreeMap<K, V> {}
 
 impl<K: ReflessInline + Ord, V: ReflessInline> ReflessObject for BTreeMap<K, V> {}
 
