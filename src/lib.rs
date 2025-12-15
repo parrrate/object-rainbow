@@ -414,21 +414,21 @@ pub struct Point<T, Extra = ()> {
     origin: Arc<dyn Fetch<T = T, Extra = Extra>>,
 }
 
-impl<T> PartialOrd for Point<T> {
+impl<T, Extra> PartialOrd for Point<T, Extra> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<T> Ord for Point<T> {
+impl<T, Extra> Ord for Point<T, Extra> {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.hash().cmp(other.hash())
     }
 }
 
-impl<T> Eq for Point<T> {}
+impl<T, Extra> Eq for Point<T, Extra> {}
 
-impl<T> PartialEq for Point<T> {
+impl<T, Extra> PartialEq for Point<T, Extra> {
     fn eq(&self, other: &Self) -> bool {
         self.hash() == other.hash()
     }
