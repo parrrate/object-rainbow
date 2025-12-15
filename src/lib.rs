@@ -251,7 +251,11 @@ impl<Extra> RawPointInner<Extra> {
         Self {
             hash: address.hash,
             extra,
-            origin: Arc::new(ByAddressInner { address, resolve }),
+            origin: Arc::new(ByAddressInner {
+                address,
+                extra: (),
+                resolve,
+            }),
         }
     }
 }
@@ -389,8 +393,11 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for RawPoint<T, Extra
 
 impl<T> Point<T> {
     pub fn extract_resolve<R: Any>(&self) -> Option<(&Address, &R)> {
-        let ByAddressInner { address, resolve } =
-            self.origin.as_inner()?.downcast_ref::<ByAddressInner>()?;
+        let ByAddressInner {
+            address,
+            resolve,
+            extra: (),
+        } = self.origin.as_inner()?.downcast_ref::<ByAddressInner>()?;
         let resolve = resolve.as_ref().any_ref().downcast_ref::<R>()?;
         Some((address, resolve))
     }
@@ -452,15 +459,20 @@ impl<T: Object> Point<T> {
     pub fn from_address(address: Address, resolve: Arc<dyn Resolve>) -> Self {
         Self::from_origin(
             address.hash,
-            Arc::new(ByAddress::from_inner(ByAddressInner { address, resolve })),
+            Arc::new(ByAddress::from_inner(ByAddressInner {
+                address,
+                extra: (),
+                resolve,
+            })),
             (),
         )
     }
 }
 
 #[derive(Clone)]
-struct ByAddressInner {
+struct ByAddressInner<Extra = ()> {
     address: Address,
+    extra: Extra,
     resolve: Arc<dyn Resolve>,
 }
 
