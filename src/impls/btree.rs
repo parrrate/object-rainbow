@@ -8,8 +8,8 @@ impl<T: ToOutput> ToOutput for BTreeSet<T> {
     }
 }
 
-impl<T: Topological> Topological for BTreeSet<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+impl<T: Topological<E>, E: 'static> Topological<E> for BTreeSet<T> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<E>) {
         self.iter_accept_points(visitor);
     }
 }
@@ -24,7 +24,7 @@ impl<T: Tagged> Tagged for BTreeSet<T> {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: Inline + Ord> Object for BTreeSet<T> {}
+impl<T: Inline<E> + Ord, E: 'static> Object<E> for BTreeSet<T> {}
 
 impl<T: ReflessInline + Ord> ReflessObject for BTreeSet<T> {}
 
