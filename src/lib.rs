@@ -763,18 +763,30 @@ pub trait Tagged {
 
 pub trait ParseSlice: for<'a> Parse<Input<'a>> {
     fn parse_slice(data: &[u8], resolve: &Arc<dyn Resolve>) -> crate::Result<Self> {
+        Self::parse_slice_extra(data, resolve, &())
+    }
+}
+
+impl<T: for<'a> Parse<Input<'a>>> ParseSlice for T {}
+
+pub trait ParseSliceExtra<Extra>: for<'a> Parse<Input<'a, Extra>> {
+    fn parse_slice_extra(
+        data: &[u8],
+        resolve: &Arc<dyn Resolve>,
+        extra: &Extra,
+    ) -> crate::Result<Self> {
         let input = Input {
             refless: ReflessInput { data },
             resolve,
             index: &Cell::new(0),
-            extra: &(),
+            extra,
         };
         let object = Self::parse(input)?;
         Ok(object)
     }
 }
 
-impl<T: for<'a> Parse<Input<'a>>> ParseSlice for T {}
+impl<T: for<'a> Parse<Input<'a, Extra>>, Extra> ParseSliceExtra<Extra> for T {}
 
 pub trait FullHash: ToOutput + Topological + Tagged {
     fn full_hash(&self) -> Hash {
