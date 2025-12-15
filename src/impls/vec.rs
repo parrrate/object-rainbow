@@ -8,8 +8,8 @@ impl<T: ToOutput> ToOutput for Vec<T> {
     }
 }
 
-impl<T: Topological> Topological for Vec<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+impl<T: Topological<E>, E: 'static> Topological<E> for Vec<T> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<E>) {
         self.iter_accept_points(visitor);
     }
 }
@@ -24,7 +24,7 @@ impl<T: Tagged> Tagged for Vec<T> {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: Inline> Object for Vec<T> {}
+impl<T: Inline<E>, E: 'static> Object<E> for Vec<T> {}
 impl<T: ReflessInline> ReflessObject for Vec<T> {}
 
 impl<T: ToOutput> ToOutput for VecDeque<T> {
@@ -35,8 +35,8 @@ impl<T: ToOutput> ToOutput for VecDeque<T> {
     }
 }
 
-impl<T: Topological> Topological for VecDeque<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+impl<T: Topological<E>, E: 'static> Topological<E> for VecDeque<T> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<E>) {
         self.iter_accept_points(visitor);
     }
 }
@@ -51,5 +51,5 @@ impl<T: Tagged> Tagged for VecDeque<T> {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: Inline> Object for VecDeque<T> {}
+impl<T: Inline<E>, E: 'static> Object<E> for VecDeque<T> {}
 impl<T: ReflessInline> ReflessObject for VecDeque<T> {}
