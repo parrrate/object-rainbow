@@ -1071,14 +1071,15 @@ impl<T: Object<Extra>, Extra> Drop for PointMut<'_, T, Extra> {
 
 impl<T: Object + Clone> Point<T> {
     pub fn from_object(object: T) -> Self {
-        Self::from_origin(
-            object.full_hash(),
-            Arc::new(LocalOrigin { object, extra: () }),
-        )
+        Self::from_object_extra(object, ())
     }
 }
 
 impl<T: Object<Extra> + Clone, Extra: 'static + Send + Sync + Clone> Point<T, Extra> {
+    pub fn from_object_extra(object: T, extra: Extra) -> Self {
+        Self::from_origin(object.full_hash(), Arc::new(LocalOrigin { object, extra }))
+    }
+
     fn yolo_mut(&mut self) -> bool {
         self.origin.get().is_some()
             && Arc::get_mut(&mut self.origin).is_some_and(|origin| origin.get_mut().is_some())
