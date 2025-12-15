@@ -329,6 +329,7 @@ impl<T: Object> RawPoint<T> {
     pub fn point(self) -> Point<T> {
         Point {
             hash: self.inner.hash.into(),
+            extra: (),
             origin: Arc::new(self),
         }
     }
@@ -396,8 +397,9 @@ impl<T> Point<T> {
 }
 
 #[derive(ParseAsInline)]
-pub struct Point<T> {
+pub struct Point<T, Extra = ()> {
     hash: OptionalHash,
+    extra: Extra,
     origin: Arc<dyn Fetch<T = T>>,
 }
 
@@ -421,10 +423,11 @@ impl<T> PartialEq for Point<T> {
     }
 }
 
-impl<T> Clone for Point<T> {
+impl<T, Extra: Clone> Clone for Point<T, Extra> {
     fn clone(&self) -> Self {
         Self {
             hash: self.hash,
+            extra: self.extra.clone(),
             origin: self.origin.clone(),
         }
     }
@@ -434,6 +437,7 @@ impl<T> Point<T> {
     fn from_origin(hash: Hash, origin: Arc<dyn Fetch<T = T>>) -> Self {
         Self {
             hash: hash.into(),
+            extra: (),
             origin,
         }
     }
@@ -1366,6 +1370,7 @@ impl<U: 'static + Equivalent<T>, T: 'static> Equivalent<Point<T>> for Point<U> {
     fn into_equivalent(self) -> Point<T> {
         Point {
             hash: self.hash,
+            extra: self.extra,
             origin: Arc::new(MapEquivalent {
                 origin: self.origin,
                 map: U::into_equivalent,
@@ -1376,6 +1381,7 @@ impl<U: 'static + Equivalent<T>, T: 'static> Equivalent<Point<T>> for Point<U> {
     fn from_equivalent(object: Point<T>) -> Self {
         Point {
             hash: object.hash,
+            extra: object.extra,
             origin: Arc::new(MapEquivalent {
                 origin: object.origin,
                 map: U::from_equivalent,
@@ -1423,6 +1429,7 @@ impl<T: 'static + ToOutput> Point<T> {
     pub fn map<U>(self, f: impl 'static + Send + Sync + Fn(T) -> U) -> Point<U> {
         Point {
             hash: self.hash,
+            extra: self.extra,
             origin: Arc::new(Map {
                 origin: self.origin,
                 map: f,
