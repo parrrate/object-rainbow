@@ -1,15 +1,15 @@
 use std::{
-    any::TypeId,
     collections::{BTreeMap, BTreeSet},
     future::ready,
+    marker::PhantomData,
     ops::Deref,
     sync::Arc,
 };
 
 use chacha20poly1305::{ChaCha20Poly1305, aead::Aead};
 use object_rainbow::{
-    Address, ByteNode, Error, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Refless,
-    Resolve, Singular, ToOutputExt, error_fetch, error_parse,
+    Address, ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Refless, Resolve,
+    Singular, ToOutputExt, error_fetch, error_parse,
 };
 use object_rainbow_encrypted::{Key, encrypt_point};
 use sha2::digest::generic_array::GenericArray;
@@ -53,32 +53,33 @@ type Callback<'a> = dyn 'a + Send + FnOnce(&mut BTreeSet<Hash>);
 struct Event<'a>(Hash, Vec<u8>, Box<Callback<'a>>);
 
 #[derive(Debug, Clone)]
-struct EventContext<'ex> {
+struct EventContext<'ex, Extra> {
     executor: Arc<Executor<'ex>>,
     send: Sender<Event<'ex>>,
+    _extra: PhantomData<Extra>,
 }
 
-struct EventVisitor<'ex, 't> {
+struct EventVisitor<'ex, 't, Extra> {
     fetching: &'t mut BTreeSet<Hash>,
-    context: EventContext<'ex>,
+    context: EventContext<'ex, Extra>,
 }
 
-impl<'ex> Deref for EventVisitor<'ex, '_> {
-    type Target = EventContext<'ex>;
+impl<'ex, Extra> Deref for EventVisitor<'ex, '_, Extra> {
+    type Target = EventContext<'ex, Extra>;
 
     fn deref(&self) -> &Self::Target {
         &self.context
     }
 }
 
-impl EventContext<'_> {
-    async fn send(self, object: impl Object) {
+impl<Extra: 'static + Send + Sync + Clone> EventContext<'_, Extra> {
+    async fn send(self, object: impl Object<Extra>) {
         let send = self.send.clone();
         let event = Event::from_object(object, self);
         let _ = send.send(event).await;
     }
 
-    async fn resolve(self, point: Point<impl Object>) {
+    async fn resolve(self, point: Point<impl Object<Extra>, Extra>) {
         match point.fetch().await {
             Ok(object) => self.send(object).await,
             Err(e) => tracing::error!("{e:?}"),
@@ -86,8 +87,8 @@ impl EventContext<'_> {
     }
 }
 
-impl PointVisitor for EventVisitor<'_, '_> {
-    fn visit<T: Object>(&mut self, point: &object_rainbow::Point<T>) {
+impl<Extra: 'static + Send + Sync + Clone> PointVisitor<Extra> for EventVisitor<'_, '_, Extra> {
+    fn visit<T: Object<Extra>>(&mut self, point: &object_rainbow::Point<T, Extra>) {
         if !self.fetching.contains(point.hash()) {
             self.fetching.insert(*point.hash());
             let point = point.clone();
@@ -98,7 +99,10 @@ impl PointVisitor for EventVisitor<'_, '_> {
 }
 
 impl<'ex> Event<'ex> {
-    fn from_object<T: Object>(object: T, context: EventContext<'ex>) -> Self {
+    fn from_object<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
+        object: T,
+        context: EventContext<'ex, Extra>,
+    ) -> Self {
         let hash = object.full_hash();
         let data = object.output();
         Event(
@@ -110,7 +114,7 @@ impl<'ex> Event<'ex> {
 }
 
 #[derive(Debug, Clone)]
-struct MapResolver(Arc<BTreeMap<Hash, Vec<u8>>>, Test);
+struct MapResolver(Arc<BTreeMap<Hash, Vec<u8>>>);
 
 impl Resolve for MapResolver {
     fn resolve(&'_ self, address: object_rainbow::Address) -> FailFuture<'_, ByteNode> {
@@ -120,26 +124,22 @@ impl Resolve for MapResolver {
         }))
     }
 
-    fn extension(&self, typeid: TypeId) -> object_rainbow::Result<&dyn std::any::Any> {
-        if typeid == TypeId::of::<Test>() {
-            Ok(&self.1)
-        } else {
-            Err(Error::UnknownExtension)
-        }
-    }
-
     fn name(&self) -> &str {
         "map resolver"
     }
 }
 
-async fn iterate<T: Object>(object: T) -> Point<T> {
+async fn iterate<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
+    object: T,
+    extra: Extra,
+) -> Point<T, Extra> {
     let (send, recv) = smol::channel::unbounded::<Event>();
     let executor = Arc::new(Executor::new());
     let hash = object.full_hash();
     EventContext {
         executor: executor.clone(),
         send,
+        _extra: PhantomData,
     }
     .send(object)
     .await;
@@ -166,11 +166,8 @@ async fn iterate<T: Object>(object: T) -> Point<T> {
         );
     }
     let address = Address { index: 0, hash };
-    let resolver = Arc::new(MapResolver(
-        Arc::new(fetched),
-        Test(std::array::from_fn(|i| i as _)),
-    ));
-    Point::from_address(address, resolver)
+    let resolver = Arc::new(MapResolver(Arc::new(fetched)));
+    Point::from_address_extra(address, resolver, extra)
 }
 
 fn main() -> anyhow::Result<()> {
@@ -181,10 +178,11 @@ fn main() -> anyhow::Result<()> {
             Point::from_object(Point::from_object(Refless((*b"alisa", *b"feistel")))),
             Point::from_object(Refless([1, 2, 3, 4])),
         ));
-        let point = encrypt_point(Test(std::array::from_fn(|i| i as _)), point).await?;
-        let point = iterate(point).await.fetch().await?;
+        let key = Test(std::array::from_fn(|i| i as _));
+        let point = encrypt_point(key, point).await?;
+        let point = iterate(point, key).await.fetch().await?;
         let point = Point::from_object(point.fetch().await?.into_inner());
-        let point = encrypt_point(Test(std::array::from_fn(|i| i as _)), point).await?;
+        let point = encrypt_point(key, point).await?;
         let point = Point::from_object(point.fetch().await?.into_inner());
         assert_eq!(
             point.fetch().await?.0.fetch().await?.fetch().await?.0.0,

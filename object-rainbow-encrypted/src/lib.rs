@@ -1,14 +1,9 @@
-use std::{
-    any::{Any, TypeId},
-    convert::Infallible,
-    ops::Deref,
-    sync::Arc,
-};
+use std::{convert::Infallible, ops::Deref, sync::Arc};
 
 use object_rainbow::{
-    Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, Hash, Input, Object, Parse,
-    ParseInput, ParseSlice, Point, PointInput, PointVisitor, RawPoint, Resolve, Singular, Tagged,
-    ToOutput, ToOutputExt, Topological, length_prefixed::Lp,
+    Address, ByteNode, Error, FailFuture, Fetch, Hash, Input, Object, Parse, ParseInput,
+    ParseSlice, ParseSliceExtra, Point, PointInput, PointVisitor, RawPoint, Resolve, Singular,
+    Tagged, ToOutput, ToOutputExt, Topological, length_prefixed::Lp,
 };
 use sha2::{Digest, Sha256};
 
@@ -17,12 +12,21 @@ pub trait Key: 'static + Sized + Send + Sync + Clone {
     fn decrypt(&self, data: &[u8]) -> object_rainbow::Result<Vec<u8>>;
 }
 
-type Resolution<K> = Arc<Lp<Vec<RawPoint<Encrypted<K, Infallible>>>>>;
+type Resolution<K> = Arc<Lp<Vec<RawPoint<Encrypted<K, Infallible>, K>>>>;
+
+#[derive(ToOutput, Clone)]
+struct Unkeyed<T>(T);
+
+impl<'a, T: Parse<Input<'a>>, K> Parse<Input<'a, K>> for Unkeyed<T> {
+    fn parse(input: Input<'a, K>) -> object_rainbow::Result<Self> {
+        Ok(Self(T::parse(input.replace_extra(&()))?))
+    }
+}
 
 #[derive(ToOutput, Parse)]
 struct EncryptedInner<K, T> {
     resolution: Resolution<K>,
-    decrypted: Arc<T>,
+    decrypted: Unkeyed<Arc<T>>,
 }
 
 impl<K, T> Clone for EncryptedInner<K, T> {
@@ -35,11 +39,11 @@ impl<K, T> Clone for EncryptedInner<K, T> {
 }
 
 struct IterateResolution<'a, K, V> {
-    resolution: std::slice::Iter<'a, RawPoint<Encrypted<K, Infallible>>>,
+    resolution: std::slice::Iter<'a, RawPoint<Encrypted<K, Infallible>, K>>,
     visitor: &'a mut V,
 }
 
-impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, K, V> {
+impl<'a, K: Key, V: PointVisitor<K>> PointVisitor for IterateResolution<'a, K, V> {
     fn visit<T: Object>(&mut self, _: &Point<T>) {
         let point = self
             .resolution
@@ -52,9 +56,9 @@ impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, K, V> {
     }
 }
 
-impl<K: Key, T: Topological> Topological for EncryptedInner<K, T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        self.decrypted.accept_points(&mut IterateResolution {
+impl<K: Key, T: Topological> Topological<K> for EncryptedInner<K, T> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<K>) {
+        self.decrypted.0.accept_points(&mut IterateResolution {
             resolution: self.resolution.iter(),
             visitor,
         });
@@ -76,7 +80,7 @@ pub struct Encrypted<K, T> {
 
 impl<K, T: Clone> Encrypted<K, T> {
     pub fn into_inner(self) -> T {
-        Arc::unwrap_or_clone(self.inner.decrypted)
+        Arc::unwrap_or_clone(self.inner.decrypted.0)
     }
 }
 
@@ -84,7 +88,7 @@ impl<K, T> Deref for Encrypted<K, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        self.inner.decrypted.as_ref()
+        self.inner.decrypted.0.as_ref()
     }
 }
 
@@ -97,8 +101,8 @@ impl<K: Clone, T> Clone for Encrypted<K, T> {
     }
 }
 
-impl<K: Key, T: Topological> Topological for Encrypted<K, T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+impl<K: Key, T: Topological> Topological<K> for Encrypted<K, T> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<K>) {
         self.inner.accept_points(visitor);
     }
 
@@ -116,7 +120,6 @@ impl<K: Key, T: ToOutput> ToOutput for Encrypted<K, T> {
 
 #[derive(Clone)]
 struct Decrypt<K> {
-    key: K,
     resolution: Resolution<K>,
 }
 
@@ -124,7 +127,7 @@ impl<K: Key> Resolve for Decrypt<K> {
     fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode> {
         Box::pin(async move {
             let Encrypted {
-                key,
+                key: _,
                 inner:
                     EncryptedInner {
                         resolution,
@@ -139,29 +142,10 @@ impl<K: Key> Resolve for Decrypt<K> {
                 .fetch()
                 .await?;
             Ok((
-                Arc::into_inner(decrypted).expect("not shared because reconstructed"),
-                Arc::new(Decrypt { key, resolution }) as _,
+                Arc::into_inner(decrypted.0).expect("not shared because reconstructed"),
+                Arc::new(Decrypt { resolution }) as _,
             ))
         })
-    }
-
-    fn resolve_extension(
-        &self,
-        address: Address,
-        typeid: TypeId,
-    ) -> object_rainbow::Result<&dyn Any> {
-        self.resolution
-            .get(address.index)
-            .ok_or(Error::AddressOutOfBounds)?
-            .extension(typeid)
-    }
-
-    fn extension(&self, typeid: TypeId) -> object_rainbow::Result<&dyn Any> {
-        if typeid == TypeId::of::<K>() {
-            Ok(&self.key)
-        } else {
-            Err(Error::UnknownExtension)
-        }
     }
 
     fn name(&self) -> &str {
@@ -169,23 +153,22 @@ impl<K: Key> Resolve for Decrypt<K> {
     }
 }
 
-impl<K: Key, T: for<'a> Parse<Input<'a>>> Parse<Input<'_>> for Encrypted<K, T> {
-    fn parse(input: Input<'_>) -> object_rainbow::Result<Self> {
-        let key = input.extension::<K>()?.clone();
+impl<K: Key, T: for<'a> Parse<Input<'a>>> Parse<Input<'_, K>> for Encrypted<K, T> {
+    fn parse(input: Input<'_, K>) -> object_rainbow::Result<Self> {
+        let key = input.extra().clone();
         let resolve = input.resolve().clone();
         let source = key.decrypt(input.parse_all())?;
         let EncryptedInner {
             resolution,
             decrypted,
-        } = EncryptedInner::<K, Vec<u8>>::parse_slice(&source, &resolve)?;
+        } = EncryptedInner::<K, Vec<u8>>::parse_slice_extra(&source, &resolve, &key)?;
         let decrypted = T::parse_slice(
-            &decrypted,
+            &decrypted.0,
             &(Arc::new(Decrypt {
-                key: key.clone(),
                 resolution: resolution.clone(),
             }) as _),
         )?;
-        let decrypted = Arc::new(decrypted);
+        let decrypted = Unkeyed(Arc::new(decrypted));
         let inner = EncryptedInner {
             resolution,
             decrypted,
@@ -196,18 +179,10 @@ impl<K: Key, T: for<'a> Parse<Input<'a>>> Parse<Input<'_>> for Encrypted<K, T> {
 
 impl<K, T> Tagged for Encrypted<K, T> {}
 
-impl<K: Key, T: Object> Object for Encrypted<K, T> {
-    fn extension(&self, typeid: TypeId) -> object_rainbow::Result<&dyn Any> {
-        if typeid == TypeId::of::<K>() {
-            Ok(&self.key)
-        } else {
-            Err(Error::UnknownExtension)
-        }
-    }
-}
+impl<K: Key, T: Object> Object<K> for Encrypted<K, T> {}
 
 struct ExtractResolution<'a, K>(
-    &'a mut Vec<FailFuture<'static, RawPoint<Encrypted<K, Infallible>>>>,
+    &'a mut Vec<FailFuture<'static, RawPoint<Encrypted<K, Infallible>, K>>>,
     &'a K,
 );
 
@@ -225,7 +200,7 @@ impl<K: Key> PointVisitor for ExtractResolution<'_, K> {
 pub async fn encrypt_point<K: Key, T: Object>(
     key: K,
     point: Point<T>,
-) -> object_rainbow::Result<Point<Encrypted<K, T>>> {
+) -> object_rainbow::Result<Point<Encrypted<K, T>, K>> {
     if let Some((address, decrypt)) = point.extract_resolve::<Decrypt<K>>() {
         let point = decrypt
             .resolution
@@ -234,8 +209,8 @@ pub async fn encrypt_point<K: Key, T: Object>(
         return Ok(point.clone().cast().point());
     }
     let decrypted = point.fetch().await?;
-    let encrypted = encrypt(key, decrypted).await?;
-    let point = Point::from_object(encrypted);
+    let encrypted = encrypt(key.clone(), decrypted).await?;
+    let point = Point::from_object_extra(encrypted, key);
     Ok(point)
 }
 
@@ -247,7 +222,7 @@ pub async fn encrypt<K: Key, T: Object>(
     decrypted.accept_points(&mut ExtractResolution(&mut futures, &key));
     let resolution = futures_util::future::try_join_all(futures).await?;
     let resolution = Arc::new(Lp(resolution));
-    let decrypted = Arc::new(decrypted);
+    let decrypted = Unkeyed(Arc::new(decrypted));
     let inner = EncryptedInner {
         resolution,
         decrypted,
