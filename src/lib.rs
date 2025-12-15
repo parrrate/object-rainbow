@@ -557,13 +557,13 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for ByAddress<T, Extr
     }
 }
 
-pub trait PointVisitor<Extra = ()> {
+pub trait PointVisitor<Extra: 'static = ()> {
     fn visit<T: Object<Extra>>(&mut self, point: &Point<T, Extra>);
 }
 
 struct HashVisitor<F>(F);
 
-impl<F: FnMut(Hash), Extra> PointVisitor<Extra> for HashVisitor<F> {
+impl<F: FnMut(Hash), Extra: 'static> PointVisitor<Extra> for HashVisitor<F> {
     fn visit<T: Object<Extra>>(&mut self, point: &Point<T, Extra>) {
         self.0(*point.hash());
     }
@@ -821,7 +821,7 @@ pub trait ParseSliceExtra<Extra>: for<'a> Parse<Input<'a, Extra>> {
 
 impl<T: for<'a> Parse<Input<'a, Extra>>, Extra> ParseSliceExtra<Extra> for T {}
 
-pub trait FullHash: ToOutput + Topological + Tagged {
+pub trait FullHash<Extra: 'static>: ToOutput + Topological<Extra> + Tagged {
     fn full_hash(&self) -> Hash {
         let mut output = HashOutput::default();
         output.hasher.update(Self::HASH);
@@ -831,10 +831,10 @@ pub trait FullHash: ToOutput + Topological + Tagged {
     }
 }
 
-impl<T: ?Sized + ToOutput + Topological + Tagged> FullHash for T {}
+impl<T: ?Sized + ToOutput + Topological<Extra> + Tagged, Extra: 'static> FullHash<Extra> for T {}
 
-pub trait Object<Extra = ()>:
-    'static + Sized + Send + Sync + FullHash + for<'a> Parse<Input<'a, Extra>>
+pub trait Object<Extra: 'static = ()>:
+    'static + Sized + Send + Sync + FullHash<Extra> + for<'a> Parse<Input<'a, Extra>>
 {
     fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
         let _ = typeid;
@@ -864,7 +864,10 @@ impl Tags {
     }
 }
 
-pub trait Inline<Extra = ()>: Object<Extra> + for<'a> ParseInline<Input<'a, Extra>> {}
+pub trait Inline<Extra: 'static = ()>:
+    Object<Extra> + for<'a> ParseInline<Input<'a, Extra>>
+{
+}
 
 impl<T: Object<Extra>, Extra: 'static> Topological<Extra> for Point<T, Extra> {
     fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
@@ -1040,7 +1043,7 @@ impl HashOutput {
     }
 }
 
-pub struct PointMut<'a, T: Object<Extra>, Extra = ()> {
+pub struct PointMut<'a, T: Object<Extra>, Extra: 'static = ()> {
     hash: &'a mut OptionalHash,
     origin: &'a mut dyn Fetch<T = T, Extra = Extra>,
 }
@@ -1172,7 +1175,7 @@ trait AsExtension<Extra> {
     fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any>;
 }
 
-impl<T: Object<Extra>, Extra> AsExtension<Extra> for T {
+impl<T: Object<Extra>, Extra: 'static> AsExtension<Extra> for T {
     fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
         self.extension(typeid)
     }
@@ -1222,7 +1225,7 @@ impl<Extra> Resolve for ByTopology<Extra> {
     }
 }
 
-impl<T: Object<Extra>, Extra: Send + Sync> Fetch for Point<T, Extra> {
+impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for Point<T, Extra> {
     type T = T;
     type Extra = Extra;
 
