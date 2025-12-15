@@ -1201,7 +1201,7 @@ impl Resolve for ByTopology {
     }
 }
 
-impl<T: Object> Fetch for Point<T> {
+impl<T: Object<Extra>, Extra: Send + Sync> Fetch for Point<T, Extra> {
     type T = T;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
