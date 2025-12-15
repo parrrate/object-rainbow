@@ -1011,49 +1011,6 @@ pub trait ReflessInline: ReflessObject + for<'a> ParseInline<ReflessInput<'a>> {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct Refless<T>(pub T);
-
-impl<T> Deref for Refless<T> {
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl<T> DerefMut for Refless<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl<T: ToOutput> ToOutput for Refless<T> {
-    fn to_output(&self, output: &mut dyn Output) {
-        self.0.to_output(output);
-    }
-}
-
-impl<'a, T: Parse<ReflessInput<'a>>> Parse<Input<'a>> for Refless<T> {
-    fn parse(input: Input<'a>) -> crate::Result<Self> {
-        T::parse(input.refless).map(Self)
-    }
-}
-
-impl<'a, T: ParseInline<ReflessInput<'a>>> ParseInline<Input<'a>> for Refless<T> {
-    fn parse_inline(input: &mut Input<'a>) -> crate::Result<Self> {
-        T::parse_inline(input).map(Self)
-    }
-}
-
-impl<T: Tagged> Tagged for Refless<T> {
-    const TAGS: Tags = T::TAGS;
-}
-
-impl<T> Topological for Refless<T> {}
-impl<T: ReflessObject> Object for Refless<T> {}
-impl<T: ReflessInline> Inline for Refless<T> {}
-
 pub trait Output {
     fn write(&mut self, data: &[u8]);
 }

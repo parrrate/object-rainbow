@@ -6,8 +6,8 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, ByteNode, FailFuture, Fetch, FullHash, Hash, Object, Point, PointVisitor, Refless,
-    Resolve, Singular, ToOutputExt, error_parse,
+    Address, ByteNode, FailFuture, Fetch, FullHash, Hash, Object, Point, PointVisitor, Resolve,
+    Singular, ToOutputExt, error_parse,
 };
 use smol::{Executor, channel::Sender};
 
@@ -130,19 +130,19 @@ fn main() -> anyhow::Result<()> {
     tracing::info!("starting");
     smol::block_on(async move {
         let mut point = iterate((
-            Point::from_object(Refless((*b"alisa", *b"feistel"))),
-            Point::from_object(Refless([1, 2, 3, 4])),
+            Point::from_object((*b"alisa", *b"feistel")),
+            Point::from_object([1, 2, 3, 4]),
         ))
         .await;
-        assert_eq!(point.fetch().await?.0.fetch().await?.0.0, *b"alisa");
-        assert_eq!(point.fetch().await?.0.fetch().await?.0.1, *b"feistel");
-        assert_eq!(point.fetch().await?.1.fetch().await?.0, [1, 2, 3, 4]);
+        assert_eq!(point.fetch().await?.0.fetch().await?.0, *b"alisa");
+        assert_eq!(point.fetch().await?.0.fetch().await?.1, *b"feistel");
+        assert_eq!(point.fetch().await?.1.fetch().await?, [1, 2, 3, 4]);
         println!("{}", hex::encode(point.full_hash()));
-        point.fetch_mut().await?.1.fetch_mut().await?.0[3] = 5;
-        assert_eq!(point.fetch().await?.1.fetch().await?.0, [1, 2, 3, 5]);
+        point.fetch_mut().await?.1.fetch_mut().await?[3] = 5;
+        assert_eq!(point.fetch().await?.1.fetch().await?, [1, 2, 3, 5]);
         println!("{}", hex::encode(point.full_hash()));
-        point.fetch_mut().await?.1.fetch_mut().await?.0[3] = 4;
-        assert_eq!(point.fetch().await?.1.fetch().await?.0, [1, 2, 3, 4]);
+        point.fetch_mut().await?.1.fetch_mut().await?[3] = 4;
+        assert_eq!(point.fetch().await?.1.fetch().await?, [1, 2, 3, 4]);
         println!("{}", hex::encode(point.full_hash()));
         Ok(())
     })

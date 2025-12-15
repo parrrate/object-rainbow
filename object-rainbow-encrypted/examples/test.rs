@@ -8,8 +8,8 @@ use std::{
 
 use chacha20poly1305::{ChaCha20Poly1305, aead::Aead};
 use object_rainbow::{
-    Address, ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Refless, Resolve,
-    Singular, ToOutputExt, error_fetch, error_parse,
+    Address, ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Resolve, Singular,
+    ToOutputExt, error_fetch, error_parse,
 };
 use object_rainbow_encrypted::{Key, WithKey, encrypt_point};
 use sha2::digest::generic_array::GenericArray;
@@ -175,8 +175,8 @@ fn main() -> anyhow::Result<()> {
     tracing::info!("starting");
     smol::block_on(async move {
         let point = Point::from_object((
-            Point::from_object(Point::from_object(Refless((*b"alisa", *b"feistel")))),
-            Point::from_object(Refless([1, 2, 3, 4])),
+            Point::from_object(Point::from_object((*b"alisa", *b"feistel"))),
+            Point::from_object([1, 2, 3, 4]),
         ));
         let key = Test(std::array::from_fn(|i| i as _));
         let point = encrypt_point(key, point).await?;
@@ -188,11 +188,11 @@ fn main() -> anyhow::Result<()> {
         let point = encrypt_point(key, point).await?;
         let point = Point::from_object(point.fetch().await?.into_inner());
         assert_eq!(
-            point.fetch().await?.0.fetch().await?.fetch().await?.0.0,
+            point.fetch().await?.0.fetch().await?.fetch().await?.0,
             *b"alisa",
         );
         assert_eq!(
-            point.fetch().await?.0.fetch().await?.fetch().await?.0.1,
+            point.fetch().await?.0.fetch().await?.fetch().await?.1,
             *b"feistel",
         );
         println!("all right");
