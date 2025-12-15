@@ -893,7 +893,7 @@ impl<T, Extra> ToOutput for Point<T, Extra> {
     }
 }
 
-impl<T: Object> Inline for Point<T> {}
+impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Inline<Extra> for Point<T, Extra> {}
 
 pub trait Topology: Send + Sync {
     fn len(&self) -> usize;
