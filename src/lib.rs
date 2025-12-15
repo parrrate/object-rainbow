@@ -221,6 +221,7 @@ pub trait Fetch: Send + Sync + FetchBytes {
         None
     }
     fn get_mut_finalize(&mut self) {}
+    fn extra(&self) -> &Self::Extra;
 }
 
 pub trait FetchBytesExt: FetchBytes {
@@ -391,6 +392,10 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for RawPoint<T, Extra
             }
         })
     }
+
+    fn extra(&self) -> &Self::Extra {
+        &self.inner.extra
+    }
 }
 
 impl<T, Extra: 'static> Point<T, Extra> {
@@ -553,6 +558,10 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for ByAddress<T, Extr
                 Ok(object)
             }
         })
+    }
+
+    fn extra(&self) -> &Self::Extra {
+        &self.inner.extra
     }
 }
 
@@ -1096,7 +1105,6 @@ impl<T: Object + Clone> Point<T> {
 
 struct LocalOrigin<T, Extra> {
     object: T,
-    #[expect(unused)]
     extra: Extra,
 }
 
@@ -1139,6 +1147,10 @@ impl<T: Object<Extra> + Clone, Extra: 'static + Send + Sync> Fetch for LocalOrig
 
     fn get_mut(&mut self) -> Option<&mut Self::T> {
         Some(self)
+    }
+
+    fn extra(&self) -> &Self::Extra {
+        &self.extra
     }
 }
 
@@ -1238,6 +1250,10 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for Point<T, Extra> {
         let origin = Arc::get_mut(&mut self.origin).unwrap();
         origin.get_mut_finalize();
         self.hash.0 = origin.get().unwrap().full_hash();
+    }
+
+    fn extra(&self) -> &Self::Extra {
+        &self.extra
     }
 }
 
@@ -1458,6 +1474,10 @@ impl<T, F: 'static + Send + Sync + Map1<T>, Extra> Fetch for MapEquivalent<T, F,
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(self.origin.fetch().map_ok(&self.map))
     }
+
+    fn extra(&self) -> &Self::Extra {
+        self.origin.extra()
+    }
 }
 
 impl<T: 'static + ToOutput> Point<T> {
@@ -1494,6 +1514,10 @@ impl<T: ToOutput, F: 'static + Send + Sync + Map1<T>, Extra> Fetch for Map<T, F,
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(self.origin.fetch().map_ok(&self.map))
+    }
+
+    fn extra(&self) -> &Self::Extra {
+        self.origin.extra()
     }
 }
 
