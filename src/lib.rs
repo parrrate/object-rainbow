@@ -446,10 +446,7 @@ impl<T: Object> Point<T> {
     pub fn from_address(address: Address, resolve: Arc<dyn Resolve>) -> Self {
         Self::from_origin(
             address.hash,
-            Arc::new(ByAddress {
-                inner: ByAddressInner { address, resolve },
-                _object: PhantomData,
-            }),
+            Arc::new(ByAddress::from_inner(ByAddressInner { address, resolve })),
         )
     }
 }
