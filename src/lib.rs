@@ -342,7 +342,7 @@ impl FetchBytes for RawPointInner {
     }
 }
 
-impl<T> FetchBytes for RawPoint<T> {
+impl<T, Extra> FetchBytes for RawPoint<T, Extra> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.inner.fetch_bytes()
     }
@@ -362,7 +362,7 @@ impl<T: Object> Fetch for RawPoint<T> {
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         Box::pin(async {
             let (data, resolve) = self.inner.origin.fetch_bytes().await?;
-            let object = T::parse_slice(&data, &resolve)?;
+            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
             if self.inner.hash != object.full_hash() {
                 Err(Error::DataMismatch)
             } else {
@@ -374,7 +374,7 @@ impl<T: Object> Fetch for RawPoint<T> {
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
             let (data, resolve) = self.inner.origin.fetch_bytes().await?;
-            let object = T::parse_slice(&data, &resolve)?;
+            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
             if self.inner.hash != object.full_hash() {
                 Err(Error::DataMismatch)
             } else {
