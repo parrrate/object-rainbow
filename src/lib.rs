@@ -881,7 +881,7 @@ impl<T: Object<I::Extra>, I: PointInput> ParseInline<I> for Point<T, I::Extra> {
     }
 }
 
-impl<T: Tagged> Tagged for Point<T> {
+impl<T: Tagged, Extra> Tagged for Point<T, Extra> {
     const TAGS: Tags = T::TAGS;
 }
 
