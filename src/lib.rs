@@ -887,7 +887,7 @@ impl<T: Tagged> Tagged for Point<T> {
 
 impl<T: Object> Object for Point<T> {}
 
-impl<T> ToOutput for Point<T> {
+impl<T, Extra> ToOutput for Point<T, Extra> {
     fn to_output(&self, output: &mut dyn Output) {
         output.write(self.hash());
     }
