@@ -306,13 +306,11 @@ impl<T> Point<T> {
                 return raw;
             }
         }
-        RawPoint {
-            inner: RawPointInner {
-                hash: *self.hash.unwrap(),
-                origin: self.origin,
-            },
-            _object: PhantomData,
+        RawPointInner {
+            hash: *self.hash.unwrap(),
+            origin: self.origin,
         }
+        .cast()
     }
 }
 
