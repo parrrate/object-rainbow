@@ -476,7 +476,7 @@ struct ByAddressInner<Extra = ()> {
     resolve: Arc<dyn Resolve>,
 }
 
-impl FetchBytes for ByAddressInner {
+impl<Extra> FetchBytes for ByAddressInner<Extra> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.resolve.resolve(self.address)
     }
