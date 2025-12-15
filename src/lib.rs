@@ -256,12 +256,8 @@ impl<Extra: 'static + Send + Sync + Clone> RawPointInner<Extra> {
     pub fn from_address(address: Address, resolve: Arc<dyn Resolve>, extra: Extra) -> Self {
         Self {
             hash: address.hash,
-            extra: extra.clone(),
-            origin: Arc::new(ByAddressInner {
-                address,
-                extra,
-                resolve,
-            }),
+            extra,
+            origin: Arc::new(ByAddressInner { address, resolve }),
         }
     }
 }
@@ -404,14 +400,8 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for RawPoint<T, Extra
 
 impl<T, Extra: 'static> Point<T, Extra> {
     pub fn extract_resolve<R: Any>(&self) -> Option<(&Address, &R)> {
-        let ByAddressInner {
-            address,
-            resolve,
-            extra: _,
-        } = self
-            .origin
-            .as_inner()?
-            .downcast_ref::<ByAddressInner<Extra>>()?;
+        let ByAddressInner { address, resolve } =
+            self.origin.as_inner()?.downcast_ref::<ByAddressInner>()?;
         let resolve = resolve.as_ref().any_ref().downcast_ref::<R>()?;
         Some((address, resolve))
     }
@@ -477,11 +467,7 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Point<T, Extra> {
         Self::from_origin(
             address.hash,
             Arc::new(ByAddress::from_inner(
-                ByAddressInner {
-                    address,
-                    extra: extra.clone(),
-                    resolve,
-                },
+                ByAddressInner { address, resolve },
                 extra,
             )),
         )
@@ -489,13 +475,12 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Point<T, Extra> {
 }
 
 #[derive(Clone)]
-struct ByAddressInner<Extra> {
+struct ByAddressInner {
     address: Address,
-    extra: Extra,
     resolve: Arc<dyn Resolve>,
 }
 
-impl<Extra> FetchBytes for ByAddressInner<Extra> {
+impl FetchBytes for ByAddressInner {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.resolve.resolve(self.address)
     }
@@ -506,17 +491,19 @@ impl<Extra> FetchBytes for ByAddressInner<Extra> {
 }
 
 struct ByAddress<T, Extra> {
-    inner: ByAddressInner<Extra>,
+    inner: ByAddressInner,
+    extra: Extra,
     _object: PhantomData<fn() -> T>,
 }
 
 impl<T, Extra: 'static + Clone> FromInner for ByAddress<T, Extra> {
-    type Inner = ByAddressInner<Extra>;
+    type Inner = ByAddressInner;
     type Extra = Extra;
 
     fn from_inner(inner: Self::Inner, extra: Self::Extra) -> Self {
         Self {
             inner,
+            extra,
             _object: PhantomData,
         }
     }
@@ -543,7 +530,7 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for ByAddress<T, Extr
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
-            let object = T::parse_slice_extra(&data, &resolve, &self.inner.extra)?;
+            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
             if self.inner.address.hash != object.full_hash() {
                 Err(Error::DataMismatch)
             } else {
@@ -555,7 +542,7 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for ByAddress<T, Extr
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
-            let object = T::parse_slice_extra(&data, &resolve, &self.inner.extra)?;
+            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
             if self.inner.address.hash != object.full_hash() {
                 Err(Error::DataMismatch)
             } else {
@@ -565,7 +552,7 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for ByAddress<T, Extr
     }
 
     fn extra(&self) -> &Self::Extra {
-        &self.inner.extra
+        &self.extra
     }
 }
 
