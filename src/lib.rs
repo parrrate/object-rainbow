@@ -473,7 +473,7 @@ impl<T: Object> Point<T> {
 }
 
 #[derive(Clone)]
-struct ByAddressInner<Extra = ()> {
+struct ByAddressInner<Extra> {
     address: Address,
     extra: Extra,
     resolve: Arc<dyn Resolve>,
