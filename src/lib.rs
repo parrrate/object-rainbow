@@ -867,13 +867,24 @@ pub trait ParseSliceExtra<Extra>: for<'a> Parse<Input<'a, Extra>> {
 
 impl<T: for<'a> Parse<Input<'a, Extra>>, Extra> ParseSliceExtra<Extra> for T {}
 
+#[derive(ToOutput)]
+pub struct ObjectHashes {
+    pub tags: Hash,
+    pub topology: Hash,
+    pub data: Hash,
+}
+
 pub trait FullHash<Extra: 'static>: ToOutput + Topological<Extra> + Tagged {
+    fn hashes(&self) -> ObjectHashes {
+        ObjectHashes {
+            tags: Self::HASH,
+            topology: self.topology_hash(),
+            data: self.data_hash(),
+        }
+    }
+
     fn full_hash(&self) -> Hash {
-        let mut output = HashOutput::default();
-        output.hasher.update(Self::HASH);
-        output.hasher.update(self.topology_hash());
-        output.hasher.update(self.data_hash());
-        output.hash()
+        self.hashes().data_hash()
     }
 }
 
