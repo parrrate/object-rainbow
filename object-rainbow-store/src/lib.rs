@@ -135,6 +135,17 @@ pub trait RainbowStoreMut: RainbowStore {
             Ok(self.store_ref(key, point))
         }
     }
+    fn update<T: Object, K: Send + Sync + AsRef<str>>(
+        &self,
+        key: K,
+        point: Point<T>,
+    ) -> impl RainbowFuture<T = StoreRef<Self, K, T, ()>> {
+        async move {
+            self.save_point(&point).await?;
+            self.update_ref(key.as_ref(), *point.hash()).await?;
+            Ok(self.store_ref(key, point))
+        }
+    }
     fn load<T: Object, K: Send + Sync + AsRef<str>>(
         &self,
         key: K,
