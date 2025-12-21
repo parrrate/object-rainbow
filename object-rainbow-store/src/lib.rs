@@ -130,6 +130,14 @@ pub struct StoreRef<S, K, T, Extra> {
     point: Point<T, Extra>,
 }
 
+impl<S, K, T, Extra> Deref for StoreRef<S, K, T, Extra> {
+    type Target = Point<T, Extra>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.point
+    }
+}
+
 impl<
     S: RainbowStoreMut,
     K: Send + Sync + AsRef<str>,
