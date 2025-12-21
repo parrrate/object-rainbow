@@ -5,6 +5,7 @@ members = [
     "object-rainbow-json",
     "object-rainbow-sled",
     "object-rainbow-store",
+    "object-rainbow-store-opendal",
     "xtask",
     "xtask-release",
 ]
@@ -30,6 +31,7 @@ exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 
 [workspace.dependencies]
 object-rainbow = { version = "0.0.0-a.5", path = "." }
+object-rainbow-store = { version = "0.0.0-a.0", path = "object-rainbow-store" }
 
 [dependencies]
 object-rainbow-derive = { version = "=0.0.0-a.5", path = "object-rainbow-derive" }

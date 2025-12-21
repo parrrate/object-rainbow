@@ -1,0 +1,18 @@
+[package]
+name = "object-rainbow-store-opendal"
+version = "0.0.0-a.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+object-rainbow.workspace = true
+object-rainbow-store.workspace = true
+
+hex = "0.4.3"
+opendal = "0.55.0"
+
+[package.metadata.tagit]
+skip = true
