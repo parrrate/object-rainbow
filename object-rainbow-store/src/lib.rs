@@ -116,3 +116,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
     fn fetch(&self, hash: Hash) -> impl RainbowFuture<T: Send + Sync + AsRef<[u8]>>;
     fn name(&self) -> &str;
 }
+
+pub trait RainbowStoreMut {
+    fn update_ref(&self, key: &str, hash: Hash) -> impl RainbowFuture<T = ()>;
+}
