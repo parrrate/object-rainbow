@@ -572,6 +572,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "object-rainbow-store"
+version = "0.0.0-a.0"
+dependencies = [
+ "object-rainbow",
+]
+
+[[package]]
 name = "once_cell"
 version = "1.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
