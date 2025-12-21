@@ -120,7 +120,7 @@ async fn iterate<T: Object>(object: T) -> Point<T> {
             },
         );
     }
-    let address = Address { index: 0, hash };
+    let address = Address::from_hash(hash);
     let resolver = Arc::new(MapResolver(Arc::new(fetched)));
     Point::from_address(address, resolver)
 }
