@@ -95,19 +95,19 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
     }
     fn point_extra<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
         &self,
-        address: Address,
+        hash: Hash,
         extra: Extra,
     ) -> Point<T, Extra> {
         Point::from_address_extra(
-            address,
+            Address::from_hash(hash),
             Arc::new(StoreResolve {
                 store: self.clone(),
             }),
             extra,
         )
     }
-    fn point<T: Object>(&self, address: Address) -> Point<T> {
-        self.point_extra(address, ())
+    fn point<T: Object>(&self, hash: Hash) -> Point<T> {
+        self.point_extra(hash, ())
     }
     fn save_data(&self, hashes: ObjectHashes, data: &[u8]) -> impl RainbowFuture<T = ()>;
     fn contains(&self, hash: Hash) -> impl RainbowFuture<T = bool>;
