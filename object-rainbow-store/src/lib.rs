@@ -113,11 +113,36 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
     }
     fn save_data(&self, hashes: ObjectHashes, data: &[u8]) -> impl RainbowFuture<T = ()>;
     fn contains(&self, hash: Hash) -> impl RainbowFuture<T = bool>;
-    fn fetch(&self, hash: Hash) -> impl RainbowFuture<T: Send + Sync + AsRef<[u8]>>;
+    fn fetch(&self, hash: Hash) -> impl RainbowFuture<T: 'static + Send + Sync + AsRef<[u8]>>;
     fn name(&self) -> &str;
 }
 
-pub trait RainbowStoreMut {
-    fn create_ref(&self, hash: Hash) -> impl RainbowFuture<T: Send + Sync + AsRef<str>>;
+pub trait RainbowStoreMut: RainbowStore {
+    fn create_ref(&self, hash: Hash) -> impl RainbowFuture<T: 'static + Send + Sync + AsRef<str>>;
     fn update_ref(&self, key: &str, hash: Hash) -> impl RainbowFuture<T = ()>;
+}
+
+pub struct StoreRef<S, K, T, Extra> {
+    store: S,
+    key: K,
+    old: Hash,
+    point: Point<T, Extra>,
+}
+
+impl<
+    S: RainbowStoreMut,
+    K: Send + Sync + AsRef<str>,
+    T: Object<Extra>,
+    Extra: 'static + Send + Sync + Clone,
+> StoreRef<S, K, T, Extra>
+{
+    pub async fn save(self) -> object_rainbow::Result<Point<T, Extra>> {
+        if *self.point.hash() != self.old {
+            self.store.save_point(&self.point).await?;
+            self.store
+                .update_ref(self.key.as_ref(), *self.point.hash())
+                .await?;
+        }
+        Ok(self.point)
+    }
 }
