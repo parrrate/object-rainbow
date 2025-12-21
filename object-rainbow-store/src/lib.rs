@@ -120,6 +120,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
 pub trait RainbowStoreMut: RainbowStore {
     fn create_ref(&self, hash: Hash) -> impl RainbowFuture<T: 'static + Send + Sync + AsRef<str>>;
     fn update_ref(&self, key: &str, hash: Hash) -> impl RainbowFuture<T = ()>;
+    fn fetch_ref(&self, key: &str) -> impl RainbowFuture<T = Hash>;
 }
 
 pub struct StoreRef<S, K, T, Extra> {
