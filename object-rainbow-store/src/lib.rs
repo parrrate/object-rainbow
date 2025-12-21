@@ -113,12 +113,16 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
     }
     fn save_data(&self, hashes: ObjectHashes, data: &[u8]) -> impl RainbowFuture<T = ()>;
     fn contains(&self, hash: Hash) -> impl RainbowFuture<T = bool>;
-    fn fetch(&self, hash: Hash) -> impl RainbowFuture<T: 'static + Send + Sync + AsRef<[u8]>>;
+    fn fetch(&self, hash: Hash)
+    -> impl RainbowFuture<T = impl 'static + Send + Sync + AsRef<[u8]>>;
     fn name(&self) -> &str;
 }
 
 pub trait RainbowStoreMut: RainbowStore {
-    fn create_ref(&self, hash: Hash) -> impl RainbowFuture<T: 'static + Send + Sync + AsRef<str>>;
+    fn create_ref(
+        &self,
+        hash: Hash,
+    ) -> impl RainbowFuture<T = impl 'static + Send + Sync + AsRef<str>>;
     fn update_ref(&self, key: &str, hash: Hash) -> impl RainbowFuture<T = ()>;
     fn fetch_ref(&self, key: &str) -> impl RainbowFuture<T = Hash>;
 }

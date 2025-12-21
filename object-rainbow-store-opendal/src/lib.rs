@@ -36,7 +36,7 @@ impl RainbowStore for OpendalStore {
     async fn fetch(
         &self,
         hash: object_rainbow::Hash,
-    ) -> object_rainbow::Result<impl Send + Sync + AsRef<[u8]>> {
+    ) -> object_rainbow::Result<impl 'static + Send + Sync + AsRef<[u8]>> {
         self.operator
             .read(&hex::encode(hash))
             .await
