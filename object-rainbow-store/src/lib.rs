@@ -122,7 +122,10 @@ pub trait RainbowStoreMut: RainbowStore {
     fn create_ref(
         &self,
         hash: Hash,
-    ) -> impl RainbowFuture<T = impl 'static + Send + Sync + AsRef<str>>;
+    ) -> impl RainbowFuture<T = impl 'static + Send + Sync + AsRef<str>> {
+        let _ = hash;
+        async { Err::<String, _>(object_rainbow::error_fetch!("not supported")) }
+    }
     fn update_ref(&self, key: &str, hash: Hash) -> impl RainbowFuture<T = ()>;
     fn fetch_ref(&self, key: &str) -> impl RainbowFuture<T = Option<Hash>>;
     fn create<T: Object>(
