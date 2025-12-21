@@ -845,7 +845,7 @@ pub trait Topological<Extra: 'static = ()> {
     }
 
     fn topology(&self) -> TopoVec {
-        let mut topology = TopoVec::new();
+        let mut topology = TopoVec::with_capacity(self.point_count());
         self.accept_points(&mut topology);
         topology
     }
