@@ -140,6 +140,21 @@ pub trait RainbowStoreMut: RainbowStore {
             })
         }
     }
+    fn load<T: Object, K: Send + Sync + AsRef<str>>(
+        &self,
+        key: K,
+    ) -> impl RainbowFuture<T = StoreRef<Self, K, T, ()>> {
+        async move {
+            let hash = self.fetch_ref(key.as_ref()).await?;
+            let point = self.point(hash);
+            Ok(StoreRef {
+                store: self.clone(),
+                key,
+                old: hash,
+                point,
+            })
+        }
+    }
 }
 
 pub struct StoreRef<S, K, T, Extra> {
