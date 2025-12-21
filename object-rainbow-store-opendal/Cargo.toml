@@ -16,3 +16,7 @@ opendal = "0.55.0"
 
 [package.metadata.tagit]
 skip = true
+
+[dev-dependencies]
+anyhow = "1.0.96"
+smol = "2.0.2"

@@ -1018,10 +1018,12 @@ dependencies = [
 name = "object-rainbow-store-opendal"
 version = "0.0.0-a.0"
 dependencies = [
+ "anyhow",
  "hex",
  "object-rainbow",
  "object-rainbow-store",
  "opendal",
+ "smol",
 ]
 
 [[package]]
