@@ -923,6 +923,14 @@ pub trait Object<Extra: 'static = ()>:
         let _ = typeid;
         Err(Error::UnknownExtension)
     }
+
+    fn point_extra(self, extra: Extra) -> Point<Self, Extra>
+    where
+        Self: Clone,
+        Extra: Send + Sync + Clone,
+    {
+        Point::from_object_extra(self, extra)
+    }
 }
 
 pub struct Tags(pub &'static [&'static str], pub &'static [&'static Self]);
