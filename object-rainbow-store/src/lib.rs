@@ -106,6 +106,9 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
             extra,
         )
     }
+    fn point<T: Object>(&self, address: Address) -> Point<T> {
+        self.point_extra(address, ())
+    }
     fn save_data(&self, hashes: ObjectHashes, data: &[u8]) -> impl RainbowFuture<T = ()>;
     fn contains(&self, hash: Hash) -> impl RainbowFuture<T = bool>;
     fn fetch(&self, hash: Hash) -> impl RainbowFuture<T: Send + Sync + AsRef<[u8]>>;
