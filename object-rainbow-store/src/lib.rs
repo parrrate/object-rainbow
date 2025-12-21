@@ -164,13 +164,14 @@ impl<
     Extra: 'static + Send + Sync + Clone,
 > StoreRef<S, K, T, Extra>
 {
-    pub async fn save(self) -> object_rainbow::Result<Point<T, Extra>> {
+    pub async fn save(&mut self) -> object_rainbow::Result<()> {
         if *self.point.hash() != self.old {
             self.store.save_point(&self.point).await?;
             self.store
                 .update_ref(self.key.as_ref(), *self.point.hash())
                 .await?;
+            self.old = *self.point.hash();
         }
-        Ok(self.point)
+        Ok(())
     }
 }
