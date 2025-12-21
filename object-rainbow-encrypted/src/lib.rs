@@ -2,10 +2,9 @@ use std::{convert::Infallible, ops::Deref, sync::Arc};
 
 use object_rainbow::{
     Address, ByteNode, Error, FailFuture, Fetch, Hash, Input, Object, Parse, ParseInput,
-    ParseSliceExtra, Point, PointInput, PointVisitor, RawPoint, Resolve, Singular, Tagged,
-    ToOutput, ToOutputExt, Topological, length_prefixed::Lp,
+    ParseSliceExtra, Point, PointInput, PointVisitor, RawPoint, Resolve, Tagged, ToOutput,
+    ToOutputExt, Topological, length_prefixed::Lp,
 };
-use sha2::{Digest, Sha256};
 
 #[derive(Clone)]
 pub struct WithKey<K, Extra> {
@@ -83,11 +82,7 @@ impl<K: Key, T: Topological<Extra>, Extra: 'static + Send + Sync + Clone>
     }
 
     fn topology_hash(&self) -> Hash {
-        let mut hasher = Sha256::new();
-        for point in self.resolution.iter() {
-            hasher.update(point.hash());
-        }
-        hasher.finalize().into()
+        self.resolution.0.data_hash()
     }
 }
 
