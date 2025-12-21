@@ -18,14 +18,16 @@ struct StoreVisitor<'a, 'x, S: ?Sized> {
     futures: &'x mut Vec<Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<()>>>>>,
 }
 
-impl<'a, 'x, S: RainbowStore, Extra: 'static + Send + Sync> PointVisitor<Extra>
+impl<'a, 'x, S: RainbowStore, Extra: 'static + Send + Sync + Clone> PointVisitor<Extra>
     for StoreVisitor<'a, 'x, S>
 {
     fn visit<T: Object<Extra>>(&mut self, point: &Point<T, Extra>) {
         let point = point.clone();
         let store = self.store;
-        self.futures
-            .push(Box::pin(async move { store.save_point(&point).await }));
+        self.futures.push(Box::pin(async move {
+            store.save_point(&point).await?;
+            Ok(())
+        }));
     }
 }
 
@@ -55,18 +57,18 @@ impl<S: 'static + Send + RainbowStore> Resolve for StoreResolve<S> {
 }
 
 pub trait RainbowStore: 'static + Send + Sync + Clone {
-    fn save_point<Extra: 'static + Send + Sync>(
+    fn save_point<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
         &self,
-        point: &Point<impl Object<Extra>, Extra>,
-    ) -> impl RainbowFuture<T = ()> {
+        point: &Point<T, Extra>,
+    ) -> impl RainbowFuture<T = Point<T, Extra>> {
         async {
             if !self.contains(*point.hash()).await? {
                 self.save_object(&point.fetch().await?).await?;
             }
-            Ok(())
+            Ok(self.point_extra(*point.hash(), point.extra().clone()))
         }
     }
-    fn save_topology<Extra: 'static + Send + Sync>(
+    fn save_topology<Extra: 'static + Send + Sync + Clone>(
         &self,
         object: &impl Topological<Extra>,
     ) -> impl RainbowFuture<T = ()> {
@@ -82,7 +84,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
             Ok(())
         }
     }
-    fn save_object<Extra: 'static + Send + Sync>(
+    fn save_object<Extra: 'static + Send + Sync + Clone>(
         &self,
         object: &impl Object<Extra>,
     ) -> impl RainbowFuture<T = ()> {
