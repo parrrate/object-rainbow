@@ -132,7 +132,7 @@ pub trait RainbowStoreMut: RainbowStore {
     {
         async move {
             let key = self.create_ref(*point.hash()).await?;
-            Ok(self.store_ref(key, point))
+            Ok(self.store_ref_raw(key, point))
         }
     }
     fn update<T: Object, K: Send + Sync + AsRef<str>>(
@@ -143,7 +143,7 @@ pub trait RainbowStoreMut: RainbowStore {
         async move {
             self.save_point(&point).await?;
             self.update_ref(key.as_ref(), *point.hash()).await?;
-            Ok(self.store_ref(key, point))
+            Ok(self.store_ref_raw(key, point))
         }
     }
     fn load<T: Object, K: Send + Sync + AsRef<str>>(
@@ -152,10 +152,10 @@ pub trait RainbowStoreMut: RainbowStore {
     ) -> impl RainbowFuture<T = StoreRef<Self, K, T, ()>> {
         async move {
             let point = self.point(self.fetch_ref(key.as_ref()).await?);
-            Ok(self.store_ref(key, point))
+            Ok(self.store_ref_raw(key, point))
         }
     }
-    fn store_ref<
+    fn store_ref_raw<
         T: Object<Extra>,
         K: Send + Sync + AsRef<str>,
         Extra: 'static + Send + Sync + Clone,
