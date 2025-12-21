@@ -81,6 +81,10 @@ impl<K: Key, T: Topological<Extra>, Extra: 'static + Send + Sync + Clone>
         });
     }
 
+    fn point_count(&self) -> usize {
+        self.resolution.len()
+    }
+
     fn topology_hash(&self) -> Hash {
         self.resolution.0.data_hash()
     }
