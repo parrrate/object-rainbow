@@ -1,4 +1,4 @@
-use std::{pin::Pin, sync::Arc};
+use std::{ops::Deref, pin::Pin, sync::Arc};
 
 use object_rainbow::{
     Address, Fetch, Hash, Object, ObjectHashes, Point, PointVisitor, Resolve, Singular,
