@@ -931,6 +931,14 @@ pub trait Object<Extra: 'static = ()>:
     {
         Point::from_object_extra(self, extra)
     }
+
+    fn point(self) -> Point<Self, Extra>
+    where
+        Self: Clone,
+        Extra: Send + Sync + Clone + Default,
+    {
+        self.point_extra(Default::default())
+    }
 }
 
 pub struct Tags(pub &'static [&'static str], pub &'static [&'static Self]);
