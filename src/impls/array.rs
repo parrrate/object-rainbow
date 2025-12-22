@@ -23,8 +23,9 @@ impl<T: Tagged, const N: usize> Tagged for [T; N] {
 impl<T: Size, const N: usize> Size for [T; N]
 where
     typenum::generic_const_mappings::Const<N>:
-        ToUInt<Output: Unsigned> + Mul<T::Size, Output: Unsigned>,
+        ToUInt<Output: Unsigned + Mul<T::Size, Output: Unsigned>>,
 {
     const SIZE: usize = T::SIZE * N;
-    type Size = <typenum::generic_const_mappings::Const<N> as Mul<T::Size>>::Output;
+    type Size =
+        <<typenum::generic_const_mappings::Const<N> as ToUInt>::Output as Mul<T::Size>>::Output;
 }
