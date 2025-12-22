@@ -17,8 +17,13 @@ use crate::*;
     Inline,
     ReflessObject,
     ReflessInline,
+    Size,
 )]
 pub struct Hash([u8; HASH_SIZE]);
+
+impl MaybeHasNiche for Hash {
+    type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
+}
 
 impl<I: ParseInput> ParseInline<I> for Hash {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
@@ -67,6 +72,7 @@ impl AsRef<[u8]> for Hash {
     Inline,
     ReflessObject,
     ReflessInline,
+    MaybeHasNiche,
 )]
 pub struct OptionalHash([u8; HASH_SIZE]);
 
