@@ -283,7 +283,7 @@ impl ToOutput for RawPointInner {
 
 impl<I: PointInput> ParseInline<I> for RawPointInner {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        input.parse_raw_point_inner()
+        Ok(Self::from_address(input.parse_address()?, input.resolve()))
     }
 }
 
@@ -1450,10 +1450,6 @@ pub trait PointInput: ParseInput {
     }
     fn resolve_ref(&self) -> &dyn Resolve {
         self.resolve_arc_ref().as_ref()
-    }
-    fn parse_raw_point_inner(&mut self) -> crate::Result<RawPointInner> {
-        let address = self.parse_address()?;
-        Ok(RawPointInner::from_address(address, self.resolve()))
     }
     fn extension<T: Any>(&self) -> crate::Result<&T> {
         self.resolve_ref()
