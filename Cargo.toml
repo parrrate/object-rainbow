@@ -5,7 +5,7 @@ members = [
     "object-rainbow-json",
     "object-rainbow-sled",
     "object-rainbow-store",
-    "object-rainbow-store-opendal",
+    "object-rainbow-store-opendal", "object-rainbow-trie",
     "xtask",
     "xtask-release",
 ]
