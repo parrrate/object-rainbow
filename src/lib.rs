@@ -473,6 +473,16 @@ impl<T, Extra> Point<T, Extra> {
             origin,
         }
     }
+
+    fn map_origin<U>(
+        self,
+        f: impl FnOnce(Arc<dyn Fetch<T = T, Extra = Extra>>) -> Arc<dyn Fetch<T = U, Extra = Extra>>,
+    ) -> Point<U, Extra> {
+        Point {
+            hash: self.hash,
+            origin: f(self.origin),
+        }
+    }
 }
 
 impl<T, Extra> Size for Point<T, Extra> {
@@ -1481,23 +1491,21 @@ impl<U: 'static + Equivalent<T>, T: 'static, Extra: 'static> Equivalent<Point<T,
     for Point<U, Extra>
 {
     fn into_equivalent(self) -> Point<T, Extra> {
-        Point {
-            hash: self.hash,
-            origin: Arc::new(MapEquivalent {
-                origin: self.origin,
+        self.map_origin(|origin| {
+            Arc::new(MapEquivalent {
+                origin,
                 map: U::into_equivalent,
-            }),
-        }
+            })
+        })
     }
 
-    fn from_equivalent(object: Point<T, Extra>) -> Self {
-        Point {
-            hash: object.hash,
-            origin: Arc::new(MapEquivalent {
-                origin: object.origin,
+    fn from_equivalent(point: Point<T, Extra>) -> Self {
+        point.map_origin(|origin| {
+            Arc::new(MapEquivalent {
+                origin,
                 map: U::from_equivalent,
-            }),
-        }
+            })
+        })
     }
 }
 
@@ -1542,14 +1550,8 @@ impl<T, F: 'static + Send + Sync + Map1<T>, Extra> Fetch for MapEquivalent<T, F,
 }
 
 impl<T: 'static + ToOutput, Extra: 'static> Point<T, Extra> {
-    pub fn map<U>(self, f: impl 'static + Send + Sync + Fn(T) -> U) -> Point<U, Extra> {
-        Point {
-            hash: self.hash,
-            origin: Arc::new(Map {
-                origin: self.origin,
-                map: f,
-            }),
-        }
+    pub fn map<U>(self, map: impl 'static + Send + Sync + Fn(T) -> U) -> Point<U, Extra> {
+        self.map_origin(|origin| Arc::new(Map { origin, map }))
     }
 }
 
