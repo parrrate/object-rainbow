@@ -233,9 +233,14 @@ impl<
         self.old == Hash::default()
     }
 
+    pub async fn save_point(&mut self) -> object_rainbow::Result<()> {
+        self.point = self.store.save_point(&self.point).await?;
+        Ok(())
+    }
+
     pub async fn save(&mut self) -> object_rainbow::Result<()> {
         if self.is_modified() {
-            self.store.save_point(&self.point).await?;
+            self.save_point().await?;
             self.store
                 .update_ref(self.key.as_ref(), *self.point.hash())
                 .await?;
