@@ -51,8 +51,8 @@ impl EventContext<'_> {
 
 impl PointVisitor for EventVisitor<'_, '_> {
     fn visit<T: Object>(&mut self, point: &object_rainbow::Point<T>) {
-        if !self.fetching.contains(point.hash()) {
-            self.fetching.insert(*point.hash());
+        if !self.fetching.contains(&point.hash()) {
+            self.fetching.insert(point.hash());
             let point = point.clone();
             let context = self.context.clone();
             self.executor.spawn(context.resolve(point)).detach();

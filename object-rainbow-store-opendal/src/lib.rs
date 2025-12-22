@@ -1,4 +1,4 @@
-use object_rainbow::{Hash, ObjectHashes, ToOutput};
+use object_rainbow::{Hash, ObjectHashes, OptionalHash, ParseSliceRefless, ToOutput};
 use object_rainbow_store::{RainbowStore, RainbowStoreMut};
 use opendal::{ErrorKind, Operator};
 
@@ -49,7 +49,7 @@ impl RainbowStoreMut for OpendalStore {
     async fn update_ref(
         &self,
         key: &str,
-        _old: Option<Hash>,
+        _old: Option<OptionalHash>,
         hash: Hash,
     ) -> object_rainbow::Result<()> {
         self.operator
@@ -59,14 +59,10 @@ impl RainbowStoreMut for OpendalStore {
         Ok(())
     }
 
-    async fn fetch_ref(&self, key: &str) -> object_rainbow::Result<Hash> {
+    async fn fetch_ref(&self, key: &str) -> object_rainbow::Result<OptionalHash> {
         match self.operator.read(key).await {
-            Ok(value) => value
-                .to_vec()
-                .as_slice()
-                .try_into()
-                .map_err(|e| object_rainbow::error_parse!("{e}")),
-            Err(e) if e.kind() == ErrorKind::NotFound => Ok(Hash::default()),
+            Ok(value) => OptionalHash::parse_slice_refless(&value.to_vec()),
+            Err(e) if e.kind() == ErrorKind::NotFound => Ok(Default::default()),
             Err(e) => Err(object_rainbow::error_fetch!("{e}")),
         }
     }

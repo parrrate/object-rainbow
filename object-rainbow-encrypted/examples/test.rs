@@ -89,8 +89,8 @@ impl<Extra: 'static + Send + Sync + Clone> EventContext<'_, Extra> {
 
 impl<Extra: 'static + Send + Sync + Clone> PointVisitor<Extra> for EventVisitor<'_, '_, Extra> {
     fn visit<T: Object<Extra>>(&mut self, point: &object_rainbow::Point<T, Extra>) {
-        if !self.fetching.contains(point.hash()) {
-            self.fetching.insert(*point.hash());
+        if !self.fetching.contains(&point.hash()) {
+            self.fetching.insert(point.hash());
             let point = point.clone();
             let context = self.context.clone();
             self.executor.spawn(context.resolve(point)).detach();

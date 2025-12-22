@@ -15,7 +15,7 @@ impl<T> Deref for Hashed<T> {
 
 impl<T: ToOutput> ToOutput for Hashed<T> {
     fn to_output(&self, output: &mut dyn object_rainbow::Output) {
-        output.write(&self.0.data_hash());
+        self.0.data_hash().to_output(output);
     }
 }
 

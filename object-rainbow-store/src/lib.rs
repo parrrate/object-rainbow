@@ -5,8 +5,8 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, Fetch, Hash, Object, ObjectHashes, Point, PointVisitor, Resolve, Singular,
-    ToOutputExt, Topological,
+    Address, Fetch, Hash, Object, ObjectHashes, OptionalHash, Point, PointVisitor, Resolve,
+    Singular, ToOutputExt, Topological,
 };
 
 pub trait RainbowFuture: Send + Future<Output = object_rainbow::Result<Self::T>> {
@@ -65,10 +65,10 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
         point: &Point<T, Extra>,
     ) -> impl RainbowFuture<T = Point<T, Extra>> {
         async {
-            if !self.contains(*point.hash()).await? {
+            if !self.contains(point.hash()).await? {
                 self.save_object(&point.fetch().await?).await?;
             }
-            Ok(self.point_extra(*point.hash(), point.extra().clone()))
+            Ok(self.point_extra(point.hash(), point.extra().clone()))
         }
     }
     fn save_topology<Extra: 'static + Send + Sync + Clone>(
@@ -129,8 +129,13 @@ pub trait RainbowStoreMut: RainbowStore {
         let _ = hash;
         async { Err::<String, _>(object_rainbow::error_fetch!("not supported")) }
     }
-    fn update_ref(&self, key: &str, old: Option<Hash>, hash: Hash) -> impl RainbowFuture<T = ()>;
-    fn fetch_ref(&self, key: &str) -> impl RainbowFuture<T = Hash>;
+    fn update_ref(
+        &self,
+        key: &str,
+        old: Option<OptionalHash>,
+        hash: Hash,
+    ) -> impl RainbowFuture<T = ()>;
+    fn fetch_ref(&self, key: &str) -> impl RainbowFuture<T = OptionalHash>;
     fn ref_exists(&self, key: &str) -> impl RainbowFuture<T = bool>;
     fn create<T: Object>(
         &self,
@@ -139,7 +144,7 @@ pub trait RainbowStoreMut: RainbowStore {
     {
         async move {
             let point = self.save_point(&point).await?;
-            let key = self.create_ref(*point.hash()).await?;
+            let key = self.create_ref(point.hash()).await?;
             Ok(self.store_ref_raw(key, point))
         }
     }
@@ -150,7 +155,7 @@ pub trait RainbowStoreMut: RainbowStore {
     ) -> impl RainbowFuture<T = StoreRef<Self, K, T, ()>> {
         async move {
             let point = self.save_point(&point).await?;
-            self.update_ref(key.as_ref(), None, *point.hash()).await?;
+            self.update_ref(key.as_ref(), None, point.hash()).await?;
             Ok(self.store_ref_raw(key, point))
         }
     }
@@ -159,10 +164,11 @@ pub trait RainbowStoreMut: RainbowStore {
         key: K,
     ) -> impl RainbowFuture<T = StoreRef<Self, K, T, ()>> {
         async move {
-            let hash = self.fetch_ref(key.as_ref()).await?;
-            if hash == Hash::default() {
-                return Err(object_rainbow::error_fetch!("key not found"));
-            }
+            let hash = self
+                .fetch_ref(key.as_ref())
+                .await?
+                .get()
+                .ok_or_else(|| object_rainbow::error_fetch!("key not found"))?;
             let point = self.point(hash);
             Ok(self.store_ref_raw(key, point))
         }
@@ -191,7 +197,7 @@ pub trait RainbowStoreMut: RainbowStore {
         StoreRef {
             store: self.clone(),
             key,
-            old: *point.hash(),
+            old: point.hash().into(),
             point,
         }
     }
@@ -200,7 +206,7 @@ pub trait RainbowStoreMut: RainbowStore {
 pub struct StoreRef<S, K, T, Extra> {
     store: S,
     key: K,
-    old: Hash,
+    old: OptionalHash,
     point: Point<T, Extra>,
 }
 
@@ -226,11 +232,11 @@ impl<
 > StoreRef<S, K, T, Extra>
 {
     pub fn is_modified(&self) -> bool {
-        *self.point.hash() != self.old
+        self.point.hash() != self.old
     }
 
     pub fn is_new(&self) -> bool {
-        self.old == Hash::default()
+        self.old.is_none()
     }
 
     pub async fn save_point(&mut self) -> object_rainbow::Result<()> {
@@ -242,9 +248,9 @@ impl<
         if self.is_modified() {
             self.save_point().await?;
             self.store
-                .update_ref(self.key.as_ref(), Some(self.old), *self.point.hash())
+                .update_ref(self.key.as_ref(), Some(self.old), self.point.hash())
                 .await?;
-            self.old = *self.point.hash();
+            self.old = self.point.hash().into();
         }
         Ok(())
     }
