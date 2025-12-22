@@ -19,6 +19,15 @@ use crate::*;
 )]
 pub struct Hash([u8; HASH_SIZE]);
 
+impl<I: ParseInput> ParseInline<I> for Hash {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        input
+            .parse_inline::<OptionalHash>()?
+            .get()
+            .ok_or(Error::Zero)
+    }
+}
+
 impl Hash {
     pub(crate) const fn from_sha256(hash: [u8; HASH_SIZE]) -> Self {
         Self(hash)
