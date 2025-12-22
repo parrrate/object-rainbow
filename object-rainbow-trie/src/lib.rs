@@ -97,6 +97,10 @@ where
         }
         Ok(None)
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.children.is_empty() && self.value.is_none()
+    }
 }
 
 #[cfg(test)]
