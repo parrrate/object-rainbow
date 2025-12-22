@@ -1140,6 +1140,12 @@ impl<T: Object<Extra>, Extra> DerefMut for PointMut<'_, T, Extra> {
 
 impl<T: Object<Extra>, Extra> Drop for PointMut<'_, T, Extra> {
     fn drop(&mut self) {
+        self.finalize();
+    }
+}
+
+impl<'a, T: Object<Extra>, Extra> PointMut<'a, T, Extra> {
+    fn finalize(&mut self) {
         self.origin.get_mut_finalize();
         *self.hash = self.full_hash().into();
     }
@@ -1181,6 +1187,11 @@ impl<T: Object<Extra> + Clone, Extra: 'static + Send + Sync + Clone> Point<T, Ex
             hash: &mut self.hash,
             origin,
         })
+    }
+
+    pub async fn fetch_ref(&mut self) -> crate::Result<&T> {
+        self.prepare_yolo_origin().await?;
+        Ok(self.origin.get().unwrap())
     }
 }
 
