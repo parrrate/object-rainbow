@@ -287,6 +287,8 @@ impl<I: PointInput> ParseInline<I> for RawPointInner {
     }
 }
 
+impl Tagged for RawPointInner {}
+
 impl Singular for RawPointInner {
     fn hash(&self) -> &Hash {
         &self.hash
