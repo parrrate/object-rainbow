@@ -101,6 +101,37 @@ where
     pub fn is_empty(&self) -> bool {
         self.children.is_empty() && self.value.is_none()
     }
+
+    pub async fn remove(&mut self, key: &[u8]) -> object_rainbow::Result<Option<T>> {
+        let Some((first, key)) = key.split_first() else {
+            return Ok(self.value.take());
+        };
+        let (item, is_empty) = {
+            let Some(point) = self.children.get_mut(first) else {
+                return Ok(None);
+            };
+            let (prefix, trie) = &mut *point.fetch_mut().await?;
+            let Some(key) = key.strip_prefix(prefix.as_slice()) else {
+                return Ok(None);
+            };
+            let item = Box::pin(trie.remove(key)).await?;
+            if trie.value.is_none()
+                && trie.children.len() < 2
+                && let Some((first, point)) = trie.children.pop_first()
+            {
+                let (suffix, child) = point.fetch().await?;
+                prefix.push(first);
+                prefix.extend_from_slice(&suffix);
+                assert!(trie.is_empty());
+                *trie = child;
+            }
+            (item, trie.is_empty())
+        };
+        if is_empty {
+            self.children.remove(first);
+        }
+        Ok(item)
+    }
 }
 
 #[cfg(test)]
@@ -123,6 +154,12 @@ mod test {
         assert_eq!(trie.get(b"a").await?.unwrap(), 4);
         trie.insert(b"abce", 5).await?;
         assert_eq!(trie.get(b"abce").await?.unwrap(), 5);
+        trie.remove(b"a").await?;
+        trie.remove(b"ab").await?;
+        trie.remove(b"abc").await?;
+        trie.remove(b"abce").await?;
+        trie.remove(b"abd").await?;
+        assert!(trie.is_empty());
         Ok(())
     }
 }
