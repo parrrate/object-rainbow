@@ -66,4 +66,11 @@ impl RainbowStoreMut for OpendalStore {
             Err(e) => Err(object_rainbow::error_fetch!("{e}")),
         }
     }
+
+    async fn ref_exists(&self, key: &str) -> object_rainbow::Result<bool> {
+        self.operator
+            .exists(key)
+            .await
+            .map_err(|e| object_rainbow::error_fetch!("{e}"))
+    }
 }
