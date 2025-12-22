@@ -14,9 +14,9 @@ object-rainbow-store.workspace = true
 hex = "0.4.3"
 opendal = "0.55.0"
 
-[package.metadata.tagit]
-skip = true
-
 [dev-dependencies]
 anyhow = "1.0.96"
 smol = "2.0.2"
+
+[package.metadata.tagit]
+skip = true
