@@ -338,6 +338,7 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Topological<Extra>
 }
 
 impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Object<Extra> for RawPoint<T, Extra> {}
+impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Inline<Extra> for RawPoint<T, Extra> {}
 
 impl<T, Extra: 'static + Clone> FromInner for RawPoint<T, Extra> {
     type Inner = RawPointInner;
