@@ -26,7 +26,8 @@ use typenum::Unsigned;
 pub use self::enumkind::Enum;
 pub use self::hash::{Hash, OptionalHash};
 pub use self::niche::{
-    AutoEnumNiche, HackNiche, MaybeHasNiche, Niche, NoNiche, SomeNiche, ZeroNiche, ZeroNoNiche,
+    AutoEnumNiche, HackNiche, MaybeHasNiche, Niche, NoNiche, OneNiche, SomeNiche, ZeroNiche,
+    ZeroNoNiche,
 };
 #[doc(hidden)]
 pub use self::niche::{MaybeNiche, MnArray, NicheFoldOrArray, NicheOr};
