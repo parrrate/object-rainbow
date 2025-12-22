@@ -1161,7 +1161,7 @@ impl<T: Object<Extra> + Clone, Extra: 'static + Send + Sync + Clone> Point<T, Ex
             && Arc::get_mut(&mut self.origin).is_some_and(|origin| origin.get_mut().is_some())
     }
 
-    pub async fn fetch_mut(&'_ mut self) -> crate::Result<PointMut<'_, T, Extra>> {
+    async fn prepare_yolo_origin(&mut self) -> crate::Result<()> {
         if !self.yolo_mut() {
             let object = self.origin.fetch().await?;
             self.origin = Arc::new(LocalOrigin {
@@ -1169,6 +1169,11 @@ impl<T: Object<Extra> + Clone, Extra: 'static + Send + Sync + Clone> Point<T, Ex
                 extra: self.origin.extra().clone(),
             });
         }
+        Ok(())
+    }
+
+    pub async fn fetch_mut(&'_ mut self) -> crate::Result<PointMut<'_, T, Extra>> {
+        self.prepare_yolo_origin().await?;
         let origin = Arc::get_mut(&mut self.origin).unwrap();
         assert!(origin.get_mut().is_some());
         self.hash.clear();
