@@ -90,7 +90,7 @@ pub const HASH_SIZE: usize = sha2_const::Sha256::DIGEST_SIZE;
 
 pub type Hash = [u8; HASH_SIZE];
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, ParseAsInline)]
 pub struct Address {
     pub index: usize,
     pub hash: Hash,
@@ -102,6 +102,15 @@ impl Address {
             index: usize::MAX,
             hash,
         }
+    }
+}
+
+impl<I: PointInput> ParseInline<I> for Address {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        Ok(Self {
+            index: input.next_index(),
+            hash: input.parse_inline()?,
+        })
     }
 }
 
@@ -1429,10 +1438,7 @@ pub trait PointInput: ParseInput {
     type WithExtra<E: 'static + Clone>: PointInput<Extra = E, WithExtra<Self::Extra> = Self>;
     fn next_index(&mut self) -> usize;
     fn parse_address(&mut self) -> crate::Result<Address> {
-        Ok(Address {
-            hash: self.parse_inline()?,
-            index: self.next_index(),
-        })
+        self.parse_inline()
     }
     fn resolve_arc_ref(&self) -> &Arc<dyn Resolve>;
     fn resolve(&self) -> Arc<dyn Resolve> {
