@@ -8,10 +8,10 @@ use object_rainbow::{
 };
 
 #[derive(ToOutput, Tagged, Topological, Parse, Clone)]
-pub struct Trie<T, Extra = ()> {
+pub struct Trie<T> {
     value: Option<T>,
     #[tags(skip)]
-    children: BTreeMap<u8, Point<(LpBytes, Self), Extra>>,
+    children: BTreeMap<u8, Point<(LpBytes, Self)>>,
 }
 
 impl<T> Object for Trie<T> where Option<T>: Inline {}
