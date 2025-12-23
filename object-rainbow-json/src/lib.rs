@@ -2,7 +2,7 @@ use std::io::Write;
 
 use object_rainbow::{
     MaybeHasNiche, Object, Output, Parse, ParseInput, ReflessObject, Size, SomeNiche, Tagged,
-    ToOutput, Topological, ZeroNiche, error_parse,
+    ToOutput, Topological, ZeroNiche,
 };
 use serde::{Serialize, de::DeserializeOwned};
 
@@ -34,7 +34,7 @@ impl<T: Serialize> ToOutput for Json<T> {
 impl<T: DeserializeOwned, I: ParseInput> Parse<I> for Json<T> {
     fn parse(input: I) -> object_rainbow::Result<Self> {
         serde_json::from_slice(input.parse_all())
-            .map_err(|e| error_parse!("{e}"))
+            .map_err(object_rainbow::Error::parse)
             .map(Self)
     }
 }
