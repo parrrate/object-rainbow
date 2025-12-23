@@ -1625,7 +1625,7 @@ impl<T: ToOutput, F: 'static + Send + Sync + Map1<T>, Extra> Fetch for Map<T, F,
     }
 }
 
-impl<T> MaybeHasNiche for Point<T> {
+impl<T, Extra> MaybeHasNiche for Point<T, Extra> {
     type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
 }
 
