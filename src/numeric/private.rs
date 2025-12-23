@@ -429,6 +429,79 @@ macro_rules! lebe {
     };
 }
 
+macro_rules! float {
+    ($n:ty) => {
+        impl AsLe for $n {
+            type Le = Le<$n>;
+            fn construct(self) -> Self::Le {
+                Le(self)
+            }
+        }
+
+        impl AsBe for $n {
+            type Be = Be<$n>;
+            fn construct(self) -> Self::Be {
+                Be(self)
+            }
+        }
+
+        impl ToOutput for Le<$n> {
+            fn to_output(&self, output: &mut dyn Output) {
+                output.write(&self.0.to_le_bytes());
+            }
+        }
+
+        impl ToOutput for Be<$n> {
+            fn to_output(&self, output: &mut dyn Output) {
+                output.write(&self.0.to_be_bytes());
+            }
+        }
+
+        impl<I: ParseInput> ParseInline<I> for Le<$n> {
+            fn parse_inline(input: &mut I) -> crate::Result<Self> {
+                Ok(Self(<$n>::from_le_bytes(*input.parse_chunk()?)))
+            }
+        }
+
+        impl<I: ParseInput> ParseInline<I> for Be<$n> {
+            fn parse_inline(input: &mut I) -> crate::Result<Self> {
+                Ok(Self(<$n>::from_be_bytes(*input.parse_chunk()?)))
+            }
+        }
+
+        impl Size for Le<$n> {
+            const SIZE: usize = std::mem::size_of::<$n>();
+            type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
+        }
+
+        impl Size for Be<$n> {
+            const SIZE: usize = std::mem::size_of::<$n>();
+            type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
+        }
+
+        impl MaybeHasNiche for Le<$n> {
+            type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
+        }
+
+        impl MaybeHasNiche for Be<$n> {
+            type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
+        }
+
+        impl<E: 'static> Topological<E> for Le<$n> {}
+        impl<E: 'static> Topological<E> for Be<$n> {}
+        impl Tagged for Le<$n> {}
+        impl Tagged for Be<$n> {}
+        impl ReflessObject for Le<$n> {}
+        impl ReflessObject for Be<$n> {}
+        impl ReflessInline for Le<$n> {}
+        impl ReflessInline for Be<$n> {}
+        impl<E: 'static> Object<E> for Le<$n> {}
+        impl<E: 'static> Object<E> for Be<$n> {}
+        impl<E: 'static> Inline<E> for Le<$n> {}
+        impl<E: 'static> Inline<E> for Be<$n> {}
+    };
+}
+
 signs!(u8, i8);
 signs!(u16, i16);
 signs!(u32, i32);
@@ -449,6 +522,9 @@ lebe!(i64);
 
 lebe!(u128);
 lebe!(i128);
+
+float!(f32);
+float!(f64);
 
 impl<T: NonZeroable> Deref for Nz<T> {
     type Target = T::Nz;
