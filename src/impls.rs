@@ -9,6 +9,7 @@ mod phantom;
 mod refs;
 mod slice;
 mod str;
+mod string;
 mod tuple;
 mod tuple1;
 mod u8;
