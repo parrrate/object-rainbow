@@ -141,34 +141,40 @@ where
         key: &[u8],
         co: &Co<(Vec<u8>, T), object_rainbow::Error>,
     ) -> object_rainbow::Result<()> {
+        let len = context.len();
         let Some((first, key)) = key.split_first() else {
             if let Some(value) = self.value.clone() {
                 co.yield_((context.clone(), value)).await;
             }
-            let len = context.len();
             for (first, point) in &self.children {
+                {
+                    context.push(*first);
+                    let (prefix, trie) = point.fetch().await?;
+                    context.extend_from_slice(&prefix);
+                    Box::pin(trie.prefix_yield(context, b"", co)).await?;
+                }
                 context.truncate(len);
-                context.push(*first);
-                let (prefix, trie) = point.fetch().await?;
-                context.extend_from_slice(&prefix);
-                Box::pin(trie.prefix_yield(context, b"", co)).await?;
             }
             return Ok(());
         };
-        context.push(*first);
         let Some(point) = self.children.get(first) else {
             return Ok(());
         };
-        let (prefix, trie) = point.fetch().await?;
-        if prefix.starts_with(key) {
+        'done: {
+            context.push(*first);
+            let (prefix, trie) = point.fetch().await?;
             context.extend_from_slice(&prefix);
-            Box::pin(trie.prefix_yield(context, b"", co)).await?;
-            return Ok(());
+            if prefix.starts_with(key) {
+                Box::pin(trie.prefix_yield(context, b"", co)).await?;
+                break 'done;
+            }
+            let Some(key) = key.strip_prefix(prefix.as_slice()) else {
+                break 'done;
+            };
+            Box::pin(trie.prefix_yield(context, key, co)).await?;
         }
-        let Some(key) = key.strip_prefix(prefix.as_slice()) else {
-            return Ok(());
-        };
-        Box::pin(trie.prefix_yield(context, key, co)).await
+        context.truncate(len);
+        Ok(())
     }
 
     pub fn prefix_stream(
