@@ -72,6 +72,7 @@ impl AsRef<[u8]> for Hash {
     Inline,
     ReflessObject,
     ReflessInline,
+    Size,
     MaybeHasNiche,
 )]
 pub struct OptionalHash([u8; HASH_SIZE]);
