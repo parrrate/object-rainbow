@@ -1,5 +1,5 @@
 use generic_array::GenericArray;
-use typenum::U1;
+use typenum::{ToInt, U1, U2};
 
 use crate::*;
 
@@ -13,19 +13,19 @@ impl Size for bool {
     type Size = U1;
 }
 
-pub struct BoolNiche;
+pub struct BoolNiche<K>(K);
 
-impl Niche for BoolNiche {
+impl<K: ToInt<u8>> Niche for BoolNiche<K> {
     type NeedsTag = typenum::B0;
     type N = U1;
     fn niche() -> GenericArray<u8, Self::N> {
-        GenericArray::from_array([2])
+        GenericArray::from_array([K::INT])
     }
     type Next = NoNiche<ZeroNoNiche<Self::N>>;
 }
 
 impl MaybeHasNiche for bool {
-    type MnArray = SomeNiche<BoolNiche>;
+    type MnArray = SomeNiche<BoolNiche<U2>>;
 }
 
 impl<I: ParseInput> Parse<I> for bool {
