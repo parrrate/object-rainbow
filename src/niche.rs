@@ -216,15 +216,15 @@ impl<N: ArrayLength> Niche for ZeroNoNiche<N> {
     type Next = NoNiche<Self>;
 }
 
-pub struct ZeroNiche<N>(N);
+pub struct ZeroNiche<N, Next = NoNiche<ZeroNoNiche<N>>>(N, Next);
 
-impl<N: ArrayLength> Niche for ZeroNiche<N> {
+impl<N: ArrayLength, Next> Niche for ZeroNiche<N, Next> {
     type NeedsTag = B0;
     type N = N;
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::default()
     }
-    type Next = NoNiche<ZeroNoNiche<N>>;
+    type Next = Next;
 }
 
 pub struct OneNiche<N>(N);
