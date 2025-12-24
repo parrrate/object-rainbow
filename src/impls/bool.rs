@@ -21,7 +21,7 @@ impl Niche for BoolNiche {
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::from_array([2])
     }
-    type Next = ZeroNiche<Self::N>;
+    type Next = ZeroNoNiche<Self::N>;
 }
 
 impl MaybeHasNiche for bool {
