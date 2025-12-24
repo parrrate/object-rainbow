@@ -22,7 +22,7 @@ pub trait Niche {
     type NeedsTag: Bit;
     type N: ArrayLength;
     fn niche() -> GenericArray<u8, Self::N>;
-    type Next: MaybeNiche<N = Self::N>;
+    type Next;
 }
 
 pub trait MaybeNiche {
