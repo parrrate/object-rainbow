@@ -49,11 +49,7 @@ impl<II: ParseInput, A: ParseInline<II>, B: ParseInline<II>> ParseInline<II> for
     }
 }
 
-impl<A: MaybeHasNiche, B: MaybeHasNiche> MaybeHasNiche for (A, B)
-where
-    Self: Size,
-    tarr![A::MnArray, B::MnArray,]: MnArray,
-{
+impl<A: MaybeHasNiche, B: MaybeHasNiche> MaybeHasNiche for (A, B) {
     type MnArray = tarr![A::MnArray, B::MnArray,];
 }
 
@@ -120,11 +116,7 @@ impl<II: ParseInput, A: ParseInline<II>, B: ParseInline<II>, C: ParseInline<II>>
     }
 }
 
-impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche> MaybeHasNiche for (A, B, C)
-where
-    Self: Size,
-    tarr![A::MnArray, B::MnArray, C::MnArray,]: MnArray,
-{
+impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche> MaybeHasNiche for (A, B, C) {
     type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray,];
 }
 
@@ -214,9 +206,6 @@ impl<II: ParseInput, A: ParseInline<II>, B: ParseInline<II>, C: ParseInline<II>,
 
 impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche, D: MaybeHasNiche> MaybeHasNiche
     for (A, B, C, D)
-where
-    Self: Size,
-    tarr![A::MnArray, B::MnArray, C::MnArray, D::MnArray,]: MnArray,
 {
     type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray, D::MnArray,];
 }
@@ -336,9 +325,6 @@ impl<
 
 impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche, D: MaybeHasNiche, E: MaybeHasNiche>
     MaybeHasNiche for (A, B, C, D, E)
-where
-    Self: Size,
-    tarr![A::MnArray, B::MnArray, C::MnArray, D::MnArray, E::MnArray,]: MnArray,
 {
     type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray, D::MnArray, E::MnArray,];
 }
@@ -494,16 +480,6 @@ impl<
     E: MaybeHasNiche,
     F: MaybeHasNiche,
 > MaybeHasNiche for (A, B, C, D, E, F)
-where
-    Self: Size,
-    tarr![
-        A::MnArray,
-        B::MnArray,
-        C::MnArray,
-        D::MnArray,
-        E::MnArray,
-        F::MnArray,
-    ]: MnArray,
 {
     type MnArray = tarr![
         A::MnArray,
@@ -700,17 +676,6 @@ impl<
     F: MaybeHasNiche,
     G: MaybeHasNiche,
 > MaybeHasNiche for (A, B, C, D, E, F, G)
-where
-    Self: Size,
-    tarr![
-        A::MnArray,
-        B::MnArray,
-        C::MnArray,
-        D::MnArray,
-        E::MnArray,
-        F::MnArray,
-        G::MnArray,
-    ]: MnArray,
 {
     type MnArray = tarr![
         A::MnArray,
@@ -933,18 +898,6 @@ impl<
     G: MaybeHasNiche,
     H: MaybeHasNiche,
 > MaybeHasNiche for (A, B, C, D, E, F, G, H)
-where
-    Self: Size,
-    tarr![
-        A::MnArray,
-        B::MnArray,
-        C::MnArray,
-        D::MnArray,
-        E::MnArray,
-        F::MnArray,
-        G::MnArray,
-        H::MnArray,
-    ]: MnArray,
 {
     type MnArray = tarr![
         A::MnArray,
@@ -1193,19 +1146,6 @@ impl<
     H: MaybeHasNiche,
     I: MaybeHasNiche,
 > MaybeHasNiche for (A, B, C, D, E, F, G, H, I)
-where
-    Self: Size,
-    tarr![
-        A::MnArray,
-        B::MnArray,
-        C::MnArray,
-        D::MnArray,
-        E::MnArray,
-        F::MnArray,
-        G::MnArray,
-        H::MnArray,
-        I::MnArray,
-    ]: MnArray,
 {
     type MnArray = tarr![
         A::MnArray,
@@ -1480,20 +1420,6 @@ impl<
     I: MaybeHasNiche,
     J: MaybeHasNiche,
 > MaybeHasNiche for (A, B, C, D, E, F, G, H, I, J)
-where
-    Self: Size,
-    tarr![
-        A::MnArray,
-        B::MnArray,
-        C::MnArray,
-        D::MnArray,
-        E::MnArray,
-        F::MnArray,
-        G::MnArray,
-        H::MnArray,
-        I::MnArray,
-        J::MnArray,
-    ]: MnArray,
 {
     type MnArray = tarr![
         A::MnArray,
@@ -1798,21 +1724,6 @@ impl<
     J: MaybeHasNiche,
     K: MaybeHasNiche,
 > MaybeHasNiche for (A, B, C, D, E, F, G, H, I, J, K)
-where
-    Self: Size,
-    tarr![
-        A::MnArray,
-        B::MnArray,
-        C::MnArray,
-        D::MnArray,
-        E::MnArray,
-        F::MnArray,
-        G::MnArray,
-        H::MnArray,
-        I::MnArray,
-        J::MnArray,
-        K::MnArray,
-    ]: MnArray,
 {
     type MnArray = tarr![
         A::MnArray,
@@ -2137,22 +2048,6 @@ impl<
     K: MaybeHasNiche,
     L: MaybeHasNiche,
 > MaybeHasNiche for (A, B, C, D, E, F, G, H, I, J, K, L)
-where
-    Self: Size,
-    tarr![
-        A::MnArray,
-        B::MnArray,
-        C::MnArray,
-        D::MnArray,
-        E::MnArray,
-        F::MnArray,
-        G::MnArray,
-        H::MnArray,
-        I::MnArray,
-        J::MnArray,
-        K::MnArray,
-        L::MnArray,
-    ]: MnArray,
 {
     type MnArray = tarr![
         A::MnArray,
