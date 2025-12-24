@@ -59,25 +59,26 @@ impl<N: ArrayLength> Niche for OptionNiche<N> {
 }
 
 pub trait OptionNicheWrapper: Bit {
-    type Wrap<N: ArrayLength>: MaybeNiche;
+    type Wrap<Mn: Niche<NeedsTag = Self, N: Add<Self, Output: ArrayLength>>>: MaybeNiche;
 }
 
 impl OptionNicheWrapper for B0 {
-    type Wrap<N: ArrayLength> = NoNiche<ZeroNoNiche<N>>;
+    type Wrap<Mn: Niche<NeedsTag = Self, N: Add<Self, Output: ArrayLength>>> =
+        NoNiche<ZeroNoNiche<<<Mn as Niche>::N as Add<Self>>::Output>>;
 }
 
 impl OptionNicheWrapper for B1 {
-    type Wrap<N: ArrayLength> = SomeNiche<OptionNiche<N>>;
+    type Wrap<Mn: Niche<NeedsTag = Self, N: Add<Self, Output: ArrayLength>>> =
+        SomeNiche<OptionNiche<<<Mn as Niche>::N as Add<Self>>::Output>>;
 }
 
 impl<
-    T: MaybeHasNiche<
-        MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B, N: Add<B, Output: ArrayLength>>>,
-    >,
+    T: MaybeHasNiche<MnArray: MnArray<MaybeNiche = Mn>>,
+    Mn: Niche<NeedsTag = B, N: Add<B, Output: ArrayLength>>,
     B: OptionNicheWrapper,
 > MaybeHasNiche for Option<T>
 {
-    type MnArray = B::Wrap<<Self as Size>::Size>;
+    type MnArray = B::Wrap<Mn>;
 }
 
 impl<
