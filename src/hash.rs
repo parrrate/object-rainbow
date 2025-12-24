@@ -22,7 +22,8 @@ use crate::*;
 pub struct Hash([u8; HASH_SIZE]);
 
 impl MaybeHasNiche for Hash {
-    type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
+    type MnArray =
+        SomeNiche<ZeroNiche<<Self as Size>::Size, SomeNiche<OneNiche<<Self as Size>::Size>>>>;
 }
 
 impl<I: ParseInput> ParseInline<I> for Hash {

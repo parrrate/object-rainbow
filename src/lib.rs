@@ -1676,4 +1676,7 @@ fn options() {
         Some(Some((Some(true), Some(true)))).output::<Vec<u8>>(),
         [1, 1],
     );
+    assert_eq!(Option::<Point<()>>::SIZE, HASH_SIZE);
+    assert_eq!(Option::<Option<Point<()>>>::SIZE, HASH_SIZE);
+    assert_eq!(Option::<Option<Option<Point<()>>>>::SIZE, HASH_SIZE + 1);
 }
