@@ -22,7 +22,7 @@ pub trait Niche {
     type NeedsTag: NicheAuto;
     type N: ArrayLength;
     fn niche() -> GenericArray<u8, Self::N>;
-    type Next: Niche<N = Self::N>;
+    type Next: MaybeNiche<N = Self::N>;
 }
 
 pub trait MaybeNiche {
@@ -66,7 +66,7 @@ impl<A: Niche<N: Add<B::N, Output: ArrayLength>>, B: Niche> Niche for NoNiche2<A
     fn niche() -> GenericArray<u8, Self::N> {
         Concat::concat(A::niche(), B::niche())
     }
-    type Next = Self;
+    type Next = NoNiche<Self>;
 }
 
 impl<A: MaybeNiche<N: Add<B::N, Output: Unsigned>>, B: MaybeNiche> MaybeNiche for NoNiche2<A, B> {
@@ -96,7 +96,7 @@ impl<V: Niche<N = N>, N: ArrayLength + Add<T::N, Output: ArrayLength>, T: Niche>
     fn niche() -> GenericArray<u8, Self::N> {
         Concat::concat(V::niche(), T::niche())
     }
-    type Next = AndNiche<V, T::Next>;
+    type Next = AndNiche<AutoNiche<V>, T::Next>;
 }
 
 impl<V: MaybeNiche<N = N>, N: Unsigned, T: MaybeNiche> MaybeNiche for AndNiche<V, T>
@@ -134,7 +134,7 @@ impl<T: Niche<N: Add<N, Output: ArrayLength>>, V: Niche<N = N>, N: ArrayLength> 
     fn niche() -> GenericArray<u8, Self::N> {
         Concat::concat(T::niche(), V::niche())
     }
-    type Next = NicheAnd<T::Next, V>;
+    type Next = NicheAnd<T::Next, AutoNiche<V>>;
 }
 
 impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, V: MaybeNiche<N = N>, N: Unsigned> MaybeNiche
@@ -210,7 +210,7 @@ impl<N: ArrayLength> Niche for ZeroNoNiche<N> {
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::default()
     }
-    type Next = Self;
+    type Next = NoNiche<Self>;
 }
 
 pub struct ZeroNiche<N>(N);
@@ -221,7 +221,7 @@ impl<N: ArrayLength> Niche for ZeroNiche<N> {
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::default()
     }
-    type Next = ZeroNoNiche<N>;
+    type Next = NoNiche<ZeroNoNiche<N>>;
 }
 
 pub struct OneNiche<N>(N);
@@ -232,7 +232,7 @@ impl<N: ArrayLength> Niche for OneNiche<N> {
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::default().map(|()| 0xff)
     }
-    type Next = ZeroNoNiche<N>;
+    type Next = NoNiche<ZeroNoNiche<N>>;
 }
 
 pub trait NicheOr: MaybeNiche {
@@ -324,11 +324,11 @@ impl<
             V::niche()
         }
     }
-    type Next = ZeroNoNiche<N>;
+    type Next = NoNiche<ZeroNoNiche<N>>;
 }
 
 pub trait NicheAuto: Bit {
-    type Auto<T: Niche<NeedsTag = Self>>: MaybeNiche;
+    type Auto<T: Niche<NeedsTag = Self>>: MaybeNiche<N = T::N>;
 }
 
 impl NicheAuto for B0 {
@@ -351,5 +351,5 @@ impl<const X: usize> Niche for HackNiche<X> {
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::default()
     }
-    type Next = Self;
+    type Next = NoNiche<Self>;
 }
