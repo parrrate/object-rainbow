@@ -19,7 +19,7 @@ pub struct NicheAnd<T, V>(T, V);
 pub struct SomeNiche<T>(T);
 
 pub trait Niche {
-    type NeedsTag: Bit;
+    type NeedsTag: NicheAuto;
     type N: ArrayLength;
     fn niche() -> GenericArray<u8, Self::N>;
     type Next: Niche<N = Self::N>;
