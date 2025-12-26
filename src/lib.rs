@@ -136,6 +136,8 @@ pub struct Address {
 }
 
 impl Address {
+    /// Construct an address which is invalid within parsing context, but can be used in map-based
+    /// [`Resolve`]s.
     pub fn from_hash(hash: Hash) -> Self {
         Self {
             index: usize::MAX,
