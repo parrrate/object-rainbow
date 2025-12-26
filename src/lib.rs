@@ -230,17 +230,22 @@ impl<T> AsAny for T {
     }
 }
 
+/// Something that resolve [`Address`]es to [`ByteNode`]s.
 pub trait Resolve: Send + Sync + AsAny {
+    /// Resolve the address. For an [`Object`], this is what gets used as [`PointInput`].
     fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode>;
+    /// Get a dynamic extension for a specific [`Address`].
     fn resolve_extension(&self, address: Address, typeid: TypeId) -> crate::Result<&dyn Any> {
         let _ = address;
         let _ = typeid;
         Err(Error::UnknownExtension)
     }
+    /// Get a dynamic extension.
     fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
         let _ = typeid;
         Err(Error::UnknownExtension)
     }
+    /// Self-identification of the resolver type.
     fn name(&self) -> &str;
 }
 
