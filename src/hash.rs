@@ -1,6 +1,6 @@
 use std::ops::Add;
 
-use typenum::{Add1, B0, B1, ToInt, U0};
+use typenum::{Add1, B0, B1, ToInt, U0, U1};
 
 use crate::*;
 
@@ -91,9 +91,12 @@ impl AsRef<[u8]> for Hash {
     ReflessObject,
     ReflessInline,
     Size,
-    MaybeHasNiche,
 )]
 pub struct OptionalHash([u8; HASH_SIZE]);
+
+impl MaybeHasNiche for OptionalHash {
+    type MnArray = SomeNiche<HashNiche<U1>>;
+}
 
 impl Default for OptionalHash {
     fn default() -> Self {
