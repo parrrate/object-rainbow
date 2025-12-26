@@ -91,6 +91,10 @@ impl Error {
     pub fn parse(e: impl Into<anyhow::Error>) -> Self {
         Self::Parse(e.into())
     }
+
+    pub fn fetch(e: impl Into<anyhow::Error>) -> Self {
+        Self::Fetch(e.into())
+    }
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
