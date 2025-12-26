@@ -9,7 +9,7 @@ use std::{
 use chacha20poly1305::{ChaCha20Poly1305, aead::Aead};
 use object_rainbow::{
     Address, ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Resolve, SimpleObject,
-    Singular, ToOutputExt, error_fetch, error_parse,
+    Singular, error_fetch, error_parse,
 };
 use object_rainbow_encrypted::{Key, WithKey, encrypt_point};
 use sha2::digest::generic_array::GenericArray;

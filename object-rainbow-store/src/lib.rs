@@ -6,7 +6,7 @@ use std::{
 
 use object_rainbow::{
     Address, Fetch, Hash, Object, ObjectHashes, OptionalHash, Point, PointVisitor, Resolve,
-    Singular, ToOutputExt, Topological,
+    Singular, Topological,
 };
 
 pub trait RainbowFuture: Send + Future<Output = object_rainbow::Result<Self::T>> {
