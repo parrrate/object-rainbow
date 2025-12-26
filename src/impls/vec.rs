@@ -16,7 +16,7 @@ impl<T: Topological<E>, E: 'static> Topological<E> for Vec<T> {
 
 impl<T: ParseInline<I>, I: ParseInput> Parse<I> for Vec<T> {
     fn parse(input: I) -> crate::Result<Self> {
-        T::parse_vec(input)
+        input.parse_vec()
     }
 }
 
@@ -43,7 +43,7 @@ impl<T: Topological<E>, E: 'static> Topological<E> for VecDeque<T> {
 
 impl<T: ParseInline<I>, I: ParseInput> Parse<I> for VecDeque<T> {
     fn parse(input: I) -> crate::Result<Self> {
-        T::parse_vec(input).map(From::from)
+        input.parse_vec().map(From::from)
     }
 }
 
