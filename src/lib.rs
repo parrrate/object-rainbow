@@ -614,8 +614,7 @@ impl<F: FnMut(Hash), Extra: 'static> PointVisitor<Extra> for HashVisitor<F> {
 }
 
 pub struct ReflessInput<'a> {
-    data: &'a [u8],
-    poisoned: bool,
+    data: Option<&'a [u8]>,
 }
 
 pub struct Input<'a, Extra = ()> {
@@ -651,13 +650,12 @@ impl<'a, Extra> Input<'a, Extra> {
 }
 
 impl<'a> ReflessInput<'a> {
-    fn data(&self) -> &'a [u8] {
-        assert!(!self.poisoned);
-        self.data
+    fn data(&self) -> crate::Result<&'a [u8]> {
+        self.data.ok_or(Error::EndOfInput)
     }
 
     fn make_error<T>(&mut self, e: crate::Error) -> crate::Result<T> {
-        self.poisoned = true;
+        self.data = None;
         Err(e)
     }
 
@@ -671,9 +669,9 @@ impl ParseInput for ReflessInput<'_> {
     where
         Self: 'a,
     {
-        match self.data().split_first_chunk() {
+        match self.data()?.split_first_chunk() {
             Some((chunk, data)) => {
-                self.data = data;
+                self.data = Some(data);
                 Ok(chunk)
             }
             None => self.end_of_input(),
@@ -684,9 +682,9 @@ impl ParseInput for ReflessInput<'_> {
     where
         Self: 'a,
     {
-        match self.data().split_at_checked(n) {
+        match self.data()?.split_at_checked(n) {
             Some((chunk, data)) => {
-                self.data = data;
+                self.data = Some(data);
                 Ok(chunk)
             }
             None => self.end_of_input(),
@@ -695,17 +693,16 @@ impl ParseInput for ReflessInput<'_> {
 
     fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
         let input = ReflessInput {
-            data: self.parse_n(n)?,
-            poisoned: false,
+            data: Some(self.parse_n(n)?),
         };
         T::parse(input)
     }
 
     fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
-        match self.data().split_at_checked(n) {
+        match self.data()?.split_at_checked(n) {
             Some((chunk, data)) => {
                 if chunk == c {
-                    self.data = data;
+                    self.data = Some(data);
                     Ok(None)
                 } else {
                     self.parse_inline().map(Some)
@@ -719,11 +716,11 @@ impl ParseInput for ReflessInput<'_> {
     where
         Self: 'a,
     {
-        self.data()
+        self.data().expect("parsing after an error")
     }
 
     fn empty(self) -> crate::Result<()> {
-        if self.data().is_empty() {
+        if self.data()?.is_empty() {
             Ok(())
         } else {
             Err(Error::ExtraInputLeft)
@@ -731,7 +728,7 @@ impl ParseInput for ReflessInput<'_> {
     }
 
     fn non_empty(self) -> Option<Self> {
-        if self.data().is_empty() {
+        if self.data().expect("parsing after an error").is_empty() {
             None
         } else {
             Some(self)
@@ -757,8 +754,7 @@ impl<Extra> ParseInput for Input<'_, Extra> {
     fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
         let input = Input {
             refless: ReflessInput {
-                data: self.parse_n(n)?,
-                poisoned: false,
+                data: Some(self.parse_n(n)?),
             },
             resolve: self.resolve,
             index: self.index,
@@ -768,10 +764,10 @@ impl<Extra> ParseInput for Input<'_, Extra> {
     }
 
     fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
-        match self.data().split_at_checked(n) {
+        match self.data()?.split_at_checked(n) {
             Some((chunk, data)) => {
                 if chunk == c {
-                    self.data = data;
+                    self.data = Some(data);
                     Ok(None)
                 } else {
                     self.parse_inline().map(Some)
@@ -919,10 +915,7 @@ pub trait ParseSliceExtra<Extra>: for<'a> Parse<Input<'a, Extra>> {
         extra: &Extra,
     ) -> crate::Result<Self> {
         let input = Input {
-            refless: ReflessInput {
-                data,
-                poisoned: false,
-            },
+            refless: ReflessInput { data: Some(data) },
             resolve,
             index: &Cell::new(0),
             extra,
@@ -1091,10 +1084,7 @@ impl Topology for TopoVec {
 
 pub trait ParseSliceRefless: for<'a> Parse<ReflessInput<'a>> {
     fn parse_slice_refless(data: &[u8]) -> crate::Result<Self> {
-        let input = ReflessInput {
-            data,
-            poisoned: false,
-        };
+        let input = ReflessInput { data: Some(data) };
         let object = Self::parse(input)?;
         Ok(object)
     }
