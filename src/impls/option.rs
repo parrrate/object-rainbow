@@ -103,7 +103,7 @@ impl OptionNicheWrapper for B1 {
 
 impl<
     T: MaybeHasNiche<MnArray: MnArray<MaybeNiche = Mn>>,
-    Mn: Niche<NeedsTag = B, N: Add<B, Output: ArrayLength>, Next: MaybeNiche<N = Mn::N>>,
+    Mn: Niche<NeedsTag = B, N: Add<B, Output: ArrayLength>>,
     B: OptionNicheWrapper,
 > MaybeHasNiche for Option<T>
 {
