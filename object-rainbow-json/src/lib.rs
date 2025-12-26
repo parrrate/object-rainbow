@@ -34,7 +34,7 @@ impl<T: Serialize> ToOutput for Json<T> {
 
 impl<T: DeserializeOwned, I: ParseInput> Parse<I> for Json<T> {
     fn parse(input: I) -> object_rainbow::Result<Self> {
-        serde_json::from_slice(input.parse_all())
+        serde_json::from_slice(input.parse_all()?)
             .map_err(object_rainbow::Error::parse)
             .map(Self)
     }
