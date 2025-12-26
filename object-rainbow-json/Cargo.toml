@@ -11,6 +11,7 @@ description = "serde_json for object-rainbow"
 [dependencies]
 object-rainbow.workspace = true
 
+futures-util = { version = "0.3.31" }
 serde = "1.0.218"
 serde_json = "1.0.140"
 thiserror = "2.0.17"
