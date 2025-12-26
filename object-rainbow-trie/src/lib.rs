@@ -175,7 +175,7 @@ where
             let (prefix, trie) = point.fetch().await?;
             context.extend_from_slice(&prefix);
             if prefix.starts_with(key) {
-                Box::pin(trie.prefix_yield(context, b"", co)).await?;
+                trie.yield_all(context, co).await?;
                 break 'done;
             }
             let Some(key) = key.strip_prefix(prefix.as_slice()) else {
