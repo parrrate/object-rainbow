@@ -186,6 +186,16 @@ impl Equivalent<bool> for Option<()> {
     }
 }
 
+impl<T, U: Equivalent<T>> Equivalent<Option<T>> for Option<U> {
+    fn into_equivalent(self) -> Option<T> {
+        self.map(U::into_equivalent)
+    }
+
+    fn from_equivalent(option: Option<T>) -> Self {
+        option.map(U::from_equivalent)
+    }
+}
+
 #[test]
 fn equivalent_to_bool() {
     assert_eq!(
