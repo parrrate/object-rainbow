@@ -135,7 +135,7 @@ impl<K: Key, T: Topological<Extra>, Extra: 'static + Send + Sync + Clone>
 
 impl<K: Key, T: ToOutput, Extra> ToOutput for Encrypted<K, T, Extra> {
     fn to_output(&self, output: &mut dyn object_rainbow::Output) {
-        let source = self.inner.output::<Vec<u8>>();
+        let source = self.inner.vec();
         output.write(&self.key.encrypt(&source));
     }
 }

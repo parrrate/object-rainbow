@@ -905,6 +905,10 @@ pub trait ToOutputExt: ToOutput {
         self.to_output(&mut output);
         output
     }
+
+    fn vec(&self) -> Vec<u8> {
+        self.output()
+    }
 }
 
 impl<T: ?Sized + ToOutput> ToOutputExt for T {}
@@ -1734,39 +1738,36 @@ fn options() {
     assert_eq!(T3::SIZE, 1);
     assert_eq!(T4::SIZE, 1);
     assert_eq!(T5::SIZE, 1);
-    assert_eq!(Some(Some(Some(()))).output::<Vec<u8>>(), [0]);
-    assert_eq!(Some(Some(None::<()>)).output::<Vec<u8>>(), [1]);
-    assert_eq!(Some(None::<Option<()>>).output::<Vec<u8>>(), [2]);
-    assert_eq!(None::<Option<Option<()>>>.output::<Vec<u8>>(), [3]);
+    assert_eq!(Some(Some(Some(()))).vec(), [0]);
+    assert_eq!(Some(Some(None::<()>)).vec(), [1]);
+    assert_eq!(Some(None::<Option<()>>).vec(), [2]);
+    assert_eq!(None::<Option<Option<()>>>.vec(), [3]);
 
-    assert_eq!(false.output::<Vec<u8>>(), [0]);
-    assert_eq!(true.output::<Vec<u8>>(), [1]);
-    assert_eq!(Some(false).output::<Vec<u8>>(), [0]);
-    assert_eq!(Some(true).output::<Vec<u8>>(), [1]);
-    assert_eq!(None::<bool>.output::<Vec<u8>>(), [2]);
-    assert_eq!(Some(Some(false)).output::<Vec<u8>>(), [0]);
-    assert_eq!(Some(Some(true)).output::<Vec<u8>>(), [1]);
-    assert_eq!(Some(None::<bool>).output::<Vec<u8>>(), [2]);
-    assert_eq!(None::<Option<bool>>.output::<Vec<u8>>(), [3]);
-    assert_eq!(Some(Some(Some(false))).output::<Vec<u8>>(), [0]);
-    assert_eq!(Some(Some(Some(true))).output::<Vec<u8>>(), [1]);
-    assert_eq!(Some(Some(None::<bool>)).output::<Vec<u8>>(), [2]);
-    assert_eq!(Some(None::<Option<bool>>).output::<Vec<u8>>(), [3]);
-    assert_eq!(None::<Option<Option<bool>>>.output::<Vec<u8>>(), [4]);
+    assert_eq!(false.vec(), [0]);
+    assert_eq!(true.vec(), [1]);
+    assert_eq!(Some(false).vec(), [0]);
+    assert_eq!(Some(true).vec(), [1]);
+    assert_eq!(None::<bool>.vec(), [2]);
+    assert_eq!(Some(Some(false)).vec(), [0]);
+    assert_eq!(Some(Some(true)).vec(), [1]);
+    assert_eq!(Some(None::<bool>).vec(), [2]);
+    assert_eq!(None::<Option<bool>>.vec(), [3]);
+    assert_eq!(Some(Some(Some(false))).vec(), [0]);
+    assert_eq!(Some(Some(Some(true))).vec(), [1]);
+    assert_eq!(Some(Some(None::<bool>)).vec(), [2]);
+    assert_eq!(Some(None::<Option<bool>>).vec(), [3]);
+    assert_eq!(None::<Option<Option<bool>>>.vec(), [4]);
     assert_eq!(Option::<Point<()>>::SIZE, HASH_SIZE);
-    assert_eq!(Some(()).output::<Vec<u8>>(), [0]);
-    assert_eq!(Some(((), ())).output::<Vec<u8>>(), [0]);
-    assert_eq!(Some(((), true)).output::<Vec<u8>>(), [1]);
-    assert_eq!(Some((true, true)).output::<Vec<u8>>(), [1, 1]);
-    assert_eq!(Some((Some(true), true)).output::<Vec<u8>>(), [1, 1]);
-    assert_eq!(Some((None::<bool>, true)).output::<Vec<u8>>(), [2, 1]);
-    assert_eq!(Some((true, None::<bool>)).output::<Vec<u8>>(), [1, 2]);
-    assert_eq!(None::<(Option<bool>, bool)>.output::<Vec<u8>>(), [3, 2]);
-    assert_eq!(None::<(bool, Option<bool>)>.output::<Vec<u8>>(), [2, 3]);
-    assert_eq!(
-        Some(Some((Some(true), Some(true)))).output::<Vec<u8>>(),
-        [1, 1],
-    );
+    assert_eq!(Some(()).vec(), [0]);
+    assert_eq!(Some(((), ())).vec(), [0]);
+    assert_eq!(Some(((), true)).vec(), [1]);
+    assert_eq!(Some((true, true)).vec(), [1, 1]);
+    assert_eq!(Some((Some(true), true)).vec(), [1, 1]);
+    assert_eq!(Some((None::<bool>, true)).vec(), [2, 1]);
+    assert_eq!(Some((true, None::<bool>)).vec(), [1, 2]);
+    assert_eq!(None::<(Option<bool>, bool)>.vec(), [3, 2]);
+    assert_eq!(None::<(bool, Option<bool>)>.vec(), [2, 3]);
+    assert_eq!(Some(Some((Some(true), Some(true)))).vec(), [1, 1],);
     assert_eq!(Option::<Point<()>>::SIZE, HASH_SIZE);
     assert_eq!(Option::<Option<Point<()>>>::SIZE, HASH_SIZE);
     assert_eq!(Option::<Option<Option<Point<()>>>>::SIZE, HASH_SIZE);

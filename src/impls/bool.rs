@@ -83,10 +83,10 @@ impl ReflessInline for bool {}
 
 #[test]
 fn none_is_2() {
-    assert_eq!(None::<bool>.output::<Vec<u8>>(), [2]);
+    assert_eq!(None::<bool>.vec(), [2]);
 }
 
 #[test]
 fn none_none_is_2() {
-    assert_eq!(None::<Option<bool>>.output::<Vec<u8>>(), [3]);
+    assert_eq!(None::<Option<bool>>.vec(), [3]);
 }

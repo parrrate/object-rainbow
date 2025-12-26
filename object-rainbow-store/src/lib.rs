@@ -93,8 +93,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
     ) -> impl RainbowFuture<T = ()> {
         async {
             self.save_topology(object).await?;
-            self.save_data(object.hashes(), &object.output::<Vec<_>>())
-                .await?;
+            self.save_data(object.hashes(), &object.vec()).await?;
             Ok(())
         }
     }
