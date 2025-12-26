@@ -284,14 +284,14 @@ where
     pub fn prefix_stream(
         &self,
         key: &[u8],
-    ) -> impl Stream<Item = object_rainbow::Result<(Vec<u8>, T)>> {
+    ) -> impl Send + Stream<Item = object_rainbow::Result<(Vec<u8>, T)>> {
         try_stream(async |co| self.prefix_yield(&mut Vec::new(), key, &co).await)
     }
 
     pub fn range_stream<'a>(
         &'a self,
         range: impl 'a + Send + Sync + RangeBounds<&'a [u8]>,
-    ) -> impl Stream<Item = object_rainbow::Result<(Vec<u8>, T)>> {
+    ) -> impl Send + Stream<Item = object_rainbow::Result<(Vec<u8>, T)>> {
         try_stream(async move |co| {
             self.range_yield(
                 &mut Vec::new(),
