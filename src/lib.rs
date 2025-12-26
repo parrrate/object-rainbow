@@ -122,9 +122,16 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// SHA-256 hash size in bytes.
 pub const HASH_SIZE: usize = sha2_const::Sha256::DIGEST_SIZE;
 
+/// Address within a [`PointInput`].
+///
+/// This was introduced:
+/// - to avoid using a [`Hash`]-only map
+/// - to differentiate between separate [`Point`]s within a context
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, ParseAsInline)]
 pub struct Address {
+    /// Monotonically incremented index. This is not present at all in the actual format.
     pub index: usize,
+    /// Only this part is part of the parsed/generated input.
     pub hash: Hash,
 }
 
