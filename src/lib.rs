@@ -168,19 +168,26 @@ trait FromInner {
     fn from_inner(inner: Self::Inner, extra: Self::Extra) -> Self;
 }
 
+/// Trait for contextually using [`Any`]. Can itself be implemented for non-`'static` and `?Sized`
+/// types, and is `dyn`-compatible.
 pub trait AsAny {
+    /// Get a shared RTTI reference.
     fn any_ref(&self) -> &dyn Any
     where
         Self: 'static;
+    /// Get an exclusive RTTI reference.
     fn any_mut(&mut self) -> &mut dyn Any
     where
         Self: 'static;
+    /// Get an RTTI [`Box`].
     fn any_box(self: Box<Self>) -> Box<dyn Any>
     where
         Self: 'static;
+    /// Get an RTTI [`Arc`].
     fn any_arc(self: Arc<Self>) -> Arc<dyn Any>
     where
         Self: 'static;
+    /// Get an RTTI [`Arc`] which is also [`Send`].
     fn any_arc_sync(self: Arc<Self>) -> Arc<dyn Send + Sync + Any>
     where
         Self: 'static + Send + Sync;
