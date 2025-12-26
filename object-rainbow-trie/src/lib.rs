@@ -1,4 +1,7 @@
-use std::collections::BTreeMap;
+use std::{
+    collections::BTreeMap,
+    ops::{Bound, RangeBounds},
+};
 
 use futures_core::Stream;
 use genawaiter_try_stream::{Co, try_stream};
@@ -140,10 +143,10 @@ where
         context: &mut Vec<u8>,
         co: &Co<(Vec<u8>, T), object_rainbow::Error>,
     ) -> object_rainbow::Result<()> {
-        let len = context.len();
         if let Some(value) = self.value.clone() {
             co.yield_((context.clone(), value)).await;
         }
+        let len = context.len();
         for (first, point) in &self.children {
             {
                 context.push(*first);
@@ -187,11 +190,117 @@ where
         Ok(())
     }
 
+    async fn range_yield(
+        &self,
+        context: &mut Vec<u8>,
+        range_start: Bound<&[u8]>,
+        range_end: Bound<&[u8]>,
+        co: &Co<(Vec<u8>, T), object_rainbow::Error>,
+    ) -> object_rainbow::Result<()> {
+        if (range_start, range_end).contains(b"".as_slice())
+            && let Some(value) = self.value.clone()
+        {
+            co.yield_((context.clone(), value)).await;
+        }
+        let min = match range_start {
+            Bound::Included(x) | Bound::Excluded(x) => x.first().copied().unwrap_or(0),
+            Bound::Unbounded => 0,
+        };
+        let max = match range_end {
+            Bound::Included(x) => x.first().copied().unwrap_or(0),
+            Bound::Excluded(x) => {
+                if let Some(min) = x.first().copied() {
+                    if x.len() == 1 {
+                        if let Some(min) = min.checked_sub(1) {
+                            min
+                        } else {
+                            return Ok(());
+                        }
+                    } else {
+                        min
+                    }
+                } else {
+                    return Ok(());
+                }
+            }
+            Bound::Unbounded => 255,
+        };
+        let len = context.len();
+        for (first, point) in self.children.range(min..=max) {
+            'done: {
+                context.push(*first);
+                let (prefix, trie) = point.fetch().await?;
+                context.extend_from_slice(&prefix);
+                let extra = &context[context.len() - prefix.len() - 1..];
+                let start_bound = match range_start {
+                    Bound::Included(x) => {
+                        if x <= extra {
+                            Bound::Unbounded
+                        } else if let Some(suffix) = x.strip_prefix(extra) {
+                            Bound::Included(suffix)
+                        } else {
+                            break 'done;
+                        }
+                    }
+                    Bound::Excluded(x) => {
+                        if x < extra {
+                            Bound::Unbounded
+                        } else if let Some(suffix) = x.strip_prefix(extra) {
+                            Bound::Excluded(suffix)
+                        } else {
+                            break 'done;
+                        }
+                    }
+                    Bound::Unbounded => Bound::Unbounded,
+                };
+                let end_bound = match range_end {
+                    Bound::Included(x) => {
+                        if x < extra {
+                            break 'done;
+                        } else if let Some(suffix) = x.strip_prefix(extra) {
+                            Bound::Included(suffix)
+                        } else {
+                            Bound::Unbounded
+                        }
+                    }
+                    Bound::Excluded(x) => {
+                        if x <= extra {
+                            break 'done;
+                        } else if let Some(suffix) = x.strip_prefix(extra) {
+                            Bound::Excluded(suffix)
+                        } else {
+                            Bound::Unbounded
+                        }
+                    }
+                    Bound::Unbounded => Bound::Unbounded,
+                };
+                Box::pin(trie.range_yield(context, start_bound, end_bound, co)).await?;
+            }
+            context.truncate(len);
+        }
+        Ok(())
+    }
+
     pub fn prefix_stream(
         &self,
         key: &[u8],
     ) -> impl Stream<Item = object_rainbow::Result<(Vec<u8>, T)>> {
         try_stream(async |co| self.prefix_yield(&mut Vec::new(), key, &co).await)
+    }
+
+    pub fn range_stream<'a>(
+        &'a self,
+        range: impl 'a + Send + Sync + RangeBounds<&'a [u8]>,
+    ) -> impl Stream<Item = object_rainbow::Result<(Vec<u8>, T)>> {
+        try_stream(async move |co| {
+            self.range_yield(
+                &mut Vec::new(),
+                range.start_bound().cloned(),
+                range.end_bound().cloned(),
+                &co,
+            )
+            .await
+        })
     }
 }
 
@@ -250,6 +359,45 @@ mod test {
                 (b"abce".into(), 5),
                 (b"abd".into(), 2),
             ],
+        );
+        assert_eq!(
+            trie.range_stream(..).try_collect::<_, _, Vec<_>>().await?,
+            [
+                (b"a".into(), 4),
+                (b"ab".into(), 3),
+                (b"abc".into(), 1),
+                (b"abce".into(), 5),
+                (b"abd".into(), 2),
+            ],
+        );
+        assert_eq!(
+            trie.range_stream(..=b"abc".as_slice())
+                .try_collect::<_, _, Vec<_>>()
+                .await?,
+            [(b"a".into(), 4), (b"ab".into(), 3), (b"abc".into(), 1)],
+        );
+        assert_eq!(
+            trie.range_stream(..b"abc".as_slice())
+                .try_collect::<_, _, Vec<_>>()
+                .await?,
+            [(b"a".into(), 4), (b"ab".into(), 3)],
+        );
+        assert_eq!(
+            trie.range_stream(b"ab".as_slice()..)
+                .try_collect::<_, _, Vec<_>>()
+                .await?,
+            [
+                (b"ab".into(), 3),
+                (b"abc".into(), 1),
+                (b"abce".into(), 5),
+                (b"abd".into(), 2),
+            ],
+        );
+        assert_eq!(
+            trie.range_stream(b"ab".as_slice()..=b"abce".as_slice())
+                .try_collect::<_, _, Vec<_>>()
+                .await?,
+            [(b"ab".into(), 3), (b"abc".into(), 1), (b"abce".into(), 5)],
         );
         assert_eq!(trie.remove(b"a").await?.unwrap(), 4);
         assert_eq!(trie.remove(b"ab").await?.unwrap(), 3);
