@@ -87,7 +87,9 @@ impl<N: ArrayLength, K: ToInt<u8> + NextNiche> Niche for OptionNiche<N, K> {
 }
 
 pub trait OptionNicheWrapper: Bit {
-    type Wrap<Mn: Niche<NeedsTag = Self, N: Add<Self, Output: ArrayLength>, Next: MaybeNiche<N = Mn::N>>>: MaybeNiche;
+    type Wrap<
+        Mn: Niche<NeedsTag = Self, N: Add<Self, Output: ArrayLength>, Next: MaybeNiche<N = Mn::N>>,
+    >;
 }
 
 impl OptionNicheWrapper for B0 {
