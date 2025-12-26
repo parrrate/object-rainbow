@@ -50,6 +50,7 @@ macro_rules! error_parse {
 }
 
 #[macro_export]
+/// Construct [`Error::Fetch`].
 macro_rules! error_fetch {
     ($($t:tt)*) => {
         $crate::Error::Fetch($crate::anyhow!($($t)*))
