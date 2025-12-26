@@ -57,8 +57,9 @@ macro_rules! error_fetch {
     };
 }
 
-#[derive(Debug, thiserror::Error)]
 /// Errors encountered during fetching an object. Mostly related to parsing.
+#[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum Error {
     /// Arbitrary parsing error.
     #[error(transparent)]
