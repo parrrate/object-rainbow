@@ -1629,6 +1629,12 @@ impl<T, Extra> MaybeHasNiche for Point<T, Extra> {
     type MnArray = <Hash as MaybeHasNiche>::MnArray;
 }
 
+impl<T: FullHash<Extra> + Default, Extra: 'static> Point<T, Extra> {
+    pub fn is_default(&self) -> bool {
+        self.hash() == T::default().full_hash()
+    }
+}
+
 #[test]
 fn options() {
     type T0 = ();
