@@ -1,9 +1,9 @@
 use std::{ops::Deref, sync::Arc};
 
 use object_rainbow::{
-    Address, ByteNode, Error, FailFuture, Fetch, Hash, Input, Object, Parse, ParseInput,
-    ParseSliceExtra, Point, PointInput, PointVisitor, RawPoint, Resolve, Tagged, ToOutput,
-    ToOutputExt, Topological, length_prefixed::Lp,
+    Address, ByteNode, Error, FailFuture, Fetch, Hash, Object, Parse, ParseSliceExtra, Point,
+    PointInput, PointVisitor, RawPoint, Resolve, Tagged, ToOutput, ToOutputExt, Topological,
+    length_prefixed::Lp,
 };
 
 #[derive(Clone)]
@@ -22,10 +22,14 @@ type Resolution<K, Extra> = Arc<Lp<Vec<RawPoint<Encrypted<K, Vec<u8>, Extra>, Wi
 #[derive(ToOutput, Clone)]
 struct Unkeyed<T>(T);
 
-impl<'a, T: Parse<Input<'a, Extra>>, K: 'static + Clone, Extra: 'static + Clone>
-    Parse<Input<'a, WithKey<K, Extra>>> for Unkeyed<T>
+impl<
+    T: Parse<I::WithExtra<Extra>>,
+    K: 'static + Clone,
+    Extra: 'static + Clone,
+    I: PointInput<Extra = WithKey<K, Extra>>,
+> Parse<I> for Unkeyed<T>
 {
-    fn parse(input: Input<'a, WithKey<K, Extra>>) -> object_rainbow::Result<Self> {
+    fn parse(input: I) -> object_rainbow::Result<Self> {
         Ok(Self(T::parse(
             input.map_extra(|WithKey { extra, .. }| extra),
         )?))
@@ -170,10 +174,14 @@ impl<K: Key, Extra: 'static + Send + Sync + Clone> Resolve for Decrypt<K, Extra>
     }
 }
 
-impl<K: Key, T: for<'a> Parse<Input<'a, Extra>>, Extra: 'static + Send + Sync + Clone>
-    Parse<Input<'_, WithKey<K, Extra>>> for Encrypted<K, T, Extra>
+impl<
+    K: Key,
+    T: Object<Extra>,
+    Extra: 'static + Send + Sync + Clone,
+    I: PointInput<Extra = WithKey<K, Extra>>,
+> Parse<I> for Encrypted<K, T, Extra>
 {
-    fn parse(input: Input<'_, WithKey<K, Extra>>) -> object_rainbow::Result<Self> {
+    fn parse(input: I) -> object_rainbow::Result<Self> {
         let with_key = input.extra().clone();
         let resolve = input.resolve().clone();
         let source = with_key.key.decrypt(input.parse_all()?)?;
