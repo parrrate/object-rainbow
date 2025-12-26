@@ -10,7 +10,7 @@ authors.workspace = true
 [dependencies]
 object-rainbow.workspace = true
 
-futures-core = { version = "0.3.31", default-features = false }
+futures-util = { version = "0.3.31", default-features = false }
 genawaiter-try-stream = "0.1.0"
 
 [dev-dependencies]
