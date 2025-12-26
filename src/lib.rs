@@ -727,12 +727,12 @@ impl ParseInput for ReflessInput<'_> {
         }
     }
 
-    fn non_empty(self) -> Option<Self> {
-        if self.data().expect("parsing after an error").is_empty() {
+    fn non_empty(self) -> crate::Result<Option<Self>> {
+        Ok(if self.data()?.is_empty() {
             None
         } else {
             Some(self)
-        }
+        })
     }
 }
 
@@ -788,9 +788,12 @@ impl<Extra> ParseInput for Input<'_, Extra> {
         self.refless.empty()
     }
 
-    fn non_empty(mut self) -> Option<Self> {
-        self.refless = self.refless.non_empty()?;
-        Some(self)
+    fn non_empty(mut self) -> crate::Result<Option<Self>> {
+        self.refless = match self.refless.non_empty()? {
+            Some(refless) => refless,
+            None => return Ok(None),
+        };
+        Ok(Some(self))
     }
 }
 
@@ -1438,7 +1441,7 @@ pub trait ParseInput: Sized {
     where
         Self: 'a;
     fn empty(self) -> crate::Result<()>;
-    fn non_empty(self) -> Option<Self>;
+    fn non_empty(self) -> crate::Result<Option<Self>>;
 
     fn consume(self, f: impl FnMut(&mut Self) -> crate::Result<()>) -> crate::Result<()> {
         self.collect(f)
@@ -1448,14 +1451,23 @@ pub trait ParseInput: Sized {
         self.collect(|input| input.parse_inline())
     }
 
-    fn collect<T, B: FromIterator<T>>(self, f: impl FnMut(&mut Self) -> T) -> B {
+    fn collect<T, B: FromIterator<T>>(
+        self,
+        f: impl FnMut(&mut Self) -> crate::Result<T>,
+    ) -> crate::Result<B> {
         self.iter(f).collect()
     }
 
-    fn iter<T>(self, mut f: impl FnMut(&mut Self) -> T) -> impl Iterator<Item = T> {
+    fn iter<T>(
+        self,
+        mut f: impl FnMut(&mut Self) -> crate::Result<T>,
+    ) -> impl Iterator<Item = crate::Result<T>> {
         let mut state = Some(self);
         std::iter::from_fn(move || {
-            let mut input = state.take()?.non_empty()?;
+            let mut input = match state.take()?.non_empty() {
+                Ok(input) => input,
+                Err(e) => return Some(Err(e)),
+            }?;
             let item = f(&mut input);
             state = Some(input);
             Some(item)
