@@ -1070,6 +1070,10 @@ impl<T: Object<Extra>, Extra: 'static> Topological<Extra> for Point<T, Extra> {
     fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
         visitor.visit(self);
     }
+
+    fn point_count(&self) -> usize {
+        1
+    }
 }
 
 impl<T: Object<I::Extra>, I: PointInput<Extra: Send + Sync>> ParseInline<I> for Point<T, I::Extra> {
