@@ -54,7 +54,7 @@ impl MaybeHasNiche for Json<()> {
     type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
 }
 
-#[derive(Enum, ToOutput, Topological, ParseAsInline, ParseInline, Size, MaybeHasNiche, Clone)]
+#[derive(Enum, ToOutput, Topological, ParseAsInline, ParseInline, Clone)]
 pub enum Distributed {
     Null,
     Bool(bool),
