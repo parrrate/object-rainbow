@@ -37,7 +37,7 @@ fn args_contains_generics(g: &BTreeSet<Ident>, args: &AngleBracketedGenericArgum
 
 fn path_contains_generics(g: &BTreeSet<Ident>, path: &Path) -> bool {
     path.segments.iter().any(|seg| match &seg.arguments {
-        syn::PathArguments::None => seg.ident == "Self" && !g.is_empty() || g.contains(&seg.ident),
+        syn::PathArguments::None => !g.is_empty() || g.contains(&seg.ident),
         syn::PathArguments::AngleBracketed(args) => {
             seg.ident == "Point" || args_contains_generics(g, args)
         }
