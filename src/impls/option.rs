@@ -5,22 +5,36 @@ use typenum::{B0, B1, Bit, IsGreater, IsLess, ToInt, U1, U2, U255, U256};
 
 use crate::*;
 
-impl<T: ToOutput + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag = B>, B: Bit>
-    ToOutput for Option<T>
+pub trait TaggedOption {
+    const TAGGED_OPTION: bool = true;
+    fn none_data() -> impl AsRef<[u8]> {
+        []
+    }
+}
+
+impl<T: MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag = B>, B: Bit>
+    TaggedOption for T
 {
+    const TAGGED_OPTION: bool = B::BOOL;
+    fn none_data() -> impl AsRef<[u8]> {
+        N::niche()
+    }
+}
+
+impl<T: ToOutput + TaggedOption> ToOutput for Option<T> {
     fn to_output(&self, output: &mut dyn Output) {
         match self {
             Some(value) => {
-                if B::BOOL {
+                if T::TAGGED_OPTION {
                     output.write(&[0]);
                 }
                 value.to_output(output);
             }
             None => {
-                if B::BOOL {
+                if T::TAGGED_OPTION {
                     output.write(&[1]);
                 }
-                output.write(N::niche().as_slice());
+                output.write(T::none_data().as_ref());
             }
         }
     }
