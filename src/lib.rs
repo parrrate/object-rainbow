@@ -165,7 +165,7 @@ trait FromInner {
     type Inner: 'static + Clone;
     type Extra: 'static + Clone;
 
-    fn from_inner(inner: Self::Inner, extra: Self::Extra) -> Self;
+    fn from_inner(inner: Self::Inner) -> Self;
 }
 
 /// Trait for contextually using [`Any`]. Can itself be implemented for non-`'static` and `?Sized`
@@ -272,56 +272,62 @@ pub trait Fetch: Send + Sync + FetchBytes {
         None
     }
     fn get_mut_finalize(&mut self) {}
-    fn extra(&self) -> &Self::Extra;
 }
 
 trait FetchBytesExt: FetchBytes {
-    fn inner_cast<T: FromInner>(&self, extra: &T::Extra) -> Option<T> {
-        self.as_inner()?
-            .downcast_ref()
-            .cloned()
-            .map(|inner| T::from_inner(inner, extra.clone()))
+    fn inner_cast<T: FromInner>(&self) -> Option<T> {
+        self.as_inner()?.downcast_ref().cloned().map(T::from_inner)
     }
 }
 
 impl<T: ?Sized + FetchBytes> FetchBytesExt for T {}
 
 #[derive(Clone, ParseAsInline)]
-pub struct RawPointInner {
+pub struct RawPointInner<Extra> {
     hash: Hash,
+    extra: Extra,
     origin: Arc<dyn Send + Sync + FetchBytes>,
 }
 
-impl RawPointInner {
-    pub fn cast<T, Extra: 'static + Clone>(self, extra: Extra) -> RawPoint<T, Extra> {
-        RawPoint::from_inner(self, extra)
+impl<Extra: 'static + Clone> RawPointInner<Extra> {
+    pub fn cast<T>(self) -> RawPoint<T, Extra> {
+        RawPoint::from_inner(self)
     }
 }
 
-impl RawPointInner {
-    pub fn from_address(address: Address, resolve: Arc<dyn Resolve>) -> Self {
+impl<Extra: 'static + Send + Sync + Clone> RawPointInner<Extra> {
+    pub fn from_address(address: Address, resolve: Arc<dyn Resolve>, extra: Extra) -> Self {
         Self {
             hash: address.hash,
-            origin: Arc::new(ByAddressInner { address, resolve }),
+            extra: extra.clone(),
+            origin: Arc::new(ByAddressInner {
+                address,
+                extra,
+                resolve,
+            }),
         }
     }
 }
 
-impl ToOutput for RawPointInner {
+impl<Extra> ToOutput for RawPointInner<Extra> {
     fn to_output(&self, output: &mut dyn Output) {
         self.hash.to_output(output);
     }
 }
 
-impl<I: PointInput> ParseInline<I> for RawPointInner {
+impl<I: PointInput<Extra: Send + Sync>> ParseInline<I> for RawPointInner<I::Extra> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        Ok(Self::from_address(input.parse_inline()?, input.resolve()))
+        Ok(Self::from_address(
+            input.parse_inline()?,
+            input.resolve(),
+            input.extra().clone(),
+        ))
     }
 }
 
-impl Tagged for RawPointInner {}
+impl<Extra> Tagged for RawPointInner<Extra> {}
 
-impl Singular for RawPointInner {
+impl<Extra: Send + Sync> Singular for RawPointInner<Extra> {
     fn hash(&self) -> Hash {
         self.hash
     }
@@ -352,8 +358,7 @@ impl<T: ?Sized + 'static + Tagged, Extra: 'static> Inline<Extra> for ObjectMarke
 
 #[derive(ToOutput, Tagged, Parse, ParseInline)]
 pub struct RawPoint<T = Infallible, Extra = ()> {
-    inner: RawPointInner,
-    extra: Extras<Extra>,
+    inner: RawPointInner<Extra>,
     object: ObjectMarker<T>,
 }
 
@@ -373,13 +378,12 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Object<Extra> for R
 impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Inline<Extra> for RawPoint<T, Extra> {}
 
 impl<T, Extra: 'static + Clone> FromInner for RawPoint<T, Extra> {
-    type Inner = RawPointInner;
+    type Inner = RawPointInner<Extra>;
     type Extra = Extra;
 
-    fn from_inner(inner: Self::Inner, extra: Self::Extra) -> Self {
+    fn from_inner(inner: Self::Inner) -> Self {
         RawPoint {
             inner,
-            extra: Extras(extra),
             object: Default::default(),
         }
     }
@@ -389,31 +393,30 @@ impl<T, Extra: Clone> Clone for RawPoint<T, Extra> {
     fn clone(&self) -> Self {
         Self {
             inner: self.inner.clone(),
-            extra: self.extra.clone(),
             object: Default::default(),
         }
     }
 }
 
 impl<T, Extra: 'static + Clone> Point<T, Extra> {
-    pub fn raw(self) -> RawPoint<T, Extra> {
+    pub fn raw(self, extra: Extra) -> RawPoint<T, Extra> {
         {
-            if let Some(raw) = self.origin.inner_cast(self.origin.extra()) {
+            if let Some(raw) = self.origin.inner_cast() {
                 return raw;
             }
         }
-        let extra = self.origin.extra().clone();
         RawPointInner {
             hash: self.hash.unwrap(),
+            extra,
             origin: self.origin,
         }
-        .cast(extra)
+        .cast()
     }
 }
 
 impl<T, Extra: 'static + Clone> RawPoint<T, Extra> {
     pub fn cast<U>(self) -> RawPoint<U, Extra> {
-        self.inner.cast(self.extra.0)
+        self.inner.cast()
     }
 }
 
@@ -423,7 +426,7 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> RawPoint<T, Extra> 
     }
 }
 
-impl FetchBytes for RawPointInner {
+impl<Extra> FetchBytes for RawPointInner<Extra> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.origin.fetch_bytes()
     }
@@ -454,7 +457,7 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for RawPoint<T, Extra
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         Box::pin(async {
             let (data, resolve) = self.inner.origin.fetch_bytes().await?;
-            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
+            let object = T::parse_slice_extra(&data, &resolve, &self.inner.extra)?;
             if self.inner.hash != object.full_hash() {
                 Err(Error::DataMismatch)
             } else {
@@ -466,7 +469,7 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for RawPoint<T, Extra
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
             let (data, resolve) = self.inner.origin.fetch_bytes().await?;
-            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
+            let object = T::parse_slice_extra(&data, &resolve, &self.inner.extra)?;
             if self.inner.hash != object.full_hash() {
                 Err(Error::DataMismatch)
             } else {
@@ -474,16 +477,18 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for RawPoint<T, Extra
             }
         })
     }
-
-    fn extra(&self) -> &Self::Extra {
-        &self.extra
-    }
 }
 
 impl<T, Extra: 'static> Point<T, Extra> {
     pub fn extract_resolve<R: Any>(&self) -> Option<(&Address, &R)> {
-        let ByAddressInner { address, resolve } =
-            self.origin.as_inner()?.downcast_ref::<ByAddressInner>()?;
+        let ByAddressInner {
+            address,
+            extra: _,
+            resolve,
+        } = self
+            .origin
+            .as_inner()?
+            .downcast_ref::<ByAddressInner<Extra>>()?;
         let resolve = resolve.as_ref().any_ref().downcast_ref::<R>()?;
         Some((address, resolve))
     }
@@ -559,29 +564,27 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Point<T, Extra> {
     pub fn from_address_extra(address: Address, resolve: Arc<dyn Resolve>, extra: Extra) -> Self {
         Self::from_origin(
             address.hash,
-            Arc::new(ByAddress::from_inner(
-                ByAddressInner { address, resolve },
+            Arc::new(ByAddress::from_inner(ByAddressInner {
+                address,
                 extra,
-            )),
+                resolve,
+            })),
         )
     }
 
-    pub fn with_resolve(&self, resolve: Arc<dyn Resolve>) -> Self {
-        Self::from_address_extra(
-            Address::from_hash(self.hash()),
-            resolve,
-            self.extra().clone(),
-        )
+    pub fn with_resolve(&self, resolve: Arc<dyn Resolve>, extra: Extra) -> Self {
+        Self::from_address_extra(Address::from_hash(self.hash()), resolve, extra)
     }
 }
 
 #[derive(Clone)]
-struct ByAddressInner {
+struct ByAddressInner<Extra> {
     address: Address,
+    extra: Extra,
     resolve: Arc<dyn Resolve>,
 }
 
-impl FetchBytes for ByAddressInner {
+impl<Extra> FetchBytes for ByAddressInner<Extra> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.resolve.resolve(self.address)
     }
@@ -592,19 +595,17 @@ impl FetchBytes for ByAddressInner {
 }
 
 struct ByAddress<T, Extra> {
-    inner: ByAddressInner,
-    extra: Extra,
+    inner: ByAddressInner<Extra>,
     _object: PhantomData<fn() -> T>,
 }
 
 impl<T, Extra: 'static + Clone> FromInner for ByAddress<T, Extra> {
-    type Inner = ByAddressInner;
+    type Inner = ByAddressInner<Extra>;
     type Extra = Extra;
 
-    fn from_inner(inner: Self::Inner, extra: Self::Extra) -> Self {
+    fn from_inner(inner: Self::Inner) -> Self {
         Self {
             inner,
-            extra,
             _object: PhantomData,
         }
     }
@@ -631,7 +632,7 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for ByAddress<T, Extr
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
-            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
+            let object = T::parse_slice_extra(&data, &resolve, &self.inner.extra)?;
             if self.inner.address.hash != object.full_hash() {
                 Err(Error::DataMismatch)
             } else {
@@ -643,17 +644,13 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for ByAddress<T, Extr
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
-            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
+            let object = T::parse_slice_extra(&data, &resolve, &self.inner.extra)?;
             if self.inner.address.hash != object.full_hash() {
                 Err(Error::DataMismatch)
             } else {
                 Ok(object)
             }
         })
-    }
-
-    fn extra(&self) -> &Self::Extra {
-        &self.extra
     }
 }
 
@@ -1017,12 +1014,12 @@ pub trait Object<Extra: 'static = ()>:
         Err(Error::UnknownExtension)
     }
 
-    fn point_extra(self, extra: Extra) -> Point<Self, Extra>
+    fn point_extra(self) -> Point<Self, Extra>
     where
         Self: Clone,
         Extra: Send + Sync + Clone,
     {
-        Point::from_object_extra(self, extra)
+        Point::from_object_extra(self)
     }
 
     fn to_resolve(&self) -> Arc<dyn Resolve>
@@ -1041,7 +1038,7 @@ pub trait SimpleObject: Object {
     where
         Self: Clone,
     {
-        self.point_extra(())
+        self.point_extra()
     }
 }
 
@@ -1247,13 +1244,19 @@ impl<'a, T: Object<Extra>, Extra> PointMut<'a, T, Extra> {
 
 impl<T: Object + Clone> Point<T> {
     pub fn from_object(object: T) -> Self {
-        Self::from_object_extra(object, ())
+        Self::from_object_extra(object)
     }
 }
 
 impl<T: Object<Extra> + Clone, Extra: 'static + Send + Sync + Clone> Point<T, Extra> {
-    pub fn from_object_extra(object: T, extra: Extra) -> Self {
-        Self::from_origin(object.full_hash(), Arc::new(LocalOrigin { object, extra }))
+    pub fn from_object_extra(object: T) -> Self {
+        Self::from_origin(
+            object.full_hash(),
+            Arc::new(LocalOrigin {
+                object,
+                _extra: PhantomData,
+            }),
+        )
     }
 
     fn yolo_mut(&mut self) -> bool {
@@ -1266,7 +1269,7 @@ impl<T: Object<Extra> + Clone, Extra: 'static + Send + Sync + Clone> Point<T, Ex
             let object = self.origin.fetch().await?;
             self.origin = Arc::new(LocalOrigin {
                 object,
-                extra: self.origin.extra().clone(),
+                _extra: PhantomData,
             });
         }
         Ok(())
@@ -1291,7 +1294,7 @@ impl<T: Object<Extra> + Clone, Extra: 'static + Send + Sync + Clone> Point<T, Ex
 
 struct LocalOrigin<T, Extra> {
     object: T,
-    extra: Extra,
+    _extra: PhantomData<Extra>,
 }
 
 impl<T, Extra> Deref for LocalOrigin<T, Extra> {
@@ -1326,10 +1329,6 @@ impl<T: Object<Extra> + Clone, Extra: 'static + Send + Sync> Fetch for LocalOrig
 
     fn get_mut(&mut self) -> Option<&mut Self::T> {
         Some(self)
-    }
-
-    fn extra(&self) -> &Self::Extra {
-        &self.extra
     }
 }
 
@@ -1422,10 +1421,6 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for Point<T, Extra> {
         let origin = Arc::get_mut(&mut self.origin).unwrap();
         origin.get_mut_finalize();
         self.hash = origin.get().unwrap().full_hash().into();
-    }
-
-    fn extra(&self) -> &Self::Extra {
-        self.origin.extra()
     }
 }
 
@@ -1585,32 +1580,6 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
     }
 }
 
-#[derive(Clone, ParseAsInline)]
-struct Extras<Extra>(Extra);
-
-impl<Extra> Deref for Extras<Extra> {
-    type Target = Extra;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl<Extra> ToOutput for Extras<Extra> {
-    fn to_output(&self, _: &mut dyn Output) {}
-}
-
-impl<I: PointInput> ParseInline<I> for Extras<I::Extra> {
-    fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        Ok(Self(input.extra().clone()))
-    }
-}
-
-impl<Extra> Tagged for Extras<Extra> {}
-impl<Extra: 'static> Topological<Extra> for Extras<Extra> {}
-impl<Extra: 'static + Send + Sync + Clone> Object<Extra> for Extras<Extra> {}
-impl<Extra: 'static + Send + Sync + Clone> Inline<Extra> for Extras<Extra> {}
-
 /// Implemented if both types have the exact same layout.
 /// This implies having the same [`MaybeHasNiche::MnArray`].
 ///
@@ -1682,10 +1651,6 @@ impl<T, F: 'static + Send + Sync + Map1<T>, Extra> Fetch for MapEquivalent<T, F,
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(self.origin.fetch().map_ok(&self.map))
     }
-
-    fn extra(&self) -> &Self::Extra {
-        self.origin.extra()
-    }
 }
 
 impl<T: 'static + ToOutput, Extra: 'static> Point<T, Extra> {
@@ -1715,10 +1680,6 @@ impl<T: ToOutput, F: 'static + Send + Sync + Map1<T>, Extra> Fetch for Map<T, F,
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(self.origin.fetch().map_ok(&self.map))
-    }
-
-    fn extra(&self) -> &Self::Extra {
-        self.origin.extra()
     }
 }
 
