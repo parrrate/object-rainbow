@@ -342,6 +342,10 @@ where
     pub async fn get(&self, key: &K) -> object_rainbow::Result<Option<V>> {
         self.trie.get(key.as_ref()).await
     }
+
+    pub async fn insert(&mut self, key: &K, value: V) -> object_rainbow::Result<Option<V>> {
+        self.trie.insert(key.as_ref(), value).await
+    }
 }
 
 #[cfg(test)]
