@@ -5,7 +5,9 @@ use typenum::{Sum, U8, Unsigned, tarr};
 
 use crate::{numeric::Le, *};
 
-#[derive(Topological, Tagged, Object, Inline, ReflessObject, ReflessInline, ParseAsInline)]
+#[derive(
+    Topological, Tagged, Object, Inline, ReflessObject, ReflessInline, ParseAsInline, Default,
+)]
 pub struct Lp<T>(pub T);
 
 impl<T> Deref for Lp<T> {
