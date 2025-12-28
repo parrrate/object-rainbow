@@ -3,8 +3,8 @@ use std::{collections::BTreeMap, io::Write};
 use futures_util::future::try_join_all;
 use object_rainbow::{
     Enum, Fetch, Inline, MaybeHasNiche, NicheForUnsized, NoNiche, Object, Output, Parse,
-    ParseAsInline, ParseInline, ParseInput, Point, ReflessObject, SimpleObject, Size, SomeNiche,
-    Tagged, ToOutput, Topological, ZeroNiche, length_prefixed::LpString, numeric::Le,
+    ParseInline, ParseInput, Point, ReflessObject, SimpleObject, Size, SomeNiche, Tagged, ToOutput,
+    Topological, ZeroNiche, length_prefixed::LpString, numeric::Le,
 };
 use serde::{Serialize, de::DeserializeOwned};
 
@@ -54,7 +54,7 @@ impl MaybeHasNiche for Json<()> {
     type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
 }
 
-#[derive(Enum, ToOutput, Topological, ParseAsInline, ParseInline, Clone)]
+#[derive(Enum, ToOutput, Topological, Parse, ParseInline, Clone)]
 pub enum Distributed {
     Null,
     Bool(bool),

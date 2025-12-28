@@ -82,7 +82,7 @@ impl AsRef<[u8]> for Hash {
     Ord,
     Hash,
     ToOutput,
-    ParseAsInline,
+    Parse,
     ParseInline,
     Tagged,
     Topological,
