@@ -565,6 +565,14 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Point<T, Extra> {
             )),
         )
     }
+
+    pub fn with_resolve(&self, resolve: Arc<dyn Resolve>) -> Self {
+        Self::from_address_extra(
+            Address::from_hash(self.hash()),
+            resolve,
+            self.extra().clone(),
+        )
+    }
 }
 
 #[derive(Clone)]

@@ -8,10 +8,10 @@ use std::{
 
 use chacha20poly1305::{ChaCha20Poly1305, aead::Aead};
 use object_rainbow::{
-    Address, ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Resolve, SimpleObject,
+     ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Resolve, SimpleObject,
     Singular, error_fetch, error_parse,
 };
-use object_rainbow_encrypted::{Key, WithKey, encrypt_point};
+use object_rainbow_encrypted::{Key, encrypt_point};
 use sha2::digest::generic_array::GenericArray;
 use smol::{Executor, channel::Sender};
 
@@ -130,18 +130,16 @@ impl Resolve for MapResolver {
 }
 
 async fn iterate<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
-    object: T,
-    extra: Extra,
-) -> Point<T, Extra> {
+    point: Point<T, Extra>,
+) -> anyhow::Result<Point<T, Extra>> {
     let (send, recv) = smol::channel::unbounded::<Event>();
     let executor = Arc::new(Executor::new());
-    let hash = object.full_hash();
     EventContext {
         executor: executor.clone(),
         send,
         _extra: PhantomData,
     }
-    .send(object)
+    .send(point.fetch().await?)
     .await;
     let fetched = executor
         .run(async {
@@ -165,9 +163,8 @@ async fn iterate<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
             },
         );
     }
-    let address = Address { index: 0, hash };
     let resolver = Arc::new(MapResolver(Arc::new(fetched)));
-    Point::from_address_extra(address, resolver, extra)
+    Ok(point.with_resolve(resolver))
 }
 
 fn main() -> anyhow::Result<()> {
@@ -181,10 +178,7 @@ fn main() -> anyhow::Result<()> {
             .point();
         let key = Test(std::array::from_fn(|i| i as _));
         let point = encrypt_point(key, point).await?;
-        let point = iterate(point, WithKey { key, extra: () })
-            .await
-            .fetch()
-            .await?;
+        let point = iterate(point).await?;
         let point = point.fetch().await?.into_inner().point();
         let point = encrypt_point(key, point).await?;
         let point = point.fetch().await?.into_inner().point();

@@ -68,7 +68,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
             if !self.contains(point.hash()).await? {
                 self.save_object(&point.fetch().await?).await?;
             }
-            Ok(self.point_extra(point.hash(), point.extra().clone()))
+            Ok(point.with_resolve(self.resolve()))
         }
     }
     fn save_topology<Extra: 'static + Send + Sync + Clone>(
