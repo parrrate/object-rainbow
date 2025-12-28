@@ -284,9 +284,9 @@ where
 
     pub fn prefix_stream(
         &self,
-        key: &[u8],
+        prefix: &[u8],
     ) -> impl Send + Stream<Item = object_rainbow::Result<(Vec<u8>, T)>> {
-        try_stream(async |co| self.prefix_yield(&mut Vec::new(), key, &co).await)
+        try_stream(async |co| self.prefix_yield(&mut Vec::new(), prefix, &co).await)
     }
 
     pub fn range_stream<'a>(
