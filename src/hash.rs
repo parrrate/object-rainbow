@@ -91,17 +91,12 @@ impl AsRef<[u8]> for Hash {
     ReflessObject,
     ReflessInline,
     Size,
+    Default,
 )]
 pub struct OptionalHash([u8; HASH_SIZE]);
 
 impl MaybeHasNiche for OptionalHash {
     type MnArray = SomeNiche<HashNiche<U1>>;
-}
-
-impl Default for OptionalHash {
-    fn default() -> Self {
-        Self::NONE
-    }
 }
 
 impl From<[u8; HASH_SIZE]> for OptionalHash {
