@@ -2,9 +2,9 @@ use std::{collections::BTreeMap, io::Write};
 
 use futures_util::future::try_join_all;
 use object_rainbow::{
-    Enum, Fetch, Inline, MaybeHasNiche, NicheForUnsized, Object, Output, Parse, ParseAsInline,
-    ParseInline, ParseInput, Point, ReflessObject, SimpleObject, Size, SomeNiche, Tagged, ToOutput,
-    Topological, ZeroNiche, length_prefixed::LpString, numeric::Le,
+    Enum, Fetch, Inline, MaybeHasNiche, NicheForUnsized, NoNiche, Object, Output, Parse,
+    ParseAsInline, ParseInline, ParseInput, Point, ReflessObject, SimpleObject, Size, SomeNiche,
+    Tagged, ToOutput, Topological, ZeroNiche, length_prefixed::LpString, numeric::Le,
 };
 use serde::{Serialize, de::DeserializeOwned};
 
@@ -70,7 +70,7 @@ impl Tagged for Distributed {}
 impl Object for Distributed {}
 impl Inline for Distributed {}
 impl MaybeHasNiche for Distributed {
-    type MnArray = NicheForUnsized;
+    type MnArray = NoNiche<NicheForUnsized>;
 }
 
 impl Distributed {
