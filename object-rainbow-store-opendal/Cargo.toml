@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
+description = "Apache OpenDAL™ storage for object-rainbow"
 
 [dependencies]
 object-rainbow.workspace = true
@@ -17,6 +18,3 @@ opendal = "0.55.0"
 [dev-dependencies]
 anyhow = "1.0.96"
 smol = "2.0.2"
-
-[package.metadata.tagit]
-skip = true

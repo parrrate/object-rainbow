@@ -6,10 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
-publish = false
+description = "storage abstraction for object-rainbow"
 
 [dependencies]
 object-rainbow.workspace = true
-
-[package.metadata.tagit]
-skip = true
