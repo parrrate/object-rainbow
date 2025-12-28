@@ -363,6 +363,18 @@ where
             .prefix_stream(prefix)
             .and_then(async |(key, value)| Ok((K::parse_slice_refless(&key)?, value)))
     }
+
+    pub fn range_stream<'a>(
+        &'a self,
+        range: impl 'a + Send + Sync + RangeBounds<&'a K>,
+    ) -> impl Send + Stream<Item = object_rainbow::Result<(K, V)>> {
+        self.trie
+            .range_stream((
+                range.start_bound().cloned().map(|b| b.as_ref()),
+                range.end_bound().cloned().map(|b| b.as_ref()),
+            ))
+            .and_then(async |(key, value)| Ok((K::parse_slice_refless(&key)?, value)))
+    }
 }
 
 #[cfg(test)]
