@@ -6,7 +6,7 @@ use std::{
 use futures_util::{Stream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    Fetch, Inline, Object, Parse, Point, Tagged, ToOutput, Topological, Traversible,
+    Fetch, Inline, Object, ObjectMarker, Parse, Point, Tagged, ToOutput, Topological, Traversible,
     length_prefixed::LpBytes,
 };
 
@@ -308,6 +308,30 @@ where
         self.range_stream(..)
             .try_fold(0u64, async |ctr, _| Ok(ctr.saturating_add(1)))
             .await
+    }
+}
+
+#[derive(ToOutput, Tagged, Topological, Parse, Object)]
+pub struct TrieMap<K, V> {
+    trie: Trie<V>,
+    key: ObjectMarker<K>,
+}
+
+impl<K, V: Clone> Clone for TrieMap<K, V> {
+    fn clone(&self) -> Self {
+        Self {
+            trie: self.trie.clone(),
+            key: self.key,
+        }
+    }
+}
+
+impl<K, V> Default for TrieMap<K, V> {
+    fn default() -> Self {
+        Self {
+            trie: Default::default(),
+            key: Default::default(),
+        }
     }
 }
 
