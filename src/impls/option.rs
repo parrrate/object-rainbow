@@ -124,42 +124,83 @@ impl<
     type MnArray = B::Wrap<Mn>;
 }
 
-impl<
-    T: ParseInline<I> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
-    N: Niche<NeedsTag = B>,
-    B: Bit,
-    I: ParseInput,
-> Parse<I> for Option<T>
-{
-    fn parse(input: I) -> crate::Result<Self> {
-        ParseInline::parse_as_inline(input)
-    }
+pub trait OptionParseBit<T, I>: Bit {
+    fn parse_option(input: I) -> crate::Result<Option<T>>;
 }
 
-impl<
-    T: ParseInline<I> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
-    N: Niche<NeedsTag = B>,
-    B: Bit,
-    I: ParseInput,
-> ParseInline<I> for Option<T>
-{
-    fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        if B::BOOL {
-            if input.parse_inline()? {
-                Ok(None)
-            } else {
-                Ok(Some(input.parse_inline()?))
-            }
+impl<T: Parse<I>, I: ParseInput> OptionParseBit<T, I> for B1 {
+    fn parse_option(mut input: I) -> crate::Result<Option<T>> {
+        if input.parse_inline()? {
+            input.empty()?;
+            Ok(None)
         } else {
-            input.parse_compare(N::N::USIZE, &N::niche())
+            Ok(Some(input.parse()?))
         }
     }
 }
 
 impl<
-    T: Inline<E> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
+    T: ParseInline<I> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
+    N: Niche<NeedsTag = B0>,
+    I: ParseInput,
+> OptionParseBit<T, I> for B0
+{
+    fn parse_option(input: I) -> crate::Result<Option<T>> {
+        Option::<T>::parse_as_inline(input)
+    }
+}
+
+pub trait OptionParseBitInline<T, I>: OptionParseBit<T, I> {
+    fn parse_option_inline(input: &mut I) -> crate::Result<Option<T>>;
+}
+
+impl<T: ParseInline<I>, I: ParseInput> OptionParseBitInline<T, I> for B1 {
+    fn parse_option_inline(input: &mut I) -> crate::Result<Option<T>> {
+        if input.parse_inline()? {
+            Ok(None)
+        } else {
+            Ok(Some(input.parse_inline()?))
+        }
+    }
+}
+
+impl<
+    T: ParseInline<I> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
+    N: Niche<NeedsTag = B0>,
+    I: ParseInput,
+> OptionParseBitInline<T, I> for B0
+{
+    fn parse_option_inline(input: &mut I) -> crate::Result<Option<T>> {
+        input.parse_compare(N::N::USIZE, &N::niche())
+    }
+}
+
+impl<
+    T: Parse<I> + MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B>>>,
+    B: OptionParseBit<T, I>,
+    I: ParseInput,
+> Parse<I> for Option<T>
+{
+    fn parse(input: I) -> crate::Result<Self> {
+        B::parse_option(input)
+    }
+}
+
+impl<
+    T: ParseInline<I> + MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B>>>,
+    B: OptionParseBitInline<T, I>,
+    I: ParseInput,
+> ParseInline<I> for Option<T>
+{
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        B::parse_option_inline(input)
+    }
+}
+
+impl<
+    T: Object<E> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
     N: Niche<NeedsTag = B>,
-    B: Bit,
+    B: for<'a> OptionParseBit<T, Input<'a, E>>,
     E: 'static,
 > Object<E> for Option<T>
 {
@@ -168,16 +209,16 @@ impl<
 impl<
     T: Inline<E> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
     N: Niche<NeedsTag = B>,
-    B: Bit,
+    B: for<'a> OptionParseBitInline<T, Input<'a, E>>,
     E: 'static,
 > Inline<E> for Option<T>
 {
 }
 
 impl<
-    T: ReflessInline + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
+    T: ReflessObject + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
     N: Niche<NeedsTag = B>,
-    B: Bit,
+    B: for<'a> OptionParseBit<T, ReflessInput<'a>>,
 > ReflessObject for Option<T>
 {
 }
@@ -185,7 +226,7 @@ impl<
 impl<
     T: ReflessInline + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
     N: Niche<NeedsTag = B>,
-    B: Bit,
+    B: for<'a> OptionParseBitInline<T, ReflessInput<'a>>,
 > ReflessInline for Option<T>
 {
 }
