@@ -40,8 +40,8 @@ impl<T: ToOutput + TaggedOption> ToOutput for Option<T> {
     }
 }
 
-impl<T: Topological<E>, E: 'static> Topological<E> for Option<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor<E>) {
+impl<T: Topological> Topological for Option<T> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.iter_accept_points(visitor);
     }
 }

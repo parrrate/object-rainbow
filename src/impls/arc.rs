@@ -18,8 +18,8 @@ impl<T: ParseInline<I>, I: ParseInput> ParseInline<I> for Arc<T> {
     }
 }
 
-impl<T: ?Sized + Topological<E>, E: 'static> Topological<E> for Arc<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor<E>) {
+impl<T: ?Sized + Topological> Topological for Arc<T> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
         (**self).accept_points(visitor);
     }
 

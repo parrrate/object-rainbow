@@ -8,8 +8,8 @@ impl<T: ToOutput> ToOutput for Vec<T> {
     }
 }
 
-impl<T: Topological<E>, E: 'static> Topological<E> for Vec<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor<E>) {
+impl<T: Topological> Topological for Vec<T> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.iter_accept_points(visitor);
     }
 }
@@ -35,8 +35,8 @@ impl<T: ToOutput> ToOutput for VecDeque<T> {
     }
 }
 
-impl<T: Topological<E>, E: 'static> Topological<E> for VecDeque<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor<E>) {
+impl<T: Topological> Topological for VecDeque<T> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.iter_accept_points(visitor);
     }
 }

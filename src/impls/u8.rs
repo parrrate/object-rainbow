@@ -41,7 +41,7 @@ impl MaybeHasNiche for u8 {
 }
 
 impl Tagged for u8 {}
-impl<E: 'static> Topological<E> for u8 {}
+impl Topological for u8 {}
 impl<E: 'static> Object<E> for u8 {}
 impl<E: 'static> Inline<E> for u8 {}
 impl ReflessObject for u8 {}

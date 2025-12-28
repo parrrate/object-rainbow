@@ -75,7 +75,7 @@ impl<I: ParseInput> ParseInline<I> for bool {
 }
 
 impl Tagged for bool {}
-impl<E: 'static> Topological<E> for bool {}
+impl Topological for bool {}
 impl<E: 'static> Object<E> for bool {}
 impl<E: 'static> Inline<E> for bool {}
 impl ReflessObject for bool {}

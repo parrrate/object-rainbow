@@ -6,8 +6,8 @@ impl<T: ToOutput> ToOutput for (T,) {
     }
 }
 
-impl<T: Topological<E>, E: 'static> Topological<E> for (T,) {
-    fn accept_points(&self, visitor: &mut impl PointVisitor<E>) {
+impl<T: Topological> Topological for (T,) {
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.0.accept_points(visitor);
     }
 }

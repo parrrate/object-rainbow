@@ -8,8 +8,8 @@ impl<T: ToOutput> ToOutput for BTreeSet<T> {
     }
 }
 
-impl<T: Topological<E>, E: 'static> Topological<E> for BTreeSet<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor<E>) {
+impl<T: Topological> Topological for BTreeSet<T> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.iter_accept_points(visitor);
     }
 }
@@ -34,8 +34,8 @@ impl<K: ToOutput, V: ToOutput> ToOutput for BTreeMap<K, V> {
     }
 }
 
-impl<K: Topological<E>, V: Topological<E>, E: 'static> Topological<E> for BTreeMap<K, V> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor<E>) {
+impl<K: Topological, V: Topological> Topological for BTreeMap<K, V> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.iter_accept_points(visitor);
     }
 }
