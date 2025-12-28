@@ -1087,7 +1087,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-trie"
-version = "0.1.0"
+version = "0.0.0-a.0"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
