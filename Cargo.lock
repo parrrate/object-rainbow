@@ -1008,7 +1008,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.15"
+version = "0.0.0-a.16"
 dependencies = [
  "anyhow",
  "futures-util",
