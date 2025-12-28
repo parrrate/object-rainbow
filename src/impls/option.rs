@@ -51,7 +51,7 @@ impl<T: Tagged> Tagged for Option<T> {
 }
 
 impl<
-    T: MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B, N: Add<B, Output = N>>>>,
+    T: Size + MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B, N: Add<B, Output = N>>>>,
     B: Bit,
     N: Unsigned,
 > Size for Option<T>
