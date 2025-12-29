@@ -28,3 +28,5 @@ impl<I: ParseInput> ParseInline<I> for CString {
         Ok(Self::new(vec).expect("should stop on zero"))
     }
 }
+
+impl<E: 'static> Object<E> for CString {}
