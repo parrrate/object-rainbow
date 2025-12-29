@@ -7,3 +7,5 @@ impl ToOutput for CStr {
         self.to_bytes_with_nul().to_output(output);
     }
 }
+
+impl Topological for CStr {}
