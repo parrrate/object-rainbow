@@ -9,3 +9,4 @@ impl ToOutput for CString {
 }
 
 impl Topological for CString {}
+impl Tagged for CString {}
