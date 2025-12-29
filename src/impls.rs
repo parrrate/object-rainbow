@@ -4,6 +4,7 @@ mod bool;
 mod boxed;
 mod btree;
 mod bytes;
+mod cstr;
 mod infallible;
 mod option;
 mod phantom;
