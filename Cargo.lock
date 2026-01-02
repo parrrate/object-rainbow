@@ -1008,7 +1008,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.23"
+version = "0.0.0-a.24"
 dependencies = [
  "anyhow",
  "futures-util",
@@ -1035,7 +1035,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-encrypted"
-version = "0.0.0-a.2"
+version = "0.0.0-a.3"
 dependencies = [
  "anyhow",
  "chacha20poly1305",
@@ -1050,7 +1050,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-json"
-version = "0.0.0-a.8"
+version = "0.0.0-a.9"
 dependencies = [
  "futures-util",
  "object-rainbow",

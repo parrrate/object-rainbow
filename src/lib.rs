@@ -688,10 +688,7 @@ impl<'d> ParseInput for ReflessInput<'d> {
         }
     }
 
-    fn parse_n<'a>(&mut self, n: usize) -> crate::Result<&'a [u8]>
-    where
-        Self: 'a,
-    {
+    fn parse_n(&mut self, n: usize) -> crate::Result<Self::Data> {
         match self.data()?.split_at_checked(n) {
             Some((chunk, data)) => {
                 self.data = Some(data);
@@ -701,10 +698,7 @@ impl<'d> ParseInput for ReflessInput<'d> {
         }
     }
 
-    fn parse_until_zero<'a>(&mut self) -> crate::Result<&'a [u8]>
-    where
-        Self: 'a,
-    {
+    fn parse_until_zero(&mut self) -> crate::Result<Self::Data> {
         let data = self.data()?;
         match data.iter().enumerate().find(|(_, x)| **x == 0) {
             Some((at, _)) => {
@@ -744,10 +738,7 @@ impl<'d> ParseInput for ReflessInput<'d> {
         }
     }
 
-    fn parse_all<'a>(self) -> crate::Result<&'a [u8]>
-    where
-        Self: 'a,
-    {
+    fn parse_all(self) -> crate::Result<Self::Data> {
         self.data()
     }
 
@@ -778,17 +769,11 @@ impl<'d, Extra> ParseInput for Input<'d, Extra> {
         (**self).parse_chunk()
     }
 
-    fn parse_n<'a>(&mut self, n: usize) -> crate::Result<&'a [u8]>
-    where
-        Self: 'a,
-    {
+    fn parse_n(&mut self, n: usize) -> crate::Result<Self::Data> {
         (**self).parse_n(n)
     }
 
-    fn parse_until_zero<'a>(&mut self) -> crate::Result<&'a [u8]>
-    where
-        Self: 'a,
-    {
+    fn parse_until_zero(&mut self) -> crate::Result<Self::Data> {
         (**self).parse_until_zero()
     }
 
@@ -830,10 +815,7 @@ impl<'d, Extra> ParseInput for Input<'d, Extra> {
         }
     }
 
-    fn parse_all<'a>(self) -> crate::Result<&'a [u8]>
-    where
-        Self: 'a,
-    {
+    fn parse_all(self) -> crate::Result<Self::Data> {
         self.refless.parse_all()
     }
 
@@ -1444,22 +1426,16 @@ trait RainbowIterator: Sized + IntoIterator {
 }
 
 pub trait ParseInput: Sized {
-    type Data: AsRef<[u8]> + Deref<Target = [u8]> + Copy;
+    type Data: AsRef<[u8]> + Deref<Target = [u8]> + Into<Vec<u8>> + Copy;
     fn parse_chunk<'a, const N: usize>(&mut self) -> crate::Result<&'a [u8; N]>
     where
         Self: 'a;
-    fn parse_n<'a>(&mut self, n: usize) -> crate::Result<&'a [u8]>
-    where
-        Self: 'a;
-    fn parse_until_zero<'a>(&mut self) -> crate::Result<&'a [u8]>
-    where
-        Self: 'a;
+    fn parse_n(&mut self, n: usize) -> crate::Result<Self::Data>;
+    fn parse_until_zero(&mut self) -> crate::Result<Self::Data>;
     fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T>;
     fn parse_zero_terminated<T: Parse<Self>>(&mut self) -> crate::Result<T>;
     fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>>;
-    fn parse_all<'a>(self) -> crate::Result<&'a [u8]>
-    where
-        Self: 'a;
+    fn parse_all(self) -> crate::Result<Self::Data>;
     fn empty(self) -> crate::Result<()>;
     fn non_empty(self) -> crate::Result<Option<Self>>;
 

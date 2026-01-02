@@ -239,7 +239,7 @@ impl<
     fn parse(input: I) -> object_rainbow::Result<Self> {
         let with_key = input.extra().clone();
         let resolve = input.resolve().clone();
-        let source = with_key.key.decrypt(input.parse_all()?)?;
+        let source = with_key.key.decrypt(&input.parse_all()?)?;
         let EncryptedInner {
             resolution,
             decrypted,
