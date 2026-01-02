@@ -1,0 +1,25 @@
+use object_rainbow_derive::{ParseAsInline, Tagged, Topological};
+
+use crate::*;
+
+#[derive(Tagged, Topological, ParseAsInline)]
+pub struct Zt<T> {
+    object: T,
+    data: Vec<u8>,
+}
+
+impl<T: ToOutput> ToOutput for Zt<T> {
+    fn to_output(&self, output: &mut dyn Output) {
+        self.data.to_output(output);
+        output.write(&[0]);
+    }
+}
+
+impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Zt<T> {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        let data = input.parse_until_zero()?;
+        let object = input.reparse(data)?;
+        let data = data.into();
+        Ok(Self { object, data })
+    }
+}
