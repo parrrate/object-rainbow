@@ -5,7 +5,7 @@ use typenum::{Sum, U8, Unsigned, tarr};
 
 use crate::{numeric::Le, *};
 
-#[derive(Topological, Tagged, ReflessObject, ReflessInline, ParseAsInline, Default)]
+#[derive(Topological, Tagged, ParseAsInline, Default)]
 pub struct Lp<T>(pub T);
 
 impl<T> Deref for Lp<T> {
@@ -59,6 +59,8 @@ impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Lp<T> {
 
 impl<T: Object<Extra>, Extra: 'static> Object<Extra> for Lp<T> {}
 impl<T: Object<Extra>, Extra: 'static> Inline<Extra> for Lp<T> {}
+impl<T: ReflessObject> ReflessObject for Lp<T> {}
+impl<T: ReflessObject> ReflessInline for Lp<T> {}
 
 #[test]
 fn prefixed() {
