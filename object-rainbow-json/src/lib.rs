@@ -92,17 +92,17 @@ impl Distributed {
             )
             .await?
             .into(),
-            Distributed::Object(ref point) => try_join_all(
-                point
-                    .fetch()
-                    .await?
-                    .into_iter()
-                    .map(async |(k, x)| Ok((k.0, x.to_value().await?))),
-            )
-            .await?
-            .into_iter()
-            .collect::<serde_json::Map<_, _>>()
-            .into(),
+            Distributed::Object(ref point) => {
+                try_join_all(
+                    point.fetch().await?.into_iter().map(async |(k, x)| {
+                        Ok::<_, object_rainbow::Error>((k.0, x.to_value().await?))
+                    }),
+                )
+                .await?
+                .into_iter()
+                .collect::<serde_json::Map<_, _>>()
+                .into()
+            }
         })
     }
 }
