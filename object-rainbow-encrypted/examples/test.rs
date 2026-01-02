@@ -8,7 +8,7 @@ use std::{
 use chacha20poly1305::{ChaCha20Poly1305, aead::Aead};
 use object_rainbow::{
     ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Resolve, Singular, Traversible,
-    error_fetch, error_parse,
+    error_fetch,
 };
 use object_rainbow_encrypted::{Key, WithKey, encrypt_point};
 use sha2::digest::generic_array::GenericArray;
@@ -43,7 +43,7 @@ impl Key for Test {
         };
         cipher
             .decrypt(GenericArray::from_slice(&data[..12]), &data[12..])
-            .map_err(|_| error_fetch!("decryption_failed"))
+            .map_err(|_| error_fetch!("decryption failed"))
     }
 }
 
@@ -115,14 +115,14 @@ impl Resolve for MapResolver {
     fn resolve(&'_ self, address: object_rainbow::Address) -> FailFuture<'_, ByteNode> {
         Box::pin(ready(match self.0.get(&address.hash) {
             Some(data) => Ok((data.clone(), Arc::new(self.clone()) as _)),
-            None => Err(error_parse!("hash not found")),
+            None => Err(object_rainbow::Error::HashNotFound),
         }))
     }
 
     fn resolve_data(&'_ self, address: object_rainbow::Address) -> FailFuture<'_, Vec<u8>> {
         Box::pin(ready(match self.0.get(&address.hash) {
             Some(data) => Ok(data.clone()),
-            None => Err(error_parse!("hash not found")),
+            None => Err(object_rainbow::Error::HashNotFound),
         }))
     }
 

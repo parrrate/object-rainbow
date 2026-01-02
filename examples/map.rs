@@ -7,7 +7,7 @@ use std::{
 
 use object_rainbow::{
     Address, ByteNode, FailFuture, Fetch, FullHash, Hash, Object, Point, PointVisitor, Resolve,
-    Singular, Traversible, error_parse,
+    Singular, Traversible,
 };
 use smol::{Executor, channel::Sender};
 
@@ -79,7 +79,7 @@ impl MapResolver {
     fn resolve_bytes(&self, address: Address) -> object_rainbow::Result<Vec<u8>> {
         match self.0.get(&address.hash) {
             Some(data) => Ok(data.clone()),
-            None => Err(error_parse!("hash not found")),
+            None => Err(object_rainbow::Error::HashNotFound),
         }
     }
 }
