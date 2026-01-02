@@ -78,6 +78,38 @@ impl Error {
     pub fn fetch(e: impl Into<anyhow::Error>) -> Self {
         Self::Fetch(e.into())
     }
+
+    fn io_kind(&self) -> std::io::ErrorKind {
+        use std::io::ErrorKind;
+        match self {
+            Error::Parse(_) => ErrorKind::InvalidData,
+            Error::Fetch(_) => ErrorKind::Other,
+            Error::Io(e) => e.kind(),
+            Error::ExtraInputLeft => ErrorKind::InvalidData,
+            Error::EndOfInput => ErrorKind::UnexpectedEof,
+            Error::AddressOutOfBounds => ErrorKind::Other,
+            Error::ResolutionMismatch => ErrorKind::InvalidData,
+            Error::DataMismatch => ErrorKind::InvalidData,
+            Error::DiscriminantOverflow => ErrorKind::InvalidData,
+            Error::Zero => ErrorKind::InvalidData,
+            Error::OutOfBounds => ErrorKind::InvalidData,
+            Error::UnsupportedLength => ErrorKind::FileTooLarge,
+            Error::Utf8(_) => ErrorKind::InvalidData,
+            Error::UnknownExtension => ErrorKind::Other,
+            Error::ExtensionType => ErrorKind::Other,
+            Error::Unimplemented => ErrorKind::Unsupported,
+            Error::HashNotFound => ErrorKind::NotFound,
+        }
+    }
+}
+
+impl From<Error> for std::io::Error {
+    fn from(value: Error) -> Self {
+        match value {
+            Error::Io(e) => e,
+            e => Self::new(e.io_kind(), e),
+        }
+    }
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
