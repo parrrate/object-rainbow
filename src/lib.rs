@@ -715,17 +715,12 @@ impl<'d> ParseInput for ReflessInput<'d> {
         T::parse(input)
     }
 
-    fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
-        match self.data()?.split_at_checked(n) {
-            Some((chunk, data)) => {
-                if chunk == c {
-                    self.data = Some(data);
-                    Ok(None)
-                } else {
-                    self.parse_inline().map(Some)
-                }
-            }
-            None => self.end_of_input(),
+    fn parse_compare<T: Parse<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
+        let data = self.parse_n(n)?;
+        if data == c {
+            Ok(None)
+        } else {
+            self.reparse(data).map(Some)
         }
     }
 
@@ -778,17 +773,12 @@ impl<'d, Extra> ParseInput for Input<'d, Extra> {
         T::parse(input)
     }
 
-    fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
-        match self.data()?.split_at_checked(n) {
-            Some((chunk, data)) => {
-                if chunk == c {
-                    self.data = Some(data);
-                    Ok(None)
-                } else {
-                    self.parse_inline().map(Some)
-                }
-            }
-            None => self.end_of_input(),
+    fn parse_compare<T: Parse<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
+        let data = self.parse_n(n)?;
+        if data == c {
+            Ok(None)
+        } else {
+            self.reparse(data).map(Some)
         }
     }
 
@@ -1418,7 +1408,7 @@ pub trait ParseInput: Sized {
         let data = self.parse_until_zero()?;
         self.reparse(data)
     }
-    fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>>;
+    fn parse_compare<T: Parse<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>>;
     fn parse_all(self) -> crate::Result<Self::Data>;
     fn empty(self) -> crate::Result<()>;
     fn non_empty(self) -> crate::Result<Option<Self>>;
