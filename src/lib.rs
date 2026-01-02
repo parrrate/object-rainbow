@@ -707,7 +707,7 @@ impl ParseInput for ReflessInput<'_> {
         match data.iter().enumerate().find(|(_, x)| **x == 0) {
             Some((at, _)) => {
                 let (chunk, data) = data.split_at(at);
-                self.data = Some(data);
+                self.data = Some(&data[1..]);
                 Ok(chunk)
             }
             None => self.end_of_input(),
