@@ -1035,7 +1035,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-encrypted"
-version = "0.0.0-a.3"
+version = "0.0.0-a.4"
 dependencies = [
  "anyhow",
  "chacha20poly1305",
