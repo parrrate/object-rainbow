@@ -60,6 +60,8 @@ pub enum Error {
     /// Extension type didn't match what we asked for. This might be turned into panic later.
     #[error("wrong extension type")]
     ExtensionType,
+    #[error("not implemented")]
+    Unimplemented,
 }
 
 impl Error {
