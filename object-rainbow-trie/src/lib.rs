@@ -1,9 +1,10 @@
 use std::{
     collections::BTreeMap,
     ops::{Bound, RangeBounds},
+    pin::pin,
 };
 
-use futures_util::{Stream, TryStreamExt};
+use futures_util::{Stream, TryStream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
     Fetch, Inline, Object, ObjectMarker, Parse, ParseSliceRefless, Point, ReflessObject, Tagged,
@@ -308,6 +309,17 @@ where
         self.range_stream(..)
             .try_fold(0u64, async |ctr, _| Ok(ctr.saturating_add(1)))
             .await
+    }
+
+    pub async fn from_stream<K: AsRef<[u8]>>(
+        stream: impl TryStream<Ok = (K, T), Error = object_rainbow::Error>,
+    ) -> object_rainbow::Result<Self> {
+        let mut trie = Self::default();
+        let mut stream = pin!(stream.into_stream());
+        while let Some((key, value)) = stream.try_next().await? {
+            trie.insert(key.as_ref(), value).await?;
+        }
+        Ok(trie)
     }
 }
 
