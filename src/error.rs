@@ -64,6 +64,8 @@ pub enum Error {
     ExtensionType,
     #[error("not implemented")]
     Unimplemented,
+    #[error("hash not found in the resolver")]
+    HashNotFound,
 }
 
 impl Error {
