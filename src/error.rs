@@ -55,7 +55,7 @@ pub enum Error {
     UnsupportedLength,
     /// Not UTF-8.
     #[error(transparent)]
-    Utf8(std::string::FromUtf8Error),
+    Utf8(#[from] std::string::FromUtf8Error),
     /// [`Resolve::extension`] (or related things) were unable to resolve the extension.
     #[error("unknown extension")]
     UnknownExtension,
