@@ -699,6 +699,21 @@ impl ParseInput for ReflessInput<'_> {
         }
     }
 
+    fn parse_until_zero<'a>(&mut self) -> crate::Result<&'a [u8]>
+    where
+        Self: 'a,
+    {
+        let data = self.data()?;
+        match data.iter().enumerate().find(|(_, x)| **x == 0) {
+            Some((at, _)) => {
+                let (chunk, data) = data.split_at(at);
+                self.data = Some(data);
+                Ok(chunk)
+            }
+            None => self.end_of_input(),
+        }
+    }
+
     fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
         let input = Self {
             data: Some(self.parse_n(n)?),
@@ -757,6 +772,13 @@ impl<Extra> ParseInput for Input<'_, Extra> {
         Self: 'a,
     {
         (**self).parse_n(n)
+    }
+
+    fn parse_until_zero<'a>(&mut self) -> crate::Result<&'a [u8]>
+    where
+        Self: 'a,
+    {
+        (**self).parse_until_zero()
     }
 
     fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
@@ -1403,6 +1425,9 @@ pub trait ParseInput: Sized {
     where
         Self: 'a;
     fn parse_n<'a>(&mut self, n: usize) -> crate::Result<&'a [u8]>
+    where
+        Self: 'a;
+    fn parse_until_zero<'a>(&mut self) -> crate::Result<&'a [u8]>
     where
         Self: 'a;
     fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T>;
