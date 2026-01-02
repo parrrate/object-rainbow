@@ -710,17 +710,8 @@ impl<'d> ParseInput for ReflessInput<'d> {
         }
     }
 
-    fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
-        let input = Self {
-            data: Some(self.parse_n(n)?),
-        };
-        T::parse(input)
-    }
-
-    fn parse_zero_terminated<T: Parse<Self>>(&mut self) -> crate::Result<T> {
-        let input = Self {
-            data: Some(self.parse_until_zero()?),
-        };
+    fn reparse<T: Parse<Self>>(&mut self, data: Self::Data) -> crate::Result<T> {
+        let input = Self { data: Some(data) };
         T::parse(input)
     }
 
@@ -777,23 +768,9 @@ impl<'d, Extra> ParseInput for Input<'d, Extra> {
         (**self).parse_until_zero()
     }
 
-    fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
+    fn reparse<T: Parse<Self>>(&mut self, data: Self::Data) -> crate::Result<T> {
         let input = Self {
-            refless: ReflessInput {
-                data: Some(self.parse_n(n)?),
-            },
-            resolve: self.resolve,
-            index: self.index,
-            extra: self.extra,
-        };
-        T::parse(input)
-    }
-
-    fn parse_zero_terminated<T: Parse<Self>>(&mut self) -> crate::Result<T> {
-        let input = Self {
-            refless: ReflessInput {
-                data: Some(self.parse_until_zero()?),
-            },
+            refless: ReflessInput { data: Some(data) },
             resolve: self.resolve,
             index: self.index,
             extra: self.extra,
@@ -1432,8 +1409,15 @@ pub trait ParseInput: Sized {
         Self: 'a;
     fn parse_n(&mut self, n: usize) -> crate::Result<Self::Data>;
     fn parse_until_zero(&mut self) -> crate::Result<Self::Data>;
-    fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T>;
-    fn parse_zero_terminated<T: Parse<Self>>(&mut self) -> crate::Result<T>;
+    fn reparse<T: Parse<Self>>(&mut self, data: Self::Data) -> crate::Result<T>;
+    fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
+        let data = self.parse_n(n)?;
+        self.reparse(data)
+    }
+    fn parse_zero_terminated<T: Parse<Self>>(&mut self) -> crate::Result<T> {
+        let data = self.parse_until_zero()?;
+        self.reparse(data)
+    }
     fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>>;
     fn parse_all(self) -> crate::Result<Self::Data>;
     fn empty(self) -> crate::Result<()>;
