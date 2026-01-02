@@ -387,6 +387,15 @@ where
             ))
             .and_then(async |(key, value)| Ok((K::parse_slice_refless(&key)?, value)))
     }
+
+    pub async fn from_stream(
+        stream: impl TryStream<Ok = (K, V), Error = object_rainbow::Error>,
+    ) -> object_rainbow::Result<Self> {
+        Ok(Self {
+            trie: Trie::from_stream(stream).await?,
+            key: Default::default(),
+        })
+    }
 }
 
 #[cfg(test)]
