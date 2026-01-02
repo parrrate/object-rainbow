@@ -1,3 +1,5 @@
+#![deny(unsafe_code)]
+
 extern crate self as object_rainbow;
 
 use std::{
