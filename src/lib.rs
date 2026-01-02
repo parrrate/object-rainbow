@@ -721,6 +721,13 @@ impl ParseInput for ReflessInput<'_> {
         T::parse(input)
     }
 
+    fn parse_zero_terminated<T: Parse<Self>>(&mut self) -> crate::Result<T> {
+        let input = Self {
+            data: Some(self.parse_until_zero()?),
+        };
+        T::parse(input)
+    }
+
     fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
         match self.data()?.split_at_checked(n) {
             Some((chunk, data)) => {
@@ -785,6 +792,18 @@ impl<Extra> ParseInput for Input<'_, Extra> {
         let input = Self {
             refless: ReflessInput {
                 data: Some(self.parse_n(n)?),
+            },
+            resolve: self.resolve,
+            index: self.index,
+            extra: self.extra,
+        };
+        T::parse(input)
+    }
+
+    fn parse_zero_terminated<T: Parse<Self>>(&mut self) -> crate::Result<T> {
+        let input = Self {
+            refless: ReflessInput {
+                data: Some(self.parse_until_zero()?),
             },
             resolve: self.resolve,
             index: self.index,
@@ -1431,6 +1450,7 @@ pub trait ParseInput: Sized {
     where
         Self: 'a;
     fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T>;
+    fn parse_zero_terminated<T: Parse<Self>>(&mut self) -> crate::Result<T>;
     fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>>;
     fn parse_all<'a>(self) -> crate::Result<&'a [u8]>
     where
