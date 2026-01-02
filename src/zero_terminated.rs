@@ -21,6 +21,14 @@ impl<T> Clone for Zt<T> {
     }
 }
 
+impl<T> Deref for Zt<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner.object
+    }
+}
+
 impl<T: ToOutput> ToOutput for Zt<T> {
     fn to_output(&self, output: &mut dyn Output) {
         self.inner.data.to_output(output);
