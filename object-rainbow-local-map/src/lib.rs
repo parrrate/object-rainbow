@@ -37,4 +37,8 @@ impl LocalMap {
             .get(&hash)
             .map(|Entry { topology, data }| (&**topology, &**data))
     }
+
+    pub fn contains(&self, hash: Hash) -> bool {
+        self.map.contains_key(&hash)
+    }
 }
