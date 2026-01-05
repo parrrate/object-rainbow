@@ -27,6 +27,9 @@ impl LocalMap {
         topology: Vec<Hash>,
         data: Vec<u8>,
     ) -> object_rainbow::Result<()> {
+        if self.contains(hash) {
+            return Ok(());
+        }
         let mut map = self.map.clone();
         let expected = ObjectHashes {
             tags: tags_hash,
