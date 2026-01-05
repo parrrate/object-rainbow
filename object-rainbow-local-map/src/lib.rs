@@ -56,6 +56,20 @@ impl LocalMap {
         Ok(())
     }
 
+    pub fn remove(&mut self, hash: Hash) -> Result<(), impl Iterator<Item = Hash>> {
+        if let Some(entry) = self.map.get(&hash)
+            && !entry.referenced_by.is_empty()
+        {
+            return Err(entry.referenced_by.clone().into_iter());
+        }
+        if let Some(Entry { inner, .. }) = self.map.remove(&hash) {
+            for referenced in &inner.topology {
+                self.map.get_mut(referenced).expect("unknown");
+            }
+        }
+        Ok(())
+    }
+
     pub fn get(&self, hash: Hash) -> Option<(&[Hash], &[u8])> {
         self.map
             .get(&hash)
