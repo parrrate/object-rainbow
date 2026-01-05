@@ -1432,9 +1432,9 @@ pub trait ParseInput: Sized {
         let mut state = Some(self);
         std::iter::from_fn(move || {
             let mut input = match state.take()?.non_empty() {
-                Ok(input) => input,
+                Ok(input) => input?,
                 Err(e) => return Some(Err(e)),
-            }?;
+            };
             let item = f(&mut input);
             state = Some(input);
             Some(item)
