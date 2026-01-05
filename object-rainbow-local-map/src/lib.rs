@@ -62,11 +62,16 @@ impl LocalMap {
         {
             return Err(entry.referenced_by.clone().into_iter());
         }
+        let mut map = self.map.clone();
         if let Some(Entry { inner, .. }) = self.map.remove(&hash) {
             for referenced in &inner.topology {
-                self.map.get_mut(referenced).expect("unknown");
+                map.get_mut(referenced)
+                    .expect("unknown")
+                    .referenced_by
+                    .remove(&hash);
             }
         }
+        self.map = map;
         Ok(())
     }
 
