@@ -53,8 +53,8 @@ impl<K, T> Clone for EncryptedInner<K, T> {
 
 type ResolutionIter<'a, K> = std::slice::Iter<'a, Point<Encrypted<K, Vec<u8>>>>;
 
-struct IterateResolution<'a, K, V> {
-    resolution: ResolutionIter<'a, K>,
+struct IterateResolution<'a, 'r, K, V> {
+    resolution: &'r mut ResolutionIter<'a, K>,
     visitor: &'a mut V,
 }
 
@@ -127,7 +127,7 @@ impl<K: Key, T: Traversible> Fetch for Visited<K, T> {
     }
 }
 
-impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, K, V> {
+impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, '_, K, V> {
     fn visit<T: Traversible>(&mut self, decrypted: &Point<T>) {
         let decrypted = decrypted.clone();
         let encrypted = self.resolution.next().expect("length mismatch").clone();
@@ -144,10 +144,12 @@ impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, K, V> {
 
 impl<K: Key, T: Topological> Topological for EncryptedInner<K, T> {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        let resolution = &mut self.resolution.iter();
         self.decrypted.0.accept_points(&mut IterateResolution {
-            resolution: self.resolution.iter(),
+            resolution,
             visitor,
         });
+        assert!(resolution.next().is_none());
     }
 
     fn point_count(&self) -> usize {
