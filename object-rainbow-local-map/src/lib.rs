@@ -1,10 +1,16 @@
+use std::sync::Arc;
+
 use imbl::HashMap;
 use object_rainbow::{Hash, ObjectHashes, ToOutput};
 
-#[derive(Clone)]
-struct Entry {
+struct EntryInner {
     topology: Vec<Hash>,
     data: Vec<u8>,
+}
+
+#[derive(Clone)]
+struct Entry {
+    inner: Arc<EntryInner>,
 }
 
 #[derive(Clone)]
@@ -29,14 +35,15 @@ impl LocalMap {
         if expected != hash {
             return Err(object_rainbow::Error::DataMismatch);
         }
-        self.map.insert(hash, Entry { topology, data });
+        let inner = Arc::new(EntryInner { topology, data });
+        self.map.insert(hash, Entry { inner });
         Ok(())
     }
 
     pub fn get(&self, hash: Hash) -> Option<(&[Hash], &[u8])> {
         self.map
             .get(&hash)
-            .map(|Entry { topology, data }| (&**topology, &**data))
+            .map(|entry| (&*entry.inner.topology, &*entry.inner.data))
     }
 
     pub fn contains(&self, hash: Hash) -> bool {
