@@ -15,7 +15,9 @@ use std::{
 use object_rainbow::{
     Address, ByteNode, FailFuture, Fetch, FetchBytes, Hash, Object, Output, Parse, ParseInput,
     ParseSliceExtra, PointInput, ReflessObject, Resolve, Singular, Tagged, ToOutput, Topological,
+    Traversible,
 };
+use object_rainbow_fetchall::fetchall;
 use object_rainbow_local_map::LocalMap;
 
 #[derive(Clone)]
@@ -235,7 +237,7 @@ impl ReflessObject for MarshalledRoot {}
 #[derive(Tagged)]
 pub struct Marshalled<T> {
     root: MarshalledRoot,
-    value: T,
+    object: T,
 }
 
 impl<T> ToOutput for Marshalled<T> {
@@ -250,15 +252,15 @@ impl<I: PointInput, T: Object<I::Extra>> Parse<I> for Marshalled<T> {
     fn parse(input: I) -> object_rainbow::Result<Self> {
         let extra = input.extra().clone();
         let root = input.parse::<MarshalledRoot>()?;
-        let value = T::parse_slice_extra(
+        let object = T::parse_slice_extra(
             root.marshalled.data()?,
             &root.marshalled.to_resolve(),
             &extra,
         )?;
-        if value.full_hash() != root.hash() {
+        if object.full_hash() != root.hash() {
             return Err(object_rainbow::Error::DataMismatch);
         }
-        Ok(Self { root, value })
+        Ok(Self { root, object })
     }
 }
 
@@ -276,11 +278,11 @@ impl<T: Send + Sync + Clone> Fetch for Marshalled<T> {
     type T = T;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
-        Box::pin(async move { Ok((self.value.clone(), self.root.marshalled.to_resolve())) })
+        Box::pin(async move { Ok((self.object.clone(), self.root.marshalled.to_resolve())) })
     }
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        Box::pin(async move { Ok(self.value.clone()) })
+        Box::pin(async move { Ok(self.object.clone()) })
     }
 }
 
@@ -291,3 +293,12 @@ impl<T: Send + Sync> Singular for Marshalled<T> {
 }
 
 impl<T: Object<Extra>, Extra: 'static + Clone> Object<Extra> for Marshalled<T> {}
+
+impl<T: Traversible + Clone> Marshalled<T> {
+    pub async fn new(object: T) -> object_rainbow::Result<Self> {
+        let point = object.clone().point();
+        let map = fetchall(&point).await?;
+        let root = marshall(&map, point.hash());
+        Ok(Self { root, object })
+    }
+}
