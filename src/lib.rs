@@ -962,7 +962,7 @@ pub trait Traversible: 'static + Sized + Send + Sync + FullHash {
 
 impl<T: 'static + Send + Sync + FullHash> Traversible for T {}
 
-pub trait Object<Extra: 'static = ()>: Traversible + for<'a> Parse<Input<'a, Extra>> {}
+pub trait Object<Extra = ()>: Traversible + for<'a> Parse<Input<'a, Extra>> {}
 
 pub struct Tags(pub &'static [&'static str], pub &'static [&'static Self]);
 
@@ -986,10 +986,7 @@ impl Tags {
     }
 }
 
-pub trait Inline<Extra: 'static = ()>:
-    Object<Extra> + for<'a> ParseInline<Input<'a, Extra>>
-{
-}
+pub trait Inline<Extra = ()>: Object<Extra> + for<'a> ParseInline<Input<'a, Extra>> {}
 
 impl<T: Traversible> Topological for Point<T> {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
