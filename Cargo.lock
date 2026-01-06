@@ -1043,7 +1043,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.24"
+version = "0.0.0-a.25"
 dependencies = [
  "anyhow",
  "futures-util",
@@ -1100,6 +1100,14 @@ version = "0.0.0-a.0"
 dependencies = [
  "imbl",
  "object-rainbow",
+]
+
+[[package]]
+name = "object-rainbow-marshall"
+version = "0.0.0-a.0"
+dependencies = [
+ "object-rainbow",
+ "object-rainbow-local-map",
 ]
 
 [[package]]
