@@ -6,7 +6,7 @@ use std::{
 use async_executor::Executor;
 use flume::Sender;
 use futures_channel::oneshot;
-use object_rainbow::{Fetch, Hash, Point, PointVisitor, Singular, Traversible};
+use object_rainbow::{Fetch, Hash, Point, PointVisitor, Singular, ToOutput, Traversible};
 use object_rainbow_local_map::LocalMap;
 
 type Dependency = Box<
@@ -43,7 +43,7 @@ impl<'v> PointVisitor for DependencyVisitor<'v> {
         if let btree_map::Entry::Vacant(e) = self.dependencies.entry(point.hash()) {
             let point = point.clone();
             e.insert(Box::new(move |context| {
-                Box::pin(async move { context.save_point(&point).await })
+                Box::pin(async move { context.save_object(&point.fetch().await?).await })
             }));
         }
         self.topology.push(point.hash());
@@ -51,10 +51,9 @@ impl<'v> PointVisitor for DependencyVisitor<'v> {
 }
 
 impl<'r> Context<'r> {
-    async fn save_point(&self, point: &Point<impl Traversible>) -> object_rainbow::Result<()> {
+    async fn save_object(&self, object: &impl Traversible) -> object_rainbow::Result<()> {
         let mut dependencies = BTreeMap::new();
         let mut topology = Vec::new();
-        let object = point.fetch().await?;
         object.accept_points(&mut DependencyVisitor {
             dependencies: &mut dependencies,
             topology: &mut topology,
@@ -75,10 +74,11 @@ impl<'r> Context<'r> {
         }
         {
             let (callback, wait) = oneshot::channel();
+            let hashes = object.hashes();
             self.request
                 .send_async(Request::End {
-                    hash: point.hash(),
-                    tags_hash: object.hashes().tags,
+                    hash: hashes.data_hash(),
+                    tags_hash: hashes.tags,
                     topology,
                     data: object.output(),
                     callback,
@@ -94,7 +94,7 @@ impl<'r> Context<'r> {
     }
 }
 
-pub async fn fetchall(point: &Point<impl Traversible>) -> object_rainbow::Result<LocalMap> {
+pub async fn fetchall(object: &impl Traversible) -> object_rainbow::Result<LocalMap> {
     let mut map = LocalMap::new();
     {
         let mut started = BTreeSet::new();
@@ -143,9 +143,9 @@ pub async fn fetchall(point: &Point<impl Traversible>) -> object_rainbow::Result
         });
         let _task = inner.spawn(outer.run(task));
         inner
-            .run(Context { request: &send }.save_point(point))
+            .run(Context { request: &send }.save_object(object))
             .await?;
     }
-    assert!(map.contains(point.hash()));
+    assert!(map.contains(object.full_hash()));
     Ok(map)
 }
