@@ -416,7 +416,7 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for RawPoint<T, Extra> {
             let (data, resolve) = self.inner.fetch.fetch_bytes().await?;
             let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
             if self.inner.hash != object.full_hash() {
-                Err(Error::DataMismatch)
+                Err(Error::FullHashMismatch)
             } else {
                 Ok((object, resolve))
             }
@@ -428,7 +428,7 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for RawPoint<T, Extra> {
             let (data, resolve) = self.inner.fetch.fetch_bytes().await?;
             let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
             if self.inner.hash != object.full_hash() {
-                Err(Error::DataMismatch)
+                Err(Error::FullHashMismatch)
             } else {
                 Ok(object)
             }
@@ -595,7 +595,7 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for ByAddress<T, Extra> {
             let (data, resolve) = self.fetch_bytes().await?;
             let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
             if self.inner.address.hash != object.full_hash() {
-                Err(Error::DataMismatch)
+                Err(Error::FullHashMismatch)
             } else {
                 Ok((object, resolve))
             }
@@ -607,7 +607,7 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for ByAddress<T, Extra> {
             let (data, resolve) = self.fetch_bytes().await?;
             let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
             if self.inner.address.hash != object.full_hash() {
-                Err(Error::DataMismatch)
+                Err(Error::FullHashMismatch)
             } else {
                 Ok(object)
             }

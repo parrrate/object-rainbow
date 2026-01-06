@@ -39,8 +39,8 @@ pub enum Error {
     #[error("hash resolution mismatch")]
     ResolutionMismatch,
     /// [`FullHash::full_hash`] doesn't match [`Singular::hash`].
-    #[error("data hash mismatch")]
-    DataMismatch,
+    #[error("full hash mismatch")]
+    FullHashMismatch,
     /// Discriminant out of range for an [`Enum`].
     #[error("discriminant overflow")]
     DiscriminantOverflow,
@@ -93,7 +93,7 @@ impl Error {
             Error::EndOfInput => ErrorKind::UnexpectedEof,
             Error::AddressOutOfBounds => ErrorKind::Other,
             Error::ResolutionMismatch => ErrorKind::InvalidData,
-            Error::DataMismatch => ErrorKind::InvalidData,
+            Error::FullHashMismatch => ErrorKind::InvalidData,
             Error::DiscriminantOverflow => ErrorKind::InvalidData,
             Error::Zero => ErrorKind::InvalidData,
             Error::OutOfBounds => ErrorKind::InvalidData,

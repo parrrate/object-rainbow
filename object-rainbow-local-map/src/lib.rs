@@ -42,7 +42,7 @@ impl LocalMap {
         }
         .data_hash();
         if expected != hash {
-            return Err(object_rainbow::Error::DataMismatch);
+            return Err(object_rainbow::Error::FullHashMismatch);
         }
         for referenced in &topology {
             map.get_mut(referenced)
