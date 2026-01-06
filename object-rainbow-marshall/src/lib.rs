@@ -13,8 +13,8 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, ByteNode, FailFuture, FetchBytes, Hash, Object, Output, Parse, ParseInput, Resolve,
-    Singular, Tagged, ToOutput, Topological,
+    Address, ByteNode, FailFuture, Fetch, FetchBytes, Hash, Object, Output, Parse, ParseInput,
+    ParseSliceExtra, PointInput, Resolve, Singular, Tagged, ToOutput, Topological,
 };
 use object_rainbow_local_map::LocalMap;
 
@@ -230,3 +230,46 @@ impl<I: ParseInput> Parse<I> for MarshalledRoot {
 }
 
 impl<E> Object<E> for MarshalledRoot {}
+
+pub struct Marshalled<T> {
+    root: MarshalledRoot,
+    value: T,
+}
+
+impl<I: PointInput, T: Object<I::Extra>> Parse<I> for Marshalled<T> {
+    fn parse(input: I) -> object_rainbow::Result<Self> {
+        let extra = input.extra().clone();
+        let root = input.parse::<MarshalledRoot>()?;
+        let value = T::parse_slice_extra(
+            root.marshalled.data()?,
+            &root.marshalled.to_resolve(),
+            &extra,
+        )?;
+        if value.full_hash() != root.hash() {
+            return Err(object_rainbow::Error::DataMismatch);
+        }
+        Ok(Self { root, value })
+    }
+}
+
+impl<T> FetchBytes for Marshalled<T> {
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
+        self.root.fetch_bytes()
+    }
+
+    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
+        self.root.fetch_data()
+    }
+}
+
+impl<T: Send + Sync + Clone> Fetch for Marshalled<T> {
+    type T = T;
+
+    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
+        Box::pin(async move { Ok((self.value.clone(), self.root.marshalled.to_resolve())) })
+    }
+
+    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
+        Box::pin(async move { Ok(self.value.clone()) })
+    }
+}
