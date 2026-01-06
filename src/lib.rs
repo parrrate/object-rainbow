@@ -1182,10 +1182,7 @@ impl<T: Traversible + Clone> Point<T> {
         })
     }
 
-    pub async fn fetch_ref<Extra: 'static + Send + Sync + Clone>(&mut self) -> crate::Result<&T>
-    where
-        T: Object<Extra> + Clone,
-    {
+    pub async fn fetch_ref(&mut self) -> crate::Result<&T> {
         self.prepare_yolo_origin().await?;
         Ok(self.origin.get().unwrap())
     }
