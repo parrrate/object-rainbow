@@ -13,7 +13,7 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, ByteNode, FailFuture, FetchBytes, Hash, Output, Resolve, Singular, ToOutput,
+    Address, ByteNode, FailFuture, FetchBytes, Hash, Output, Resolve, Singular, Tagged, ToOutput,
 };
 use object_rainbow_local_map::LocalMap;
 
@@ -213,3 +213,5 @@ impl ToOutput for MarshalledRoot {
         self.marshalled.data.to_output(output);
     }
 }
+
+impl Tagged for MarshalledRoot {}
