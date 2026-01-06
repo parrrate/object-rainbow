@@ -20,9 +20,9 @@ impl<A: Tagged, B: Tagged> Tagged for (A, B) {
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS]);
 }
 
-impl<Extra: 'static, A: Inline<Extra>, B: Object<Extra>> Object<Extra> for (A, B) {}
+impl<Extra, A: Inline<Extra>, B: Object<Extra>> Object<Extra> for (A, B) {}
 
-impl<Extra: 'static, A: Inline<Extra>, B: Inline<Extra>> Inline<Extra> for (A, B) {}
+impl<Extra, A: Inline<Extra>, B: Inline<Extra>> Inline<Extra> for (A, B) {}
 
 impl<A: ReflessInline, B: ReflessObject> ReflessObject for (A, B) {}
 
@@ -73,15 +73,9 @@ impl<A: Tagged, B: Tagged, C: Tagged> Tagged for (A, B, C) {
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS]);
 }
 
-impl<Extra: 'static, A: Inline<Extra>, B: Inline<Extra>, C: Object<Extra>> Object<Extra>
-    for (A, B, C)
-{
-}
+impl<Extra, A: Inline<Extra>, B: Inline<Extra>, C: Object<Extra>> Object<Extra> for (A, B, C) {}
 
-impl<Extra: 'static, A: Inline<Extra>, B: Inline<Extra>, C: Inline<Extra>> Inline<Extra>
-    for (A, B, C)
-{
-}
+impl<Extra, A: Inline<Extra>, B: Inline<Extra>, C: Inline<Extra>> Inline<Extra> for (A, B, C) {}
 
 impl<A: ReflessInline, B: ReflessInline, C: ReflessObject> ReflessObject for (A, B, C) {}
 
@@ -140,13 +134,13 @@ impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged> Tagged for (A, B, C, D) {
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS]);
 }
 
-impl<Extra: 'static, A: Inline<Extra>, B: Inline<Extra>, C: Inline<Extra>, D: Object<Extra>>
-    Object<Extra> for (A, B, C, D)
+impl<Extra, A: Inline<Extra>, B: Inline<Extra>, C: Inline<Extra>, D: Object<Extra>> Object<Extra>
+    for (A, B, C, D)
 {
 }
 
-impl<Extra: 'static, A: Inline<Extra>, B: Inline<Extra>, C: Inline<Extra>, D: Inline<Extra>>
-    Inline<Extra> for (A, B, C, D)
+impl<Extra, A: Inline<Extra>, B: Inline<Extra>, C: Inline<Extra>, D: Inline<Extra>> Inline<Extra>
+    for (A, B, C, D)
 {
 }
 
@@ -228,7 +222,7 @@ impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged> Tagged for (A, B, C,
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,
@@ -239,7 +233,7 @@ impl<
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,
@@ -350,7 +344,7 @@ impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged, F: Tagged> Tagged
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,
@@ -362,7 +356,7 @@ impl<
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,
@@ -522,7 +516,7 @@ impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged, F: Tagged, G: Tagged
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,
@@ -535,7 +529,7 @@ impl<
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,
@@ -730,7 +724,7 @@ impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged, F: Tagged, G: Tagged
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,
@@ -744,7 +738,7 @@ impl<
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,
@@ -966,7 +960,7 @@ impl<
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,
@@ -981,7 +975,7 @@ impl<
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,
@@ -1220,7 +1214,7 @@ impl<
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,
@@ -1236,7 +1230,7 @@ impl<
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,
@@ -1500,7 +1494,7 @@ impl<
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,
@@ -1517,7 +1511,7 @@ impl<
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,
@@ -1810,7 +1804,7 @@ impl<
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,
@@ -1828,7 +1822,7 @@ impl<
 }
 
 impl<
-    Extra: 'static,
+    Extra,
     A: Inline<Extra>,
     B: Inline<Extra>,
     C: Inline<Extra>,

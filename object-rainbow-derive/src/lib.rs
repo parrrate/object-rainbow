@@ -611,7 +611,7 @@ fn bounds_object(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
             ));
         }
     }
-    generics.params.push(parse_quote!(__E: 'static));
+    generics.params.push(parse_quote!(__E));
     Ok(generics)
 }
 
@@ -669,7 +669,7 @@ fn bounds_inline(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
             ));
         }
     }
-    generics.params.push(parse_quote!(__E: 'static));
+    generics.params.push(parse_quote!(__E));
     Ok(generics)
 }
 

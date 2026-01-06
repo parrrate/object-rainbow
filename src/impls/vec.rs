@@ -24,7 +24,7 @@ impl<T: Tagged> Tagged for Vec<T> {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: Inline<E>, E: 'static> Object<E> for Vec<T> {}
+impl<T: Inline<E>, E> Object<E> for Vec<T> {}
 impl<T: ReflessInline> ReflessObject for Vec<T> {}
 
 impl<T: ToOutput> ToOutput for VecDeque<T> {
@@ -51,5 +51,5 @@ impl<T: Tagged> Tagged for VecDeque<T> {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: Inline<E>, E: 'static> Object<E> for VecDeque<T> {}
+impl<T: Inline<E>, E> Object<E> for VecDeque<T> {}
 impl<T: ReflessInline> ReflessObject for VecDeque<T> {}

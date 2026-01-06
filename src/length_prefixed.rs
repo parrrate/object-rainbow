@@ -57,8 +57,8 @@ impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Lp<T> {
     }
 }
 
-impl<T: Object<Extra>, Extra: 'static> Object<Extra> for Lp<T> {}
-impl<T: Object<Extra>, Extra: 'static> Inline<Extra> for Lp<T> {}
+impl<T: Object<Extra>, Extra> Object<Extra> for Lp<T> {}
+impl<T: Object<Extra>, Extra> Inline<Extra> for Lp<T> {}
 impl<T: ReflessObject> ReflessObject for Lp<T> {}
 impl<T: ReflessObject> ReflessInline for Lp<T> {}
 
@@ -110,8 +110,8 @@ impl<I: ParseInput> ParseInline<I> for LpBytes {
 
 impl Tagged for LpBytes {}
 impl Topological for LpBytes {}
-impl<E: 'static> Object<E> for LpBytes {}
-impl<E: 'static> Inline<E> for LpBytes {}
+impl<E> Object<E> for LpBytes {}
+impl<E> Inline<E> for LpBytes {}
 impl ReflessObject for LpBytes {}
 impl ReflessInline for LpBytes {}
 
@@ -154,7 +154,7 @@ impl<I: ParseInput> ParseInline<I> for LpString {
 
 impl Tagged for LpString {}
 impl Topological for LpString {}
-impl<E: 'static> Object<E> for LpString {}
-impl<E: 'static> Inline<E> for LpString {}
+impl<E> Object<E> for LpString {}
+impl<E> Inline<E> for LpString {}
 impl ReflessObject for LpString {}
 impl ReflessInline for LpString {}

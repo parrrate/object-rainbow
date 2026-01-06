@@ -18,8 +18,8 @@ impl<I: ParseInput> ParseInline<I> for () {
 
 impl Topological for () {}
 impl Tagged for () {}
-impl<E: 'static> Object<E> for () {}
-impl<E: 'static> Inline<E> for () {}
+impl<E> Object<E> for () {}
+impl<E> Inline<E> for () {}
 impl ReflessObject for () {}
 impl ReflessInline for () {}
 

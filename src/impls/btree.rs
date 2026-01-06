@@ -24,7 +24,7 @@ impl<T: Tagged> Tagged for BTreeSet<T> {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: Inline<E> + Ord, E: 'static> Object<E> for BTreeSet<T> {}
+impl<T: Inline<E> + Ord, E> Object<E> for BTreeSet<T> {}
 
 impl<T: ReflessInline + Ord> ReflessObject for BTreeSet<T> {}
 
@@ -50,7 +50,7 @@ impl<K: Tagged, V: Tagged> Tagged for BTreeMap<K, V> {
     const TAGS: Tags = Tags(&[], &[&K::TAGS, &V::TAGS]);
 }
 
-impl<K: Inline<E> + Ord, V: Inline<E>, E: 'static> Object<E> for BTreeMap<K, V> {}
+impl<K: Inline<E> + Ord, V: Inline<E>, E> Object<E> for BTreeMap<K, V> {}
 
 impl<K: ReflessInline + Ord, V: ReflessInline> ReflessObject for BTreeMap<K, V> {}
 

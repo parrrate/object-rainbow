@@ -228,4 +228,4 @@ impl<I: ParseInput> Parse<I> for MarshalledRoot {
     }
 }
 
-impl<E: 'static> Object<E> for MarshalledRoot {}
+impl<E> Object<E> for MarshalledRoot {}
