@@ -11,6 +11,9 @@ use object_rainbow::{
     ToOutput, Topological, Traversible, length_prefixed::LpBytes,
 };
 
+#[cfg(feature = "serde")]
+mod serde;
+
 #[derive(ToOutput, Tagged, Topological, Parse, Clone)]
 #[topology(recursive)]
 pub struct Trie<T> {
