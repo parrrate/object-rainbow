@@ -236,6 +236,12 @@ pub struct Marshalled<T> {
     value: T,
 }
 
+impl<T> ToOutput for Marshalled<T> {
+    fn to_output(&self, output: &mut dyn Output) {
+        self.root.to_output(output);
+    }
+}
+
 impl<I: PointInput, T: Object<I::Extra>> Parse<I> for Marshalled<T> {
     fn parse(input: I) -> object_rainbow::Result<Self> {
         let extra = input.extra().clone();
