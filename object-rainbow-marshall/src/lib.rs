@@ -13,8 +13,8 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, ByteNode, FailFuture, FetchBytes, Hash, Output, Resolve, Singular, Tagged, ToOutput,
-    Topological,
+    Address, ByteNode, FailFuture, FetchBytes, Hash, Output, Parse, ParseInput, Resolve, Singular,
+    Tagged, ToOutput, Topological,
 };
 use object_rainbow_local_map::LocalMap;
 
@@ -211,9 +211,19 @@ pub fn marshall(map: &LocalMap, root: Hash) -> MarshalledRoot {
 
 impl ToOutput for MarshalledRoot {
     fn to_output(&self, output: &mut dyn Output) {
+        self.marshalled.root.to_output(output);
         self.marshalled.data.to_output(output);
     }
 }
 
 impl Tagged for MarshalledRoot {}
 impl Topological for MarshalledRoot {}
+
+impl<I: ParseInput> Parse<I> for MarshalledRoot {
+    fn parse(mut input: I) -> object_rainbow::Result<Self> {
+        let root = input.parse_inline()?;
+        let data = Arc::<[u8]>::from(input.parse_all()?.as_ref());
+        let marshalled = MarshalledInner { data, root, at: 0 };
+        Ok(Self { marshalled })
+    }
+}
