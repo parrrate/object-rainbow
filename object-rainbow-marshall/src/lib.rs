@@ -289,3 +289,5 @@ impl<T: Send + Sync> Singular for Marshalled<T> {
         self.root.hash()
     }
 }
+
+impl<T: Object<Extra>, Extra: 'static + Clone> Object<Extra> for Marshalled<T> {}
