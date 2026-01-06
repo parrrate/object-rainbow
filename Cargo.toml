@@ -37,10 +37,10 @@ exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 object-rainbow = { version = "0.0.0-a.25", path = "." }
 object-rainbow-fetchall = { version = "0.0.0-a.0", path = "object-rainbow-fetchall" }
 object-rainbow-local-map = { version = "0.0.0-a.0", path = "object-rainbow-local-map" }
-object-rainbow-store = { version = "0.0.0-a.2", path = "object-rainbow-store" }
+object-rainbow-store = { version = "0.0.0-a.3", path = "object-rainbow-store" }
 
 [dependencies]
-object-rainbow-derive = { version = "=0.0.0-a.7", path = "object-rainbow-derive" }
+object-rainbow-derive = { version = "=0.0.0-a.8", path = "object-rainbow-derive" }
 
 anyhow = "1.0.96"
 futures-util = { version = "0.3.31", default-features = false }
