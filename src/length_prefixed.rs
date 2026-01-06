@@ -6,6 +6,7 @@ use typenum::{Sum, U8, Unsigned, tarr};
 use crate::{numeric::Le, *};
 
 #[derive(Topological, Tagged, ParseAsInline, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Lp<T>(pub T);
 
 impl<T> Deref for Lp<T> {
