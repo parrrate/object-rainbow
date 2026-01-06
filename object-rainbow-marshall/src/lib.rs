@@ -16,7 +16,7 @@ use object_rainbow::{Address, ByteNode, FailFuture, FetchBytes, Hash, Resolve, S
 use object_rainbow_local_map::LocalMap;
 
 #[derive(Clone)]
-pub struct Marshalled {
+struct Marshalled {
     data: Arc<Vec<u8>>,
     root: Hash,
     at: usize,
@@ -144,7 +144,27 @@ impl ToBytes for usize {
     }
 }
 
-pub fn marshall(map: &LocalMap, root: Hash) -> Marshalled {
+pub struct MarshalledRoot {
+    marshalled: Marshalled,
+}
+
+impl FetchBytes for MarshalledRoot {
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
+        self.marshalled.fetch_bytes()
+    }
+
+    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
+        self.marshalled.fetch_data()
+    }
+}
+
+impl Singular for MarshalledRoot {
+    fn hash(&self) -> Hash {
+        self.marshalled.hash()
+    }
+}
+
+pub fn marshall(map: &LocalMap, root: Hash) -> MarshalledRoot {
     let mut data = Vec::<u8>::new();
     let mut locations = BTreeMap::<Hash, usize>::new();
     let mut started = BTreeSet::<Hash>::new();
@@ -182,5 +202,6 @@ pub fn marshall(map: &LocalMap, root: Hash) -> Marshalled {
     }
     assert_eq!(*locations.get(&root).unwrap(), 0);
     let data = Arc::new(data);
-    Marshalled { data, root, at: 0 }
+    let marshalled = Marshalled { data, root, at: 0 };
+    MarshalledRoot { marshalled }
 }
