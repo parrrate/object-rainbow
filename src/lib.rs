@@ -1555,22 +1555,22 @@ impl<T, F: Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
 
 impl<T: 'static + ToOutput> Point<T> {
     pub fn map<U>(self, map: impl 'static + Send + Sync + Fn(T) -> U) -> Point<U> {
-        self.map_fetch(|origin| Arc::new(Map { origin, map }))
+        self.map_fetch(|fetch| Arc::new(Map { fetch, map }))
     }
 }
 
 struct Map<T, F> {
-    origin: Arc<dyn Fetch<T = T>>,
+    fetch: Arc<dyn Fetch<T = T>>,
     map: F,
 }
 
 impl<T: ToOutput, F> FetchBytes for Map<T, F> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        Box::pin(self.origin.fetch_full().map_ok(|(x, r)| (x.output(), r)))
+        Box::pin(self.fetch.fetch_full().map_ok(|(x, r)| (x.output(), r)))
     }
 
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        Box::pin(self.origin.fetch().map_ok(|x| x.output()))
+        Box::pin(self.fetch.fetch().map_ok(|x| x.output()))
     }
 }
 
@@ -1578,11 +1578,11 @@ impl<T: ToOutput, F: Send + Sync + Map1<T>> Fetch for Map<T, F> {
     type T = F::U;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
-        Box::pin(self.origin.fetch_full().map_ok(|(x, r)| ((self.map)(x), r)))
+        Box::pin(self.fetch.fetch_full().map_ok(|(x, r)| ((self.map)(x), r)))
     }
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        Box::pin(self.origin.fetch().map_ok(&self.map))
+        Box::pin(self.fetch.fetch().map_ok(&self.map))
     }
 }
 
