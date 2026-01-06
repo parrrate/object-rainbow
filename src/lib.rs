@@ -1096,12 +1096,6 @@ impl Output for Vec<u8> {
     }
 }
 
-impl Output for Vec<&'static str> {
-    fn write(&mut self, data: &[u8]) {
-        let _ = data;
-    }
-}
-
 #[derive(Default)]
 struct HashOutput {
     hasher: Sha256,
