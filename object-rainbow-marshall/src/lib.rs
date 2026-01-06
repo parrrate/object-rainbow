@@ -13,8 +13,8 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, ByteNode, FailFuture, FetchBytes, Hash, Output, Parse, ParseInput, Resolve, Singular,
-    Tagged, ToOutput, Topological,
+    Address, ByteNode, FailFuture, FetchBytes, Hash, Object, Output, Parse, ParseInput, Resolve,
+    Singular, Tagged, ToOutput, Topological,
 };
 use object_rainbow_local_map::LocalMap;
 
@@ -227,3 +227,5 @@ impl<I: ParseInput> Parse<I> for MarshalledRoot {
         Ok(Self { marshalled })
     }
 }
+
+impl<E: 'static> Object<E> for MarshalledRoot {}
