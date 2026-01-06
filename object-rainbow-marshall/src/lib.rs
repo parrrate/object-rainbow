@@ -12,7 +12,9 @@ use std::{
     sync::Arc,
 };
 
-use object_rainbow::{Address, ByteNode, FailFuture, FetchBytes, Hash, Resolve, Singular};
+use object_rainbow::{
+    Address, ByteNode, FailFuture, FetchBytes, Hash, Output, Resolve, Singular, ToOutput,
+};
 use object_rainbow_local_map::LocalMap;
 
 #[derive(Clone)]
@@ -204,4 +206,10 @@ pub fn marshall(map: &LocalMap, root: Hash) -> MarshalledRoot {
     let data = Arc::new(data);
     let marshalled = MarshalledInner { data, root, at: 0 };
     MarshalledRoot { marshalled }
+}
+
+impl ToOutput for MarshalledRoot {
+    fn to_output(&self, output: &mut dyn Output) {
+        self.marshalled.data.to_output(output);
+    }
 }
