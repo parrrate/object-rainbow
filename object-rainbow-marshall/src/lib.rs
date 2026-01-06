@@ -244,6 +244,8 @@ impl<T> ToOutput for Marshalled<T> {
     }
 }
 
+impl<T> Topological for Marshalled<T> {}
+
 impl<I: PointInput, T: Object<I::Extra>> Parse<I> for Marshalled<T> {
     fn parse(input: I) -> object_rainbow::Result<Self> {
         let extra = input.extra().clone();
