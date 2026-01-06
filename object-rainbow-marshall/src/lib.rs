@@ -147,6 +147,7 @@ impl ToBytes for usize {
     }
 }
 
+#[derive(Clone)]
 pub struct MarshalledRoot {
     marshalled: MarshalledInner,
 }
