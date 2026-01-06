@@ -127,8 +127,4 @@ impl Resolve for LocalMap {
     fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>> {
         Box::pin(self.resolve_bytes(address))
     }
-
-    fn name(&self) -> &str {
-        "local map"
-    }
 }

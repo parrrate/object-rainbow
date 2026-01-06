@@ -115,10 +115,6 @@ impl Resolve for MarshalledInner {
             Ok(data)
         })
     }
-
-    fn name(&self) -> &str {
-        "marshalled"
-    }
 }
 
 impl Singular for MarshalledInner {

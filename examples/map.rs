@@ -95,10 +95,6 @@ impl Resolve for MapResolver {
     fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>> {
         Box::pin(ready(self.resolve_bytes(address)))
     }
-
-    fn name(&self) -> &str {
-        "map resolver"
-    }
 }
 
 async fn iterate<T: Object>(point: Point<T>) -> anyhow::Result<Point<T>> {

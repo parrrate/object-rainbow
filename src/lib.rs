@@ -177,8 +177,6 @@ pub trait Resolve: Send + Sync + AsAny {
         let _ = typeid;
         Err(Error::UnknownExtension)
     }
-    /// Self-identification of the resolver type.
-    fn name(&self) -> &str;
 }
 
 pub trait FetchBytes: AsAny {
@@ -1281,10 +1279,6 @@ impl Resolve for ByTopology {
             .map_err(ready)
             .map_err(Box::pin)
             .unwrap_or_else(|x| x)
-    }
-
-    fn name(&self) -> &str {
-        "by topology"
     }
 }
 

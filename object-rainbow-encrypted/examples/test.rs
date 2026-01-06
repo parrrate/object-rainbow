@@ -125,10 +125,6 @@ impl Resolve for MapResolver {
             None => Err(object_rainbow::Error::HashNotFound),
         }))
     }
-
-    fn name(&self) -> &str {
-        "map resolver"
-    }
 }
 
 async fn iterate<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(

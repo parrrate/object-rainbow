@@ -53,10 +53,6 @@ impl<S: 'static + Send + RainbowStore> Resolve for StoreResolve<S> {
             Ok(bytes)
         })
     }
-
-    fn name(&self) -> &str {
-        self.store.name()
-    }
 }
 
 pub trait RainbowStore: 'static + Send + Sync + Clone {
@@ -117,7 +113,6 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
     fn contains(&self, hash: Hash) -> impl RainbowFuture<T = bool>;
     fn fetch(&self, hash: Hash)
     -> impl RainbowFuture<T = impl 'static + Send + Sync + AsRef<[u8]>>;
-    fn name(&self) -> &str;
 }
 
 pub trait RainbowStoreMut: RainbowStore {
