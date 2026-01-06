@@ -279,3 +279,9 @@ impl<T: Send + Sync + Clone> Fetch for Marshalled<T> {
         Box::pin(async move { Ok(self.value.clone()) })
     }
 }
+
+impl<T: Send + Sync> Singular for Marshalled<T> {
+    fn hash(&self) -> Hash {
+        self.root.hash()
+    }
+}
