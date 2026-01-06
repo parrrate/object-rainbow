@@ -1153,7 +1153,7 @@ impl<T> Point<T> {
 
 impl<T: Traversible + Clone> Point<T> {
     pub fn from_object(object: T) -> Self {
-        Self::from_fetch(object.full_hash(), Arc::new(LocalOrigin { object }))
+        Self::from_fetch(object.full_hash(), Arc::new(LocalFetch { object }))
     }
 
     fn yolo_mut(&mut self) -> bool {
@@ -1164,7 +1164,7 @@ impl<T: Traversible + Clone> Point<T> {
     async fn prepare_yolo_origin(&mut self) -> crate::Result<()> {
         if !self.yolo_mut() {
             let object = self.fetch.fetch().await?;
-            self.fetch = Arc::new(LocalOrigin { object });
+            self.fetch = Arc::new(LocalFetch { object });
         }
         Ok(())
     }
@@ -1186,11 +1186,11 @@ impl<T: Traversible + Clone> Point<T> {
     }
 }
 
-struct LocalOrigin<T> {
+struct LocalFetch<T> {
     object: T,
 }
 
-impl<T> Deref for LocalOrigin<T> {
+impl<T> Deref for LocalFetch<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -1198,13 +1198,13 @@ impl<T> Deref for LocalOrigin<T> {
     }
 }
 
-impl<T> DerefMut for LocalOrigin<T> {
+impl<T> DerefMut for LocalFetch<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.object
     }
 }
 
-impl<T: Traversible + Clone> Fetch for LocalOrigin<T> {
+impl<T: Traversible + Clone> Fetch for LocalFetch<T> {
     type T = T;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
@@ -1224,7 +1224,7 @@ impl<T: Traversible + Clone> Fetch for LocalOrigin<T> {
     }
 }
 
-impl<T: Traversible + Clone> FetchBytes for LocalOrigin<T> {
+impl<T: Traversible + Clone> FetchBytes for LocalFetch<T> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         Box::pin(ready(Ok((self.object.output(), self.object.to_resolve()))))
     }
