@@ -414,6 +414,12 @@ impl<K, T> FetchBytes for Untyped<K, T> {
     }
 }
 
+impl<K: Send + Sync, T> Singular for Untyped<K, T> {
+    fn hash(&self) -> Hash {
+        self.encrypted.hash()
+    }
+}
+
 impl<K: Key, T: FullHash> Fetch for Untyped<K, T> {
     type T = Encrypted<K, Vec<u8>>;
 
