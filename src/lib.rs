@@ -168,6 +168,10 @@ pub trait Resolve: Send + Sync + AsAny {
     /// Resolve the address. For an [`Object`], this is what gets used as [`PointInput`].
     fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode>;
     fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>>;
+    fn try_resolve_local(&self, address: Address) -> Result<Option<ByteNode>> {
+        let _ = address;
+        Ok(None)
+    }
     /// Get a dynamic extension for a specific [`Address`].
     fn resolve_extension(&self, address: Address, typeid: TypeId) -> crate::Result<&dyn Any> {
         let _ = address;
