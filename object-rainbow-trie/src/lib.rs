@@ -31,6 +31,51 @@ impl<T> Default for Trie<T> {
     }
 }
 
+impl<T> Trie<T> {
+    fn c_get_mut(&mut self, key: u8) -> Option<&mut Point<(LpBytes, Self)>> {
+        self.children.get_mut(&key)
+    }
+
+    fn c_get(&self, key: u8) -> Option<&Point<(LpBytes, Self)>> {
+        self.children.get(&key)
+    }
+
+    fn c_insert(&mut self, key: u8, point: Point<(LpBytes, Self)>) {
+        self.children.insert(key, point);
+    }
+
+    fn c_empty(&self) -> bool {
+        self.children.is_empty()
+    }
+
+    fn c_len(&self) -> usize {
+        self.children.len()
+    }
+
+    fn c_remove(&mut self, key: u8) {
+        self.children.remove(&key);
+    }
+
+    fn c_range(
+        &self,
+        min_inclusive: u8,
+        max_inclusive: u8,
+    ) -> impl Iterator<Item = (&u8, &Point<(LpBytes, Self)>)> {
+        self.children.range(min_inclusive..=max_inclusive)
+    }
+
+    fn c_pop_first(&mut self) -> Option<(u8, Point<(LpBytes, Self)>)> {
+        self.children.pop_first()
+    }
+
+    fn from_value(value: T) -> Self {
+        Self {
+            value: Some(value),
+            children: Default::default(),
+        }
+    }
+}
+
 impl<T: 'static + Send + Sync + Clone> Trie<T>
 where
     Option<T>: Traversible,
@@ -39,7 +84,7 @@ where
         let Some((first, key)) = key.split_first() else {
             return Ok(self.value.clone());
         };
-        let Some(point) = self.children.get(first) else {
+        let Some(point) = self.c_get(*first) else {
             return Ok(None);
         };
         let (prefix, trie) = point.fetch().await?;
@@ -53,17 +98,10 @@ where
         let Some((first, key)) = key.split_first() else {
             return Ok(self.value.replace(value));
         };
-        let Some(point) = self.children.get_mut(first) else {
-            self.children.insert(
+        let Some(point) = self.c_get_mut(*first) else {
+            self.c_insert(
                 *first,
-                (
-                    LpBytes(key.into()),
-                    Self {
-                        value: Some(value),
-                        children: Default::default(),
-                    },
-                )
-                    .point(),
+                (LpBytes(key.into()), Self::from_value(value)).point(),
             );
             return Ok(None);
         };
@@ -72,32 +110,22 @@ where
             return Box::pin(trie.insert(key, value)).await;
         }
         if let Some(suffix) = prefix.strip_prefix(key) {
-            let child = std::mem::replace(
-                trie,
-                Self {
-                    value: Some(value),
-                    children: Default::default(),
-                },
-            );
+            let child = std::mem::replace(trie, Self::from_value(value));
             let (first, suffix) = suffix.split_first().expect("must be at least 1");
-            trie.children
-                .insert(*first, (LpBytes(suffix.into()), child).point());
+            trie.c_insert(*first, (LpBytes(suffix.into()), child).point());
             prefix.0.truncate(key.len());
         } else {
             let common = prefix.iter().zip(key).take_while(|(a, b)| a == b).count();
             let child = std::mem::take(trie);
-            trie.children.insert(
+            trie.c_insert(
                 prefix[common],
                 (LpBytes(prefix[common + 1..].to_vec()), child).point(),
             );
-            trie.children.insert(
+            trie.c_insert(
                 key[common],
                 (
                     LpBytes(prefix[common + 1..].to_vec()),
-                    Self {
-                        value: Some(value),
-                        children: Default::default(),
-                    },
+                    Self::from_value(value),
                 )
                     .point(),
             );
@@ -107,7 +135,7 @@ where
     }
 
     pub fn is_empty(&self) -> bool {
-        self.children.is_empty() && self.value.is_none()
+        self.c_empty() && self.value.is_none()
     }
 
     pub async fn remove(&mut self, key: &[u8]) -> object_rainbow::Result<Option<T>> {
@@ -115,7 +143,7 @@ where
             return Ok(self.value.take());
         };
         let (item, is_empty) = {
-            let Some(point) = self.children.get_mut(first) else {
+            let Some(point) = self.c_get_mut(*first) else {
                 return Ok(None);
             };
             let (prefix, trie) = &mut *point.fetch_mut().await?;
@@ -124,8 +152,8 @@ where
             };
             let item = Box::pin(trie.remove(key)).await?;
             if trie.value.is_none()
-                && trie.children.len() < 2
-                && let Some((first, point)) = trie.children.pop_first()
+                && trie.c_len() < 2
+                && let Some((first, point)) = trie.c_pop_first()
             {
                 let (suffix, child) = point.fetch().await?;
                 prefix.push(first);
@@ -136,7 +164,7 @@ where
             (item, trie.is_empty())
         };
         if is_empty {
-            self.children.remove(first);
+            self.c_remove(*first);
         }
         Ok(item)
     }
@@ -150,7 +178,7 @@ where
             co.yield_((context.clone(), value)).await;
         }
         let len = context.len();
-        for (first, point) in &self.children {
+        for (first, point) in self.c_range(u8::MIN, u8::MAX) {
             {
                 context.push(*first);
                 let (prefix, trie) = point.fetch().await?;
@@ -172,7 +200,7 @@ where
             self.yield_all(context, co).await?;
             return Ok(());
         };
-        let Some(point) = self.children.get(first) else {
+        let Some(point) = self.c_get(*first) else {
             return Ok(());
         };
         let len = context.len();
@@ -229,7 +257,7 @@ where
             Bound::Unbounded => 255,
         };
         let len = context.len();
-        for (first, point) in self.children.range(min..=max) {
+        for (first, point) in self.c_range(min, max) {
             'done: {
                 context.push(*first);
                 let (prefix, trie) = point.fetch().await?;
