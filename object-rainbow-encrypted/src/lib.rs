@@ -427,6 +427,14 @@ impl<K: Key, T: FullHash> Fetch for Untyped<K, T> {
         })
     }
 
+    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
+        let Some((data, resolve)) = self.fetch_bytes_local()? else {
+            return Ok(None);
+        };
+        let encrypted = Self::T::parse_slice_extra(&data, &resolve, &self.key)?;
+        Ok(Some((encrypted, resolve)))
+    }
+
     fn fetch_local(&self) -> Option<Self::T> {
         let Encrypted {
             key,
