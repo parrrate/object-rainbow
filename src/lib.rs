@@ -1352,6 +1352,18 @@ impl Resolve for ByTopology {
             .map_err(Box::pin)
             .unwrap_or_else(|x| x)
     }
+
+    fn try_resolve_local(&self, address: Address) -> Result<Option<ByteNode>> {
+        let point = self
+            .topology
+            .get(address.index)
+            .ok_or(Error::AddressOutOfBounds)?;
+        if point.hash() != address.hash {
+            Err(Error::ResolutionMismatch)
+        } else {
+            point.fetch_bytes_local()
+        }
+    }
 }
 
 impl<T: FullHash> Fetch for Point<T> {
