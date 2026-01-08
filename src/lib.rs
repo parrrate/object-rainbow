@@ -1027,7 +1027,7 @@ pub struct ObjectHashes {
     pub data: Hash,
 }
 
-pub trait FullHash: ToOutput + Topological + Tagged {
+pub trait FullHash: ToOutput + ListPoints + Tagged {
     fn hashes(&self) -> ObjectHashes {
         ObjectHashes {
             tags: Self::HASH,
@@ -1041,9 +1041,9 @@ pub trait FullHash: ToOutput + Topological + Tagged {
     }
 }
 
-impl<T: ?Sized + ToOutput + Topological + Tagged> FullHash for T {}
+impl<T: ?Sized + ToOutput + ListPoints + Tagged> FullHash for T {}
 
-pub trait Traversible: 'static + Sized + Send + Sync + FullHash {
+pub trait Traversible: 'static + Sized + Send + Sync + FullHash + Topological {
     fn to_resolve(&self) -> Arc<dyn Resolve> {
         Arc::new(ByTopology {
             topology: self.topology(),
@@ -1058,7 +1058,7 @@ pub trait Traversible: 'static + Sized + Send + Sync + FullHash {
     }
 }
 
-impl<T: 'static + Send + Sync + FullHash> Traversible for T {}
+impl<T: 'static + Send + Sync + FullHash + Topological> Traversible for T {}
 
 pub trait Object<Extra = ()>: Traversible + for<'a> Parse<Input<'a, Extra>> {}
 
