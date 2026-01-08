@@ -134,8 +134,38 @@ impl<K: Key, T: Traversible> Fetch for Visited<K, T> {
         })
     }
 
+    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
+        let Some((
+            Encrypted {
+                key,
+                inner:
+                    EncryptedInner {
+                        resolution,
+                        decrypted: _,
+                    },
+            },
+            resolve,
+        )) = self.encrypted.try_fetch_local()?
+        else {
+            return Ok(None);
+        };
+        let Some((decrypted, _)) = self.decrypted.try_fetch_local()? else {
+            return Ok(None);
+        };
+        let decrypted = Unkeyed(Arc::new(decrypted));
+        Ok(Some((
+            Encrypted {
+                key,
+                inner: EncryptedInner {
+                    resolution,
+                    decrypted,
+                },
+            },
+            resolve,
+        )))
+    }
+
     fn fetch_local(&self) -> Option<Self::T> {
-        let decrypted = Unkeyed(Arc::new(self.decrypted.fetch_local()?));
         let Encrypted {
             key,
             inner:
@@ -144,6 +174,7 @@ impl<K: Key, T: Traversible> Fetch for Visited<K, T> {
                     decrypted: _,
                 },
         } = self.encrypted.fetch_local()?;
+        let decrypted = Unkeyed(Arc::new(self.decrypted.fetch_local()?));
         Some(Encrypted {
             key,
             inner: EncryptedInner {
