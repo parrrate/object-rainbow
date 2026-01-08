@@ -125,6 +125,25 @@ impl<K: Key, T: Traversible> Fetch for Visited<K, T> {
             })
         })
     }
+
+    fn fetch_local(&self) -> Option<Self::T> {
+        let decrypted = Unkeyed(Arc::new(self.decrypted.fetch_local()?));
+        let Encrypted {
+            key,
+            inner:
+                EncryptedInner {
+                    resolution,
+                    decrypted: _,
+                },
+        } = self.encrypted.fetch_local()?;
+        Some(Encrypted {
+            key,
+            inner: EncryptedInner {
+                resolution,
+                decrypted,
+            },
+        })
+    }
 }
 
 impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, '_, K, V> {
