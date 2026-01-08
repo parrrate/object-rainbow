@@ -620,6 +620,10 @@ impl<T, Extra> FetchBytes for ByAddress<T, Extra> {
         self.inner.fetch_data()
     }
 
+    fn fetch_bytes_local(&self) -> Result<Option<ByteNode>> {
+        self.inner.fetch_bytes_local()
+    }
+
     fn as_inner(&self) -> Option<&dyn Any> {
         Some(&self.inner)
     }
