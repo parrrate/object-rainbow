@@ -647,6 +647,12 @@ impl<T, Extra> FetchBytes for ByAddress<T, Extra> {
     }
 }
 
+impl<T, Extra: Send + Sync> Singular for ByAddress<T, Extra> {
+    fn hash(&self) -> Hash {
+        self.inner.hash()
+    }
+}
+
 impl<T: Object<Extra>, Extra: Send + Sync> Fetch for ByAddress<T, Extra> {
     type T = T;
 
