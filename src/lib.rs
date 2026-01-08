@@ -89,8 +89,10 @@ impl<I: PointInput> ParseInline<I> for Address {
 /// Fallible future type yielding either `T` or [`Error`].
 pub type FailFuture<'a, T> = Pin<Box<dyn 'a + Send + Future<Output = Result<T>>>>;
 
+pub type Node<T> = (T, Arc<dyn Resolve>);
+
 /// Returned by [`Resolve`] and [`FetchBytes`]. Represents traversal through the object graph.
-pub type ByteNode = (Vec<u8>, Arc<dyn Resolve>);
+pub type ByteNode = Node<Vec<u8>>;
 
 trait FromInner {
     type Inner: 'static + Clone;
@@ -192,7 +194,7 @@ pub trait FetchBytes: AsAny {
 
 pub trait Fetch: Send + Sync + FetchBytes {
     type T;
-    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)>;
+    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>>;
     fn fetch(&'_ self) -> FailFuture<'_, Self::T>;
     fn fetch_local(&self) -> Option<Self::T> {
         None
@@ -425,7 +427,7 @@ impl<T, Extra> FetchBytes for RawPoint<T, Extra> {
 impl<T: Object<Extra>, Extra: Send + Sync> Fetch for RawPoint<T, Extra> {
     type T = T;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
+    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
         Box::pin(async {
             let (data, resolve) = self.inner.fetch.fetch_bytes().await?;
             let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
@@ -604,7 +606,7 @@ impl<T, Extra> FetchBytes for ByAddress<T, Extra> {
 impl<T: Object<Extra>, Extra: Send + Sync> Fetch for ByAddress<T, Extra> {
     type T = T;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
+    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
             let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
@@ -1239,7 +1241,7 @@ impl<T> DerefMut for LocalFetch<T> {
 impl<T: Traversible + Clone> Fetch for LocalFetch<T> {
     type T = T;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
+    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
         Box::pin(ready(Ok((self.object.clone(), self.object.to_resolve()))))
     }
 
@@ -1325,7 +1327,7 @@ impl Resolve for ByTopology {
 impl<T: FullHash> Fetch for Point<T> {
     type T = T;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
+    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
         self.fetch.fetch_full()
     }
 
@@ -1592,7 +1594,7 @@ impl<T, U, F: Fn(T) -> U> Map1<T> for F {
 impl<T, F: Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
     type T = F::U;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
+    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
         Box::pin(self.fetch.fetch_full().map_ok(|(x, r)| ((self.map)(x), r)))
     }
 

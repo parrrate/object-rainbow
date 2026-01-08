@@ -14,9 +14,9 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, ByteNode, FailFuture, Fetch, FetchBytes, Hash, Object, Output, Parse, ParseInput,
-    ParseSliceExtra, PointInput, ReflessObject, Resolve, Singular, Tagged, ToOutput, Topological,
-    Traversible,
+    Address, ByteNode, FailFuture, Fetch, FetchBytes, Hash, Node, Object, Output, Parse,
+    ParseInput, ParseSliceExtra, PointInput, ReflessObject, Resolve, Singular, Tagged, ToOutput,
+    Topological, Traversible,
 };
 use object_rainbow_fetchall::fetchall;
 use object_rainbow_local_map::LocalMap;
@@ -278,7 +278,7 @@ impl<T: ToOutput> FetchBytes for Marshalled<T> {
 impl<T: Send + Sync + Clone + ToOutput> Fetch for Marshalled<T> {
     type T = T;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
+    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
         Box::pin(async move { Ok((self.object.clone(), self.root.marshalled.to_resolve())) })
     }
 
