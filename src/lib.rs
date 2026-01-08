@@ -364,9 +364,11 @@ impl<T, Extra> ListPoints for RawPoint<T, Extra> {
     }
 }
 
-impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Topological for RawPoint<T, Extra> {
+impl<T: 'static + Traversible, Extra: 'static + Send + Sync + Clone + ExtraFor<T>> Topological
+    for RawPoint<T, Extra>
+{
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        visitor.visit(&self.clone().point());
+        visitor.visit(&self.clone().into_point());
     }
 }
 
@@ -417,8 +419,8 @@ impl<T, Extra: 'static + Clone> RawPoint<T, Extra> {
     }
 }
 
-impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> RawPoint<T, Extra> {
-    pub fn point(self) -> Point<T> {
+impl<T: 'static + FullHash, Extra: 'static + Send + Sync + ExtraFor<T>> RawPoint<T, Extra> {
+    pub fn into_point(self) -> Point<T> {
         Point::from_fetch(self.inner.hash, Arc::new(self))
     }
 }
@@ -463,13 +465,13 @@ impl<T, Extra> FetchBytes for RawPoint<T, Extra> {
     }
 }
 
-impl<T: Object<Extra>, Extra: Send + Sync> Fetch for RawPoint<T, Extra> {
+impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra> {
     type T = T;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
         Box::pin(async {
             let (data, resolve) = self.inner.fetch.fetch_bytes().await?;
-            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
+            let object = self.extra.0.parse(&data, &resolve)?;
             if self.inner.hash != object.full_hash() {
                 Err(Error::FullHashMismatch)
             } else {
@@ -481,7 +483,7 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for RawPoint<T, Extra> {
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
             let (data, resolve) = self.inner.fetch.fetch_bytes().await?;
-            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
+            let object = self.extra.0.parse(&data, &resolve)?;
             if self.inner.hash != object.full_hash() {
                 Err(Error::FullHashMismatch)
             } else {
@@ -494,7 +496,7 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for RawPoint<T, Extra> {
         let Some((data, resolve)) = self.inner.fetch.fetch_bytes_local()? else {
             return Ok(None);
         };
-        let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
+        let object = self.extra.0.parse(&data, &resolve)?;
         if self.inner.hash != object.full_hash() {
             Err(Error::FullHashMismatch)
         } else {
