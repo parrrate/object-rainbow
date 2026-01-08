@@ -268,6 +268,30 @@ impl<K: Key> Resolve for Decrypt<K> {
             Ok(data)
         })
     }
+
+    fn try_resolve_local(&self, address: Address) -> object_rainbow::Result<Option<ByteNode>> {
+        let Some((
+            Encrypted {
+                key: _,
+                inner:
+                    EncryptedInner {
+                        resolution,
+                        decrypted,
+                    },
+            },
+            _,
+        )) = self
+            .resolution
+            .get(address.index)
+            .ok_or(Error::AddressOutOfBounds)?
+            .clone()
+            .try_fetch_local()?
+        else {
+            return Ok(None);
+        };
+        let data = Arc::unwrap_or_clone(decrypted.0);
+        Ok(Some((data, Arc::new(Decrypt { resolution }) as _)))
+    }
 }
 
 impl<
