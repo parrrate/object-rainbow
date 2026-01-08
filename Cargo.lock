@@ -1132,7 +1132,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-marshall"
-version = "0.0.0-a.1"
+version = "0.0.0-a.2"
 dependencies = [
  "object-rainbow",
  "object-rainbow-fetchall",
