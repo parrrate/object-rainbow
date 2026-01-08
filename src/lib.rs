@@ -1575,6 +1575,10 @@ impl<T, F> FetchBytes for MapEquivalent<T, F> {
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
         self.fetch.fetch_data()
     }
+
+    fn fetch_data_local(&self) -> Option<Vec<u8>> {
+        self.fetch.fetch_data_local()
+    }
 }
 
 trait Map1<T>: Fn(T) -> Self::U {
