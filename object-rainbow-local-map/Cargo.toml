@@ -1,6 +1,6 @@
 [package]
 name = "object-rainbow-local-map"
-version = "0.0.0-a.0"
+version = "0.0.0-a.1"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
