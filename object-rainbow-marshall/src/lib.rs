@@ -103,6 +103,10 @@ impl FetchBytes for MarshalledInner {
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
         Box::pin(async move { self.data_vec() })
     }
+
+    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
+        Ok(Some((self.data_vec()?, self.to_resolve())))
+    }
 }
 
 impl Resolve for MarshalledInner {
