@@ -1237,6 +1237,10 @@ impl<T> Point<T> {
     pub fn get(&self) -> Option<&T> {
         self.fetch.get()
     }
+
+    pub fn try_fetch_local(&self) -> Result<Option<Node<T>>> {
+        self.fetch.try_fetch_local()
+    }
 }
 
 impl<T: Traversible + Clone> Point<T> {
