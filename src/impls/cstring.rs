@@ -30,8 +30,6 @@ impl<I: ParseInput> ParseInline<I> for CString {
     }
 }
 
-impl<E> Object<E> for CString {}
-impl<E> Inline<E> for CString {}
 impl ReflessObject for CString {}
 impl ReflessInline for CString {}
 

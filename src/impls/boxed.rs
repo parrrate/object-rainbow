@@ -47,8 +47,6 @@ impl<T: ?Sized + Tagged> Tagged for Box<T> {
     const HASH: Hash = T::HASH;
 }
 
-impl<T: Object<E>, E> Object<E> for Box<T> {}
-impl<T: Inline<E>, E> Inline<E> for Box<T> {}
 impl<T: ReflessObject> ReflessObject for Box<T> {}
 impl<T: ReflessInline> ReflessInline for Box<T> {}
 

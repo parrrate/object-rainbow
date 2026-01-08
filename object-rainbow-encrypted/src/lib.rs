@@ -391,11 +391,6 @@ impl<
 
 impl<K, T> Tagged for Encrypted<K, T> {}
 
-impl<K: Key, T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Object<WithKey<K, Extra>>
-    for Encrypted<K, T>
-{
-}
-
 type Extracted<K> = Vec<
     std::pin::Pin<
         Box<dyn Future<Output = Result<Point<Encrypted<K, Vec<u8>>>, Error>> + Send + 'static>,

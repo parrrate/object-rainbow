@@ -19,8 +19,6 @@ impl<I: ParseInput> ParseInline<I> for () {
 impl ListPoints for () {}
 impl Topological for () {}
 impl Tagged for () {}
-impl<E> Object<E> for () {}
-impl<E> Inline<E> for () {}
 impl ReflessObject for () {}
 impl ReflessInline for () {}
 

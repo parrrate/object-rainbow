@@ -47,8 +47,6 @@ impl<T: ?Sized + Tagged> Tagged for Arc<T> {
     const HASH: Hash = T::HASH;
 }
 
-impl<T: Object<E>, E> Object<E> for Arc<T> {}
-impl<T: Inline<E>, E> Inline<E> for Arc<T> {}
 impl<T: ReflessObject> ReflessObject for Arc<T> {}
 impl<T: ReflessInline> ReflessInline for Arc<T> {}
 

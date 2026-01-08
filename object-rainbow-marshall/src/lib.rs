@@ -242,7 +242,6 @@ impl<I: ParseInput> Parse<I> for MarshalledRoot {
     }
 }
 
-impl<E> Object<E> for MarshalledRoot {}
 impl ReflessObject for MarshalledRoot {}
 
 #[derive(Tagged)]
@@ -322,8 +321,6 @@ impl<T: Send + Sync + ToOutput> Singular for Marshalled<T> {
         self.root.hash()
     }
 }
-
-impl<T: Object<Extra>, Extra: 'static + Clone> Object<Extra> for Marshalled<T> {}
 
 impl<T: Traversible> Marshalled<T> {
     pub async fn new(object: T) -> object_rainbow::Result<Self> {
