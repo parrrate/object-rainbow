@@ -1613,6 +1613,14 @@ impl<T, F: Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
         Box::pin(self.fetch.fetch().map_ok(&self.map))
     }
 
+    fn try_fetch_local(&self) -> Result<Option<Node<Self::T>>> {
+        let Some((object, resolve)) = self.fetch.try_fetch_local()? else {
+            return Ok(None);
+        };
+        let object = (self.map)(object);
+        Ok(Some((object, resolve)))
+    }
+
     fn fetch_local(&self) -> Option<Self::T> {
         self.fetch.fetch_local().map(&self.map)
     }
