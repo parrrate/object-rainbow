@@ -1354,6 +1354,12 @@ impl<T: Traversible + Clone> FetchBytes for LocalFetch<T> {
     }
 }
 
+impl<T: Traversible + Clone> Singular for LocalFetch<T> {
+    fn hash(&self) -> Hash {
+        self.object.full_hash()
+    }
+}
+
 struct ByTopology {
     topology: TopoVec,
 }
