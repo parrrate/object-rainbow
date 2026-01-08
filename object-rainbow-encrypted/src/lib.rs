@@ -363,6 +363,10 @@ impl<K, T> FetchBytes for Untyped<K, T> {
     fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
         self.encrypted.fetch_bytes_local()
     }
+
+    fn fetch_data_local(&self) -> Option<Vec<u8>> {
+        self.encrypted.fetch_data_local()
+    }
 }
 
 impl<K: Key, T: FullHash> Fetch for Untyped<K, T> {
