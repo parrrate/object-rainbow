@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeMap, BTreeSet, btree_map},
+    collections::{BTreeMap, btree_map},
     pin::Pin,
 };
 
@@ -97,50 +97,62 @@ impl<'r> Context<'r> {
 pub async fn fetchall(object: &impl Traversible) -> object_rainbow::Result<LocalMap> {
     let mut map = LocalMap::new();
     {
-        let mut started = BTreeSet::new();
+        let mut started = BTreeMap::new();
         let (send, recv) = flume::bounded(0);
         let outer = Executor::new();
         let inner = Executor::new();
-        let task = inner.spawn(async {
-            while let Ok(request) = recv.recv_async().await {
-                match request {
-                    Request::Depencencies {
-                        dependencies,
-                        callback,
-                    } => {
-                        let mut tasks = Vec::new();
-                        for (hash, save) in dependencies {
-                            if started.insert(hash) {
-                                tasks.push(outer.spawn(save(Context { request: &send })));
-                            }
-                        }
-                        outer
-                            .spawn(async move {
-                                for task in tasks {
-                                    if let Err(e) = task.await {
-                                        callback.send(Err(e)).ok();
-                                        return;
+        let task =
+            inner.spawn(async {
+                while let Ok(request) = recv.recv_async().await {
+                    match request {
+                        Request::Depencencies {
+                            dependencies,
+                            callback,
+                        } => {
+                            let mut tasks = Vec::new();
+                            for (hash, save) in dependencies {
+                                let recv = match started.entry(hash) {
+                                    btree_map::Entry::Vacant(e) => {
+                                        let future = save(Context { request: &send });
+                                        let (send, recv) = flume::bounded(1);
+                                        let task = outer.spawn(async move {
+                                            send.send_async(future.await).await.ok();
+                                        });
+                                        e.insert((recv, task)).0.clone()
                                     }
-                                }
-                                callback.send(Ok(())).ok();
-                            })
-                            .detach();
-                    }
-                    Request::End {
-                        hash,
-                        tags_hash,
-                        topology,
-                        data,
-                        callback,
-                    } => {
-                        assert!(!map.contains(hash));
-                        callback
-                            .send(map.insert(hash, tags_hash, topology, data))
-                            .ok();
+                                    btree_map::Entry::Occupied(e) => e.get().0.clone(),
+                                };
+                                tasks.push(outer.spawn(async move {
+                                    recv.recv_async().await.unwrap_or(Ok(()))
+                                }));
+                            }
+                            outer
+                                .spawn(async move {
+                                    for task in tasks {
+                                        if let Err(e) = task.await {
+                                            callback.send(Err(e)).ok();
+                                            return;
+                                        }
+                                    }
+                                    callback.send(Ok(())).ok();
+                                })
+                                .detach();
+                        }
+                        Request::End {
+                            hash,
+                            tags_hash,
+                            topology,
+                            data,
+                            callback,
+                        } => {
+                            assert!(!map.contains(hash));
+                            callback
+                                .send(map.insert(hash, tags_hash, topology, data))
+                                .ok();
+                        }
                     }
                 }
-            }
-        });
+            });
         let _task = inner.spawn(outer.run(task));
         inner
             .run(Context { request: &send }.save_object(object))
