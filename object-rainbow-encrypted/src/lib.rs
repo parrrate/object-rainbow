@@ -81,6 +81,12 @@ impl<K, T> FetchBytes for Visited<K, T> {
     }
 }
 
+impl<K, T> Singular for Visited<K, T> {
+    fn hash(&self) -> Hash {
+        self.encrypted.hash()
+    }
+}
+
 impl<K: Key, T: Traversible> Fetch for Visited<K, T> {
     type T = Encrypted<K, T>;
 
