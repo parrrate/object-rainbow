@@ -196,14 +196,14 @@ pub fn marshall(map: &LocalMap, root: Hash) -> MarshalledRoot {
                 assert!(started.insert(hash));
                 let (references, d) = map.get(hash).unwrap();
                 stack.push(Action::FinishLocation {
-                    at: d.len(),
+                    at: data.len(),
                     of: hash,
                 });
                 data.extend_from_slice(&d.len().to_bytes());
                 data.extend_from_slice(d);
                 for &hash in references {
                     stack.push(Action::WriteLocation {
-                        at: d.len(),
+                        at: data.len(),
                         of: hash,
                     });
                     data.extend_from_slice(&u64::MAX.to_bytes());
@@ -211,7 +211,8 @@ pub fn marshall(map: &LocalMap, root: Hash) -> MarshalledRoot {
                 }
             }
             Action::FinishLocation { at, of } => {
-                locations.insert(of, at);
+                assert!(started.contains(&of));
+                assert!(locations.insert(of, at).is_none());
             }
         }
     }
