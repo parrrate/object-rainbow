@@ -153,6 +153,137 @@ fn gen_to_output(data: &Data) -> proc_macro2::TokenStream {
     }
 }
 
+#[proc_macro_derive(ListPoints, attributes(topology))]
+pub fn derive_list_points(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+    let generics = input.generics.clone();
+    let (_, ty_generics, _) = generics.split_for_impl();
+    let generics = match bounds_list_points(input.generics, &input.data) {
+        Ok(g) => g,
+        Err(e) => return e.into_compile_error().into(),
+    };
+    let list_points = gen_list_points(&input.data);
+    let (impl_generics, _, where_clause) = generics.split_for_impl();
+    let output = quote! {
+        #[automatically_derived]
+        impl #impl_generics ::object_rainbow::ListPoints for #name #ty_generics #where_clause {
+            fn list_points(&self, visitor: &mut impl FnMut(::object_rainbow::Hash)) {
+                #list_points
+            }
+        }
+    };
+    TokenStream::from(output)
+}
+
+fn bounds_list_points(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    let g = &bounds_g(&generics);
+    match data {
+        Data::Struct(data) => {
+            for f in data.fields.iter() {
+                let ty = &f.ty;
+                if type_contains_generics(GContext { g, always: false }, ty) {
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: ::object_rainbow::ListPoints
+                        },
+                    );
+                }
+            }
+        }
+        Data::Enum(data) => {
+            for v in data.variants.iter() {
+                for f in v.fields.iter() {
+                    let ty = &f.ty;
+                    if type_contains_generics(GContext { g, always: false }, ty) {
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { ty.span() =>
+                                #ty: ::object_rainbow::ListPoints
+                            },
+                        );
+                    }
+                }
+            }
+        }
+        Data::Union(data) => {
+            return Err(Error::new_spanned(
+                data.union_token,
+                "`union`s are not supported",
+            ));
+        }
+    }
+    Ok(generics)
+}
+
+fn fields_list_points(fields: &syn::Fields) -> proc_macro2::TokenStream {
+    match fields {
+        syn::Fields::Named(fields) => {
+            let let_self = fields.named.iter().map(|f| f.ident.as_ref().unwrap());
+            let list_points = let_self.clone().zip(fields.named.iter()).map(|(i, f)| {
+                quote_spanned! { f.ty.span() =>
+                    #i.list_points(visitor)
+                }
+            });
+            quote! {
+                { #(#let_self),* } => {
+                    #(#list_points);*
+                }
+            }
+        }
+        syn::Fields::Unnamed(fields) => {
+            let let_self = fields
+                .unnamed
+                .iter()
+                .enumerate()
+                .map(|(i, f)| Ident::new(&format!("field{i}"), f.ty.span()));
+            let list_points = let_self.clone().zip(fields.unnamed.iter()).map(|(i, f)| {
+                quote_spanned! { f.ty.span() =>
+                    #i.list_points(visitor)
+                }
+            });
+            quote! {
+                (#(#let_self),*) => {
+                    #(#list_points);*
+                }
+            }
+        }
+        syn::Fields::Unit => quote! {
+            => {}
+        },
+    }
+}
+
+fn gen_list_points(data: &Data) -> proc_macro2::TokenStream {
+    match data {
+        Data::Struct(data) => {
+            let arm = fields_list_points(&data.fields);
+            quote! {
+                match self {
+                    Self #arm
+                }
+            }
+        }
+        Data::Enum(data) => {
+            let to_output = data.variants.iter().map(|v| {
+                let ident = &v.ident;
+                let arm = fields_list_points(&v.fields);
+                quote! { Self::#ident #arm }
+            });
+            quote! {
+                let kind = ::object_rainbow::Enum::kind(self);
+                let tag = ::object_rainbow::enumkind::EnumKind::to_tag(kind);
+                tag.list_points(visitor);
+                match self {
+                    #(#to_output)*
+                }
+            }
+        }
+        Data::Union(data) => {
+            Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
+        }
+    }
+}
+
 #[proc_macro_derive(Topological, attributes(topology))]
 pub fn derive_topological(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);

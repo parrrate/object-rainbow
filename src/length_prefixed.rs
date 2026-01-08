@@ -5,7 +5,7 @@ use typenum::{Sum, U8, Unsigned, tarr};
 
 use crate::{numeric::Le, *};
 
-#[derive(Topological, Tagged, ParseAsInline, Default)]
+#[derive(ListPoints, Topological, Tagged, ParseAsInline, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Lp<T>(pub T);
 
@@ -111,6 +111,7 @@ impl<I: ParseInput> ParseInline<I> for LpBytes {
 }
 
 impl Tagged for LpBytes {}
+impl ListPoints for LpBytes {}
 impl Topological for LpBytes {}
 impl<E> Object<E> for LpBytes {}
 impl<E> Inline<E> for LpBytes {}
@@ -156,6 +157,7 @@ impl<I: ParseInput> ParseInline<I> for LpString {
 }
 
 impl Tagged for LpString {}
+impl ListPoints for LpString {}
 impl Topological for LpString {}
 impl<E> Object<E> for LpString {}
 impl<E> Inline<E> for LpString {}

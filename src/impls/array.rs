@@ -10,6 +10,12 @@ impl<T: ToOutput, const N: usize> ToOutput for [T; N] {
     }
 }
 
+impl<T: ListPoints, const N: usize> ListPoints for [T; N] {
+    fn list_points(&self, f: &mut impl FnMut(Hash)) {
+        self.iter_list_points(f);
+    }
+}
+
 impl<T: Topological, const N: usize> Topological for [T; N] {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.iter_accept_points(visitor);

@@ -24,7 +24,7 @@ impl UsizeTag for bool {
     }
 }
 
-#[derive(ToOutput, Topological, Tagged, ParseAsInline, Size, MaybeHasNiche)]
+#[derive(ToOutput, ListPoints, Topological, Tagged, ParseAsInline, Size, MaybeHasNiche)]
 pub struct EnumTag<T, const MAX: usize>(T);
 
 impl<T: UsizeTag, const MAX: usize> UsizeTag for EnumTag<T, MAX> {

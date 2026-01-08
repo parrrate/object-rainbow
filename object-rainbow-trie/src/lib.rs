@@ -7,14 +7,14 @@ use std::{
 use futures_util::{Stream, TryStream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    Fetch, Inline, Object, ObjectMarker, Parse, ParseSliceRefless, Point, ReflessObject, Tagged,
-    ToOutput, Topological, Traversible, length_prefixed::LpBytes,
+    Fetch, Inline, ListPoints, Object, ObjectMarker, Parse, ParseSliceRefless, Point,
+    ReflessObject, Tagged, ToOutput, Topological, Traversible, length_prefixed::LpBytes,
 };
 
 #[cfg(feature = "serde")]
 mod serde;
 
-#[derive(ToOutput, Tagged, Topological, Parse, Clone)]
+#[derive(ToOutput, Tagged, ListPoints, Topological, Parse, Clone)]
 #[topology(recursive)]
 pub struct Trie<T> {
     value: Option<T>,
@@ -326,7 +326,7 @@ where
     }
 }
 
-#[derive(ToOutput, Tagged, Topological, Parse, Object)]
+#[derive(ToOutput, Tagged, ListPoints, Topological, Parse, Object)]
 pub struct TrieMap<K, V> {
     trie: Trie<V>,
     key: ObjectMarker<K>,

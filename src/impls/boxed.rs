@@ -18,13 +18,23 @@ impl<T: ParseInline<I>, I: ParseInput> ParseInline<I> for Box<T> {
     }
 }
 
-impl<T: ?Sized + Topological> Topological for Box<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        (**self).accept_points(visitor);
+impl<T: ?Sized + ListPoints> ListPoints for Box<T> {
+    fn list_points(&self, f: &mut impl FnMut(Hash)) {
+        (**self).list_points(f);
     }
 
     fn topology_hash(&self) -> Hash {
         (**self).topology_hash()
+    }
+
+    fn point_count(&self) -> usize {
+        (**self).point_count()
+    }
+}
+
+impl<T: ?Sized + Topological> Topological for Box<T> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        (**self).accept_points(visitor);
     }
 
     fn topology(&self) -> TopoVec {

@@ -14,9 +14,9 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, ByteNode, FailFuture, Fetch, FetchBytes, Hash, Node, Object, Output, Parse,
-    ParseInput, ParseSliceExtra, PointInput, ReflessObject, Resolve, Singular, Tagged, ToOutput,
-    Topological, Traversible,
+    Address, ByteNode, FailFuture, Fetch, FetchBytes, Hash, ListPoints, Node, Object, Output,
+    Parse, ParseInput, ParseSliceExtra, PointInput, ReflessObject, Resolve, Singular, Tagged,
+    ToOutput, Topological, Traversible,
 };
 use object_rainbow_fetchall::fetchall;
 use object_rainbow_local_map::LocalMap;
@@ -230,6 +230,7 @@ impl ToOutput for MarshalledRoot {
 }
 
 impl Tagged for MarshalledRoot {}
+impl ListPoints for MarshalledRoot {}
 impl Topological for MarshalledRoot {}
 
 impl<I: ParseInput> Parse<I> for MarshalledRoot {
@@ -256,6 +257,7 @@ impl<T> ToOutput for Marshalled<T> {
     }
 }
 
+impl<T> ListPoints for Marshalled<T> {}
 impl<T> Topological for Marshalled<T> {}
 
 impl<I: PointInput, T: Object<I::Extra>> Parse<I> for Marshalled<T> {

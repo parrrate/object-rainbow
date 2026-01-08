@@ -16,6 +16,7 @@ impl<T: ?Sized, I: ParseInput> ParseInline<I> for PhantomData<T> {
     }
 }
 
+impl<T: ?Sized> ListPoints for PhantomData<T> {}
 impl<T: ?Sized> Topological for PhantomData<T> {}
 impl<T: ?Sized> Tagged for PhantomData<T> {}
 impl<T: ?Sized + 'static + Send + Sync, E> Object<E> for PhantomData<T> {}

@@ -7,6 +7,7 @@ use object_rainbow::{
 
 #[derive(
     ToOutput,
+    ListPoints,
     Topological,
     Tagged,
     Object,
@@ -28,6 +29,7 @@ pub struct DeriveExample<A, B> {
 #[derive(
     Enum,
     ToOutput,
+    ListPoints,
     Topological,
     Tagged,
     Object,
@@ -49,6 +51,7 @@ enum Test<U, V, Y> {
 #[derive(
     Enum,
     ToOutput,
+    ListPoints,
     Topological,
     Tagged,
     Object,
@@ -72,6 +75,7 @@ enum Stuff<T> {
 #[derive(
     Enum,
     ToOutput,
+    ListPoints,
     Topological,
     Tagged,
     Object,
@@ -92,6 +96,7 @@ enum Either<L, R> {
 #[derive(
     Enum,
     ToOutput,
+    ListPoints,
     Topological,
     Tagged,
     Object,

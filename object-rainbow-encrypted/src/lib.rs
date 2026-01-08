@@ -1,9 +1,9 @@
 use std::{ops::Deref, sync::Arc};
 
 use object_rainbow::{
-    Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, FullHash, Hash, Node, Object, Parse,
-    ParseSliceExtra, Point, PointInput, PointVisitor, Resolve, Singular, Tagged, ToOutput,
-    Topological, Traversible, length_prefixed::Lp,
+    Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, FullHash, Hash, ListPoints, Node,
+    Object, Parse, ParseSliceExtra, Point, PointInput, PointVisitor, Resolve, Singular, Tagged,
+    ToOutput, Topological, Traversible, length_prefixed::Lp,
 };
 
 #[derive(Clone)]
@@ -206,6 +206,20 @@ impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, '_, K, 
     }
 }
 
+impl<K, T> ListPoints for EncryptedInner<K, T> {
+    fn list_points(&self, f: &mut impl FnMut(Hash)) {
+        self.resolution.list_points(f);
+    }
+
+    fn topology_hash(&self) -> Hash {
+        self.resolution.0.data_hash()
+    }
+
+    fn point_count(&self) -> usize {
+        self.resolution.len()
+    }
+}
+
 impl<K: Key, T: Topological> Topological for EncryptedInner<K, T> {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         let resolution = &mut self.resolution.iter();
@@ -214,14 +228,6 @@ impl<K: Key, T: Topological> Topological for EncryptedInner<K, T> {
             visitor,
         });
         assert!(resolution.next().is_none());
-    }
-
-    fn point_count(&self) -> usize {
-        self.resolution.len()
-    }
-
-    fn topology_hash(&self) -> Hash {
-        self.resolution.0.data_hash()
     }
 }
 
@@ -253,13 +259,23 @@ impl<K: Clone, T> Clone for Encrypted<K, T> {
     }
 }
 
-impl<K: Key, T: Topological> Topological for Encrypted<K, T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        self.inner.accept_points(visitor);
+impl<K, T> ListPoints for Encrypted<K, T> {
+    fn list_points(&self, f: &mut impl FnMut(Hash)) {
+        self.inner.list_points(f);
     }
 
     fn topology_hash(&self) -> Hash {
         self.inner.topology_hash()
+    }
+
+    fn point_count(&self) -> usize {
+        self.inner.point_count()
+    }
+}
+
+impl<K: Key, T: Topological> Topological for Encrypted<K, T> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        self.inner.accept_points(visitor);
     }
 }
 
