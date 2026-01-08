@@ -22,8 +22,6 @@ pub struct Trie<T> {
     children: BTreeMap<u8, Point<(LpBytes, Self)>>,
 }
 
-impl<T, E: 'static + Send + Sync + Clone> Object<E> for Trie<T> where Option<T>: Inline<E> {}
-
 impl<T> Default for Trie<T> {
     fn default() -> Self {
         Self {

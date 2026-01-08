@@ -1099,7 +1099,9 @@ impl<T: Traversible> Topological for Point<T> {
     }
 }
 
-impl<T: Object<I::Extra>, I: PointInput<Extra: Send + Sync>> ParseInline<I> for Point<T> {
+impl<T: 'static + FullHash, I: PointInput<Extra: Send + Sync + ExtraFor<T>>> ParseInline<I>
+    for Point<T>
+{
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         Ok(Self::from_address_extra(
             input.parse_inline()?,
