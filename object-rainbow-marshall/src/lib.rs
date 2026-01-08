@@ -163,6 +163,10 @@ impl FetchBytes for MarshalledRoot {
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
         self.marshalled.fetch_data()
     }
+
+    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
+        self.marshalled.fetch_bytes_local()
+    }
 }
 
 impl Singular for MarshalledRoot {
