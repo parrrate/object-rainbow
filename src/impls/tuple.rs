@@ -27,10 +27,6 @@ impl<A: Tagged, B: Tagged> Tagged for (A, B) {
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS]);
 }
 
-impl<A: ReflessInline, B: ReflessObject> ReflessObject for (A, B) {}
-
-impl<A: ReflessInline, B: ReflessInline> ReflessInline for (A, B) {}
-
 impl<A: Size, B: Size> Size for (A, B)
 where
     tarr![A::Size, B::Size,]: typenum::FoldAdd<Output: Unsigned>,
@@ -83,10 +79,6 @@ impl<A: Topological, B: Topological, C: Topological> Topological for (A, B, C) {
 impl<A: Tagged, B: Tagged, C: Tagged> Tagged for (A, B, C) {
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS]);
 }
-
-impl<A: ReflessInline, B: ReflessInline, C: ReflessObject> ReflessObject for (A, B, C) {}
-
-impl<A: ReflessInline, B: ReflessInline, C: ReflessInline> ReflessInline for (A, B, C) {}
 
 impl<A: Size, B: Size, C: Size> Size for (A, B, C)
 where
@@ -148,16 +140,6 @@ impl<A: Topological, B: Topological, C: Topological, D: Topological> Topological
 
 impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged> Tagged for (A, B, C, D) {
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS]);
-}
-
-impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessObject> ReflessObject
-    for (A, B, C, D)
-{
-}
-
-impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessInline> ReflessInline
-    for (A, B, C, D)
-{
 }
 
 impl<A: Size, B: Size, C: Size, D: Size> Size for (A, B, C, D)
@@ -237,16 +219,6 @@ impl<A: Topological, B: Topological, C: Topological, D: Topological, E: Topologi
 
 impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged> Tagged for (A, B, C, D, E) {
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS, &E::TAGS]);
-}
-
-impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessInline, E: ReflessObject>
-    ReflessObject for (A, B, C, D, E)
-{
-}
-
-impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessInline, E: ReflessInline>
-    ReflessInline for (A, B, C, D, E)
-{
 }
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size> Size for (A, B, C, D, E)
@@ -350,28 +322,6 @@ impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged, F: Tagged> Tagged
         &[],
         &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS, &E::TAGS, &F::TAGS],
     );
-}
-
-impl<
-    A: ReflessInline,
-    B: ReflessInline,
-    C: ReflessInline,
-    D: ReflessInline,
-    E: ReflessInline,
-    F: ReflessObject,
-> ReflessObject for (A, B, C, D, E, F)
-{
-}
-
-impl<
-    A: ReflessInline,
-    B: ReflessInline,
-    C: ReflessInline,
-    D: ReflessInline,
-    E: ReflessInline,
-    F: ReflessInline,
-> ReflessInline for (A, B, C, D, E, F)
-{
 }
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size> Size for (A, B, C, D, E, F)
@@ -519,30 +469,6 @@ impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged, F: Tagged, G: Tagged
             &G::TAGS,
         ],
     );
-}
-
-impl<
-    A: ReflessInline,
-    B: ReflessInline,
-    C: ReflessInline,
-    D: ReflessInline,
-    E: ReflessInline,
-    F: ReflessInline,
-    G: ReflessObject,
-> ReflessObject for (A, B, C, D, E, F, G)
-{
-}
-
-impl<
-    A: ReflessInline,
-    B: ReflessInline,
-    C: ReflessInline,
-    D: ReflessInline,
-    E: ReflessInline,
-    F: ReflessInline,
-    G: ReflessInline,
-> ReflessInline for (A, B, C, D, E, F, G)
-{
 }
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size> Size for (A, B, C, D, E, F, G)
@@ -724,32 +650,6 @@ impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged, F: Tagged, G: Tagged
             &H::TAGS,
         ],
     );
-}
-
-impl<
-    A: ReflessInline,
-    B: ReflessInline,
-    C: ReflessInline,
-    D: ReflessInline,
-    E: ReflessInline,
-    F: ReflessInline,
-    G: ReflessInline,
-    H: ReflessObject,
-> ReflessObject for (A, B, C, D, E, F, G, H)
-{
-}
-
-impl<
-    A: ReflessInline,
-    B: ReflessInline,
-    C: ReflessInline,
-    D: ReflessInline,
-    E: ReflessInline,
-    F: ReflessInline,
-    G: ReflessInline,
-    H: ReflessInline,
-> ReflessInline for (A, B, C, D, E, F, G, H)
-{
 }
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size> Size
@@ -957,34 +857,6 @@ impl<
             &I::TAGS,
         ],
     );
-}
-
-impl<
-    A: ReflessInline,
-    B: ReflessInline,
-    C: ReflessInline,
-    D: ReflessInline,
-    E: ReflessInline,
-    F: ReflessInline,
-    G: ReflessInline,
-    H: ReflessInline,
-    I: ReflessObject,
-> ReflessObject for (A, B, C, D, E, F, G, H, I)
-{
-}
-
-impl<
-    A: ReflessInline,
-    B: ReflessInline,
-    C: ReflessInline,
-    D: ReflessInline,
-    E: ReflessInline,
-    F: ReflessInline,
-    G: ReflessInline,
-    H: ReflessInline,
-    I: ReflessInline,
-> ReflessInline for (A, B, C, D, E, F, G, H, I)
-{
 }
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size, I: Size> Size
@@ -1208,36 +1080,6 @@ impl<
             &J::TAGS,
         ],
     );
-}
-
-impl<
-    A: ReflessInline,
-    B: ReflessInline,
-    C: ReflessInline,
-    D: ReflessInline,
-    E: ReflessInline,
-    F: ReflessInline,
-    G: ReflessInline,
-    H: ReflessInline,
-    I: ReflessInline,
-    J: ReflessObject,
-> ReflessObject for (A, B, C, D, E, F, G, H, I, J)
-{
-}
-
-impl<
-    A: ReflessInline,
-    B: ReflessInline,
-    C: ReflessInline,
-    D: ReflessInline,
-    E: ReflessInline,
-    F: ReflessInline,
-    G: ReflessInline,
-    H: ReflessInline,
-    I: ReflessInline,
-    J: ReflessInline,
-> ReflessInline for (A, B, C, D, E, F, G, H, I, J)
-{
 }
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size, I: Size, J: Size> Size
@@ -1485,38 +1327,6 @@ impl<
             &K::TAGS,
         ],
     );
-}
-
-impl<
-    A: ReflessInline,
-    B: ReflessInline,
-    C: ReflessInline,
-    D: ReflessInline,
-    E: ReflessInline,
-    F: ReflessInline,
-    G: ReflessInline,
-    H: ReflessInline,
-    I: ReflessInline,
-    J: ReflessInline,
-    K: ReflessObject,
-> ReflessObject for (A, B, C, D, E, F, G, H, I, J, K)
-{
-}
-
-impl<
-    A: ReflessInline,
-    B: ReflessInline,
-    C: ReflessInline,
-    D: ReflessInline,
-    E: ReflessInline,
-    F: ReflessInline,
-    G: ReflessInline,
-    H: ReflessInline,
-    I: ReflessInline,
-    J: ReflessInline,
-    K: ReflessInline,
-> ReflessInline for (A, B, C, D, E, F, G, H, I, J, K)
-{
 }
 
 impl<
@@ -1792,40 +1602,6 @@ impl<
             &L::TAGS,
         ],
     );
-}
-
-impl<
-    A: ReflessInline,
-    B: ReflessInline,
-    C: ReflessInline,
-    D: ReflessInline,
-    E: ReflessInline,
-    F: ReflessInline,
-    G: ReflessInline,
-    H: ReflessInline,
-    I: ReflessInline,
-    J: ReflessInline,
-    K: ReflessInline,
-    L: ReflessObject,
-> ReflessObject for (A, B, C, D, E, F, G, H, I, J, K, L)
-{
-}
-
-impl<
-    A: ReflessInline,
-    B: ReflessInline,
-    C: ReflessInline,
-    D: ReflessInline,
-    E: ReflessInline,
-    F: ReflessInline,
-    G: ReflessInline,
-    H: ReflessInline,
-    I: ReflessInline,
-    J: ReflessInline,
-    K: ReflessInline,
-    L: ReflessInline,
-> ReflessInline for (A, B, C, D, E, F, G, H, I, J, K, L)
-{
 }
 
 impl<

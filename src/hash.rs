@@ -18,8 +18,6 @@ use crate::*;
     PartialOrd,
     Ord,
     Hash,
-    ReflessObject,
-    ReflessInline,
     Size,
 )]
 pub struct Hash([u8; HASH_SIZE]);
@@ -86,8 +84,6 @@ impl AsRef<[u8]> for Hash {
     Tagged,
     ListPoints,
     Topological,
-    ReflessObject,
-    ReflessInline,
     Size,
     Default,
 )]

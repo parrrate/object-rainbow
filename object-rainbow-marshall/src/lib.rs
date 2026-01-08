@@ -15,8 +15,8 @@ use std::{
 
 use object_rainbow::{
     Address, ByteNode, FailFuture, Fetch, FetchBytes, Hash, ListPoints, Node, Object, Output,
-    Parse, ParseInput, ParseSliceExtra, PointInput, ReflessObject, Resolve, Singular, Tagged,
-    ToOutput, Topological, Traversible,
+    Parse, ParseInput, ParseSliceExtra, PointInput, Resolve, Singular, Tagged, ToOutput,
+    Topological, Traversible,
 };
 use object_rainbow_fetchall::fetchall;
 use object_rainbow_local_map::LocalMap;
@@ -241,8 +241,6 @@ impl<I: ParseInput> Parse<I> for MarshalledRoot {
         Ok(Self { marshalled })
     }
 }
-
-impl ReflessObject for MarshalledRoot {}
 
 #[derive(Tagged)]
 pub struct Marshalled<T> {

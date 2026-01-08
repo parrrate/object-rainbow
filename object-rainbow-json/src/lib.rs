@@ -3,8 +3,8 @@ use std::{collections::BTreeMap, io::Write};
 use futures_util::future::try_join_all;
 use object_rainbow::{
     Enum, Fetch, ListPoints, MaybeHasNiche, NicheForUnsized, NoNiche, Output, Parse, ParseInline,
-    ParseInput, Point, ReflessObject, Size, SomeNiche, Tagged, ToOutput, Topological, Traversible,
-    ZeroNiche, length_prefixed::LpString, numeric::Le,
+    ParseInput, Point, Size, SomeNiche, Tagged, ToOutput, Topological, Traversible, ZeroNiche,
+    length_prefixed::LpString, numeric::Le,
 };
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
@@ -44,7 +44,6 @@ impl<T: DeserializeOwned, I: ParseInput> Parse<I> for Json<T> {
 impl<T> ListPoints for Json<T> {}
 impl<T> Topological for Json<T> {}
 impl<T> Tagged for Json<T> {}
-impl<T: 'static + Send + Sync + Serialize + DeserializeOwned> ReflessObject for Json<T> {}
 
 impl Size for Json<()> {
     type Size = object_rainbow::typenum::consts::U4;

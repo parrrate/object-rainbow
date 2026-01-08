@@ -309,14 +309,6 @@ fn per_n(n: usize) -> String {
             members: vec![Box::new("TAGS".co().tags(n))],
         },
         Impl {
-            header: "ReflessInline".bound().last("ReflessObject").header(n),
-            members: vec![],
-        },
-        Impl {
-            header: "ReflessInline".bound().header(n),
-            members: vec![],
-        },
-        Impl {
             header: "Size".bound().header(n).suffix(WhereFoldAdd { n }),
             members: vec![
                 Box::new("SIZE".co().add(n, "usize")),

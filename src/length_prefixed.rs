@@ -58,9 +58,6 @@ impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Lp<T> {
     }
 }
 
-impl<T: ReflessObject> ReflessObject for Lp<T> {}
-impl<T: ReflessObject> ReflessInline for Lp<T> {}
-
 #[test]
 fn prefixed() {
     let a = Lp(vec![0, 1, 2]);
@@ -111,8 +108,6 @@ impl<I: ParseInput> ParseInline<I> for LpBytes {
 impl Tagged for LpBytes {}
 impl ListPoints for LpBytes {}
 impl Topological for LpBytes {}
-impl ReflessObject for LpBytes {}
-impl ReflessInline for LpBytes {}
 
 #[derive(Debug, Clone, ParseAsInline, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -155,5 +150,3 @@ impl<I: ParseInput> ParseInline<I> for LpString {
 impl Tagged for LpString {}
 impl ListPoints for LpString {}
 impl Topological for LpString {}
-impl ReflessObject for LpString {}
-impl ReflessInline for LpString {}

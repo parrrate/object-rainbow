@@ -19,8 +19,6 @@ impl<I: ParseInput> ParseInline<I> for () {
 impl ListPoints for () {}
 impl Topological for () {}
 impl Tagged for () {}
-impl ReflessObject for () {}
-impl ReflessInline for () {}
 
 impl Size for () {
     const SIZE: usize = 0;

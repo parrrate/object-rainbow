@@ -30,8 +30,6 @@ impl<T: Tagged> Tagged for BTreeSet<T> {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: ReflessInline + Ord> ReflessObject for BTreeSet<T> {}
-
 impl<K: ToOutput, V: ToOutput> ToOutput for BTreeMap<K, V> {
     fn to_output(&self, output: &mut dyn Output) {
         self.iter_to_output(output);
@@ -59,8 +57,6 @@ impl<K: ParseInline<I> + Ord, V: ParseInline<I>, I: ParseInput> Parse<I> for BTr
 impl<K: Tagged, V: Tagged> Tagged for BTreeMap<K, V> {
     const TAGS: Tags = Tags(&[], &[&K::TAGS, &V::TAGS]);
 }
-
-impl<K: ReflessInline + Ord, V: ReflessInline> ReflessObject for BTreeMap<K, V> {}
 
 impl<K: Ord> Equivalent<BTreeMap<K, ()>> for BTreeSet<K> {
     fn into_equivalent(self) -> BTreeMap<K, ()> {
