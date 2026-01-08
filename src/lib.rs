@@ -184,6 +184,9 @@ pub trait Resolve: Send + Sync + AsAny {
 pub trait FetchBytes: AsAny {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode>;
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>>;
+    fn fetch_bytes_local(&self) -> Result<Option<ByteNode>> {
+        Ok(None)
+    }
     fn fetch_data_local(&self) -> Option<Vec<u8>> {
         None
     }
