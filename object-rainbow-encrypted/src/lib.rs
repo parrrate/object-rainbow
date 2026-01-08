@@ -1,9 +1,9 @@
 use std::{ops::Deref, sync::Arc};
 
 use object_rainbow::{
-    Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, Hash, Object, Parse, ParseSliceExtra,
-    Point, PointInput, PointVisitor, Resolve, Singular, Tagged, ToOutput, Topological, Traversible,
-    length_prefixed::Lp,
+    Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, FullHash, Hash, Object, Parse,
+    ParseSliceExtra, Point, PointInput, PointVisitor, Resolve, Singular, Tagged, ToOutput,
+    Topological, Traversible, length_prefixed::Lp,
 };
 
 #[derive(Clone)]
@@ -337,7 +337,7 @@ impl<K, T> FetchBytes for Untyped<K, T> {
     }
 }
 
-impl<K: Key, T> Fetch for Untyped<K, T> {
+impl<K: Key, T: FullHash> Fetch for Untyped<K, T> {
     type T = Encrypted<K, Vec<u8>>;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
@@ -353,6 +353,25 @@ impl<K: Key, T> Fetch for Untyped<K, T> {
             let (data, resolve) = self.fetch_bytes().await?;
             let encrypted = Self::T::parse_slice_extra(&data, &resolve, &self.key)?;
             Ok(encrypted)
+        })
+    }
+
+    fn fetch_local(&self) -> Option<Self::T> {
+        let Encrypted {
+            key,
+            inner:
+                EncryptedInner {
+                    resolution,
+                    decrypted,
+                },
+        } = self.encrypted.fetch_local()?;
+        let decrypted = Unkeyed(Arc::new(decrypted.vec()));
+        Some(Encrypted {
+            key,
+            inner: EncryptedInner {
+                resolution,
+                decrypted,
+            },
         })
     }
 }
