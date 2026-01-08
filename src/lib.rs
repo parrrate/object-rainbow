@@ -1314,6 +1314,10 @@ impl<T: FullHash> Fetch for Point<T> {
         self.fetch.fetch()
     }
 
+    fn fetch_local(&self) -> Option<Self::T> {
+        self.fetch.fetch_local()
+    }
+
     fn get(&self) -> Option<&Self::T> {
         self.fetch.get()
     }
