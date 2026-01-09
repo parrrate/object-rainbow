@@ -1085,9 +1085,15 @@ impl Tags {
     }
 }
 
-pub trait Inline<Extra = ()>: Object<Extra> + for<'a> ParseInline<Input<'a, Extra>> {}
+pub trait Inline<Extra = ()>:
+    Object<Extra> + InlineOutput + for<'a> ParseInline<Input<'a, Extra>>
+{
+}
 
-impl<T: Object<Extra> + for<'a> ParseInline<Input<'a, Extra>>, Extra> Inline<Extra> for T {}
+impl<T: Object<Extra> + InlineOutput + for<'a> ParseInline<Input<'a, Extra>>, Extra> Inline<Extra>
+    for T
+{
+}
 
 impl<T> ListPoints for Point<T> {
     fn list_points(&self, f: &mut impl FnMut(Hash)) {
