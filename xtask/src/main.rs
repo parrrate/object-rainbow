@@ -291,6 +291,10 @@ fn per_n(n: usize) -> String {
             )],
         },
         Impl {
+            header: "InlineOutput".bound().header(n),
+            members: vec![],
+        },
+        Impl {
             header: "ListPoints".bound().last("ListPoints").header(n),
             members: vec![Box::new(
                 "list_points".method("f", "&mut impl FnMut(Hash)").out(n),

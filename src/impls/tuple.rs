@@ -9,6 +9,8 @@ impl<A: ToOutput, B: ToOutput> ToOutput for (A, B) {
     }
 }
 
+impl<A: InlineOutput, B: InlineOutput> InlineOutput for (A, B) {}
+
 impl<A: ListPoints, B: ListPoints> ListPoints for (A, B) {
     fn list_points(&self, f: &mut impl FnMut(Hash)) {
         self.0.list_points(f);
@@ -59,6 +61,8 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput> ToOutput for (A, B, C) {
         self.2.to_output(output);
     }
 }
+
+impl<A: InlineOutput, B: InlineOutput, C: InlineOutput> InlineOutput for (A, B, C) {}
 
 impl<A: ListPoints, B: ListPoints, C: ListPoints> ListPoints for (A, B, C) {
     fn list_points(&self, f: &mut impl FnMut(Hash)) {
@@ -118,6 +122,11 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput> ToOutput for (A, B, C, 
         self.2.to_output(output);
         self.3.to_output(output);
     }
+}
+
+impl<A: InlineOutput, B: InlineOutput, C: InlineOutput, D: InlineOutput> InlineOutput
+    for (A, B, C, D)
+{
 }
 
 impl<A: ListPoints, B: ListPoints, C: ListPoints, D: ListPoints> ListPoints for (A, B, C, D) {
@@ -191,6 +200,11 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput> ToOutput f
         self.3.to_output(output);
         self.4.to_output(output);
     }
+}
+
+impl<A: InlineOutput, B: InlineOutput, C: InlineOutput, D: InlineOutput, E: InlineOutput>
+    InlineOutput for (A, B, C, D, E)
+{
 }
 
 impl<A: ListPoints, B: ListPoints, C: ListPoints, D: ListPoints, E: ListPoints> ListPoints
@@ -287,6 +301,17 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutpu
         self.4.to_output(output);
         self.5.to_output(output);
     }
+}
+
+impl<
+    A: InlineOutput,
+    B: InlineOutput,
+    C: InlineOutput,
+    D: InlineOutput,
+    E: InlineOutput,
+    F: InlineOutput,
+> InlineOutput for (A, B, C, D, E, F)
+{
 }
 
 impl<A: ListPoints, B: ListPoints, C: ListPoints, D: ListPoints, E: ListPoints, F: ListPoints>
@@ -410,6 +435,18 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutpu
         self.5.to_output(output);
         self.6.to_output(output);
     }
+}
+
+impl<
+    A: InlineOutput,
+    B: InlineOutput,
+    C: InlineOutput,
+    D: InlineOutput,
+    E: InlineOutput,
+    F: InlineOutput,
+    G: InlineOutput,
+> InlineOutput for (A, B, C, D, E, F, G)
+{
 }
 
 impl<
@@ -586,6 +623,19 @@ impl<
         self.6.to_output(output);
         self.7.to_output(output);
     }
+}
+
+impl<
+    A: InlineOutput,
+    B: InlineOutput,
+    C: InlineOutput,
+    D: InlineOutput,
+    E: InlineOutput,
+    F: InlineOutput,
+    G: InlineOutput,
+    H: InlineOutput,
+> InlineOutput for (A, B, C, D, E, F, G, H)
+{
 }
 
 impl<
@@ -779,6 +829,20 @@ impl<
         self.7.to_output(output);
         self.8.to_output(output);
     }
+}
+
+impl<
+    A: InlineOutput,
+    B: InlineOutput,
+    C: InlineOutput,
+    D: InlineOutput,
+    E: InlineOutput,
+    F: InlineOutput,
+    G: InlineOutput,
+    H: InlineOutput,
+    I: InlineOutput,
+> InlineOutput for (A, B, C, D, E, F, G, H, I)
+{
 }
 
 impl<
@@ -996,6 +1060,21 @@ impl<
         self.8.to_output(output);
         self.9.to_output(output);
     }
+}
+
+impl<
+    A: InlineOutput,
+    B: InlineOutput,
+    C: InlineOutput,
+    D: InlineOutput,
+    E: InlineOutput,
+    F: InlineOutput,
+    G: InlineOutput,
+    H: InlineOutput,
+    I: InlineOutput,
+    J: InlineOutput,
+> InlineOutput for (A, B, C, D, E, F, G, H, I, J)
+{
 }
 
 impl<
@@ -1237,6 +1316,22 @@ impl<
         self.9.to_output(output);
         self.10.to_output(output);
     }
+}
+
+impl<
+    A: InlineOutput,
+    B: InlineOutput,
+    C: InlineOutput,
+    D: InlineOutput,
+    E: InlineOutput,
+    F: InlineOutput,
+    G: InlineOutput,
+    H: InlineOutput,
+    I: InlineOutput,
+    J: InlineOutput,
+    K: InlineOutput,
+> InlineOutput for (A, B, C, D, E, F, G, H, I, J, K)
+{
 }
 
 impl<
@@ -1506,6 +1601,23 @@ impl<
         self.10.to_output(output);
         self.11.to_output(output);
     }
+}
+
+impl<
+    A: InlineOutput,
+    B: InlineOutput,
+    C: InlineOutput,
+    D: InlineOutput,
+    E: InlineOutput,
+    F: InlineOutput,
+    G: InlineOutput,
+    H: InlineOutput,
+    I: InlineOutput,
+    J: InlineOutput,
+    K: InlineOutput,
+    L: InlineOutput,
+> InlineOutput for (A, B, C, D, E, F, G, H, I, J, K, L)
+{
 }
 
 impl<
