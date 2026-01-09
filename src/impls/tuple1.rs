@@ -6,6 +6,8 @@ impl<T: ToOutput> ToOutput for (T,) {
     }
 }
 
+impl<T: InlineOutput> InlineOutput for (T,) {}
+
 impl<T: ListPoints> ListPoints for (T,) {
     fn list_points(&self, f: &mut impl FnMut(Hash)) {
         self.0.list_points(f);
