@@ -1127,6 +1127,8 @@ impl<T> ToOutput for Point<T> {
     }
 }
 
+impl<T> InlineOutput for Point<T> {}
+
 pub trait Topology: Send + Sync {
     fn len(&self) -> usize;
     fn get(&self, index: usize) -> Option<&Arc<dyn Singular>>;
