@@ -17,8 +17,8 @@ pub use anyhow::anyhow;
 use futures_util::TryFutureExt;
 use generic_array::{ArrayLength, GenericArray};
 pub use object_rainbow_derive::{
-    Enum, ListPoints, MaybeHasNiche, Parse, ParseAsInline, ParseInline, Size, Tagged, ToOutput,
-    Topological,
+    Enum, InlineOutput, ListPoints, MaybeHasNiche, Parse, ParseAsInline, ParseInline, Size, Tagged,
+    ToOutput, Topological,
 };
 use sha2::{Digest, Sha256};
 #[doc(hidden)]

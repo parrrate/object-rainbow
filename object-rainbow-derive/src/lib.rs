@@ -153,6 +153,57 @@ fn gen_to_output(data: &Data) -> proc_macro2::TokenStream {
     }
 }
 
+#[proc_macro_derive(InlineOutput)]
+pub fn derive_inline_output(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+    let generics = match bounds_inline_output(input.generics, &input.data) {
+        Ok(g) => g,
+        Err(e) => return e.into_compile_error().into(),
+    };
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let output = quote! {
+        #[automatically_derived]
+        impl #impl_generics ::object_rainbow::InlineOutput for #name #ty_generics #where_clause {}
+    };
+    TokenStream::from(output)
+}
+
+fn bounds_inline_output(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    match data {
+        Data::Struct(data) => {
+            for f in data.fields.iter() {
+                let ty = &f.ty;
+                generics
+                    .make_where_clause()
+                    .predicates
+                    .push(parse_quote_spanned! { ty.span() =>
+                        #ty: ::object_rainbow::InlineOutput
+                    });
+            }
+        }
+        Data::Enum(data) => {
+            for v in data.variants.iter() {
+                for f in v.fields.iter() {
+                    let ty = &f.ty;
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: ::object_rainbow::InlineOutput
+                        },
+                    );
+                }
+            }
+        }
+        Data::Union(data) => {
+            return Err(Error::new_spanned(
+                data.union_token,
+                "`union`s are not supported",
+            ));
+        }
+    }
+    Ok(generics)
+}
+
 #[proc_macro_derive(ListPoints, attributes(topology))]
 pub fn derive_list_points(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
