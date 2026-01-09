@@ -2,7 +2,7 @@ use typenum::tarr;
 
 use crate::*;
 
-impl<A: ToOutput, B: ToOutput> ToOutput for (A, B) {
+impl<A: InlineOutput, B: ToOutput> ToOutput for (A, B) {
     fn to_output(&self, output: &mut dyn Output) {
         self.0.to_output(output);
         self.1.to_output(output);
@@ -54,7 +54,7 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche> MaybeHasNiche for (A, B) {
     type MnArray = tarr![A::MnArray, B::MnArray,];
 }
 
-impl<A: ToOutput, B: ToOutput, C: ToOutput> ToOutput for (A, B, C) {
+impl<A: InlineOutput, B: InlineOutput, C: ToOutput> ToOutput for (A, B, C) {
     fn to_output(&self, output: &mut dyn Output) {
         self.0.to_output(output);
         self.1.to_output(output);
@@ -115,7 +115,7 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche> MaybeHasNiche for (A,
     type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray,];
 }
 
-impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput> ToOutput for (A, B, C, D) {
+impl<A: InlineOutput, B: InlineOutput, C: InlineOutput, D: ToOutput> ToOutput for (A, B, C, D) {
     fn to_output(&self, output: &mut dyn Output) {
         self.0.to_output(output);
         self.1.to_output(output);
@@ -192,7 +192,9 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche, D: MaybeHasNiche> May
     type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray, D::MnArray,];
 }
 
-impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput> ToOutput for (A, B, C, D, E) {
+impl<A: InlineOutput, B: InlineOutput, C: InlineOutput, D: InlineOutput, E: ToOutput> ToOutput
+    for (A, B, C, D, E)
+{
     fn to_output(&self, output: &mut dyn Output) {
         self.0.to_output(output);
         self.1.to_output(output);
@@ -290,8 +292,14 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche, D: MaybeHasNiche, E: 
     type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray, D::MnArray, E::MnArray,];
 }
 
-impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutput> ToOutput
-    for (A, B, C, D, E, F)
+impl<
+    A: InlineOutput,
+    B: InlineOutput,
+    C: InlineOutput,
+    D: InlineOutput,
+    E: InlineOutput,
+    F: ToOutput,
+> ToOutput for (A, B, C, D, E, F)
 {
     fn to_output(&self, output: &mut dyn Output) {
         self.0.to_output(output);
@@ -423,8 +431,15 @@ impl<
     ];
 }
 
-impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutput, G: ToOutput>
-    ToOutput for (A, B, C, D, E, F, G)
+impl<
+    A: InlineOutput,
+    B: InlineOutput,
+    C: InlineOutput,
+    D: InlineOutput,
+    E: InlineOutput,
+    F: InlineOutput,
+    G: ToOutput,
+> ToOutput for (A, B, C, D, E, F, G)
 {
     fn to_output(&self, output: &mut dyn Output) {
         self.0.to_output(output);
@@ -603,13 +618,13 @@ impl<
 }
 
 impl<
-    A: ToOutput,
-    B: ToOutput,
-    C: ToOutput,
-    D: ToOutput,
-    E: ToOutput,
-    F: ToOutput,
-    G: ToOutput,
+    A: InlineOutput,
+    B: InlineOutput,
+    C: InlineOutput,
+    D: InlineOutput,
+    E: InlineOutput,
+    F: InlineOutput,
+    G: InlineOutput,
     H: ToOutput,
 > ToOutput for (A, B, C, D, E, F, G, H)
 {
@@ -807,14 +822,14 @@ impl<
 }
 
 impl<
-    A: ToOutput,
-    B: ToOutput,
-    C: ToOutput,
-    D: ToOutput,
-    E: ToOutput,
-    F: ToOutput,
-    G: ToOutput,
-    H: ToOutput,
+    A: InlineOutput,
+    B: InlineOutput,
+    C: InlineOutput,
+    D: InlineOutput,
+    E: InlineOutput,
+    F: InlineOutput,
+    G: InlineOutput,
+    H: InlineOutput,
     I: ToOutput,
 > ToOutput for (A, B, C, D, E, F, G, H, I)
 {
@@ -1036,15 +1051,15 @@ impl<
 }
 
 impl<
-    A: ToOutput,
-    B: ToOutput,
-    C: ToOutput,
-    D: ToOutput,
-    E: ToOutput,
-    F: ToOutput,
-    G: ToOutput,
-    H: ToOutput,
-    I: ToOutput,
+    A: InlineOutput,
+    B: InlineOutput,
+    C: InlineOutput,
+    D: InlineOutput,
+    E: InlineOutput,
+    F: InlineOutput,
+    G: InlineOutput,
+    H: InlineOutput,
+    I: InlineOutput,
     J: ToOutput,
 > ToOutput for (A, B, C, D, E, F, G, H, I, J)
 {
@@ -1290,16 +1305,16 @@ impl<
 }
 
 impl<
-    A: ToOutput,
-    B: ToOutput,
-    C: ToOutput,
-    D: ToOutput,
-    E: ToOutput,
-    F: ToOutput,
-    G: ToOutput,
-    H: ToOutput,
-    I: ToOutput,
-    J: ToOutput,
+    A: InlineOutput,
+    B: InlineOutput,
+    C: InlineOutput,
+    D: InlineOutput,
+    E: InlineOutput,
+    F: InlineOutput,
+    G: InlineOutput,
+    H: InlineOutput,
+    I: InlineOutput,
+    J: InlineOutput,
     K: ToOutput,
 > ToOutput for (A, B, C, D, E, F, G, H, I, J, K)
 {
@@ -1573,17 +1588,17 @@ impl<
 }
 
 impl<
-    A: ToOutput,
-    B: ToOutput,
-    C: ToOutput,
-    D: ToOutput,
-    E: ToOutput,
-    F: ToOutput,
-    G: ToOutput,
-    H: ToOutput,
-    I: ToOutput,
-    J: ToOutput,
-    K: ToOutput,
+    A: InlineOutput,
+    B: InlineOutput,
+    C: InlineOutput,
+    D: InlineOutput,
+    E: InlineOutput,
+    F: InlineOutput,
+    G: InlineOutput,
+    H: InlineOutput,
+    I: InlineOutput,
+    J: InlineOutput,
+    K: InlineOutput,
     L: ToOutput,
 > ToOutput for (A, B, C, D, E, F, G, H, I, J, K, L)
 {

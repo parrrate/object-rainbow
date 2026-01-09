@@ -285,7 +285,7 @@ impl Display for Impl {
 fn per_n(n: usize) -> String {
     join([
         Impl {
-            header: "ToOutput".bound().header(n),
+            header: "InlineOutput".bound().last("ToOutput").header(n),
             members: vec![Box::new(
                 "to_output".method("output", "&mut dyn Output").out(n),
             )],
