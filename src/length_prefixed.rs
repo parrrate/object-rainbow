@@ -35,6 +35,8 @@ impl<T: ToOutput> ToOutput for Lp<T> {
     }
 }
 
+impl<T: ToOutput> InlineOutput for Lp<T> {}
+
 impl<T: Size> Size for Lp<T>
 where
     U8: Add<T::Size, Output: Unsigned>,
