@@ -30,7 +30,7 @@ impl<T: Tagged> Tagged for BTreeSet<T> {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<K: ToOutput, V: ToOutput> ToOutput for BTreeMap<K, V> {
+impl<K: InlineOutput, V: InlineOutput> ToOutput for BTreeMap<K, V> {
     fn to_output(&self, output: &mut dyn Output) {
         self.iter_to_output(output);
     }
