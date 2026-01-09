@@ -4,6 +4,8 @@ impl ToOutput for () {
     fn to_output(&self, _: &mut dyn Output) {}
 }
 
+impl InlineOutput for () {}
+
 impl<I: ParseInput> Parse<I> for () {
     fn parse(input: I) -> crate::Result<Self> {
         ParseInline::parse_as_inline(input)
