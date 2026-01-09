@@ -4,7 +4,7 @@ use typenum::ToUInt;
 
 use crate::*;
 
-impl<T: ToOutput, const N: usize> ToOutput for [T; N] {
+impl<T: InlineOutput, const N: usize> ToOutput for [T; N] {
     fn to_output(&self, output: &mut dyn Output) {
         T::slice_to_output(self, output);
     }
