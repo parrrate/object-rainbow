@@ -1,6 +1,6 @@
 use crate::*;
 
-impl<T: ToOutput> ToOutput for [T] {
+impl<T: InlineOutput> ToOutput for [T] {
     fn to_output(&self, output: &mut dyn Output) {
         T::slice_to_output(self, output);
     }
