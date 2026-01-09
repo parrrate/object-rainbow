@@ -283,7 +283,7 @@ impl<T, Extra: Send + Sync> Singular for RawPoint<T, Extra> {
     }
 }
 
-#[derive(ToOutput, ListPoints, Topological, Parse, ParseInline)]
+#[derive(ToOutput, InlineOutput, ListPoints, Topological, Parse, ParseInline)]
 pub struct ObjectMarker<T: ?Sized> {
     object: PhantomData<fn() -> T>,
 }
