@@ -139,6 +139,8 @@ impl ToOutput for LpString {
     }
 }
 
+impl InlineOutput for LpString {}
+
 impl<I: ParseInput> ParseInline<I> for LpString {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         String::from_utf8(input.parse_inline::<LpBytes>()?.0)
