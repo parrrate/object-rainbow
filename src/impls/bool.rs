@@ -11,6 +11,8 @@ impl ToOutput for bool {
     }
 }
 
+impl InlineOutput for bool {}
+
 impl Size for bool {
     type Size = U1;
 }
