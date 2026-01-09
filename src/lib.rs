@@ -1210,9 +1210,12 @@ impl<T: 'static + Sized + Send + Sync + ToOutput + Tagged + for<'a> Parse<Refles
 {
 }
 
-pub trait ReflessInline: ReflessObject + for<'a> ParseInline<ReflessInput<'a>> {}
+pub trait ReflessInline:
+    ReflessObject + InlineOutput + for<'a> ParseInline<ReflessInput<'a>>
+{
+}
 
-impl<T: ReflessObject + for<'a> ParseInline<ReflessInput<'a>>> ReflessInline for T {}
+impl<T: ReflessObject + InlineOutput + for<'a> ParseInline<ReflessInput<'a>>> ReflessInline for T {}
 
 pub trait Output {
     fn write(&mut self, data: &[u8]);
