@@ -30,7 +30,7 @@ impl<T: Tagged> Tagged for Vec<T> {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: ToOutput> ToOutput for VecDeque<T> {
+impl<T: InlineOutput> ToOutput for VecDeque<T> {
     fn to_output(&self, output: &mut dyn Output) {
         let (l, r) = self.as_slices();
         T::slice_to_output(l, output);
