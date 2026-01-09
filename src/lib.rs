@@ -321,6 +321,8 @@ impl<Extra> ToOutput for Extras<Extra> {
     fn to_output(&self, _: &mut dyn Output) {}
 }
 
+impl<Extra> InlineOutput for Extras<Extra> {}
+
 impl<I: PointInput> ParseInline<I> for Extras<I::Extra> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         Ok(Self(input.extra().clone()))
