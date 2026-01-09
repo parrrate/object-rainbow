@@ -333,7 +333,7 @@ impl<Extra> Tagged for Extras<Extra> {}
 impl<Extra> ListPoints for Extras<Extra> {}
 impl<Extra> Topological for Extras<Extra> {}
 
-#[derive(ToOutput, Tagged, Parse, ParseInline)]
+#[derive(ToOutput, InlineOutput, Tagged, Parse, ParseInline)]
 pub struct RawPoint<T = Infallible, Extra = ()> {
     inner: RawPointInner,
     extra: Extras<Extra>,
