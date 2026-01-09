@@ -74,7 +74,16 @@ enum Either<L, R> {
 }
 
 #[derive(
-    Enum, ToOutput, ListPoints, Topological, Tagged, Size, Parse, ParseInline, MaybeHasNiche,
+    Enum,
+    ToOutput,
+    InlineOutput,
+    ListPoints,
+    Topological,
+    Tagged,
+    Size,
+    Parse,
+    ParseInline,
+    MaybeHasNiche,
 )]
 #[enumtag("Le<u8>")]
 enum Abc {
