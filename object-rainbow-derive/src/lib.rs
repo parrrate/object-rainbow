@@ -968,6 +968,7 @@ pub fn derive_parse(input: TokenStream) -> TokenStream {
 #[darling(derive_syn_parse)]
 struct ParseArgs {
     bound: Option<Type>,
+    #[darling(default)]
     unchecked: bool,
 }
 
