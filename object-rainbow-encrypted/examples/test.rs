@@ -7,8 +7,8 @@ use std::{
 
 use chacha20poly1305::{ChaCha20Poly1305, aead::Aead};
 use object_rainbow::{
-    ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Resolve, Singular, Traversible,
-    error_fetch,
+    ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Resolve, SingularFetch,
+    Traversible, error_fetch,
 };
 use object_rainbow_encrypted::{Key, WithKey, encrypt_point};
 use sha2::digest::generic_array::GenericArray;
@@ -86,7 +86,7 @@ impl EventContext<'_> {
 }
 
 impl PointVisitor for EventVisitor<'_, '_> {
-    fn visit<T: Traversible>(&mut self, point: &object_rainbow::Point<T>) {
+    fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone)) {
         if !self.fetching.contains(&point.hash()) {
             self.fetching.insert(point.hash());
             let point = point.clone();
