@@ -1,7 +1,8 @@
 use std::collections::BTreeSet;
 
+use darling::FromMeta;
 use proc_macro::TokenStream;
-use quote::{quote, quote_spanned};
+use quote::{ToTokens, quote, quote_spanned};
 use syn::{
     Attribute, Data, DeriveInput, Error, GenericParam, Generics, Ident, LitStr, Type, parse::Parse,
     parse_macro_input, parse_quote, parse_quote_spanned, spanned::Spanned, token::Comma,
@@ -24,7 +25,30 @@ fn bounds_g(generics: &Generics) -> BTreeSet<Ident> {
         .collect()
 }
 
-#[proc_macro_derive(ToOutput)]
+#[derive(Debug, FromMeta)]
+#[darling(derive_syn_parse)]
+struct RainbowArgs {
+    #[darling(default)]
+    remote: Option<Type>,
+}
+
+fn parse_for(name: &Ident, attrs: &[Attribute]) -> proc_macro2::TokenStream {
+    for attr in attrs {
+        if attr_str(attr).as_deref() == Some("rainbow") {
+            match attr.parse_args::<RainbowArgs>() {
+                Ok(RainbowArgs { remote }) => {
+                    if let Some(remote) = remote {
+                        return remote.to_token_stream();
+                    }
+                }
+                Err(e) => return e.into_compile_error(),
+            }
+        }
+    }
+    name.to_token_stream()
+}
+
+#[proc_macro_derive(ToOutput, attributes(rainbow))]
 pub fn derive_to_output(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
@@ -34,9 +58,10 @@ pub fn derive_to_output(input: TokenStream) -> TokenStream {
     };
     let to_output = gen_to_output(&input.data);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let target = parse_for(&name, &input.attrs);
     let output = quote! {
         #[automatically_derived]
-        impl #impl_generics ::object_rainbow::ToOutput for #name #ty_generics #where_clause {
+        impl #impl_generics ::object_rainbow::ToOutput for #target #ty_generics #where_clause {
             fn to_output(&self, output: &mut dyn ::object_rainbow::Output) {
                 #to_output
             }
@@ -176,9 +201,10 @@ pub fn derive_inline_output(input: TokenStream) -> TokenStream {
         Err(e) => return e.into_compile_error().into(),
     };
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let target = parse_for(&name, &input.attrs);
     let output = quote! {
         #[automatically_derived]
-        impl #impl_generics ::object_rainbow::InlineOutput for #name #ty_generics #where_clause {}
+        impl #impl_generics ::object_rainbow::InlineOutput for #target #ty_generics #where_clause {}
     };
     TokenStream::from(output)
 }
@@ -230,9 +256,10 @@ pub fn derive_list_hashes(input: TokenStream) -> TokenStream {
     };
     let list_hashes = gen_list_hashes(&input.data);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
+    let target = parse_for(&name, &input.attrs);
     let output = quote! {
         #[automatically_derived]
-        impl #impl_generics ::object_rainbow::ListHashes for #name #ty_generics #where_clause {
+        impl #impl_generics ::object_rainbow::ListHashes for #target #ty_generics #where_clause {
             fn list_hashes(&self, visitor: &mut impl FnMut(::object_rainbow::Hash)) {
                 #list_hashes
             }
@@ -369,11 +396,12 @@ pub fn derive_topological(input: TokenStream) -> TokenStream {
     let traverse = gen_traverse(&input.data);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
     let errors = errors.into_iter().map(|e| e.into_compile_error());
+    let target = parse_for(&name, &input.attrs);
     let output = quote! {
         #(#errors)*
 
         #[automatically_derived]
-        impl #impl_generics ::object_rainbow::Topological for #name #ty_generics #where_clause {
+        impl #impl_generics ::object_rainbow::Topological for #target #ty_generics #where_clause {
             fn traverse(&self, visitor: &mut impl ::object_rainbow::PointVisitor) {
                 #traverse
             }
@@ -551,11 +579,12 @@ pub fn derive_tagged(input: TokenStream) -> TokenStream {
     let tags = gen_tags(&input.data, &input.attrs, &mut errors);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let errors = errors.into_iter().map(|e| e.into_compile_error());
+    let target = parse_for(&name, &input.attrs);
     let output = quote! {
         #(#errors)*
 
         #[automatically_derived]
-        impl #impl_generics ::object_rainbow::Tagged for #name #ty_generics #where_clause {
+        impl #impl_generics ::object_rainbow::Tagged for #target #ty_generics #where_clause {
             const TAGS: ::object_rainbow::Tags = #tags;
         }
     };
@@ -769,12 +798,13 @@ pub fn derive_size(input: TokenStream) -> TokenStream {
         __Output: ::object_rainbow::typenum::Unsigned
     ));
     let (impl_generics, _, _) = generics.split_for_impl();
+    let target = parse_for(&name, &input.attrs);
     let output = quote! {
         const _: () = {
             use ::object_rainbow::typenum::tarr;
 
             #[automatically_derived]
-            impl #impl_generics ::object_rainbow::Size for #name #ty_generics #where_clause {
+            impl #impl_generics ::object_rainbow::Size for #target #ty_generics #where_clause {
                 const SIZE: usize = #size;
 
                 type Size = <#size_arr as ::object_rainbow::typenum::FoldAdd>::Output;
@@ -943,9 +973,10 @@ pub fn derive_parse(input: TokenStream) -> TokenStream {
     };
     let parse = gen_parse(&input.data);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
+    let target = parse_for(&name, &input.attrs);
     let output = quote! {
         #[automatically_derived]
-        impl #impl_generics ::object_rainbow::Parse<__I> for #name #ty_generics #where_clause {
+        impl #impl_generics ::object_rainbow::Parse<__I> for #target #ty_generics #where_clause {
             fn parse(mut input: __I) -> ::object_rainbow::Result<Self> {
                 #parse
             }
@@ -1080,9 +1111,10 @@ pub fn derive_parse_inline(input: TokenStream) -> TokenStream {
     };
     let parse_inline = gen_parse_inline(&input.data);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
+    let target = parse_for(&name, &input.attrs);
     let output = quote! {
         #[automatically_derived]
-        impl #impl_generics ::object_rainbow::ParseInline<__I> for #name #ty_generics #where_clause {
+        impl #impl_generics ::object_rainbow::ParseInline<__I> for #target #ty_generics #where_clause {
             fn parse_inline(input: &mut __I) -> ::object_rainbow::Result<Self> {
                 #parse_inline
             }
@@ -1189,9 +1221,10 @@ pub fn derive_parse_as_inline(input: TokenStream) -> TokenStream {
         Err(e) => return e.into_compile_error().into(),
     };
     let (impl_generics, _, where_clause) = generics.split_for_impl();
+    let target = parse_for(&name, &input.attrs);
     let output = quote! {
         #[automatically_derived]
-        impl #impl_generics ::object_rainbow::Parse<__I> for #name #ty_generics #where_clause {
+        impl #impl_generics ::object_rainbow::Parse<__I> for #target #ty_generics #where_clause {
             fn parse(input: __I) -> ::object_rainbow::Result<Self> {
                 ::object_rainbow::ParseInline::<__I>::parse_as_inline(input)
             }
@@ -1253,6 +1286,7 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
     let enumtag = enumtag
         .unwrap_or_else(|| parse_quote!(::object_rainbow::numeric::Le<::core::num::NonZero<u8>>));
     let errors = errors.into_iter().map(|e| e.into_compile_error());
+    let target = parse_for(&name, &input.attrs);
     let output = quote! {
         const _: () = {
             #(#errors)*
@@ -1287,7 +1321,7 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
             }
 
             #[automatically_derived]
-            impl #impl_generics ::object_rainbow::Enum for #name #ty_generics #where_clause {
+            impl #impl_generics ::object_rainbow::Enum for #target #ty_generics #where_clause {
                 type Kind = __Kind;
 
                 fn kind(&self) -> Self::Kind {
@@ -1413,12 +1447,13 @@ pub fn derive_maybe_has_niche(input: TokenStream) -> TokenStream {
         Err(e) => return e.into_compile_error().into(),
     };
     let (impl_generics, _, where_clause) = generics.split_for_impl();
+    let target = parse_for(&name, &input.attrs);
     let output = quote! {
         const _: () = {
             use ::object_rainbow::typenum::tarr;
 
             #[automatically_derived]
-            impl #impl_generics ::object_rainbow::MaybeHasNiche for #name #ty_generics #where_clause {
+            impl #impl_generics ::object_rainbow::MaybeHasNiche for #target #ty_generics #where_clause {
                 type MnArray = #mn_array;
             }
         };
