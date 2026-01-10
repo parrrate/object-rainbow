@@ -45,6 +45,7 @@ object-rainbow-store = { version = "0.0.0-a.5", path = "object-rainbow-store" }
 object-rainbow-derive = { version = "=0.0.0-a.9", path = "object-rainbow-derive" }
 
 anyhow = "1.0.96"
+bitvec = { version = "1.0.1", default-features = false, optional = true }
 futures-util = { version = "0.3.31", default-features = false }
 generic-array = { version = "1.2.0" }
 sha2 = "0.10.8"
@@ -53,6 +54,7 @@ thiserror = "2.0.11"
 typenum = { version = "1.18.0", features = ["const-generics"] }
 
 [features]
+bitvec = ["dep:bitvec"]
 serde = ["dep:serde"]
 
 [dev-dependencies]

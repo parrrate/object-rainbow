@@ -1,5 +1,7 @@
 mod arc;
 mod array;
+#[cfg(feature = "bitvec")]
+mod bitvec;
 mod bool;
 mod boxed;
 mod btree;
