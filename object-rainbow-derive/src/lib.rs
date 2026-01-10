@@ -382,24 +382,14 @@ pub fn derive_topological(input: TokenStream) -> TokenStream {
     let name = input.ident;
     let generics = input.generics.clone();
     let (_, ty_generics, _) = generics.split_for_impl();
-    let mut errors = Vec::new();
-    let generics = match bounds_topological(
-        input.generics,
-        &input.data,
-        &input.attrs,
-        &mut errors,
-        &name,
-    ) {
+    let generics = match bounds_topological(input.generics, &input.data, &input.attrs, &name) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
     let traverse = gen_traverse(&input.data);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
-    let errors = errors.into_iter().map(|e| e.into_compile_error());
     let target = parse_for(&name, &input.attrs);
     let output = quote! {
-        #(#errors)*
-
         #[automatically_derived]
         impl #impl_generics ::object_rainbow::Topological for #target #ty_generics #where_clause {
             fn traverse(&self, visitor: &mut impl ::object_rainbow::PointVisitor) {
@@ -410,43 +400,32 @@ pub fn derive_topological(input: TokenStream) -> TokenStream {
     TokenStream::from(output)
 }
 
+#[derive(Debug, FromMeta)]
+#[darling(derive_syn_parse)]
 struct TypeTopologyArgs {
     recursive: bool,
 }
 
-impl Parse for TypeTopologyArgs {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let mut skip = false;
-        while !input.is_empty() {
-            let ident = input.parse::<Ident>()?;
-            if ident.to_string().as_str() != "recursive" {
-                return Err(Error::new(ident.span(), "expected: recursive"));
-            }
-            skip = true;
-            if !input.is_empty() {
-                input.parse::<Comma>()?;
+fn parse_recursive(attrs: &[Attribute]) -> syn::Result<bool> {
+    let mut r = false;
+    for attr in attrs {
+        if attr_str(attr).as_deref() == Some("topology") {
+            let TypeTopologyArgs { recursive } = attr.parse_args()?;
+            if recursive {
+                r = true;
             }
         }
-        Ok(Self { recursive: skip })
     }
+    Ok(r)
 }
 
 fn bounds_topological(
     mut generics: Generics,
     data: &Data,
     attrs: &[Attribute],
-    errors: &mut Vec<Error>,
     name: &Ident,
 ) -> syn::Result<Generics> {
-    let mut recursive = false;
-    for attr in attrs {
-        if attr_str(attr).as_deref() == Some("topology") {
-            match attr.parse_args::<TypeTopologyArgs>() {
-                Ok(args) => recursive |= args.recursive,
-                Err(e) => errors.push(e),
-            }
-        }
-    }
+    let recursive = parse_recursive(attrs)?;
     let g = &bounds_g(&generics);
     let bound = if recursive {
         quote! { ::object_rainbow::Traversible }
@@ -961,13 +940,13 @@ fn gen_size(data: &Data) -> proc_macro2::TokenStream {
     }
 }
 
-#[proc_macro_derive(Parse)]
+#[proc_macro_derive(Parse, attributes(parse))]
 pub fn derive_parse(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
     let generics = input.generics.clone();
     let (_, ty_generics, _) = generics.split_for_impl();
-    let generics = match bounds_parse(input.generics, &input.data) {
+    let generics = match bounds_parse(input.generics, &input.data, &input.attrs) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
@@ -985,42 +964,91 @@ pub fn derive_parse(input: TokenStream) -> TokenStream {
     TokenStream::from(output)
 }
 
-fn bounds_parse(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+#[derive(Debug, FromMeta)]
+#[darling(derive_syn_parse)]
+struct ParseArgs {
+    bound: Option<Type>,
+    unchecked: bool,
+}
+
+fn bounds_parse(mut generics: Generics, data: &Data, attrs: &[Attribute]) -> syn::Result<Generics> {
+    let recursive = parse_recursive(attrs)?;
+    let tr = |last| match (last, recursive) {
+        (true, true) => {
+            quote!(::object_rainbow::Parse<__I> + ::object_rainbow::Object<__I::Extra>)
+        }
+        (true, false) => quote!(::object_rainbow::Parse<__I>),
+        (false, true) => {
+            quote!(::object_rainbow::ParseInline<__I> + ::object_rainbow::Inline<__I::Extra>)
+        }
+        (false, false) => quote!(::object_rainbow::ParseInline<__I>),
+    };
     match data {
         Data::Struct(data) => {
             let last_at = data.fields.len().checked_sub(1).unwrap_or_default();
-            for (i, f) in data.fields.iter().enumerate() {
-                let last = i == last_at;
+            'field: for (i, f) in data.fields.iter().enumerate() {
                 let ty = &f.ty;
-                let tr = if last {
-                    quote!(::object_rainbow::Parse<__I>)
+                let mut b = None;
+                for attr in &f.attrs {
+                    if attr_str(attr).as_deref() == Some("parse") {
+                        let ParseArgs { bound, unchecked } = attr.parse_args::<ParseArgs>()?;
+                        if unchecked {
+                            continue 'field;
+                        }
+                        if let Some(bound) = bound {
+                            b = Some(bound);
+                        }
+                    }
+                }
+                if let Some(bound) = b {
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            (#ty, __I): #bound
+                        },
+                    );
                 } else {
-                    quote!(::object_rainbow::ParseInline<__I>)
-                };
-                generics
-                    .make_where_clause()
-                    .predicates
-                    .push(parse_quote_spanned! { ty.span() =>
-                        #ty: #tr
-                    });
-            }
-        }
-        Data::Enum(data) => {
-            for v in data.variants.iter() {
-                let last_at = v.fields.len().checked_sub(1).unwrap_or_default();
-                for (i, f) in v.fields.iter().enumerate() {
                     let last = i == last_at;
-                    let ty = &f.ty;
-                    let tr = if last {
-                        quote!(::object_rainbow::Parse<__I>)
-                    } else {
-                        quote!(::object_rainbow::ParseInline<__I>)
-                    };
+                    let tr = tr(last);
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
                             #ty: #tr
                         },
                     );
+                }
+            }
+        }
+        Data::Enum(data) => {
+            for v in data.variants.iter() {
+                let last_at = v.fields.len().checked_sub(1).unwrap_or_default();
+                'field: for (i, f) in v.fields.iter().enumerate() {
+                    let ty = &f.ty;
+                    let mut b = None;
+                    for attr in &f.attrs {
+                        if attr_str(attr).as_deref() == Some("parse") {
+                            let ParseArgs { bound, unchecked } = attr.parse_args::<ParseArgs>()?;
+                            if unchecked {
+                                continue 'field;
+                            }
+                            if let Some(bound) = bound {
+                                b = Some(bound);
+                            }
+                        }
+                    }
+                    if let Some(bound) = b {
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { ty.span() =>
+                                (#ty, __I): #bound
+                            },
+                        );
+                    } else {
+                        let last = i == last_at;
+                        let tr = tr(last);
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { ty.span() =>
+                                #ty: #tr
+                            },
+                        );
+                    }
                 }
             }
         }
@@ -1031,9 +1059,13 @@ fn bounds_parse(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
             ));
         }
     }
-    generics
-        .params
-        .push(parse_quote!(__I: ::object_rainbow::ParseInput));
+    generics.params.push(if recursive {
+        parse_quote!(__I: ::object_rainbow::PointInput<
+            Extra: ::core::marker::Send + ::core::marker::Sync
+        >)
+    } else {
+        parse_quote!(__I: ::object_rainbow::ParseInput)
+    });
     Ok(generics)
 }
 
@@ -1099,13 +1131,13 @@ fn fields_parse(fields: &syn::Fields) -> proc_macro2::TokenStream {
     }
 }
 
-#[proc_macro_derive(ParseInline)]
+#[proc_macro_derive(ParseInline, attributes(parse))]
 pub fn derive_parse_inline(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
     let generics = input.generics.clone();
     let (_, ty_generics, _) = generics.split_for_impl();
-    let generics = match bounds_parse_inline(input.generics, &input.data) {
+    let generics = match bounds_parse_inline(input.generics, &input.data, &input.attrs) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
@@ -1123,28 +1155,77 @@ pub fn derive_parse_inline(input: TokenStream) -> TokenStream {
     TokenStream::from(output)
 }
 
-fn bounds_parse_inline(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+fn bounds_parse_inline(
+    mut generics: Generics,
+    data: &Data,
+    attrs: &[Attribute],
+) -> syn::Result<Generics> {
+    let recursive = parse_recursive(attrs)?;
+    let tr = if recursive {
+        quote!(::object_rainbow::ParseInline<__I> + ::object_rainbow::Inline<__I::Extra>)
+    } else {
+        quote!(::object_rainbow::ParseInline<__I>)
+    };
     match data {
         Data::Struct(data) => {
-            for f in data.fields.iter() {
+            'field: for f in data.fields.iter() {
                 let ty = &f.ty;
-                generics
-                    .make_where_clause()
-                    .predicates
-                    .push(parse_quote_spanned! { ty.span() =>
-                        #ty: ::object_rainbow::ParseInline<__I>
-                    });
+                let mut b = None;
+                for attr in &f.attrs {
+                    if attr_str(attr).as_deref() == Some("parse") {
+                        let ParseArgs { bound, unchecked } = attr.parse_args::<ParseArgs>()?;
+                        if unchecked {
+                            continue 'field;
+                        }
+                        if let Some(bound) = bound {
+                            b = Some(bound);
+                        }
+                    }
+                }
+                if let Some(bound) = b {
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            (#ty, __I): #bound
+                        },
+                    );
+                } else {
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: #tr
+                        },
+                    );
+                }
             }
         }
         Data::Enum(data) => {
             for v in data.variants.iter() {
-                for f in v.fields.iter() {
+                'field: for f in v.fields.iter() {
                     let ty = &f.ty;
-                    generics.make_where_clause().predicates.push(
-                        parse_quote_spanned! { ty.span() =>
-                            #ty: ::object_rainbow::ParseInline<__I>
-                        },
-                    );
+                    let mut b = None;
+                    for attr in &f.attrs {
+                        if attr_str(attr).as_deref() == Some("parse") {
+                            let ParseArgs { bound, unchecked } = attr.parse_args::<ParseArgs>()?;
+                            if unchecked {
+                                continue 'field;
+                            }
+                            if let Some(bound) = bound {
+                                b = Some(bound);
+                            }
+                        }
+                    }
+                    if let Some(bound) = b {
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { ty.span() =>
+                                (#ty, __I): #bound
+                            },
+                        );
+                    } else {
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { ty.span() =>
+                                #ty: #tr
+                            },
+                        );
+                    }
                 }
             }
         }
@@ -1155,9 +1236,13 @@ fn bounds_parse_inline(mut generics: Generics, data: &Data) -> syn::Result<Gener
             ));
         }
     }
-    generics
-        .params
-        .push(parse_quote!(__I: ::object_rainbow::ParseInput));
+    generics.params.push(if recursive {
+        parse_quote!(__I: ::object_rainbow::PointInput<
+            Extra: ::core::marker::Send + ::core::marker::Sync
+        >)
+    } else {
+        parse_quote!(__I: ::object_rainbow::ParseInput)
+    });
     Ok(generics)
 }
 
