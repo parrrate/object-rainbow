@@ -392,6 +392,26 @@ impl<T> Point<T> {
     }
 }
 
+impl<U: 'static + Equivalent<T>, T: 'static, Extra> Equivalent<RawPoint<T, Extra>>
+    for RawPoint<U, Extra>
+{
+    fn into_equivalent(self) -> RawPoint<T, Extra> {
+        RawPoint {
+            inner: self.inner,
+            extra: self.extra,
+            object: Default::default(),
+        }
+    }
+
+    fn from_equivalent(object: RawPoint<T, Extra>) -> Self {
+        Self {
+            inner: object.inner,
+            extra: object.extra,
+            object: Default::default(),
+        }
+    }
+}
+
 #[derive(ParseAsInline)]
 #[must_use]
 pub struct Point<T> {
