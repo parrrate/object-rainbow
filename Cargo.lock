@@ -1058,7 +1058,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.27"
+version = "0.0.0-a.28"
 dependencies = [
  "anyhow",
  "futures-util",
@@ -1076,7 +1076,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-derive"
-version = "0.0.0-a.8"
+version = "0.0.0-a.9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1085,7 +1085,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-encrypted"
-version = "0.0.0-a.6"
+version = "0.0.0-a.7"
 dependencies = [
  "anyhow",
  "chacha20poly1305",
@@ -1100,7 +1100,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-fetchall"
-version = "0.0.0-a.1"
+version = "0.0.0-a.2"
 dependencies = [
  "anyhow",
  "async-executor",
@@ -1113,7 +1113,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-json"
-version = "0.0.0-a.11"
+version = "0.0.0-a.12"
 dependencies = [
  "futures-util",
  "object-rainbow",
@@ -1132,7 +1132,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-marshall"
-version = "0.0.0-a.3"
+version = "0.0.0-a.4"
 dependencies = [
  "anyhow",
  "object-rainbow",
@@ -1151,7 +1151,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-store"
-version = "0.0.0-a.3"
+version = "0.0.0-a.4"
 dependencies = [
  "object-rainbow",
 ]
@@ -1170,7 +1170,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-trie"
-version = "0.0.0-a.4"
+version = "0.0.0-a.5"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
