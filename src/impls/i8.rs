@@ -4,7 +4,7 @@ use crate::*;
 
 impl ToOutput for i8 {
     fn to_output(&self, output: &mut dyn crate::Output) {
-        output.write(&[self.cast_unsigned()]);
+        output.write(&self.to_le_bytes());
     }
 }
 
@@ -26,11 +26,3 @@ impl Size for i8 {
     type Size = U1;
     const SIZE: usize = 1;
 }
-
-impl MaybeHasNiche for i8 {
-    type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
-}
-
-impl Tagged for i8 {}
-impl ListHashes for i8 {}
-impl Topological for i8 {}
