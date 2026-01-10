@@ -1148,6 +1148,10 @@ pub trait Singular: Send + Sync + FetchBytes {
     fn hash(&self) -> Hash;
 }
 
+pub trait SingularFetch: Singular + Fetch {}
+
+impl<T: ?Sized + Singular + Fetch> SingularFetch for T {}
+
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
 impl PointVisitor for TopoVec {
