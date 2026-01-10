@@ -17,7 +17,7 @@ members = [
 
 [workspace.package]
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.87"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/parrrate/object-rainbow"
 authors = ["Alisa Feistel <alisafeistel@gmail.com>"]

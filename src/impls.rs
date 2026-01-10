@@ -6,6 +6,7 @@ mod btree;
 mod bytes;
 mod cstr;
 mod cstring;
+mod i8;
 mod infallible;
 mod option;
 mod phantom;
