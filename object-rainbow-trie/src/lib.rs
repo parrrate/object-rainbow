@@ -32,7 +32,7 @@ impl<T> Default for Trie<T> {
     }
 }
 
-trait TrieNode: Sized {
+trait TrieChildren: Sized {
     fn c_get_mut(&mut self, key: u8) -> Option<&mut Point<(LpBytes, Self)>>;
     fn c_get(&self, key: u8) -> Option<&Point<(LpBytes, Self)>>;
     fn c_insert(&mut self, key: u8, point: Point<(LpBytes, Self)>);
@@ -47,7 +47,7 @@ trait TrieNode: Sized {
     fn c_pop_first(&mut self) -> Option<(u8, Point<(LpBytes, Self)>)>;
 }
 
-impl<T> TrieNode for Trie<T> {
+impl<T> TrieChildren for Trie<T> {
     fn c_get_mut(&mut self, key: u8) -> Option<&mut Point<(LpBytes, Self)>> {
         self.children.get_mut(&key)
     }
