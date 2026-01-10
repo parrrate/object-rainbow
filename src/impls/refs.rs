@@ -28,7 +28,7 @@ impl<T: Tagged> Tagged for &T {
 }
 
 impl<T: Topological> Topological for &T {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        (**self).accept_points(visitor);
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        (**self).traverse(visitor);
     }
 }

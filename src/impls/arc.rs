@@ -35,8 +35,8 @@ impl<T: ?Sized + ListHashes> ListHashes for Arc<T> {
 }
 
 impl<T: ?Sized + Topological> Topological for Arc<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        (**self).accept_points(visitor);
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        (**self).traverse(visitor);
     }
 
     fn topology(&self) -> TopoVec {

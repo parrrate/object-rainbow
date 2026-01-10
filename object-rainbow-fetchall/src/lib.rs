@@ -54,7 +54,7 @@ impl<'r> Context<'r> {
     async fn save_object(&self, object: &impl Traversible) -> object_rainbow::Result<()> {
         let mut dependencies = BTreeMap::new();
         let mut topology = Vec::new();
-        object.accept_points(&mut DependencyVisitor {
+        object.traverse(&mut DependencyVisitor {
             dependencies: &mut dependencies,
             topology: &mut topology,
         });

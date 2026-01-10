@@ -76,7 +76,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
     }
     fn save_topology(&self, object: &impl Topological) -> impl RainbowFuture<T = ()> {
         let mut futures = Vec::with_capacity(object.point_count());
-        object.accept_points(&mut StoreVisitor {
+        object.traverse(&mut StoreVisitor {
             store: self,
             futures: &mut futures,
         });

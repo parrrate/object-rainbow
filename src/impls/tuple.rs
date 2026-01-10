@@ -19,9 +19,9 @@ impl<A: ListHashes, B: ListHashes> ListHashes for (A, B) {
 }
 
 impl<A: Topological, B: Topological> Topological for (A, B) {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        self.0.accept_points(visitor);
-        self.1.accept_points(visitor);
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.0.traverse(visitor);
+        self.1.traverse(visitor);
     }
 }
 
@@ -73,10 +73,10 @@ impl<A: ListHashes, B: ListHashes, C: ListHashes> ListHashes for (A, B, C) {
 }
 
 impl<A: Topological, B: Topological, C: Topological> Topological for (A, B, C) {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        self.0.accept_points(visitor);
-        self.1.accept_points(visitor);
-        self.2.accept_points(visitor);
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.0.traverse(visitor);
+        self.1.traverse(visitor);
+        self.2.traverse(visitor);
     }
 }
 
@@ -139,11 +139,11 @@ impl<A: ListHashes, B: ListHashes, C: ListHashes, D: ListHashes> ListHashes for 
 }
 
 impl<A: Topological, B: Topological, C: Topological, D: Topological> Topological for (A, B, C, D) {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        self.0.accept_points(visitor);
-        self.1.accept_points(visitor);
-        self.2.accept_points(visitor);
-        self.3.accept_points(visitor);
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.0.traverse(visitor);
+        self.1.traverse(visitor);
+        self.2.traverse(visitor);
+        self.3.traverse(visitor);
     }
 }
 
@@ -224,12 +224,12 @@ impl<A: ListHashes, B: ListHashes, C: ListHashes, D: ListHashes, E: ListHashes> 
 impl<A: Topological, B: Topological, C: Topological, D: Topological, E: Topological> Topological
     for (A, B, C, D, E)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        self.0.accept_points(visitor);
-        self.1.accept_points(visitor);
-        self.2.accept_points(visitor);
-        self.3.accept_points(visitor);
-        self.4.accept_points(visitor);
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.0.traverse(visitor);
+        self.1.traverse(visitor);
+        self.2.traverse(visitor);
+        self.3.traverse(visitor);
+        self.4.traverse(visitor);
     }
 }
 
@@ -338,13 +338,13 @@ impl<A: ListHashes, B: ListHashes, C: ListHashes, D: ListHashes, E: ListHashes, 
 impl<A: Topological, B: Topological, C: Topological, D: Topological, E: Topological, F: Topological>
     Topological for (A, B, C, D, E, F)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        self.0.accept_points(visitor);
-        self.1.accept_points(visitor);
-        self.2.accept_points(visitor);
-        self.3.accept_points(visitor);
-        self.4.accept_points(visitor);
-        self.5.accept_points(visitor);
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.0.traverse(visitor);
+        self.1.traverse(visitor);
+        self.2.traverse(visitor);
+        self.3.traverse(visitor);
+        self.4.traverse(visitor);
+        self.5.traverse(visitor);
     }
 }
 
@@ -495,14 +495,14 @@ impl<
     G: Topological,
 > Topological for (A, B, C, D, E, F, G)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        self.0.accept_points(visitor);
-        self.1.accept_points(visitor);
-        self.2.accept_points(visitor);
-        self.3.accept_points(visitor);
-        self.4.accept_points(visitor);
-        self.5.accept_points(visitor);
-        self.6.accept_points(visitor);
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.0.traverse(visitor);
+        self.1.traverse(visitor);
+        self.2.traverse(visitor);
+        self.3.traverse(visitor);
+        self.4.traverse(visitor);
+        self.5.traverse(visitor);
+        self.6.traverse(visitor);
     }
 }
 
@@ -687,15 +687,15 @@ impl<
     H: Topological,
 > Topological for (A, B, C, D, E, F, G, H)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        self.0.accept_points(visitor);
-        self.1.accept_points(visitor);
-        self.2.accept_points(visitor);
-        self.3.accept_points(visitor);
-        self.4.accept_points(visitor);
-        self.5.accept_points(visitor);
-        self.6.accept_points(visitor);
-        self.7.accept_points(visitor);
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.0.traverse(visitor);
+        self.1.traverse(visitor);
+        self.2.traverse(visitor);
+        self.3.traverse(visitor);
+        self.4.traverse(visitor);
+        self.5.traverse(visitor);
+        self.6.traverse(visitor);
+        self.7.traverse(visitor);
     }
 }
 
@@ -897,16 +897,16 @@ impl<
     I: Topological,
 > Topological for (A, B, C, D, E, F, G, H, I)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        self.0.accept_points(visitor);
-        self.1.accept_points(visitor);
-        self.2.accept_points(visitor);
-        self.3.accept_points(visitor);
-        self.4.accept_points(visitor);
-        self.5.accept_points(visitor);
-        self.6.accept_points(visitor);
-        self.7.accept_points(visitor);
-        self.8.accept_points(visitor);
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.0.traverse(visitor);
+        self.1.traverse(visitor);
+        self.2.traverse(visitor);
+        self.3.traverse(visitor);
+        self.4.traverse(visitor);
+        self.5.traverse(visitor);
+        self.6.traverse(visitor);
+        self.7.traverse(visitor);
+        self.8.traverse(visitor);
     }
 }
 
@@ -1132,17 +1132,17 @@ impl<
     J: Topological,
 > Topological for (A, B, C, D, E, F, G, H, I, J)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        self.0.accept_points(visitor);
-        self.1.accept_points(visitor);
-        self.2.accept_points(visitor);
-        self.3.accept_points(visitor);
-        self.4.accept_points(visitor);
-        self.5.accept_points(visitor);
-        self.6.accept_points(visitor);
-        self.7.accept_points(visitor);
-        self.8.accept_points(visitor);
-        self.9.accept_points(visitor);
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.0.traverse(visitor);
+        self.1.traverse(visitor);
+        self.2.traverse(visitor);
+        self.3.traverse(visitor);
+        self.4.traverse(visitor);
+        self.5.traverse(visitor);
+        self.6.traverse(visitor);
+        self.7.traverse(visitor);
+        self.8.traverse(visitor);
+        self.9.traverse(visitor);
     }
 }
 
@@ -1392,18 +1392,18 @@ impl<
     K: Topological,
 > Topological for (A, B, C, D, E, F, G, H, I, J, K)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        self.0.accept_points(visitor);
-        self.1.accept_points(visitor);
-        self.2.accept_points(visitor);
-        self.3.accept_points(visitor);
-        self.4.accept_points(visitor);
-        self.5.accept_points(visitor);
-        self.6.accept_points(visitor);
-        self.7.accept_points(visitor);
-        self.8.accept_points(visitor);
-        self.9.accept_points(visitor);
-        self.10.accept_points(visitor);
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.0.traverse(visitor);
+        self.1.traverse(visitor);
+        self.2.traverse(visitor);
+        self.3.traverse(visitor);
+        self.4.traverse(visitor);
+        self.5.traverse(visitor);
+        self.6.traverse(visitor);
+        self.7.traverse(visitor);
+        self.8.traverse(visitor);
+        self.9.traverse(visitor);
+        self.10.traverse(visitor);
     }
 }
 
@@ -1681,19 +1681,19 @@ impl<
     L: Topological,
 > Topological for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        self.0.accept_points(visitor);
-        self.1.accept_points(visitor);
-        self.2.accept_points(visitor);
-        self.3.accept_points(visitor);
-        self.4.accept_points(visitor);
-        self.5.accept_points(visitor);
-        self.6.accept_points(visitor);
-        self.7.accept_points(visitor);
-        self.8.accept_points(visitor);
-        self.9.accept_points(visitor);
-        self.10.accept_points(visitor);
-        self.11.accept_points(visitor);
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.0.traverse(visitor);
+        self.1.traverse(visitor);
+        self.2.traverse(visitor);
+        self.3.traverse(visitor);
+        self.4.traverse(visitor);
+        self.5.traverse(visitor);
+        self.6.traverse(visitor);
+        self.7.traverse(visitor);
+        self.8.traverse(visitor);
+        self.9.traverse(visitor);
+        self.10.traverse(visitor);
+        self.11.traverse(visitor);
     }
 }
 

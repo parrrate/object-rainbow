@@ -67,7 +67,7 @@ impl<'ex> Event<'ex> {
         Event(
             hash,
             data,
-            Box::new(move |fetching| object.accept_points(&mut EventVisitor { fetching, context })),
+            Box::new(move |fetching| object.traverse(&mut EventVisitor { fetching, context })),
         )
     }
 }
