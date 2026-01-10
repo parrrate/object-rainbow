@@ -66,7 +66,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
             Ok(point.with_resolve(self.resolve(), extra))
         }
     }
-    fn save_point<T: Traversible>(&self, point: &Point<T>) -> impl RainbowFuture<T = ()> {
+    fn save_point(&self, point: &Point<impl Traversible>) -> impl RainbowFuture<T = ()> {
         async {
             if !self.contains(point.hash()).await? {
                 self.save_object(&point.fetch().await?).await?;
