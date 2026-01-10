@@ -17,5 +17,7 @@ flume = "0.12.0"
 futures-channel = "0.3.31"
 
 [dev-dependencies]
+object-rainbow-point.workspace = true
+
 anyhow = "1.0.96"
 smol = "2.0.2"

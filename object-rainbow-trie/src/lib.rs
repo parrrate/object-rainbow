@@ -7,9 +7,10 @@ use std::{
 use futures_util::{Stream, TryStream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    Fetch, InlineOutput, ListHashes, ObjectMarker, Parse, ParseSliceRefless, Point, ReflessObject,
-    Tagged, ToOutput, Topological, Traversible, length_prefixed::LpBytes,
+    Fetch, InlineOutput, ListHashes, ObjectMarker, Parse, ParseSliceRefless, ReflessObject, Tagged,
+    ToOutput, Topological, Traversible, length_prefixed::LpBytes,
 };
+use object_rainbow_point::{IntoPoint, Point};
 
 #[cfg(feature = "serde")]
 mod serde;

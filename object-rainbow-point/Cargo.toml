@@ -1,0 +1,19 @@
+[package]
+name = "object-rainbow-point"
+version = "0.0.0-a.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "default pointer type for object-rainbow"
+
+[dependencies]
+object-rainbow.workspace = true
+
+futures-util = { version = "0.3.31", default-features = false }
+serde = { version = "1.0.218", optional = true }
+
+[features]
+serde = ["dep:serde"]
+point-serialize = ["serde"]

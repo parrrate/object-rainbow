@@ -1,5 +1,5 @@
-use object_rainbow::Traversible;
 use object_rainbow_fetchall::fetchall;
+use object_rainbow_point::IntoPoint;
 
 fn main() -> anyhow::Result<()> {
     smol::block_on(async move {

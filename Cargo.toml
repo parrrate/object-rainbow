@@ -6,6 +6,7 @@ members = [
     "object-rainbow-json",
     "object-rainbow-local-map",
     "object-rainbow-marshall",
+    "object-rainbow-point",
     "object-rainbow-sled",
     "object-rainbow-store",
     "object-rainbow-store-opendal",
@@ -23,7 +24,7 @@ authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 
 [package]
 name = "object-rainbow"
-version = "0.0.0-a.28"
+version = "0.0.0-a.29"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -34,10 +35,11 @@ documentation = "https://docs.rs/object-rainbow"
 exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 
 [workspace.dependencies]
-object-rainbow = { version = "0.0.0-a.28", path = "." }
+object-rainbow = { version = "0.0.0-a.29", path = "." }
 object-rainbow-fetchall = { version = "0.0.0-a.2", path = "object-rainbow-fetchall" }
 object-rainbow-local-map = { version = "0.0.0-a.1", path = "object-rainbow-local-map" }
-object-rainbow-store = { version = "0.0.0-a.4", path = "object-rainbow-store" }
+object-rainbow-point = { version = "0.0.0-a.0", path = "object-rainbow-point" }
+object-rainbow-store = { version = "0.0.0-a.5", path = "object-rainbow-store" }
 
 [dependencies]
 object-rainbow-derive = { version = "=0.0.0-a.9", path = "object-rainbow-derive" }
@@ -52,7 +54,6 @@ typenum = { version = "1.18.0", features = ["const-generics"] }
 
 [features]
 serde = ["dep:serde"]
-point-serialize = ["serde"]
 
 [dev-dependencies]
 hex = "0.4.3"

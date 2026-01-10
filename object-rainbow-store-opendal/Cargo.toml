@@ -16,5 +16,7 @@ hex = "0.4.3"
 opendal = "0.55.0"
 
 [dev-dependencies]
+object-rainbow-point.workspace = true
+
 anyhow = "1.0.96"
 smol = "2.0.2"
