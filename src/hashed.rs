@@ -22,6 +22,6 @@ impl<T: ToOutput> ToOutput for Hashed<T> {
 impl<T: ToOutput> InlineOutput for Hashed<T> {}
 
 impl<T: ToOutput> Size for Hashed<T> {
-    const SIZE: usize = Point::<T>::SIZE;
-    type Size = <Point<T> as Size>::Size;
+    const SIZE: usize = Hash::SIZE;
+    type Size = <Hash as Size>::Size;
 }
