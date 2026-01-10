@@ -218,30 +218,30 @@ fn bounds_inline_output(mut generics: Generics, data: &Data) -> syn::Result<Gene
     Ok(generics)
 }
 
-#[proc_macro_derive(ListPoints, attributes(topology))]
-pub fn derive_list_points(input: TokenStream) -> TokenStream {
+#[proc_macro_derive(ListHashes, attributes(topology))]
+pub fn derive_list_hashes(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
     let generics = input.generics.clone();
     let (_, ty_generics, _) = generics.split_for_impl();
-    let generics = match bounds_list_points(input.generics, &input.data) {
+    let generics = match bounds_list_hashes(input.generics, &input.data) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let list_points = gen_list_points(&input.data);
+    let list_hashes = gen_list_hashes(&input.data);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
     let output = quote! {
         #[automatically_derived]
-        impl #impl_generics ::object_rainbow::ListPoints for #name #ty_generics #where_clause {
-            fn list_points(&self, visitor: &mut impl FnMut(::object_rainbow::Hash)) {
-                #list_points
+        impl #impl_generics ::object_rainbow::ListHashes for #name #ty_generics #where_clause {
+            fn list_hashes(&self, visitor: &mut impl FnMut(::object_rainbow::Hash)) {
+                #list_hashes
             }
         }
     };
     TokenStream::from(output)
 }
 
-fn bounds_list_points(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+fn bounds_list_hashes(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
     let g = &bounds_g(&generics);
     match data {
         Data::Struct(data) => {
@@ -250,7 +250,7 @@ fn bounds_list_points(mut generics: Generics, data: &Data) -> syn::Result<Generi
                 if type_contains_generics(GContext { g, always: false }, ty) {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
-                            #ty: ::object_rainbow::ListPoints
+                            #ty: ::object_rainbow::ListHashes
                         },
                     );
                 }
@@ -263,7 +263,7 @@ fn bounds_list_points(mut generics: Generics, data: &Data) -> syn::Result<Generi
                     if type_contains_generics(GContext { g, always: false }, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
-                                #ty: ::object_rainbow::ListPoints
+                                #ty: ::object_rainbow::ListHashes
                             },
                         );
                     }
@@ -280,18 +280,18 @@ fn bounds_list_points(mut generics: Generics, data: &Data) -> syn::Result<Generi
     Ok(generics)
 }
 
-fn fields_list_points(fields: &syn::Fields) -> proc_macro2::TokenStream {
+fn fields_list_hashes(fields: &syn::Fields) -> proc_macro2::TokenStream {
     match fields {
         syn::Fields::Named(fields) => {
             let let_self = fields.named.iter().map(|f| f.ident.as_ref().unwrap());
-            let list_points = let_self.clone().zip(fields.named.iter()).map(|(i, f)| {
+            let list_hashes = let_self.clone().zip(fields.named.iter()).map(|(i, f)| {
                 quote_spanned! { f.ty.span() =>
-                    #i.list_points(visitor)
+                    #i.list_hashes(visitor)
                 }
             });
             quote! {
                 { #(#let_self),* } => {
-                    #(#list_points);*
+                    #(#list_hashes);*
                 }
             }
         }
@@ -301,14 +301,14 @@ fn fields_list_points(fields: &syn::Fields) -> proc_macro2::TokenStream {
                 .iter()
                 .enumerate()
                 .map(|(i, f)| Ident::new(&format!("field{i}"), f.ty.span()));
-            let list_points = let_self.clone().zip(fields.unnamed.iter()).map(|(i, f)| {
+            let list_hashes = let_self.clone().zip(fields.unnamed.iter()).map(|(i, f)| {
                 quote_spanned! { f.ty.span() =>
-                    #i.list_points(visitor)
+                    #i.list_hashes(visitor)
                 }
             });
             quote! {
                 (#(#let_self),*) => {
-                    #(#list_points);*
+                    #(#list_hashes);*
                 }
             }
         }
@@ -318,10 +318,10 @@ fn fields_list_points(fields: &syn::Fields) -> proc_macro2::TokenStream {
     }
 }
 
-fn gen_list_points(data: &Data) -> proc_macro2::TokenStream {
+fn gen_list_hashes(data: &Data) -> proc_macro2::TokenStream {
     match data {
         Data::Struct(data) => {
-            let arm = fields_list_points(&data.fields);
+            let arm = fields_list_hashes(&data.fields);
             quote! {
                 match self {
                     Self #arm
@@ -331,13 +331,13 @@ fn gen_list_points(data: &Data) -> proc_macro2::TokenStream {
         Data::Enum(data) => {
             let to_output = data.variants.iter().map(|v| {
                 let ident = &v.ident;
-                let arm = fields_list_points(&v.fields);
+                let arm = fields_list_hashes(&v.fields);
                 quote! { Self::#ident #arm }
             });
             quote! {
                 let kind = ::object_rainbow::Enum::kind(self);
                 let tag = ::object_rainbow::enumkind::EnumKind::to_tag(kind);
-                tag.list_points(visitor);
+                tag.list_hashes(visitor);
                 match self {
                     #(#to_output)*
                 }

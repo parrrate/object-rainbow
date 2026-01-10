@@ -42,9 +42,9 @@ impl<T: ToOutput + TaggedOption> ToOutput for Option<T> {
 
 impl<T: InlineOutput + TaggedOption> InlineOutput for Option<T> {}
 
-impl<T: ListPoints> ListPoints for Option<T> {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.iter_list_points(f);
+impl<T: ListHashes> ListHashes for Option<T> {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.iter_list_hashes(f);
     }
 }
 

@@ -11,10 +11,10 @@ impl<A: InlineOutput, B: ToOutput> ToOutput for (A, B) {
 
 impl<A: InlineOutput, B: InlineOutput> InlineOutput for (A, B) {}
 
-impl<A: ListPoints, B: ListPoints> ListPoints for (A, B) {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.0.list_points(f);
-        self.1.list_points(f);
+impl<A: ListHashes, B: ListHashes> ListHashes for (A, B) {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.0.list_hashes(f);
+        self.1.list_hashes(f);
     }
 }
 
@@ -64,11 +64,11 @@ impl<A: InlineOutput, B: InlineOutput, C: ToOutput> ToOutput for (A, B, C) {
 
 impl<A: InlineOutput, B: InlineOutput, C: InlineOutput> InlineOutput for (A, B, C) {}
 
-impl<A: ListPoints, B: ListPoints, C: ListPoints> ListPoints for (A, B, C) {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.0.list_points(f);
-        self.1.list_points(f);
-        self.2.list_points(f);
+impl<A: ListHashes, B: ListHashes, C: ListHashes> ListHashes for (A, B, C) {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.0.list_hashes(f);
+        self.1.list_hashes(f);
+        self.2.list_hashes(f);
     }
 }
 
@@ -129,12 +129,12 @@ impl<A: InlineOutput, B: InlineOutput, C: InlineOutput, D: InlineOutput> InlineO
 {
 }
 
-impl<A: ListPoints, B: ListPoints, C: ListPoints, D: ListPoints> ListPoints for (A, B, C, D) {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.0.list_points(f);
-        self.1.list_points(f);
-        self.2.list_points(f);
-        self.3.list_points(f);
+impl<A: ListHashes, B: ListHashes, C: ListHashes, D: ListHashes> ListHashes for (A, B, C, D) {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.0.list_hashes(f);
+        self.1.list_hashes(f);
+        self.2.list_hashes(f);
+        self.3.list_hashes(f);
     }
 }
 
@@ -209,15 +209,15 @@ impl<A: InlineOutput, B: InlineOutput, C: InlineOutput, D: InlineOutput, E: Inli
 {
 }
 
-impl<A: ListPoints, B: ListPoints, C: ListPoints, D: ListPoints, E: ListPoints> ListPoints
+impl<A: ListHashes, B: ListHashes, C: ListHashes, D: ListHashes, E: ListHashes> ListHashes
     for (A, B, C, D, E)
 {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.0.list_points(f);
-        self.1.list_points(f);
-        self.2.list_points(f);
-        self.3.list_points(f);
-        self.4.list_points(f);
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.0.list_hashes(f);
+        self.1.list_hashes(f);
+        self.2.list_hashes(f);
+        self.3.list_hashes(f);
+        self.4.list_hashes(f);
     }
 }
 
@@ -322,16 +322,16 @@ impl<
 {
 }
 
-impl<A: ListPoints, B: ListPoints, C: ListPoints, D: ListPoints, E: ListPoints, F: ListPoints>
-    ListPoints for (A, B, C, D, E, F)
+impl<A: ListHashes, B: ListHashes, C: ListHashes, D: ListHashes, E: ListHashes, F: ListHashes>
+    ListHashes for (A, B, C, D, E, F)
 {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.0.list_points(f);
-        self.1.list_points(f);
-        self.2.list_points(f);
-        self.3.list_points(f);
-        self.4.list_points(f);
-        self.5.list_points(f);
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.0.list_hashes(f);
+        self.1.list_hashes(f);
+        self.2.list_hashes(f);
+        self.3.list_hashes(f);
+        self.4.list_hashes(f);
+        self.5.list_hashes(f);
     }
 }
 
@@ -465,23 +465,23 @@ impl<
 }
 
 impl<
-    A: ListPoints,
-    B: ListPoints,
-    C: ListPoints,
-    D: ListPoints,
-    E: ListPoints,
-    F: ListPoints,
-    G: ListPoints,
-> ListPoints for (A, B, C, D, E, F, G)
+    A: ListHashes,
+    B: ListHashes,
+    C: ListHashes,
+    D: ListHashes,
+    E: ListHashes,
+    F: ListHashes,
+    G: ListHashes,
+> ListHashes for (A, B, C, D, E, F, G)
 {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.0.list_points(f);
-        self.1.list_points(f);
-        self.2.list_points(f);
-        self.3.list_points(f);
-        self.4.list_points(f);
-        self.5.list_points(f);
-        self.6.list_points(f);
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.0.list_hashes(f);
+        self.1.list_hashes(f);
+        self.2.list_hashes(f);
+        self.3.list_hashes(f);
+        self.4.list_hashes(f);
+        self.5.list_hashes(f);
+        self.6.list_hashes(f);
     }
 }
 
@@ -654,25 +654,25 @@ impl<
 }
 
 impl<
-    A: ListPoints,
-    B: ListPoints,
-    C: ListPoints,
-    D: ListPoints,
-    E: ListPoints,
-    F: ListPoints,
-    G: ListPoints,
-    H: ListPoints,
-> ListPoints for (A, B, C, D, E, F, G, H)
+    A: ListHashes,
+    B: ListHashes,
+    C: ListHashes,
+    D: ListHashes,
+    E: ListHashes,
+    F: ListHashes,
+    G: ListHashes,
+    H: ListHashes,
+> ListHashes for (A, B, C, D, E, F, G, H)
 {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.0.list_points(f);
-        self.1.list_points(f);
-        self.2.list_points(f);
-        self.3.list_points(f);
-        self.4.list_points(f);
-        self.5.list_points(f);
-        self.6.list_points(f);
-        self.7.list_points(f);
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.0.list_hashes(f);
+        self.1.list_hashes(f);
+        self.2.list_hashes(f);
+        self.3.list_hashes(f);
+        self.4.list_hashes(f);
+        self.5.list_hashes(f);
+        self.6.list_hashes(f);
+        self.7.list_hashes(f);
     }
 }
 
@@ -861,27 +861,27 @@ impl<
 }
 
 impl<
-    A: ListPoints,
-    B: ListPoints,
-    C: ListPoints,
-    D: ListPoints,
-    E: ListPoints,
-    F: ListPoints,
-    G: ListPoints,
-    H: ListPoints,
-    I: ListPoints,
-> ListPoints for (A, B, C, D, E, F, G, H, I)
+    A: ListHashes,
+    B: ListHashes,
+    C: ListHashes,
+    D: ListHashes,
+    E: ListHashes,
+    F: ListHashes,
+    G: ListHashes,
+    H: ListHashes,
+    I: ListHashes,
+> ListHashes for (A, B, C, D, E, F, G, H, I)
 {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.0.list_points(f);
-        self.1.list_points(f);
-        self.2.list_points(f);
-        self.3.list_points(f);
-        self.4.list_points(f);
-        self.5.list_points(f);
-        self.6.list_points(f);
-        self.7.list_points(f);
-        self.8.list_points(f);
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.0.list_hashes(f);
+        self.1.list_hashes(f);
+        self.2.list_hashes(f);
+        self.3.list_hashes(f);
+        self.4.list_hashes(f);
+        self.5.list_hashes(f);
+        self.6.list_hashes(f);
+        self.7.list_hashes(f);
+        self.8.list_hashes(f);
     }
 }
 
@@ -1093,29 +1093,29 @@ impl<
 }
 
 impl<
-    A: ListPoints,
-    B: ListPoints,
-    C: ListPoints,
-    D: ListPoints,
-    E: ListPoints,
-    F: ListPoints,
-    G: ListPoints,
-    H: ListPoints,
-    I: ListPoints,
-    J: ListPoints,
-> ListPoints for (A, B, C, D, E, F, G, H, I, J)
+    A: ListHashes,
+    B: ListHashes,
+    C: ListHashes,
+    D: ListHashes,
+    E: ListHashes,
+    F: ListHashes,
+    G: ListHashes,
+    H: ListHashes,
+    I: ListHashes,
+    J: ListHashes,
+> ListHashes for (A, B, C, D, E, F, G, H, I, J)
 {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.0.list_points(f);
-        self.1.list_points(f);
-        self.2.list_points(f);
-        self.3.list_points(f);
-        self.4.list_points(f);
-        self.5.list_points(f);
-        self.6.list_points(f);
-        self.7.list_points(f);
-        self.8.list_points(f);
-        self.9.list_points(f);
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.0.list_hashes(f);
+        self.1.list_hashes(f);
+        self.2.list_hashes(f);
+        self.3.list_hashes(f);
+        self.4.list_hashes(f);
+        self.5.list_hashes(f);
+        self.6.list_hashes(f);
+        self.7.list_hashes(f);
+        self.8.list_hashes(f);
+        self.9.list_hashes(f);
     }
 }
 
@@ -1350,31 +1350,31 @@ impl<
 }
 
 impl<
-    A: ListPoints,
-    B: ListPoints,
-    C: ListPoints,
-    D: ListPoints,
-    E: ListPoints,
-    F: ListPoints,
-    G: ListPoints,
-    H: ListPoints,
-    I: ListPoints,
-    J: ListPoints,
-    K: ListPoints,
-> ListPoints for (A, B, C, D, E, F, G, H, I, J, K)
+    A: ListHashes,
+    B: ListHashes,
+    C: ListHashes,
+    D: ListHashes,
+    E: ListHashes,
+    F: ListHashes,
+    G: ListHashes,
+    H: ListHashes,
+    I: ListHashes,
+    J: ListHashes,
+    K: ListHashes,
+> ListHashes for (A, B, C, D, E, F, G, H, I, J, K)
 {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.0.list_points(f);
-        self.1.list_points(f);
-        self.2.list_points(f);
-        self.3.list_points(f);
-        self.4.list_points(f);
-        self.5.list_points(f);
-        self.6.list_points(f);
-        self.7.list_points(f);
-        self.8.list_points(f);
-        self.9.list_points(f);
-        self.10.list_points(f);
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.0.list_hashes(f);
+        self.1.list_hashes(f);
+        self.2.list_hashes(f);
+        self.3.list_hashes(f);
+        self.4.list_hashes(f);
+        self.5.list_hashes(f);
+        self.6.list_hashes(f);
+        self.7.list_hashes(f);
+        self.8.list_hashes(f);
+        self.9.list_hashes(f);
+        self.10.list_hashes(f);
     }
 }
 
@@ -1636,33 +1636,33 @@ impl<
 }
 
 impl<
-    A: ListPoints,
-    B: ListPoints,
-    C: ListPoints,
-    D: ListPoints,
-    E: ListPoints,
-    F: ListPoints,
-    G: ListPoints,
-    H: ListPoints,
-    I: ListPoints,
-    J: ListPoints,
-    K: ListPoints,
-    L: ListPoints,
-> ListPoints for (A, B, C, D, E, F, G, H, I, J, K, L)
+    A: ListHashes,
+    B: ListHashes,
+    C: ListHashes,
+    D: ListHashes,
+    E: ListHashes,
+    F: ListHashes,
+    G: ListHashes,
+    H: ListHashes,
+    I: ListHashes,
+    J: ListHashes,
+    K: ListHashes,
+    L: ListHashes,
+> ListHashes for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.0.list_points(f);
-        self.1.list_points(f);
-        self.2.list_points(f);
-        self.3.list_points(f);
-        self.4.list_points(f);
-        self.5.list_points(f);
-        self.6.list_points(f);
-        self.7.list_points(f);
-        self.8.list_points(f);
-        self.9.list_points(f);
-        self.10.list_points(f);
-        self.11.list_points(f);
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.0.list_hashes(f);
+        self.1.list_hashes(f);
+        self.2.list_hashes(f);
+        self.3.list_hashes(f);
+        self.4.list_hashes(f);
+        self.5.list_hashes(f);
+        self.6.list_hashes(f);
+        self.7.list_hashes(f);
+        self.8.list_hashes(f);
+        self.9.list_hashes(f);
+        self.10.list_hashes(f);
+        self.11.list_hashes(f);
     }
 }
 

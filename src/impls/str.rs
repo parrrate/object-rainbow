@@ -6,6 +6,6 @@ impl ToOutput for str {
     }
 }
 
-impl ListPoints for str {}
+impl ListHashes for str {}
 impl Topological for str {}
 impl Tagged for str {}

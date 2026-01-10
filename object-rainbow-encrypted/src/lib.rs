@@ -2,7 +2,7 @@ use std::{ops::Deref, sync::Arc};
 
 use object_rainbow::{
     Address, ByteNode, Error, ExtractResolve, FailFuture, Fetch, FetchBytes, FullHash, Hash,
-    ListPoints, Node, Object, Parse, ParseSliceExtra, Point, PointInput, PointVisitor, Resolve,
+    ListHashes, Node, Object, Parse, ParseSliceExtra, Point, PointInput, PointVisitor, Resolve,
     Singular, SingularFetch, Tagged, ToOutput, Topological, Traversible, length_prefixed::Lp,
 };
 
@@ -206,9 +206,9 @@ impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, '_, K, 
     }
 }
 
-impl<K, T> ListPoints for EncryptedInner<K, T> {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.resolution.list_points(f);
+impl<K, T> ListHashes for EncryptedInner<K, T> {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.resolution.list_hashes(f);
     }
 
     fn topology_hash(&self) -> Hash {
@@ -259,9 +259,9 @@ impl<K: Clone, T> Clone for Encrypted<K, T> {
     }
 }
 
-impl<K, T> ListPoints for Encrypted<K, T> {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.inner.list_points(f);
+impl<K, T> ListHashes for Encrypted<K, T> {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.inner.list_hashes(f);
     }
 
     fn topology_hash(&self) -> Hash {

@@ -10,6 +10,6 @@ impl ToOutput for CStr {
 
 impl InlineOutput for CStr {}
 
-impl ListPoints for CStr {}
+impl ListHashes for CStr {}
 impl Topological for CStr {}
 impl Tagged for CStr {}

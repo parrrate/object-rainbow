@@ -25,7 +25,7 @@ impl UsizeTag for bool {
 }
 
 #[derive(
-    ToOutput, InlineOutput, ListPoints, Topological, Tagged, ParseAsInline, Size, MaybeHasNiche,
+    ToOutput, InlineOutput, ListHashes, Topological, Tagged, ParseAsInline, Size, MaybeHasNiche,
 )]
 pub struct EnumTag<T, const MAX: usize>(T);
 

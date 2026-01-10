@@ -8,9 +8,9 @@ impl<T: InlineOutput> ToOutput for BTreeSet<T> {
     }
 }
 
-impl<T: ListPoints> ListPoints for BTreeSet<T> {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.iter_list_points(f);
+impl<T: ListHashes> ListHashes for BTreeSet<T> {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.iter_list_hashes(f);
     }
 }
 
@@ -36,9 +36,9 @@ impl<K: InlineOutput, V: InlineOutput> ToOutput for BTreeMap<K, V> {
     }
 }
 
-impl<K: ListPoints, V: ListPoints> ListPoints for BTreeMap<K, V> {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.iter_list_points(f);
+impl<K: ListHashes, V: ListHashes> ListHashes for BTreeMap<K, V> {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.iter_list_hashes(f);
     }
 }
 
