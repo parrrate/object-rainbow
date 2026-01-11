@@ -973,6 +973,16 @@ impl<T: for<'a> Parse<Input<'a, Extra>>, Extra> ExtraFor<T> for Extra {
     }
 }
 
+pub trait BoundPair: Sized {
+    type T;
+    type E;
+}
+
+impl<T, E> BoundPair for (T, E) {
+    type T = T;
+    type E = E;
+}
+
 #[test]
 fn options() {
     type T0 = ();
