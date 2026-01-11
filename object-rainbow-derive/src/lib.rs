@@ -5,8 +5,8 @@ use proc_macro::TokenStream;
 use quote::{ToTokens, quote, quote_spanned};
 use syn::{
     Attribute, Data, DeriveInput, Error, Expr, GenericParam, Generics, Ident, LitStr, Path, Type,
-    parse::Parse, parse_macro_input, parse_quote, parse_quote_spanned, spanned::Spanned,
-    token::Comma,
+    TypeGenerics, parse::Parse, parse_macro_input, parse_quote, parse_quote_spanned,
+    spanned::Spanned, token::Comma,
 };
 
 use self::contains_generics::{GContext, type_contains_generics};
@@ -383,20 +383,27 @@ pub fn derive_topological(input: TokenStream) -> TokenStream {
     let name = input.ident;
     let generics = input.generics.clone();
     let (_, ty_generics, _) = generics.split_for_impl();
-    let generics = match bounds_topological(input.generics, &input.data, &input.attrs, &name) {
-        Ok(g) => g,
-        Err(e) => return e.into_compile_error().into(),
-    };
-    let traverse = gen_traverse(&input.data);
+    let mut defs = Vec::new();
+    let generics =
+        match bounds_topological(input.generics, &input.data, &input.attrs, &name, &mut defs) {
+            Ok(g) => g,
+            Err(e) => return e.into_compile_error().into(),
+        };
+    let traverse = gen_traverse(&input.data, &ty_generics);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
     let target = parse_for(&name, &input.attrs);
     let output = quote! {
-        #[automatically_derived]
-        impl #impl_generics ::object_rainbow::Topological for #target #ty_generics #where_clause {
-            fn traverse(&self, visitor: &mut impl ::object_rainbow::PointVisitor) {
-                #traverse
+        const _: () = {
+            #(#defs)*
+
+            #[automatically_derived]
+            impl #impl_generics ::object_rainbow::Topological for #target #ty_generics
+            #where_clause {
+                fn traverse(&self, visitor: &mut impl ::object_rainbow::PointVisitor) {
+                    #traverse
+                }
             }
-        }
+        };
     };
     TokenStream::from(output)
 }
@@ -427,6 +434,8 @@ struct FieldTopologyArgs {
     #[darling(default)]
     unchecked: bool,
     with: Option<Expr>,
+    #[darling(default)]
+    mutual: bool,
 }
 
 fn bounds_topological(
@@ -434,9 +443,15 @@ fn bounds_topological(
     data: &Data,
     attrs: &[Attribute],
     name: &Ident,
+    defs: &mut Vec<proc_macro2::TokenStream>,
 ) -> syn::Result<Generics> {
     let recursive = parse_recursive(attrs)?;
     let g = &bounds_g(&generics);
+    let g_clone = generics.clone();
+    let (impl_generics, ty_generics, where_clause) = g_clone.split_for_impl();
+    let this = quote_spanned! { name.span() =>
+        #name #ty_generics
+    };
     let bound = if recursive {
         quote! { ::object_rainbow::Traversible }
     } else {
@@ -450,8 +465,33 @@ fn bounds_topological(
                 for attr in &f.attrs {
                     if attr_str(attr).as_deref() == Some("topology") {
                         let FieldTopologyArgs {
-                            bound, unchecked, ..
+                            bound,
+                            unchecked,
+                            mutual,
+                            ..
                         } = attr.parse_args()?;
+                        if mutual {
+                            let conditional =
+                                format!("__ConditionalTopology_{}", f.ident.as_ref().unwrap());
+                            let conditional = Ident::new(&conditional, f.span());
+                            defs.push(quote! {
+                                #[allow(non_camel_case_types)]
+                                trait #conditional #impl_generics #where_clause {
+                                    fn traverse(
+                                        &self, visitor: &mut impl ::object_rainbow::PointVisitor,
+                                    ) where #this: ::object_rainbow::Traversible;
+                                }
+
+                                impl #impl_generics #conditional #ty_generics for #ty #where_clause {
+                                    fn traverse(
+                                        &self, visitor: &mut impl ::object_rainbow::PointVisitor,
+                                    ) where #this: ::object_rainbow::Traversible {
+                                        ::object_rainbow::Topological::traverse(self, visitor)
+                                    }
+                                }
+                            });
+                            b = Some(parse_quote!(#conditional #ty_generics));
+                        }
                         if unchecked {
                             continue 'field;
                         }
@@ -476,14 +516,37 @@ fn bounds_topological(
         }
         Data::Enum(data) => {
             for v in data.variants.iter() {
-                'field: for f in v.fields.iter() {
+                'field: for (i, f) in v.fields.iter().enumerate() {
                     let ty = &f.ty;
                     let mut b = None;
                     for attr in &f.attrs {
                         if attr_str(attr).as_deref() == Some("topology") {
                             let FieldTopologyArgs {
-                                bound, unchecked, ..
+                                bound,
+                                unchecked,
+                                mutual,
+                                ..
                             } = attr.parse_args()?;
+                            if mutual {
+                                let conditional = format!("__ConditionalTopology_{i}");
+                                let conditional = Ident::new(&conditional, f.span());
+                                defs.push(quote! {
+                                #[allow(non_camel_case_types)]
+                                trait #conditional #impl_generics #where_clause {
+                                    fn traverse(
+                                        &self, visitor: &mut impl ::object_rainbow::PointVisitor,
+                                    ) where #this: ::object_rainbow::Traversible;
+                                }
+
+                                impl #impl_generics #conditional #ty_generics for #ty #where_clause {
+                                    fn traverse(
+                                        &self, visitor: &mut impl ::object_rainbow::PointVisitor,
+                                    ) where #this: ::object_rainbow::Traversible {
+                                        ::object_rainbow::Topological::traverse(self, visitor)
+                                    }
+                                }
+                            });
+                            }
                             if unchecked {
                                 continue 'field;
                             }
@@ -525,7 +588,10 @@ fn bounds_topological(
     Ok(generics)
 }
 
-fn fields_traverse(fields: &syn::Fields) -> proc_macro2::TokenStream {
+fn fields_traverse(
+    fields: &syn::Fields,
+    ty_generics: &TypeGenerics<'_>,
+) -> proc_macro2::TokenStream {
     match fields {
         syn::Fields::Named(fields) => {
             let let_self = fields.named.iter().map(|f| f.ident.as_ref().unwrap());
@@ -535,10 +601,21 @@ fn fields_traverse(fields: &syn::Fields) -> proc_macro2::TokenStream {
                 let mut b = None;
                 for attr in &f.attrs {
                     if attr_str(attr).as_deref() == Some("topology") {
-                        let FieldTopologyArgs { with, bound, .. } = match attr.parse_args() {
+                        let FieldTopologyArgs {
+                            with,
+                            bound,
+                            mutual,
+                            ..
+                        } = match attr.parse_args() {
                             Ok(args) => args,
                             Err(e) => return e.into_compile_error(),
                         };
+                        if mutual {
+                            let conditional = format!("__ConditionalTopology_{i}");
+                            let conditional = Ident::new(&conditional, f.span());
+                            w = Some(parse_quote!(traverse));
+                            b = Some(parse_quote!(#conditional #ty_generics));
+                        }
                         if let Some(with) = with {
                             w = Some(with);
                         }
@@ -581,10 +658,21 @@ fn fields_traverse(fields: &syn::Fields) -> proc_macro2::TokenStream {
                 let mut b = None;
                 for attr in &f.attrs {
                     if attr_str(attr).as_deref() == Some("topology") {
-                        let FieldTopologyArgs { with, bound, .. } = match attr.parse_args() {
+                        let FieldTopologyArgs {
+                            with,
+                            bound,
+                            mutual,
+                            ..
+                        } = match attr.parse_args() {
                             Ok(args) => args,
                             Err(e) => return e.into_compile_error(),
                         };
+                        if mutual {
+                            let conditional = format!("__ConditionalTopology_{i}");
+                            let conditional = Ident::new(&conditional, f.span());
+                            w = Some(parse_quote!(traverse));
+                            b = Some(parse_quote!(#conditional #ty_generics));
+                        }
                         if let Some(with) = with {
                             w = Some(with);
                         }
@@ -621,10 +709,10 @@ fn fields_traverse(fields: &syn::Fields) -> proc_macro2::TokenStream {
     }
 }
 
-fn gen_traverse(data: &Data) -> proc_macro2::TokenStream {
+fn gen_traverse(data: &Data, ty_generics: &TypeGenerics<'_>) -> proc_macro2::TokenStream {
     match data {
         Data::Struct(data) => {
-            let arm = fields_traverse(&data.fields);
+            let arm = fields_traverse(&data.fields, ty_generics);
             quote! {
                 match self {
                     Self #arm
@@ -634,7 +722,7 @@ fn gen_traverse(data: &Data) -> proc_macro2::TokenStream {
         Data::Enum(data) => {
             let to_output = data.variants.iter().map(|v| {
                 let ident = &v.ident;
-                let arm = fields_traverse(&v.fields);
+                let arm = fields_traverse(&v.fields, ty_generics);
                 quote! { Self::#ident #arm }
             });
             quote! {
