@@ -4,8 +4,8 @@ use darling::FromMeta;
 use proc_macro::TokenStream;
 use quote::{ToTokens, quote, quote_spanned};
 use syn::{
-    Attribute, Data, DeriveInput, Error, Expr, GenericParam, Generics, Ident, LitStr, Path, Type,
-    TypeGenerics, parse::Parse, parse_macro_input, parse_quote, parse_quote_spanned,
+    Attribute, Data, DeriveInput, Error, Expr, Field, GenericParam, Generics, Ident, LitStr, Path,
+    Type, TypeGenerics, parse::Parse, parse_macro_input, parse_quote, parse_quote_spanned,
     spanned::Spanned, token::Comma,
 };
 
@@ -398,7 +398,8 @@ pub fn derive_topological(input: TokenStream) -> TokenStream {
 
             #[automatically_derived]
             impl #impl_generics ::object_rainbow::Topological for #target #ty_generics
-            #where_clause {
+            #where_clause
+            {
                 fn traverse(&self, visitor: &mut impl ::object_rainbow::PointVisitor) {
                     #traverse
                 }
@@ -1140,20 +1141,27 @@ pub fn derive_parse(input: TokenStream) -> TokenStream {
     let name = input.ident;
     let generics = input.generics.clone();
     let (_, ty_generics, _) = generics.split_for_impl();
-    let generics = match bounds_parse(input.generics, &input.data, &input.attrs) {
+    let mut defs = Vec::new();
+    let generics = match bounds_parse(input.generics, &input.data, &input.attrs, &name, &mut defs) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let parse = gen_parse(&input.data);
+    let parse = gen_parse(&input.data, &ty_generics);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
     let target = parse_for(&name, &input.attrs);
     let output = quote! {
-        #[automatically_derived]
-        impl #impl_generics ::object_rainbow::Parse<__I> for #target #ty_generics #where_clause {
-            fn parse(mut input: __I) -> ::object_rainbow::Result<Self> {
-                #parse
+        const _: () = {
+            #(#defs)*
+
+            #[automatically_derived]
+            impl #impl_generics ::object_rainbow::Parse<__I> for #target #ty_generics
+            #where_clause
+            {
+                fn parse(mut input: __I) -> ::object_rainbow::Result<Self> {
+                    #parse
+                }
             }
-        }
+        };
     };
     TokenStream::from(output)
 }
@@ -1165,9 +1173,44 @@ struct ParseArgs {
     #[darling(default)]
     unchecked: bool,
     with: Option<Expr>,
+    #[darling(default)]
+    mutual: bool,
 }
 
-fn bounds_parse(mut generics: Generics, data: &Data, attrs: &[Attribute]) -> syn::Result<Generics> {
+fn conditional_parse_name(f: &Field, inline: bool) -> Ident {
+    let infix = if inline { "ParseInline" } else { "Parse" };
+    let conditional = format!("__Conditional{infix}_{}", f.ident.as_ref().unwrap());
+    Ident::new(&conditional, f.span())
+}
+
+fn conditional_parse_input(inline: bool) -> proc_macro2::TokenStream {
+    if inline {
+        quote!(&mut impl ::object_rainbow::PointInput<Extra = Self::E>)
+    } else {
+        quote!(impl ::object_rainbow::PointInput<Extra = Self::E>)
+    }
+}
+
+fn conditional_parse_method(inline: bool) -> proc_macro2::TokenStream {
+    if inline {
+        quote!(parse_inline)
+    } else {
+        quote!(parse)
+    }
+}
+
+fn bounds_parse(
+    mut generics: Generics,
+    data: &Data,
+    attrs: &[Attribute],
+    name: &Ident,
+    defs: &mut Vec<proc_macro2::TokenStream>,
+) -> syn::Result<Generics> {
+    let g_clone = generics.clone();
+    let (impl_generics, ty_generics, where_clause) = g_clone.split_for_impl();
+    let this = quote_spanned! { name.span() =>
+        #name #ty_generics
+    };
     let recursive = parse_recursive(attrs)?;
     let tr = |last| match (last, recursive) {
         (true, true) => {
@@ -1183,13 +1226,51 @@ fn bounds_parse(mut generics: Generics, data: &Data, attrs: &[Attribute]) -> syn
         Data::Struct(data) => {
             let last_at = data.fields.len().checked_sub(1).unwrap_or_default();
             'field: for (i, f) in data.fields.iter().enumerate() {
+                let last = i == last_at;
                 let ty = &f.ty;
                 let mut b = None;
                 for attr in &f.attrs {
                     if attr_str(attr).as_deref() == Some("parse") {
                         let ParseArgs {
-                            bound, unchecked, ..
+                            bound,
+                            unchecked,
+                            mutual,
+                            ..
                         } = attr.parse_args::<ParseArgs>()?;
+                        if mutual {
+                            let conditional = conditional_parse_name(f, !last);
+                            let mut g_clone = g_clone.clone();
+                            g_clone.params.push(parse_quote!(
+                                __E: ::core::marker::Send + ::core::marker::Sync
+                            ));
+                            let (impl_generics_extra, _, _) = g_clone.split_for_impl();
+                            let input_type = conditional_parse_input(!last);
+                            let parse_method = conditional_parse_method(!last);
+                            defs.push(quote! {
+                                #[allow(non_camel_case_types)]
+                                trait #conditional #impl_generics: ::object_rainbow::BoundPair
+                                #where_clause
+                                {
+                                    fn parse(
+                                        input: #input_type,
+                                    ) -> ::object_rainbow::Result<Self::T>
+                                    where #this: ::object_rainbow::Object<Self::E>;
+                                }
+
+                                impl #impl_generics_extra #conditional #ty_generics
+                                    for (#ty, __E)
+                                #where_clause
+                                {
+                                    fn parse(
+                                        input: #input_type,
+                                    ) -> ::object_rainbow::Result<Self::T>
+                                    where #this: ::object_rainbow::Object<Self::E> {
+                                        input.#parse_method::<Self::T>()
+                                    }
+                                }
+                            });
+                            b = Some(parse_quote!(#conditional #ty_generics));
+                        }
                         if unchecked {
                             continue 'field;
                         }
@@ -1207,7 +1288,6 @@ fn bounds_parse(mut generics: Generics, data: &Data, attrs: &[Attribute]) -> syn
                         },
                     );
                 } else {
-                    let last = i == last_at;
                     let tr = tr(last);
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
@@ -1273,16 +1353,16 @@ fn bounds_parse(mut generics: Generics, data: &Data, attrs: &[Attribute]) -> syn
     Ok(generics)
 }
 
-fn gen_parse(data: &Data) -> proc_macro2::TokenStream {
+fn gen_parse(data: &Data, ty_generics: &TypeGenerics<'_>) -> proc_macro2::TokenStream {
     match data {
         Data::Struct(data) => {
-            let arm = fields_parse(&data.fields);
+            let arm = fields_parse(&data.fields, ty_generics);
             quote! { Ok(Self #arm)}
         }
         Data::Enum(data) => {
             let parse = data.variants.iter().map(|v| {
                 let ident = &v.ident;
-                let arm = fields_parse(&v.fields);
+                let arm = fields_parse(&v.fields, ty_generics);
                 quote! {
                     <Self as ::object_rainbow::Enum>::Kind::#ident => Self::#ident #arm,
                 }
@@ -1299,20 +1379,36 @@ fn gen_parse(data: &Data) -> proc_macro2::TokenStream {
     }
 }
 
-fn fields_parse(fields: &syn::Fields) -> proc_macro2::TokenStream {
+fn fields_parse(fields: &syn::Fields, ty_generics: &TypeGenerics<'_>) -> proc_macro2::TokenStream {
     let last_at = fields.len().checked_sub(1).unwrap_or_default();
     match fields {
         syn::Fields::Named(fields) => {
             let parse = fields.named.iter().enumerate().map(|(i, f)| {
+                let last = i == last_at;
                 let ty = &f.ty;
                 let mut w = None;
                 let mut b = None;
                 for attr in &f.attrs {
                     if attr_str(attr).as_deref() == Some("parse") {
-                        let ParseArgs { with, bound, .. } = match attr.parse_args::<ParseArgs>() {
+                        let ParseArgs {
+                            with,
+                            bound,
+                            mutual,
+                            ..
+                        } = match attr.parse_args::<ParseArgs>() {
                             Ok(args) => args,
                             Err(e) => return e.into_compile_error(),
                         };
+                        if mutual {
+                            let conditional = format!(
+                                "__Conditional{}_{}",
+                                if last { "Parse" } else { "ParseInline" },
+                                f.ident.as_ref().unwrap(),
+                            );
+                            let conditional = Ident::new(&conditional, f.span());
+                            w = Some(parse_quote!(parse));
+                            b = Some(parse_quote!(#conditional #ty_generics));
+                        }
                         if let Some(with) = with {
                             w = Some(with);
                         }
@@ -1321,7 +1417,6 @@ fn fields_parse(fields: &syn::Fields) -> proc_macro2::TokenStream {
                         }
                     }
                 }
-                let last = i == last_at;
                 let i = f.ident.as_ref().unwrap();
                 if let Some(with) = w {
                     let arg = if last {

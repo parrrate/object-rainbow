@@ -7,29 +7,13 @@ use std::{
 use futures_util::{Stream, TryStream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    BoundPair, Fetch, InlineOutput, ListHashes, Object, ObjectMarker, Parse, ParseSliceRefless,
-    PointInput, ReflessObject, Tagged, ToOutput, Topological, Traversible,
-    length_prefixed::LpBytes,
+    Fetch, InlineOutput, ListHashes, ObjectMarker, Parse, ParseSliceRefless, ReflessObject, Tagged,
+    ToOutput, Topological, Traversible, length_prefixed::LpBytes,
 };
 use object_rainbow_point::{IntoPoint, Point};
 
 #[cfg(feature = "serde")]
 mod serde;
-
-trait ConditionalParse<T>: BoundPair {
-    fn parse(input: impl PointInput<Extra = Self::E>) -> object_rainbow::Result<Self::T>
-    where
-        T: Object<Self::E>;
-}
-
-impl<T, E: Send + Sync> ConditionalParse<T> for (Children<T>, E) {
-    fn parse(input: impl PointInput<Extra = Self::E>) -> object_rainbow::Result<Self::T>
-    where
-        T: Object<Self::E>,
-    {
-        input.parse::<Children<T>>()
-    }
-}
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse)]
 struct Children<T>(BTreeMap<u8, Point<(LpBytes, T)>>);
@@ -51,7 +35,7 @@ impl<T> Default for Children<T> {
 pub struct Trie<T> {
     value: Option<T>,
     #[tags(skip)]
-    #[parse(bound = "ConditionalParse<Trie<T>>", with = "parse")]
+    #[parse(mutual)]
     #[topology(mutual)]
     children: Children<Trie<T>>,
 }
