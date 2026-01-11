@@ -15,29 +15,14 @@ use object_rainbow_point::{IntoPoint, Point};
 #[cfg(feature = "serde")]
 mod serde;
 
-#[derive(ToOutput, Tagged, ListHashes, Topological, Parse)]
-struct Children<T>(BTreeMap<u8, Point<(LpBytes, T)>>);
-
-impl<T> Clone for Children<T> {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-
-impl<T> Default for Children<T> {
-    fn default() -> Self {
-        Self(Default::default())
-    }
-}
-
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 #[topology(recursive)]
 pub struct Trie<T> {
     value: Option<T>,
     #[tags(skip)]
-    #[parse(mutual)]
-    #[topology(mutual)]
-    children: Children<Trie<T>>,
+    #[parse(unchecked)]
+    #[topology(unchecked)]
+    children: BTreeMap<u8, Point<(LpBytes, Self)>>,
 }
 
 impl<T> Default for Trie<T> {
@@ -66,27 +51,27 @@ trait TrieChildren: Sized {
 
 impl<T> TrieChildren for Trie<T> {
     fn c_get_mut(&mut self, key: u8) -> Option<&mut Point<(LpBytes, Self)>> {
-        self.children.0.get_mut(&key)
+        self.children.get_mut(&key)
     }
 
     fn c_get(&self, key: u8) -> Option<&Point<(LpBytes, Self)>> {
-        self.children.0.get(&key)
+        self.children.get(&key)
     }
 
     fn c_insert(&mut self, key: u8, point: Point<(LpBytes, Self)>) {
-        self.children.0.insert(key, point);
+        self.children.insert(key, point);
     }
 
     fn c_empty(&self) -> bool {
-        self.children.0.is_empty()
+        self.children.is_empty()
     }
 
     fn c_len(&self) -> usize {
-        self.children.0.len()
+        self.children.len()
     }
 
     fn c_remove(&mut self, key: u8) {
-        self.children.0.remove(&key);
+        self.children.remove(&key);
     }
 
     fn c_range(
@@ -94,11 +79,11 @@ impl<T> TrieChildren for Trie<T> {
         min_inclusive: u8,
         max_inclusive: u8,
     ) -> impl Iterator<Item = (&u8, &Point<(LpBytes, Self)>)> {
-        self.children.0.range(min_inclusive..=max_inclusive)
+        self.children.range(min_inclusive..=max_inclusive)
     }
 
     fn c_pop_first(&mut self) -> Option<(u8, Point<(LpBytes, Self)>)> {
-        self.children.0.pop_first()
+        self.children.pop_first()
     }
 }
 
