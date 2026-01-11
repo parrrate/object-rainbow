@@ -19,20 +19,20 @@ mod serde;
 trait ConditionalParse<T>: BoundPair {
     fn parse(input: impl PointInput<Extra = Self::E>) -> object_rainbow::Result<Self::T>
     where
-        Trie<T>: Object<Self::E>;
+        T: Object<Self::E>;
 }
 
 impl<T, E: Send + Sync> ConditionalParse<T> for (Children<T>, E) {
     fn parse(input: impl PointInput<Extra = Self::E>) -> object_rainbow::Result<Self::T>
     where
-        Trie<T>: Object<Self::E>,
+        T: Object<Self::E>,
     {
         input.parse::<Children<T>>()
     }
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse)]
-struct Children<T>(BTreeMap<u8, Point<(LpBytes, Trie<T>)>>);
+struct Children<T>(BTreeMap<u8, Point<(LpBytes, T)>>);
 
 impl<T> Clone for Children<T> {
     fn clone(&self) -> Self {
@@ -51,9 +51,9 @@ impl<T> Default for Children<T> {
 pub struct Trie<T> {
     value: Option<T>,
     #[tags(skip)]
-    #[parse(bound = "ConditionalParse<T>", with = "parse")]
+    #[parse(bound = "ConditionalParse<Trie<T>>", with = "parse")]
     #[topology(mutual)]
-    children: Children<T>,
+    children: Children<Trie<T>>,
 }
 
 impl<T> Default for Trie<T> {
