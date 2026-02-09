@@ -1,6 +1,11 @@
 use crate::*;
 
 pub trait UsizeTag: Sized {
+    /// Used by [`EnumTag::from_const`].
+    ///
+    /// ## Panics
+    ///
+    /// Panics on out-of-bounds.
     fn from_usize(n: usize) -> Self;
     fn to_usize(&self) -> usize;
     fn try_to_usize(&self) -> Option<usize>;
