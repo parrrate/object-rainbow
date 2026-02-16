@@ -1,0 +1,13 @@
+[package]
+name = "object-rainbow-array-map"
+version = "0.0.0-a.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+object-rainbow = { workspace = true, features = ["bitvec"] }
+
+bitvec.version = "1.0.1"
