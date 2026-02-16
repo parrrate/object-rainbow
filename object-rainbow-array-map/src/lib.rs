@@ -61,4 +61,9 @@ impl<T> ArrayMap<T> {
     pub fn contains(&self, key: u8) -> bool {
         self.bits[key as usize]
     }
+
+    pub fn remove(&mut self, key: u8) -> Option<T> {
+        self.bits.set(key as usize, false);
+        self.map.remove(&key)
+    }
 }
