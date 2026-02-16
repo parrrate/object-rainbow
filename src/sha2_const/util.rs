@@ -1,3 +1,7 @@
+//! Original: <https://docs.rs/sha2-const/0.1.2/src/sha2_const/util.rs.html>
+//!
+//! Original license: MIT OR Apache-2.0, copyright Saleem Rashid
+
 #[inline(always)]
 pub(in crate::sha2_const) const fn memcpy(
     dest: &mut [u8],
