@@ -57,7 +57,7 @@ trait TrieChildren<Tr = Self>: Sized {
         &'a self,
         min_inclusive: u8,
         max_inclusive: u8,
-    ) -> impl Iterator<Item = (&'a u8, &'a TriePoint<Tr>)>
+    ) -> impl Iterator<Item = (u8, &'a TriePoint<Tr>)>
     where
         Tr: 'a;
     fn c_pop_first(&mut self) -> Option<(u8, TriePoint<Tr>)>;
@@ -92,11 +92,13 @@ impl<T> TrieChildren for Trie<T> {
         &'a self,
         min_inclusive: u8,
         max_inclusive: u8,
-    ) -> impl Iterator<Item = (&'a u8, &'a TriePoint<Self>)>
+    ) -> impl Iterator<Item = (u8, &'a TriePoint<Self>)>
     where
         Self: 'a,
     {
-        self.children.range(min_inclusive..=max_inclusive)
+        self.children
+            .range(min_inclusive..=max_inclusive)
+            .map(|(&k, v)| (k, v))
     }
 
     fn c_pop_first(&mut self) -> Option<(u8, TriePoint<Self>)> {
@@ -217,7 +219,7 @@ where
         let len = context.len();
         for (first, point) in self.c_range(u8::MIN, u8::MAX) {
             {
-                context.push(*first);
+                context.push(first);
                 let (prefix, trie) = point.fetch().await?;
                 context.extend_from_slice(&prefix);
                 Box::pin(trie.yield_all(context, co)).await?;
@@ -296,7 +298,7 @@ where
         let len = context.len();
         for (first, point) in self.c_range(min, max) {
             'done: {
-                context.push(*first);
+                context.push(first);
                 let (prefix, trie) = point.fetch().await?;
                 context.extend_from_slice(&prefix);
                 let extra = &context[context.len() - prefix.len() - 1..];
