@@ -16,6 +16,8 @@ use object_rainbow_point::{IntoPoint, Point};
 #[cfg(feature = "serde")]
 mod serde;
 
+type TriePoint<Tr> = Point<(LpBytes, Tr)>;
+
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 #[topology(recursive)]
 pub struct Trie<T> {
@@ -23,7 +25,7 @@ pub struct Trie<T> {
     #[tags(skip)]
     #[parse(unchecked)]
     #[topology(unchecked)]
-    children: BTreeMap<u8, Point<(LpBytes, Self)>>,
+    children: BTreeMap<u8, TriePoint<Self>>,
 }
 
 assert_impl!(
@@ -45,9 +47,9 @@ impl<T> Default for Trie<T> {
 }
 
 trait TrieChildren<Tr = Self>: Sized {
-    fn c_get_mut(&mut self, key: u8) -> Option<&mut Point<(LpBytes, Tr)>>;
-    fn c_get(&self, key: u8) -> Option<&Point<(LpBytes, Tr)>>;
-    fn c_insert(&mut self, key: u8, point: Point<(LpBytes, Tr)>);
+    fn c_get_mut(&mut self, key: u8) -> Option<&mut TriePoint<Tr>>;
+    fn c_get(&self, key: u8) -> Option<&TriePoint<Tr>>;
+    fn c_insert(&mut self, key: u8, point: TriePoint<Tr>);
     fn c_empty(&self) -> bool;
     fn c_len(&self) -> usize;
     fn c_remove(&mut self, key: u8);
@@ -55,22 +57,22 @@ trait TrieChildren<Tr = Self>: Sized {
         &'a self,
         min_inclusive: u8,
         max_inclusive: u8,
-    ) -> impl Iterator<Item = (&'a u8, &'a Point<(LpBytes, Tr)>)>
+    ) -> impl Iterator<Item = (&'a u8, &'a TriePoint<Tr>)>
     where
         Tr: 'a;
-    fn c_pop_first(&mut self) -> Option<(u8, Point<(LpBytes, Tr)>)>;
+    fn c_pop_first(&mut self) -> Option<(u8, TriePoint<Tr>)>;
 }
 
 impl<T> TrieChildren for Trie<T> {
-    fn c_get_mut(&mut self, key: u8) -> Option<&mut Point<(LpBytes, Self)>> {
+    fn c_get_mut(&mut self, key: u8) -> Option<&mut TriePoint<Self>> {
         self.children.get_mut(&key)
     }
 
-    fn c_get(&self, key: u8) -> Option<&Point<(LpBytes, Self)>> {
+    fn c_get(&self, key: u8) -> Option<&TriePoint<Self>> {
         self.children.get(&key)
     }
 
-    fn c_insert(&mut self, key: u8, point: Point<(LpBytes, Self)>) {
+    fn c_insert(&mut self, key: u8, point: TriePoint<Self>) {
         self.children.insert(key, point);
     }
 
@@ -90,14 +92,14 @@ impl<T> TrieChildren for Trie<T> {
         &'a self,
         min_inclusive: u8,
         max_inclusive: u8,
-    ) -> impl Iterator<Item = (&'a u8, &'a Point<(LpBytes, Self)>)>
+    ) -> impl Iterator<Item = (&'a u8, &'a TriePoint<Self>)>
     where
         Self: 'a,
     {
         self.children.range(min_inclusive..=max_inclusive)
     }
 
-    fn c_pop_first(&mut self) -> Option<(u8, Point<(LpBytes, Self)>)> {
+    fn c_pop_first(&mut self) -> Option<(u8, TriePoint<Self>)> {
         self.children.pop_first()
     }
 }
