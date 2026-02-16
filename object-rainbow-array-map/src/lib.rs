@@ -63,4 +63,8 @@ impl<T> ArrayMap<T> {
     pub fn len(&self) -> usize {
         self.map.len()
     }
+
+    pub fn contains(&self, key: u8) -> bool {
+        self.bits[key as usize]
+    }
 }
