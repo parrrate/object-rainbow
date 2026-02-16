@@ -8,7 +8,6 @@ use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
     Fetch, Inline, InlineOutput, ListHashes, ObjectMarker, Parse, ParseInline, ParseSliceRefless,
     ReflessObject, Tagged, ToOutput, Topological, Traversible, assert_impl,
-    length_prefixed::LpBytes,
 };
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
@@ -16,7 +15,7 @@ use object_rainbow_point::{IntoPoint, Point};
 #[cfg(feature = "serde")]
 mod serde;
 
-type TriePoint<Tr> = Point<(Tr, LpBytes)>;
+type TriePoint<Tr> = Point<(Tr, Vec<u8>)>;
 
 #[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Clone)]
 #[topology(recursive, inline)]
@@ -136,10 +135,7 @@ where
             return Ok(self.value.replace(value));
         };
         let Some(point) = self.c_get_mut(*first) else {
-            self.c_insert(
-                *first,
-                (Self::from_value(value), LpBytes(key.into())).point(),
-            );
+            self.c_insert(*first, (Self::from_value(value), key.into()).point());
             return Ok(None);
         };
         let (trie, prefix) = &mut *point.fetch_mut().await?;
@@ -149,24 +145,20 @@ where
         if let Some(suffix) = prefix.strip_prefix(key) {
             let child = std::mem::replace(trie, Self::from_value(value));
             let (first, suffix) = suffix.split_first().expect("must be at least 1");
-            trie.c_insert(*first, (child, LpBytes(suffix.into())).point());
-            prefix.0.truncate(key.len());
+            trie.c_insert(*first, (child, suffix.into()).point());
+            prefix.truncate(key.len());
         } else {
             let common = prefix.iter().zip(key).take_while(|(a, b)| a == b).count();
             let child = std::mem::take(trie);
             trie.c_insert(
                 prefix[common],
-                (child, LpBytes(prefix[common + 1..].to_vec())).point(),
+                (child, prefix[common + 1..].to_vec()).point(),
             );
             trie.c_insert(
                 key[common],
-                (
-                    Self::from_value(value),
-                    LpBytes(prefix[common + 1..].to_vec()),
-                )
-                    .point(),
+                (Self::from_value(value), prefix[common + 1..].to_vec()).point(),
             );
-            prefix.0.truncate(common);
+            prefix.truncate(common);
         }
         Ok(None)
     }
