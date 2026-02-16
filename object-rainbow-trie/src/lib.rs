@@ -18,7 +18,7 @@ mod serde;
 
 type TriePoint<Tr> = Point<(LpBytes, Tr)>;
 
-#[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
+#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 #[topology(recursive)]
 pub struct Trie<T> {
     value: Option<T>,
