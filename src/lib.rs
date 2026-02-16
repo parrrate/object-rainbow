@@ -34,6 +34,7 @@ pub use self::niche::{
 #[doc(hidden)]
 pub use self::niche::{MaybeNiche, MnArray, NicheFoldOrArray, NicheOr};
 
+mod assert_impl;
 pub mod enumkind;
 mod error;
 mod hash;
