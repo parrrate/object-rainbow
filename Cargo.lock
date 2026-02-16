@@ -1266,6 +1266,7 @@ dependencies = [
  "genawaiter-try-stream",
  "macro_rules_attribute",
  "object-rainbow",
+ "object-rainbow-array-map",
  "object-rainbow-point",
  "serde",
  "smol",
