@@ -1,5 +1,6 @@
 use std::{
     collections::{BTreeMap, btree_map},
+    marker::PhantomData,
     ops::RangeBounds,
 };
 
@@ -80,6 +81,16 @@ impl<T> ArrayMap<T> {
         self.map
             .pop_first()
             .inspect(|&(key, _)| self.bits.set(key as usize, false))
+    }
+
+    pub const fn new() -> Self {
+        Self {
+            bits: BitArray {
+                _ord: PhantomData,
+                data: [0; _],
+            },
+            map: BTreeMap::new(),
+        }
     }
 }
 
