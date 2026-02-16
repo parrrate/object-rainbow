@@ -6,8 +6,8 @@ use std::{
 use futures_util::{Stream, TryStream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    Fetch, Inline, InlineOutput, ListHashes, Object, ObjectMarker, Parse, ParseSliceRefless,
-    ReflessObject, Tagged, ToOutput, Topological, Traversible, assert_impl,
+    Fetch, Inline, InlineOutput, ListHashes, Object, ObjectMarker, Parse, ParseInline,
+    ParseSliceRefless, ReflessObject, Tagged, ToOutput, Topological, Traversible, assert_impl,
     length_prefixed::LpBytes,
 };
 use object_rainbow_array_map::ArrayMap;
@@ -18,7 +18,7 @@ mod serde;
 
 type TriePoint<Tr> = Point<(LpBytes, Tr)>;
 
-#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, Clone)]
+#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Clone)]
 #[topology(recursive)]
 pub struct Trie<T> {
     value: Option<T>,
