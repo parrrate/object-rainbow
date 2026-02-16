@@ -6,8 +6,8 @@ use std::{
 use futures_util::{Stream, TryStream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    Fetch, Inline, InlineOutput, ListHashes, Object, ObjectMarker, Parse, ParseInline,
-    ParseSliceRefless, ReflessObject, Tagged, ToOutput, Topological, Traversible, assert_impl,
+    Fetch, Inline, InlineOutput, ListHashes, ObjectMarker, Parse, ParseInline, ParseSliceRefless,
+    ReflessObject, Tagged, ToOutput, Topological, Traversible, assert_impl,
     length_prefixed::LpBytes,
 };
 use object_rainbow_array_map::ArrayMap;
@@ -29,7 +29,7 @@ pub struct Trie<T> {
 }
 
 assert_impl!(
-    impl<T, E> Object<E> for Trie<T>
+    impl<T, E> Inline<E> for Trie<T>
     where
         E: 'static + Clone + Send + Sync,
         Option<T>: Inline<E>,
