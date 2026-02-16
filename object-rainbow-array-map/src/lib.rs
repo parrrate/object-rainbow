@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, btree_map};
+use std::collections::BTreeMap;
 
 use bitvec::array::BitArray;
 use object_rainbow::{
@@ -46,14 +46,8 @@ impl<T> ArrayMap<T> {
     }
 
     pub fn insert(&mut self, key: u8, value: T) -> Option<T> {
-        match self.map.entry(key) {
-            btree_map::Entry::Vacant(e) => {
-                e.insert(value);
-                self.bits.set(key as usize, true);
-                None
-            }
-            btree_map::Entry::Occupied(mut e) => Some(e.insert(value)),
-        }
+        self.bits.set(key as usize, true);
+        self.map.insert(key, value)
     }
 
     pub fn is_empty(&self) -> bool {
