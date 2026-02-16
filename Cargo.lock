@@ -1142,7 +1142,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-array-map"
-version = "0.0.0-a.0"
+version = "0.0.0-a.1"
 dependencies = [
  "bitvec",
  "object-rainbow",
