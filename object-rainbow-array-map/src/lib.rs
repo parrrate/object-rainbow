@@ -1,4 +1,7 @@
-use std::collections::BTreeMap;
+use std::{
+    collections::{BTreeMap, btree_map},
+    ops::RangeBounds,
+};
 
 use bitvec::array::BitArray;
 use object_rainbow::{
@@ -65,5 +68,23 @@ impl<T> ArrayMap<T> {
     pub fn remove(&mut self, key: u8) -> Option<T> {
         self.bits.set(key as usize, false);
         self.map.remove(&key)
+    }
+
+    pub fn range<R: RangeBounds<u8>>(&self, range: R) -> Range<'_, T> {
+        Range {
+            range: self.map.range(range),
+        }
+    }
+}
+
+pub struct Range<'a, T> {
+    range: btree_map::Range<'a, u8, T>,
+}
+
+impl<'a, T> Iterator for Range<'a, T> {
+    type Item = (u8, &'a T);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.range.next().map(|(&k, v)| (k, v))
     }
 }
