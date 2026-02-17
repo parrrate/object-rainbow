@@ -38,6 +38,10 @@ assert_impl!(
 
 impl<T> ChainTree<T> {
     const EMPTY: Self = Self(None);
+
+    pub const fn new() -> Self {
+        Self::EMPTY
+    }
 }
 
 impl<T> Default for ChainTree<T> {
