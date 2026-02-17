@@ -250,12 +250,10 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
                     self.items.push(last.clone().point());
                     Ok((history, last))
                 } else {
-                    let history = last
-                        .fetch_mut()
-                        .await?
-                        .push(len % T::CAPACITY, value, history)
-                        .await?;
-                    Ok((history, last.fetch().await?))
+                    let mut prev = prev.clone();
+                    let history = prev.push(len % T::CAPACITY, value, history).await?;
+                    *last = prev.clone().point();
+                    Ok((history, prev))
                 }
             } else {
                 Err(object_rainbow::error_fetch!("empty non-leaf encountered"))
