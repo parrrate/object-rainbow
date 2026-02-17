@@ -51,7 +51,7 @@ trait Push: Clone + History {
         len: u64,
         value: Self::T,
         history: &Self::History,
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::History>>;
+    ) -> object_rainbow::Result<Self::History>;
     fn last(&self, history: &Self::History) -> Option<Self::T>;
     fn from_value(
         prev: Point<Self>,
@@ -148,15 +148,15 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
         len: u64,
         value: Self::T,
         (): &Self::History,
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::History>> {
-        ready(if len != (self.items.len() as u64) {
+    ) -> object_rainbow::Result<Self::History> {
+        if len != (self.items.len() as u64) {
             Err(object_rainbow::error_fetch!("leaf len mismatch"))
         } else if self.items.len() >= N::USIZE {
             Err(object_rainbow::error_fetch!("leaf overflow"))
         } else {
             self.items.push(value);
             Ok(())
-        })
+        }
     }
 
     fn last(&self, (): &Self::History) -> Option<Self::T> {
@@ -232,32 +232,30 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
         len: u64,
         value: Self::T,
         (history, prev): &Self::History,
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::History>> {
-        async move {
-            if let Some(last) = self.items.last_mut() {
-                if len.is_multiple_of(T::CAPACITY) {
-                    if len / T::CAPACITY != (self.items.len() as u64) {
-                        return Err(object_rainbow::error_fetch!("non-leaf len mismatch"));
-                    }
-                    if self.items.len() >= N::USIZE {
-                        return Err(object_rainbow::error_fetch!(
-                            "non-leaf overflow: {}/{}",
-                            self.items.len(),
-                            Self::CAPACITY,
-                        ));
-                    }
-                    let (last, history) = T::from_value(prev.clone().point(), history, value);
-                    self.items.push(last.clone().point());
-                    Ok((history, last))
-                } else {
-                    let mut prev = prev.clone();
-                    let history = prev.push(len % T::CAPACITY, value, history).await?;
-                    *last = prev.clone().point();
-                    Ok((history, prev))
+    ) -> object_rainbow::Result<Self::History> {
+        if let Some(last) = self.items.last_mut() {
+            if len.is_multiple_of(T::CAPACITY) {
+                if len / T::CAPACITY != (self.items.len() as u64) {
+                    return Err(object_rainbow::error_fetch!("non-leaf len mismatch"));
                 }
+                if self.items.len() >= N::USIZE {
+                    return Err(object_rainbow::error_fetch!(
+                        "non-leaf overflow: {}/{}",
+                        self.items.len(),
+                        Self::CAPACITY,
+                    ));
+                }
+                let (last, history) = T::from_value(prev.clone().point(), history, value);
+                self.items.push(last.clone().point());
+                Ok((history, last))
             } else {
-                Err(object_rainbow::error_fetch!("empty non-leaf encountered"))
+                let mut prev = prev.clone();
+                let history = prev.push(len % T::CAPACITY, value, history)?;
+                *last = prev.clone().point();
+                Ok((history, prev))
             }
+        } else {
+            Err(object_rainbow::error_fetch!("empty non-leaf encountered"))
         }
     }
 
@@ -453,7 +451,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
                         Node::from_inner(std::mem::take($node), $history, value);
                     self.kind = TreeKind::$parent((history, parent));
                 } else {
-                    *$history = $node.push(len, value, $history).await?;
+                    *$history = $node.push(len, value, $history)?;
                 }
             };
         }
@@ -469,7 +467,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
                 if len == N8::<T>::CAPACITY {
                     return Err(object_rainbow::error_fetch!("root overflow"));
                 } else {
-                    *history = node.push(len, value, history).await?;
+                    *history = node.push(len, value, history)?;
                 }
             }
         }
