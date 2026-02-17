@@ -1,11 +1,11 @@
 use object_rainbow::{
-    Inline, InlineOutput, ListHashes, Object, Parse, ParseInline, Tagged, ToOutput, Topological,
-    assert_impl,
+    Fetch, Inline, InlineOutput, ListHashes, Object, Parse, ParseInline, Tagged, ToOutput,
+    Topological, Traversible, assert_impl,
 };
 use object_rainbow_append_tree::AppendTree;
-use object_rainbow_point::Point;
+use object_rainbow_point::{IntoPoint, Point};
 
-#[derive(ToOutput, Tagged, ListHashes, Topological, Parse)]
+#[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 #[topology(recursive)]
 struct ChainNode<T> {
     value: T,
@@ -35,3 +35,17 @@ assert_impl!(
     {
     }
 );
+
+impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainTree<T> {
+    pub async fn push(&mut self, value: T) -> object_rainbow::Result<()> {
+        let tree = if let Some(node) = self.0.take() {
+            let mut tree = node.fetch().await?.tree;
+            tree.push(node).await?;
+            tree
+        } else {
+            Default::default()
+        };
+        self.0 = Some(ChainNode { value, tree }.point());
+        Ok(())
+    }
+}
