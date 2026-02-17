@@ -63,24 +63,24 @@ impl<T: Clone, N, M> Clone for Node<T, N, M> {
 
 impl<T, N, M> Default for Node<T, N, M> {
     fn default() -> Self {
-        Self::new(None)
+        Self::new(None, Vec::new())
     }
 }
 
 impl<T, N, M> Node<T, N, M> {
-    const fn new(prev: Option<Point<Self>>) -> Self {
+    const fn new(prev: Option<Point<Self>>, items: Vec<T>) -> Self {
         Self {
             _capacity: PhantomData,
             _marker: PhantomData,
             prev,
-            items: Vec::new(),
+            items,
         }
     }
 }
 
 impl<T: Send + Sync + Clone, N: Send + Sync + Unsigned, M: Send + Sync> JustNode for Node<T, N, M> {
     fn new(prev: Option<Point<Self>>) -> Self {
-        Self::new(prev)
+        Self::new(prev, Vec::new())
     }
 }
 
@@ -354,7 +354,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
     pub const fn new() -> Self {
         Self {
             len: Le::<u64>::new(0u64),
-            kind: TreeKind::N1((), Node::new(None)),
+            kind: TreeKind::N1((), Node::new(None, Vec::new())),
         }
     }
 
@@ -381,7 +381,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
         macro_rules! upgrade {
             ($history:ident, $node:ident, $child:ident, $parent:ident) => {
                 if len == $child::<T>::CAPACITY {
-                    let mut parent = Node::new(None);
+                    let mut parent = Node::new(None, Vec::new());
                     parent.items.push(std::mem::take($node).point());
                     let history = parent.push(len, value).await?;
                     self.kind = TreeKind::$parent(history, parent);
