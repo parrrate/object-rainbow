@@ -282,6 +282,12 @@ impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> ListNode for Node<Poi
     }
 }
 
+impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> Node<Point<T>, N, NonLeaf> {
+    fn from_inner(inner: T) -> Self {
+        Self::new(None, vec![inner.point()])
+    }
+}
+
 type N1<T> = Node<T, U256, Leaf>;
 type N2<T> = Node<Point<N1<T>>, U256, NonLeaf>;
 type N3<T> = Node<Point<N2<T>>, U256, NonLeaf>;
@@ -457,8 +463,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
         macro_rules! upgrade {
             ($history:ident, $node:ident, $child:ident, $parent:ident) => {
                 if len == $child::<T>::CAPACITY {
-                    let mut parent = Node::new(None, Vec::new());
-                    parent.items.push(std::mem::take($node).point());
+                    let mut parent = Node::from_inner(std::mem::take($node));
                     let history = parent.push(len, value).await?;
                     self.kind = TreeKind::$parent(history, parent);
                 } else {
