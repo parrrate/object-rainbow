@@ -1122,7 +1122,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.34"
+version = "0.0.0-a.35"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1138,6 +1138,18 @@ dependencies = [
  "tracing-subscriber",
  "typenum",
  "ulid",
+]
+
+[[package]]
+name = "object-rainbow-append-tree"
+version = "0.0.0-a.0"
+dependencies = [
+ "macro_rules_attribute",
+ "object-rainbow",
+ "object-rainbow-point",
+ "smol",
+ "smol-macros",
+ "typenum",
 ]
 
 [[package]]

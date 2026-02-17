@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "object-rainbow-append-tree",
     "object-rainbow-array-map",
     "object-rainbow-derive",
     "object-rainbow-encrypted",
@@ -25,7 +26,7 @@ authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 
 [package]
 name = "object-rainbow"
-version = "0.0.0-a.34"
+version = "0.0.0-a.35"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -36,7 +37,7 @@ documentation = "https://docs.rs/object-rainbow"
 exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 
 [workspace.dependencies]
-object-rainbow = { version = "0.0.0-a.34", path = "." }
+object-rainbow = { version = "0.0.0-a.35", path = "." }
 object-rainbow-array-map = { version = "0.0.0-a.1", path = "object-rainbow-array-map" }
 object-rainbow-fetchall = { version = "0.0.0-a.2", path = "object-rainbow-fetchall" }
 object-rainbow-local-map = { version = "0.0.0-a.1", path = "object-rainbow-local-map" }
