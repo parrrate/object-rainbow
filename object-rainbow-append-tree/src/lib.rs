@@ -1,8 +1,8 @@
 use std::{future::ready, marker::PhantomData};
 
 use object_rainbow::{
-    Enum, Fetch, Inline, InlineOutput, ListHashes, Object, Parse, Tagged, ToOutput, Topological,
-    Traversible, assert_impl, numeric::Le,
+    Enum, Fetch, Inline, InlineOutput, ListHashes, Object, Parse, ParseAsInline, ParseInline,
+    ParseInput, Tagged, ToOutput, Topological, Traversible, assert_impl, numeric::Le,
 };
 use object_rainbow_point::{IntoPoint, Point};
 use typenum::{U256, Unsigned};
@@ -30,6 +30,51 @@ assert_impl!(
     }
 );
 
+#[derive(ToOutput, Tagged, ListHashes, Topological, ParseAsInline)]
+struct HistoryNode<T, N, M> {
+    count: u8,
+    node: Node<T, N, M>,
+}
+
+impl<T: Clone, N, M> Clone for HistoryNode<T, N, M> {
+    fn clone(&self) -> Self {
+        Self {
+            count: self.count,
+            node: self.node.clone(),
+        }
+    }
+}
+
+impl<T: InlineOutput, N, M> InlineOutput for HistoryNode<T, N, M> {}
+
+impl<T: ParseInline<I>, N, M, I: ParseInput> ParseInline<I> for HistoryNode<T, N, M>
+where
+    Point<Node<T, N, M>>: ParseInline<I>,
+{
+    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
+        let count = input.parse_inline::<u8>()?;
+        let prev = input.parse_inline()?;
+        let items = (0..=count)
+            .map(|_| input.parse_inline::<T>())
+            .collect::<object_rainbow::Result<_>>()?;
+        Ok(Self {
+            count,
+            node: Node::new(prev, items),
+        })
+    }
+}
+
+assert_impl!(
+    impl<E, T, N, M> Inline<E> for HistoryNode<T, N, M>
+    where
+        E: 'static + Send + Sync + Clone,
+        N: 'static + Send + Sync + Clone,
+        M: 'static + Send + Sync + Clone,
+        T: Inline<E>,
+    {
+    }
+);
+
 trait JustNode: Sized + Send + Sync + Clone {
     fn new(prev: Option<Point<Self>>) -> Self;
 }
@@ -37,6 +82,7 @@ trait JustNode: Sized + Send + Sync + Clone {
 trait ListNode: JustNode {
     type T: Send + Sync;
     type History: Send + Sync;
+    type NextHistory: Send + Sync;
     const CAPACITY: u64;
     fn get(&self, index: u64) -> impl Send + Future<Output = object_rainbow::Result<Self::T>>;
     fn push(
@@ -44,10 +90,9 @@ trait ListNode: JustNode {
         len: u64,
         value: Self::T,
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::History>>;
-    fn last(
-        point: &Point<Self>,
-        history: &Self::History,
-    ) -> impl Send + Future<Output = object_rainbow::Result<Option<Self::T>>>;
+    fn merge_history(self, history: Self::History) -> Self::NextHistory;
+    fn split_history(history: &Self::NextHistory) -> (&Self, &Self::History);
+    fn last(&self, history: &Self::History) -> Option<Self::T>;
 }
 
 impl<T: Clone, N, M> Clone for Node<T, N, M> {
@@ -91,6 +136,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
 {
     type T = T;
     type History = ();
+    type NextHistory = (HistoryNode<T, N, Leaf>, Self::History);
     const CAPACITY: u64 = N::U64;
 
     fn get(&self, index: u64) -> impl Send + Future<Output = object_rainbow::Result<Self::T>> {
@@ -121,11 +167,26 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
         })
     }
 
-    fn last(
-        point: &Point<Self>,
-        (): &Self::History,
-    ) -> impl Send + Future<Output = object_rainbow::Result<Option<Self::T>>> {
-        async { Ok(point.fetch().await?.items.into_iter().next_back()) }
+    fn merge_history(self, history: Self::History) -> Self::NextHistory {
+        assert_ne!(self.items.len(), 0);
+        assert!(self.items.len() <= 0x100);
+        (
+            HistoryNode {
+                count: (self.items.len() - 1) as u8,
+                node: self,
+            },
+            history,
+        )
+    }
+
+    fn split_history(
+        (HistoryNode { node, .. }, history): &Self::NextHistory,
+    ) -> (&Self, &Self::History) {
+        (node, history)
+    }
+
+    fn last(&self, (): &Self::History) -> Option<Self::T> {
+        self.items.last().cloned()
     }
 }
 
@@ -133,7 +194,8 @@ struct NonLeaf;
 
 impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> ListNode for Node<Point<T>, N, NonLeaf> {
     type T = T::T;
-    type History = (Point<T>, T::History);
+    type History = T::NextHistory;
+    type NextHistory = (HistoryNode<Point<T>, N, NonLeaf>, Self::History);
     const CAPACITY: u64 = N::U64.saturating_mul(T::CAPACITY);
 
     fn get(&self, index: u64) -> impl Send + Future<Output = object_rainbow::Result<Self::T>> {
@@ -172,16 +234,15 @@ impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> ListNode for Node<Poi
                     }
                     let mut last = T::new(prev);
                     let history = last.push(0, value).await?;
-                    let last = last.point();
-                    self.items.push(last.clone());
-                    Ok((last, history))
+                    self.items.push(last.clone().point());
+                    Ok(last.merge_history(history))
                 } else {
                     let history = last
                         .fetch_mut()
                         .await?
                         .push(len % T::CAPACITY, value)
                         .await?;
-                    Ok((last.clone(), history))
+                    Ok(last.fetch().await?.merge_history(history))
                 }
             } else {
                 let prev = if let Some(prev) = self.prev.as_ref() {
@@ -191,18 +252,33 @@ impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> ListNode for Node<Poi
                 };
                 let mut first = T::new(prev);
                 let history = first.push(len, value).await?;
-                let first = first.point();
-                self.items.push(first.clone());
-                Ok((first, history))
+                self.items.push(first.clone().point());
+                Ok(first.merge_history(history))
             }
         }
     }
 
-    fn last(
-        _: &Point<Self>,
-        (point, history): &Self::History,
-    ) -> impl Send + Future<Output = object_rainbow::Result<Option<Self::T>>> {
-        T::last(point, history)
+    fn merge_history(self, history: Self::History) -> Self::NextHistory {
+        assert_ne!(self.items.len(), 0);
+        assert!(self.items.len() <= 0x100);
+        (
+            HistoryNode {
+                count: (self.items.len() - 1) as u8,
+                node: self,
+            },
+            history,
+        )
+    }
+
+    fn split_history(
+        (HistoryNode { node, .. }, history): &Self::NextHistory,
+    ) -> (&Self, &Self::History) {
+        (node, history)
+    }
+
+    fn last(&self, history: &Self::History) -> Option<Self::T> {
+        let (node, history) = T::split_history(history);
+        node.last(history)
     }
 }
 
@@ -241,13 +317,13 @@ assert_impl!(
 );
 
 type H1 = ();
-type H2<T> = (Point<N1<T>>, H1);
-type H3<T> = (Point<N2<T>>, H2<T>);
-type H4<T> = (Point<N3<T>>, H3<T>);
-type H5<T> = (Point<N4<T>>, H4<T>);
-type H6<T> = (Point<N5<T>>, H5<T>);
-type H7<T> = (Point<N6<T>>, H6<T>);
-type H8<T> = (Point<N7<T>>, H7<T>);
+type H2<T> = (HistoryNode<T, U256, Leaf>, H1);
+type H3<T> = (HistoryNode<Point<N1<T>>, U256, NonLeaf>, H2<T>);
+type H4<T> = (HistoryNode<Point<N2<T>>, U256, NonLeaf>, H3<T>);
+type H5<T> = (HistoryNode<Point<N3<T>>, U256, NonLeaf>, H4<T>);
+type H6<T> = (HistoryNode<Point<N4<T>>, U256, NonLeaf>, H5<T>);
+type H7<T> = (HistoryNode<Point<N5<T>>, U256, NonLeaf>, H6<T>);
+type H8<T> = (HistoryNode<Point<N6<T>>, U256, NonLeaf>, H7<T>);
 
 assert_impl!(
     impl<T, E> Inline<E> for H1
@@ -418,16 +494,16 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
         self.len.0
     }
 
-    pub async fn last(&self) -> object_rainbow::Result<Option<T>> {
+    pub fn last(&self) -> Option<T> {
         match &self.kind {
-            TreeKind::N1(history, node) => ListNode::last(&node.clone().point(), history).await,
-            TreeKind::N2(history, node) => ListNode::last(&node.clone().point(), history).await,
-            TreeKind::N3(history, node) => ListNode::last(&node.clone().point(), history).await,
-            TreeKind::N4(history, node) => ListNode::last(&node.clone().point(), history).await,
-            TreeKind::N5(history, node) => ListNode::last(&node.clone().point(), history).await,
-            TreeKind::N6(history, node) => ListNode::last(&node.clone().point(), history).await,
-            TreeKind::N7(history, node) => ListNode::last(&node.clone().point(), history).await,
-            TreeKind::N8(history, node) => ListNode::last(&node.clone().point(), history).await,
+            TreeKind::N1(history, node) => ListNode::last(node, history),
+            TreeKind::N2(history, node) => ListNode::last(node, history),
+            TreeKind::N3(history, node) => ListNode::last(node, history),
+            TreeKind::N4(history, node) => ListNode::last(node, history),
+            TreeKind::N5(history, node) => ListNode::last(node, history),
+            TreeKind::N6(history, node) => ListNode::last(node, history),
+            TreeKind::N7(history, node) => ListNode::last(node, history),
+            TreeKind::N8(history, node) => ListNode::last(node, history),
         }
     }
 }
