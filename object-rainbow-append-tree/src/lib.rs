@@ -309,6 +309,10 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
     pub fn is_empty(&self) -> bool {
         self.len.0 == 0
     }
+
+    pub fn len(&self) -> u64 {
+        self.len.0
+    }
 }
 
 impl<T: Send + Sync + Clone + Traversible + InlineOutput> Default for AppendTree<T> {
