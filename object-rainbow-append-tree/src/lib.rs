@@ -82,7 +82,9 @@ impl<T: Send + Sync + Clone, N: Send + Sync + Unsigned, M: Send + Sync> JustNode
 
 struct Leaf;
 
-impl<T: Send + Sync + Clone, N: Send + Sync + Unsigned> ListNode for Node<T, N, Leaf> {
+impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsigned> ListNode
+    for Node<T, N, Leaf>
+{
     type T = T;
     type History = ();
     const CAPACITY: u64 = N::U64;
@@ -196,7 +198,7 @@ type N7<T> = Node<Point<N6<T>>, U256, NonLeaf>;
 type N8<T> = Node<Point<N7<T>>, U256, NonLeaf>;
 
 assert_impl!(
-    impl<T> ListNode for N1<T> where T: Send + Sync + Clone {}
+    impl<T> ListNode for N1<T> where T: Send + Sync + Clone + Traversible + InlineOutput {}
 );
 assert_impl!(
     impl<T> ListNode for N2<T> where T: Send + Sync + Clone + Traversible + InlineOutput {}
