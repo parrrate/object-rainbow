@@ -93,6 +93,11 @@ trait ListNode: JustNode {
     fn merge_history(self, history: Self::History) -> Self::NextHistory;
     fn split_history(history: &Self::NextHistory) -> (&Self, &Self::History);
     fn last(&self, history: &Self::History) -> Option<Self::T>;
+    fn from_value(
+        prev: Point<Self>,
+        history: &Self::History,
+        value: Self::T,
+    ) -> (Self, Self::History);
 }
 
 impl<T: Clone, N, M> Clone for Node<T, N, M> {
@@ -188,6 +193,10 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
     fn last(&self, (): &Self::History) -> Option<Self::T> {
         self.items.last().cloned()
     }
+
+    fn from_value(prev: Point<Self>, (): &Self::History, value: Self::T) -> (Self, Self::History) {
+        (Self::new(Some(prev), vec![value]), ())
+    }
 }
 
 struct NonLeaf;
@@ -280,11 +289,29 @@ impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> ListNode for Node<Poi
         let (node, history) = T::split_history(history);
         node.last(history)
     }
+
+    fn from_value(
+        prev: Point<Self>,
+        history: &Self::History,
+        value: Self::T,
+    ) -> (Self, Self::History) {
+        let (child, history) = T::split_history(history);
+        let (child, history) = T::from_value(child.clone().point(), history, value);
+        let parent = Self::new(Some(prev), vec![child.clone().point()]);
+        (parent, child.merge_history(history))
+    }
 }
 
 impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> Node<Point<T>, N, NonLeaf> {
-    fn from_inner(inner: T) -> Self {
-        Self::new(None, vec![inner.point()])
+    fn from_inner(
+        inner: T,
+        history: &T::History,
+        value: T::T,
+    ) -> (Self, <Self as ListNode>::History) {
+        let inner = inner.point();
+        let (next, history) = T::from_value(inner.clone(), history, value);
+        let parent = Self::new(None, vec![inner, next.clone().point()]);
+        (parent, next.merge_history(history))
     }
 }
 
@@ -463,8 +490,8 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
         macro_rules! upgrade {
             ($history:ident, $node:ident, $child:ident, $parent:ident) => {
                 if len == $child::<T>::CAPACITY {
-                    let mut parent = Node::from_inner(std::mem::take($node));
-                    let history = parent.push(len, value).await?;
+                    let (parent, history) =
+                        Node::from_inner(std::mem::take($node), $history, value);
                     self.kind = TreeKind::$parent(history, parent);
                 } else {
                     *$history = $node.push(len, value).await?;
