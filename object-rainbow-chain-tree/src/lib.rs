@@ -40,6 +40,12 @@ impl<T> ChainTree<T> {
     const EMPTY: Self = Self(None);
 }
 
+impl<T> Default for ChainTree<T> {
+    fn default() -> Self {
+        Self::EMPTY
+    }
+}
+
 impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainTree<T> {
     pub async fn push(&mut self, value: T) -> object_rainbow::Result<()> {
         let tree = if let Some(node) = self.0.take() {
