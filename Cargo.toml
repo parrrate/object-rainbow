@@ -2,6 +2,7 @@
 members = [
     "object-rainbow-append-tree",
     "object-rainbow-array-map",
+    "object-rainbow-chain-tree",
     "object-rainbow-derive",
     "object-rainbow-encrypted",
     "object-rainbow-fetchall",
@@ -38,6 +39,7 @@ exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 
 [workspace.dependencies]
 object-rainbow = { version = "0.0.0-a.35", path = "." }
+object-rainbow-append-tree = { version = "0.0.0-a.1", path = "object-rainbow-append-tree" }
 object-rainbow-array-map = { version = "0.0.0-a.1", path = "object-rainbow-array-map" }
 object-rainbow-fetchall = { version = "0.0.0-a.2", path = "object-rainbow-fetchall" }
 object-rainbow-local-map = { version = "0.0.0-a.1", path = "object-rainbow-local-map" }
