@@ -75,11 +75,7 @@ assert_impl!(
     }
 );
 
-trait JustNode: Sized + Send + Sync + Clone {
-    fn new(prev: Option<Point<Self>>) -> Self;
-}
-
-trait ListNode: JustNode {
+trait ListNode: Sized + Send + Sync + Clone {
     type T: Send + Sync;
     type History: Send + Sync;
     type NextHistory: Send + Sync;
@@ -89,6 +85,7 @@ trait ListNode: JustNode {
         &mut self,
         len: u64,
         value: Self::T,
+        history: &Self::History,
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::History>>;
     fn merge_history(self, history: Self::History) -> Self::NextHistory;
     fn split_history(history: &Self::NextHistory) -> (&Self, &Self::History);
@@ -128,12 +125,6 @@ impl<T, N, M> Node<T, N, M> {
     }
 }
 
-impl<T: Send + Sync + Clone, N: Send + Sync + Unsigned, M: Send + Sync> JustNode for Node<T, N, M> {
-    fn new(prev: Option<Point<Self>>) -> Self {
-        Self::new(prev, Vec::new())
-    }
-}
-
 struct Leaf;
 
 impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsigned> ListNode
@@ -161,6 +152,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
         &mut self,
         len: u64,
         value: Self::T,
+        (): &Self::History,
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::History>> {
         ready(if len != (self.items.len() as u64) {
             Err(object_rainbow::error_fetch!("leaf len mismatch"))
@@ -226,11 +218,11 @@ impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> ListNode for Node<Poi
         &mut self,
         len: u64,
         value: Self::T,
+        history: &Self::History,
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::History>> {
         async move {
             if let Some(last) = self.items.last_mut() {
                 if len.is_multiple_of(T::CAPACITY) {
-                    let prev = Some(last.clone());
                     if len / T::CAPACITY != (self.items.len() as u64) {
                         return Err(object_rainbow::error_fetch!("non-leaf len mismatch"));
                     }
@@ -241,15 +233,15 @@ impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> ListNode for Node<Poi
                             Self::CAPACITY,
                         ));
                     }
-                    let mut last = T::new(prev);
-                    let history = last.push(0, value).await?;
+                    let (prev, history) = T::split_history(history);
+                    let (last, history) = T::from_value(prev.clone().point(), history, value);
                     self.items.push(last.clone().point());
                     Ok(last.merge_history(history))
                 } else {
                     let history = last
                         .fetch_mut()
                         .await?
-                        .push(len % T::CAPACITY, value)
+                        .push(len % T::CAPACITY, value, T::split_history(history).1)
                         .await?;
                     Ok(last.fetch().await?.merge_history(history))
                 }
@@ -486,7 +478,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
                         Node::from_inner(std::mem::take($node), $history, value);
                     self.kind = TreeKind::$parent(history, parent);
                 } else {
-                    *$history = $node.push(len, value).await?;
+                    *$history = $node.push(len, value, $history).await?;
                 }
             };
         }
@@ -502,7 +494,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
                 if len == N8::<T>::CAPACITY {
                     return Err(object_rainbow::error_fetch!("root overflow"));
                 } else {
-                    *history = node.push(len, value).await?;
+                    *history = node.push(len, value, history).await?;
                 }
             }
         }
