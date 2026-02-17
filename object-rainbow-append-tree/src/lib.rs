@@ -36,13 +36,14 @@ trait JustNode: Sized + Send + Sync + Clone {
 
 trait ListNode: JustNode {
     type T: Send + Sync;
+    type History: Send + Sync;
     const CAPACITY: u64;
     fn get(&self, index: u64) -> impl Send + Future<Output = object_rainbow::Result<Self::T>>;
     fn push(
         &mut self,
         len: u64,
         value: Self::T,
-    ) -> impl Send + Future<Output = object_rainbow::Result<()>>;
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::History>>;
 }
 
 impl<T: Clone, N, M> Clone for Node<T, N, M> {
@@ -83,6 +84,7 @@ struct Leaf;
 
 impl<T: Send + Sync + Clone, N: Send + Sync + Unsigned> ListNode for Node<T, N, Leaf> {
     type T = T;
+    type History = ();
     const CAPACITY: u64 = N::U64;
 
     fn get(&self, index: u64) -> impl Send + Future<Output = object_rainbow::Result<Self::T>> {
@@ -102,7 +104,7 @@ impl<T: Send + Sync + Clone, N: Send + Sync + Unsigned> ListNode for Node<T, N, 
         &mut self,
         len: u64,
         value: Self::T,
-    ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::History>> {
         ready(if len != (self.items.len() as u64) {
             Err(object_rainbow::error_fetch!("leaf len mismatch"))
         } else if self.items.len() >= N::USIZE {
@@ -118,6 +120,7 @@ struct NonLeaf;
 
 impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> ListNode for Node<Point<T>, N, NonLeaf> {
     type T = T::T;
+    type History = (Point<T>, T::History);
     const CAPACITY: u64 = N::U64.saturating_mul(T::CAPACITY);
 
     fn get(&self, index: u64) -> impl Send + Future<Output = object_rainbow::Result<Self::T>> {
@@ -139,7 +142,7 @@ impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> ListNode for Node<Poi
         &mut self,
         len: u64,
         value: Self::T,
-    ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::History>> {
         async move {
             if let Some(last) = self.items.last_mut() {
                 if len.is_multiple_of(T::CAPACITY) {
@@ -155,11 +158,17 @@ impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> ListNode for Node<Poi
                         ));
                     }
                     let mut last = T::new(prev);
-                    last.push(0, value).await?;
-                    self.items.push(last.point());
-                    Ok(())
+                    let history = last.push(0, value).await?;
+                    let last = last.point();
+                    self.items.push(last.clone());
+                    Ok((last, history))
                 } else {
-                    last.fetch_mut().await?.push(len % T::CAPACITY, value).await
+                    let history = last
+                        .fetch_mut()
+                        .await?
+                        .push(len % T::CAPACITY, value)
+                        .await?;
+                    Ok((last.clone(), history))
                 }
             } else {
                 let prev = if let Some(prev) = self.prev.as_ref() {
@@ -168,9 +177,10 @@ impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> ListNode for Node<Poi
                     None
                 };
                 let mut first = T::new(prev);
-                first.push(len, value).await?;
-                self.items.push(first.point());
-                Ok(())
+                let history = first.push(len, value).await?;
+                let first = first.point();
+                self.items.push(first.clone());
+                Ok((first, history))
             }
         }
     }
@@ -210,16 +220,90 @@ assert_impl!(
     impl<T> ListNode for N8<T> where T: Send + Sync + Clone + Traversible + InlineOutput {}
 );
 
+type H1 = ();
+type H2<T> = (Point<N1<T>>, H1);
+type H3<T> = (Point<N2<T>>, H2<T>);
+type H4<T> = (Point<N3<T>>, H3<T>);
+type H5<T> = (Point<N4<T>>, H4<T>);
+type H6<T> = (Point<N5<T>>, H5<T>);
+type H7<T> = (Point<N6<T>>, H6<T>);
+type H8<T> = (Point<N7<T>>, H7<T>);
+
+assert_impl!(
+    impl<T, E> Inline<E> for H1
+    where
+        E: 'static + Send + Sync + Clone,
+        T: Inline<E>,
+    {
+    }
+);
+assert_impl!(
+    impl<T, E> Inline<E> for H2<T>
+    where
+        E: 'static + Send + Sync + Clone,
+        T: Inline<E>,
+    {
+    }
+);
+assert_impl!(
+    impl<T, E> Inline<E> for H3<T>
+    where
+        E: 'static + Send + Sync + Clone,
+        T: Inline<E>,
+    {
+    }
+);
+assert_impl!(
+    impl<T, E> Inline<E> for H4<T>
+    where
+        E: 'static + Send + Sync + Clone,
+        T: Inline<E>,
+    {
+    }
+);
+assert_impl!(
+    impl<T, E> Inline<E> for H5<T>
+    where
+        E: 'static + Send + Sync + Clone,
+        T: Inline<E>,
+    {
+    }
+);
+assert_impl!(
+    impl<T, E> Inline<E> for H6<T>
+    where
+        E: 'static + Send + Sync + Clone,
+        T: Inline<E>,
+    {
+    }
+);
+assert_impl!(
+    impl<T, E> Inline<E> for H7<T>
+    where
+        E: 'static + Send + Sync + Clone,
+        T: Inline<E>,
+    {
+    }
+);
+assert_impl!(
+    impl<T, E> Inline<E> for H8<T>
+    where
+        E: 'static + Send + Sync + Clone,
+        T: Inline<E>,
+    {
+    }
+);
+
 #[derive(Enum, ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 enum TreeKind<T> {
-    N1(N1<T>),
-    N2(N2<T>),
-    N3(N3<T>),
-    N4(N4<T>),
-    N5(N5<T>),
-    N6(N6<T>),
-    N7(N7<T>),
-    N8(N8<T>),
+    N1(H1, N1<T>),
+    N2(H2<T>, N2<T>),
+    N3(H3<T>, N3<T>),
+    N4(H4<T>, N4<T>),
+    N5(H5<T>, N5<T>),
+    N6(H6<T>, N6<T>),
+    N7(H7<T>, N7<T>),
+    N8(H8<T>, N8<T>),
 }
 
 assert_impl!(
@@ -250,21 +334,21 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
     pub const fn new() -> Self {
         Self {
             len: Le::<u64>::new(0u64),
-            kind: TreeKind::N1(Node::new(None)),
+            kind: TreeKind::N1((), Node::new(None)),
         }
     }
 
     pub async fn get(&self, index: u64) -> object_rainbow::Result<Option<T>> {
         if index < self.len.0 {
             match &self.kind {
-                TreeKind::N1(node) => node.get(index).await,
-                TreeKind::N2(node) => node.get(index).await,
-                TreeKind::N3(node) => node.get(index).await,
-                TreeKind::N4(node) => node.get(index).await,
-                TreeKind::N5(node) => node.get(index).await,
-                TreeKind::N6(node) => node.get(index).await,
-                TreeKind::N7(node) => node.get(index).await,
-                TreeKind::N8(node) => node.get(index).await,
+                TreeKind::N1(_, node) => node.get(index).await,
+                TreeKind::N2(_, node) => node.get(index).await,
+                TreeKind::N3(_, node) => node.get(index).await,
+                TreeKind::N4(_, node) => node.get(index).await,
+                TreeKind::N5(_, node) => node.get(index).await,
+                TreeKind::N6(_, node) => node.get(index).await,
+                TreeKind::N7(_, node) => node.get(index).await,
+                TreeKind::N8(_, node) => node.get(index).await,
             }
             .map(Some)
         } else {
@@ -275,30 +359,30 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
     pub async fn push(&mut self, value: T) -> object_rainbow::Result<()> {
         let len = self.len.0;
         macro_rules! upgrade {
-            ($node:ident, $child:ident, $parent:ident) => {
+            ($history:ident, $node:ident, $child:ident, $parent:ident) => {
                 if len == $child::<T>::CAPACITY {
                     let mut parent = Node::new(None);
                     parent.items.push(std::mem::take($node).point());
-                    parent.push(len, value).await?;
-                    self.kind = TreeKind::$parent(parent);
+                    let history = parent.push(len, value).await?;
+                    self.kind = TreeKind::$parent(history, parent);
                 } else {
-                    $node.push(len, value).await?;
+                    *$history = $node.push(len, value).await?;
                 }
             };
         }
         match &mut self.kind {
-            TreeKind::N1(node) => upgrade!(node, N1, N2),
-            TreeKind::N2(node) => upgrade!(node, N2, N3),
-            TreeKind::N3(node) => upgrade!(node, N3, N4),
-            TreeKind::N4(node) => upgrade!(node, N4, N5),
-            TreeKind::N5(node) => upgrade!(node, N5, N6),
-            TreeKind::N6(node) => upgrade!(node, N6, N7),
-            TreeKind::N7(node) => upgrade!(node, N7, N8),
-            TreeKind::N8(node) => {
+            TreeKind::N1(history, node) => upgrade!(history, node, N1, N2),
+            TreeKind::N2(history, node) => upgrade!(history, node, N2, N3),
+            TreeKind::N3(history, node) => upgrade!(history, node, N3, N4),
+            TreeKind::N4(history, node) => upgrade!(history, node, N4, N5),
+            TreeKind::N5(history, node) => upgrade!(history, node, N5, N6),
+            TreeKind::N6(history, node) => upgrade!(history, node, N6, N7),
+            TreeKind::N7(history, node) => upgrade!(history, node, N7, N8),
+            TreeKind::N8(history, node) => {
                 if len == N8::<T>::CAPACITY {
                     return Err(object_rainbow::error_fetch!("root overflow"));
                 } else {
-                    node.push(len, value).await?;
+                    *history = node.push(len, value).await?;
                 }
             }
         }
