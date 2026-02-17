@@ -305,6 +305,10 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
         self.len.0 += 1;
         Ok(())
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.len.0 == 0
+    }
 }
 
 impl<T: Send + Sync + Clone + Traversible + InlineOutput> Default for AppendTree<T> {
