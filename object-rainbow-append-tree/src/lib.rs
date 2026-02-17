@@ -1,8 +1,8 @@
-use std::{future::ready, marker::PhantomData, sync::Arc};
+use std::{future::ready, marker::PhantomData};
 
 use object_rainbow::{
-    Enum, Fetch, Inline, InlineOutput, ListHashes, Object, Parse, Singular, Tagged, ToOutput,
-    TopoVec, Topological, Traversible, assert_impl, numeric::Le,
+    Enum, Fetch, Inline, InlineOutput, ListHashes, Object, Parse, Tagged, ToOutput, Topological,
+    Traversible, assert_impl, numeric::Le,
 };
 use object_rainbow_point::{IntoPoint, Point};
 use typenum::{U256, Unsigned};
@@ -48,7 +48,6 @@ trait ListNode: JustNode {
         point: &Point<Self>,
         history: &Self::History,
     ) -> impl Send + Future<Output = object_rainbow::Result<Option<Self::T>>>;
-    fn dyn_history(history: &Self::History) -> impl Iterator<Item = Arc<dyn Singular>>;
 }
 
 impl<T: Clone, N, M> Clone for Node<T, N, M> {
@@ -128,10 +127,6 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
     ) -> impl Send + Future<Output = object_rainbow::Result<Option<Self::T>>> {
         async { Ok(point.fetch().await?.items.into_iter().next_back()) }
     }
-
-    fn dyn_history((): &Self::History) -> impl Iterator<Item = Arc<dyn Singular>> {
-        std::iter::empty()
-    }
 }
 
 struct NonLeaf;
@@ -208,10 +203,6 @@ impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> ListNode for Node<Poi
         (point, history): &Self::History,
     ) -> impl Send + Future<Output = object_rainbow::Result<Option<Self::T>>> {
         T::last(point, history)
-    }
-
-    fn dyn_history((point, history): &Self::History) -> impl Iterator<Item = Arc<dyn Singular>> {
-        std::iter::once(Arc::new(point.clone()) as _).chain(T::dyn_history(history))
     }
 }
 
@@ -437,19 +428,6 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
             TreeKind::N6(history, node) => ListNode::last(&node.clone().point(), history).await,
             TreeKind::N7(history, node) => ListNode::last(&node.clone().point(), history).await,
             TreeKind::N8(history, node) => ListNode::last(&node.clone().point(), history).await,
-        }
-    }
-
-    pub fn diff_topology(&self) -> TopoVec {
-        match &self.kind {
-            TreeKind::N1(history, _) => N1::<T>::dyn_history(history).collect(),
-            TreeKind::N2(history, _) => N2::<T>::dyn_history(history).collect(),
-            TreeKind::N3(history, _) => N3::<T>::dyn_history(history).collect(),
-            TreeKind::N4(history, _) => N4::<T>::dyn_history(history).collect(),
-            TreeKind::N5(history, _) => N5::<T>::dyn_history(history).collect(),
-            TreeKind::N6(history, _) => N6::<T>::dyn_history(history).collect(),
-            TreeKind::N7(history, _) => N7::<T>::dyn_history(history).collect(),
-            TreeKind::N8(history, _) => N8::<T>::dyn_history(history).collect(),
         }
     }
 }
