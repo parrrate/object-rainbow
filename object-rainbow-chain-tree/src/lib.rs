@@ -64,4 +64,11 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainTree<T> {
             .checked_add(1)
             .ok_or_else(|| object_rainbow::error_fetch!("len overflow"))
     }
+
+    pub async fn last(&self) -> object_rainbow::Result<Option<T>> {
+        let Some(node) = &self.0 else {
+            return Ok(None);
+        };
+        Ok(Some(node.fetch().await?.value))
+    }
 }
