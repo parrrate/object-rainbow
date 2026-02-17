@@ -44,6 +44,10 @@ trait ListNode: JustNode {
         len: u64,
         value: Self::T,
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::History>>;
+    fn last(
+        point: &Point<Self>,
+        history: &Self::History,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Option<Self::T>>>;
 }
 
 impl<T: Clone, N, M> Clone for Node<T, N, M> {
@@ -116,6 +120,13 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
             Ok(())
         })
     }
+
+    fn last(
+        point: &Point<Self>,
+        (): &Self::History,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Option<Self::T>>> {
+        async { Ok(point.fetch().await?.items.into_iter().next_back()) }
+    }
 }
 
 struct NonLeaf;
@@ -185,6 +196,13 @@ impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> ListNode for Node<Poi
                 Ok((first, history))
             }
         }
+    }
+
+    fn last(
+        _: &Point<Self>,
+        (point, history): &Self::History,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Option<Self::T>>> {
+        T::last(point, history)
     }
 }
 
@@ -398,6 +416,19 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
 
     pub fn len(&self) -> u64 {
         self.len.0
+    }
+
+    pub async fn last(&self) -> object_rainbow::Result<Option<T>> {
+        match &self.kind {
+            TreeKind::N1(history, node) => ListNode::last(&node.clone().point(), history).await,
+            TreeKind::N2(history, node) => ListNode::last(&node.clone().point(), history).await,
+            TreeKind::N3(history, node) => ListNode::last(&node.clone().point(), history).await,
+            TreeKind::N4(history, node) => ListNode::last(&node.clone().point(), history).await,
+            TreeKind::N5(history, node) => ListNode::last(&node.clone().point(), history).await,
+            TreeKind::N6(history, node) => ListNode::last(&node.clone().point(), history).await,
+            TreeKind::N7(history, node) => ListNode::last(&node.clone().point(), history).await,
+            TreeKind::N8(history, node) => ListNode::last(&node.clone().point(), history).await,
+        }
     }
 }
 
