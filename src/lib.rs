@@ -186,6 +186,9 @@ pub trait FetchBytes: AsAny {
     fn as_inner(&self) -> Option<&dyn Any> {
         None
     }
+    fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
+        None
+    }
 }
 
 pub trait Fetch: Send + Sync + FetchBytes {
