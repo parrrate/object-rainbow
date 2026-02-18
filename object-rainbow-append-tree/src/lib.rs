@@ -350,7 +350,7 @@ enum TreeKind<T> {
     N8((H8<T>, N8<T>)),
 }
 
-#[derive(Tagged, ListHashes, Topological, Clone, ParseAsInline)]
+#[derive(Tagged, ListHashes, Topological, Clone, ParseAsInline, PartialEq)]
 pub struct AppendTree<T> {
     len: Le<u64>,
     kind: TreeKind<T>,
