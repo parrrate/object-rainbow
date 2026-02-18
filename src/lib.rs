@@ -195,6 +195,9 @@ pub trait FetchBytes: AsAny {
     fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
         None
     }
+    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
+        None
+    }
 }
 
 pub trait Fetch: Send + Sync + FetchBytes {
