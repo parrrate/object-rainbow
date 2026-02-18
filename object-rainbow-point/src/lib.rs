@@ -588,6 +588,10 @@ impl<T> Point<T> {
     pub fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<T>>> {
         self.fetch.try_fetch_local()
     }
+
+    pub fn try_unwrap(self) -> Option<T> {
+        self.fetch.try_unwrap()
+    }
 }
 
 impl<T: Traversible + Clone> Point<T> {
