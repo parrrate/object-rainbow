@@ -588,6 +588,10 @@ impl<T> FetchBytes for Point<T> {
     fn as_inner(&self) -> Option<&dyn Any> {
         self.fetch.as_inner()
     }
+
+    fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
+        self.fetch.as_resolve()
+    }
 }
 
 impl<T> Singular for Point<T> {
