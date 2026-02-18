@@ -792,6 +792,13 @@ impl Resolve for ByTopology {
     fn topology_hash(&self) -> Option<Hash> {
         Some(self.topology_hash)
     }
+
+    fn into_topovec(self: Arc<Self>) -> Option<TopoVec> {
+        Arc::try_unwrap(self)
+            .ok()
+            .as_mut()
+            .map(|Self { topology, .. }| std::mem::take(topology))
+    }
 }
 
 pub trait Size {
