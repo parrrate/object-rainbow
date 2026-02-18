@@ -818,6 +818,10 @@ impl<T, F> FetchBytes for MapEquivalent<T, F> {
     fn fetch_data_local(&self) -> Option<Vec<u8>> {
         self.fetch.fetch_data_local()
     }
+
+    fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
+        self.fetch.as_resolve()
+    }
 }
 
 trait Map1<T>: Fn(T) -> Self::U {
