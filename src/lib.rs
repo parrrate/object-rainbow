@@ -737,6 +737,18 @@ struct ByTopology {
     topology_hash: Hash,
 }
 
+impl Drop for ByTopology {
+    fn drop(&mut self) {
+        while let Some(singular) = self.topology.pop() {
+            if let Some(resolve) = singular.try_unwrap_resolve()
+                && let Some(topology) = &mut resolve.into_topovec()
+            {
+                self.topology.append(topology);
+            }
+        }
+    }
+}
+
 impl ByTopology {
     fn try_resolve(&'_ self, address: Address) -> Result<FailFuture<'_, ByteNode>> {
         let point = self
