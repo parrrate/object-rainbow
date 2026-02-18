@@ -44,6 +44,12 @@ impl<T> PartialEq for ChainTree<T> {
 
 impl<T> Eq for ChainTree<T> {}
 
+impl<T> Clone for ChainTree<T> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
 impl<T> ChainTree<T> {
     const EMPTY: Self = Self(None);
 
