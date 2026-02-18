@@ -20,6 +20,17 @@ struct Node<T, N, M> {
     items: Vec<T>,
 }
 
+impl<T, N, M> Drop for Node<T, N, M> {
+    fn drop(&mut self) {
+        self.items.drain(..).rev().for_each(|_| {});
+        while let Some(prev) = self.prev.take()
+            && let Some(node) = prev.try_unwrap()
+        {
+            *self = node;
+        }
+    }
+}
+
 impl<T: std::fmt::Debug, N, M> std::fmt::Debug for Node<T, N, M> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Node")
