@@ -42,6 +42,8 @@ impl<T> PartialEq for ChainTree<T> {
     }
 }
 
+impl<T> Eq for ChainTree<T> {}
+
 impl<T> ChainTree<T> {
     const EMPTY: Self = Self(None);
 
