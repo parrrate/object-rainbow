@@ -637,6 +637,8 @@ impl ToOutput for dyn Singular {
     }
 }
 
+impl InlineOutput for dyn Singular {}
+
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
 impl PointVisitor for TopoVec {
