@@ -26,6 +26,12 @@ assert_impl!(
     }
 );
 
+impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainNode<T> {
+    pub fn prev(&self) -> ChainTree<T> {
+        ChainTree(self.tree.last().cloned())
+    }
+}
+
 #[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline)]
 pub struct ChainTree<T>(Option<Point<ChainNode<T>>>);
 
@@ -106,7 +112,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainTree<T> {
         let Some(node) = &self.0 else {
             return Ok(Self::EMPTY);
         };
-        Ok(Self(node.fetch().await?.tree.last().cloned()))
+        Ok(node.fetch().await?.prev())
     }
 
     pub async fn follows(&self, other: &Self) -> object_rainbow::Result<bool> {
