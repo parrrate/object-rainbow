@@ -338,7 +338,7 @@ type H6<T> = (H5<T>, N5<T>);
 type H7<T> = (H6<T>, N6<T>);
 type H8<T> = (H7<T>, N7<T>);
 
-#[derive(Enum, Tagged, ListHashes, Topological, Clone, PartialEq)]
+#[derive(Enum, Tagged, ListHashes, Topological, Clone, PartialEq, Eq)]
 enum TreeKind<T> {
     N1((H1, N1<T>)),
     N2((H2<T>, N2<T>)),
