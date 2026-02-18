@@ -67,6 +67,12 @@ impl FetchBytes for ByAddressInner {
     fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
         Some(&self.resolve)
     }
+
+    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
+        Arc::try_unwrap(self)
+            .ok()
+            .map(|Self { resolve, .. }| resolve)
+    }
 }
 
 impl Singular for ByAddressInner {
