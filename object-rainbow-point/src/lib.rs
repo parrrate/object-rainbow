@@ -350,6 +350,10 @@ impl<T, Extra> FetchBytes for RawPoint<T, Extra> {
     fn as_inner(&self) -> Option<&dyn Any> {
         Some(&self.inner)
     }
+
+    fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
+        self.inner.as_resolve()
+    }
 }
 
 impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra> {
