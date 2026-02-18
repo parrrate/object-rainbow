@@ -36,6 +36,12 @@ assert_impl!(
     }
 );
 
+impl<T> PartialEq for ChainTree<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
 impl<T> ChainTree<T> {
     const EMPTY: Self = Self(None);
 
