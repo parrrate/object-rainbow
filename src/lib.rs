@@ -631,6 +631,12 @@ pub trait SingularFetch: Singular + Fetch {}
 
 impl<T: ?Sized + Singular + Fetch> SingularFetch for T {}
 
+impl ToOutput for dyn Singular {
+    fn to_output(&self, output: &mut dyn Output) {
+        self.hash().to_output(output);
+    }
+}
+
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
 impl PointVisitor for TopoVec {
