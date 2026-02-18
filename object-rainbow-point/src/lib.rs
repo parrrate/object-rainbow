@@ -373,6 +373,10 @@ impl<T, Extra> FetchBytes for RawPoint<T, Extra> {
     fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
         self.inner.as_resolve()
     }
+
+    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
+        Arc::try_unwrap(self).ok()?.inner.fetch.try_unwrap_resolve()
+    }
 }
 
 impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra> {
