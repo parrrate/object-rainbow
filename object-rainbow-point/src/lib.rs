@@ -849,6 +849,10 @@ impl<T, F> FetchBytes for MapEquivalent<T, F> {
     fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
         self.fetch.as_resolve()
     }
+
+    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
+        Arc::try_unwrap(self).ok()?.fetch.try_unwrap_resolve()
+    }
 }
 
 trait Map1<T>: Fn(T) -> Self::U {
