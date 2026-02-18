@@ -743,6 +743,10 @@ impl<T: Traversible + Clone> Fetch for LocalFetch<T> {
     fn get_mut(&mut self) -> Option<&mut Self::T> {
         Some(&mut self.object)
     }
+
+    fn try_unwrap(self: Arc<Self>) -> Option<Self::T> {
+        Arc::try_unwrap(self).ok().map(|Self { object }| object)
+    }
 }
 
 impl<T: Traversible + Clone> FetchBytes for LocalFetch<T> {
