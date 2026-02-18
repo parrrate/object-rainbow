@@ -32,6 +32,7 @@ assert_impl!(
 
 trait History: Sized + Send + Sync {
     type History: Send + Sync;
+    type Block: Send + Sync;
     const CAPACITY: u64;
 }
 
@@ -88,6 +89,7 @@ struct Leaf;
 
 impl<T: Send + Sync, N: Send + Sync + Unsigned> History for Node<T, N, Leaf> {
     type History = ();
+    type Block = Self;
     const CAPACITY: u64 = N::U64;
 }
 
@@ -168,6 +170,7 @@ struct NonLeaf;
 
 impl<T: Send + Sync + History, N: Send + Sync + Unsigned> History for Node<Point<T>, N, NonLeaf> {
     type History = (T::History, T);
+    type Block = T::Block;
     const CAPACITY: u64 = N::U64.saturating_mul(T::CAPACITY);
 }
 
