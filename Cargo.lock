@@ -1164,6 +1164,8 @@ dependencies = [
 name = "object-rainbow-chain-tree"
 version = "0.0.0-a.0"
 dependencies = [
+ "futures-util",
+ "genawaiter-try-stream",
  "macro_rules_attribute",
  "object-rainbow",
  "object-rainbow-append-tree",
