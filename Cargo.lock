@@ -1142,7 +1142,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-append-tree"
-version = "0.0.0-a.4"
+version = "0.0.0-a.5"
 dependencies = [
  "macro_rules_attribute",
  "object-rainbow",
@@ -1162,7 +1162,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-chain-tree"
-version = "0.0.0-a.2"
+version = "0.0.0-a.3"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
