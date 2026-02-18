@@ -117,6 +117,15 @@ impl<T, Extra> FetchBytes for ByAddress<T, Extra> {
     fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
         self.inner.as_resolve()
     }
+
+    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
+        Arc::try_unwrap(self).ok().map(
+            |Self {
+                 inner: ByAddressInner { resolve, .. },
+                 ..
+             }| resolve,
+        )
+    }
 }
 
 impl<T, Extra: Send + Sync> Singular for ByAddress<T, Extra> {
