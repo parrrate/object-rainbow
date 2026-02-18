@@ -205,6 +205,9 @@ pub trait Fetch: Send + Sync + FetchBytes {
         None
     }
     fn get_mut_finalize(&mut self) {}
+    fn try_unwrap(self: Arc<Self>) -> Option<Self::T> {
+        None
+    }
 }
 
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline)]
