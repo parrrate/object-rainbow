@@ -190,7 +190,12 @@ where
     Point<Self>: ParseInline<I>,
 {
     fn parse_with_len(input: &mut I, len: u64) -> object_rainbow::Result<(Self::History, Self)> {
-        let own = len / T::CAPACITY;
+        let own = len / T::CAPACITY
+            + if len.is_multiple_of(T::CAPACITY) {
+                0
+            } else {
+                1
+            };
         if own > N::U64 {
             return Err(object_rainbow::error_parse!("overflow"));
         }
