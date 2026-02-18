@@ -53,7 +53,7 @@ trait Push: Clone + History {
         value: Self::T,
         history: &mut Self::History,
     ) -> object_rainbow::Result<()>;
-    fn last(&self, history: &Self::History) -> Option<Self::T>;
+    fn last<'a>(&'a self, history: &'a Self::History) -> Option<&'a Self::T>;
     fn from_value(prev: Point<Self>, history: &mut Self::History, value: Self::T) -> Self;
 }
 
@@ -157,8 +157,8 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
         }
     }
 
-    fn last(&self, (): &Self::History) -> Option<Self::T> {
-        self.items.last().cloned()
+    fn last<'a>(&'a self, (): &'a Self::History) -> Option<&'a Self::T> {
+        self.items.last()
     }
 
     fn from_value(prev: Point<Self>, (): &mut Self::History, value: Self::T) -> Self {
@@ -259,7 +259,7 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
         }
     }
 
-    fn last(&self, (history, node): &Self::History) -> Option<Self::T> {
+    fn last<'a>(&'a self, (history, node): &'a Self::History) -> Option<&'a Self::T> {
         node.last(history)
     }
 
@@ -477,7 +477,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
         self.len.0
     }
 
-    pub fn last(&self) -> Option<T> {
+    pub fn last(&self) -> Option<&T> {
         match &self.kind {
             TreeKind::N1((history, node)) => Push::last(node, history),
             TreeKind::N2((history, node)) => Push::last(node, history),

@@ -104,7 +104,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainTree<T> {
         let Some(node) = &self.0 else {
             return Ok(Self::EMPTY);
         };
-        Ok(Self(node.fetch().await?.tree.last()))
+        Ok(Self(node.fetch().await?.tree.last().cloned()))
     }
 
     pub async fn follows(&self, other: &Self) -> object_rainbow::Result<bool> {
