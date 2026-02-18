@@ -50,14 +50,10 @@ trait Push: Clone + History {
         &mut self,
         len: u64,
         value: Self::T,
-        history: &Self::History,
-    ) -> object_rainbow::Result<Self::History>;
+        history: &mut Self::History,
+    ) -> object_rainbow::Result<()>;
     fn last(&self, history: &Self::History) -> Option<Self::T>;
-    fn from_value(
-        prev: Point<Self>,
-        history: &Self::History,
-        value: Self::T,
-    ) -> (Self, Self::History);
+    fn from_value(prev: Point<Self>, history: &mut Self::History, value: Self::T) -> Self;
 }
 
 impl<T: Clone, N, M> Clone for Node<T, N, M> {
@@ -147,8 +143,8 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
         &mut self,
         len: u64,
         value: Self::T,
-        (): &Self::History,
-    ) -> object_rainbow::Result<Self::History> {
+        (): &mut Self::History,
+    ) -> object_rainbow::Result<()> {
         if len != (self.items.len() as u64) {
             Err(object_rainbow::error_fetch!("leaf len mismatch"))
         } else if self.items.len() >= N::USIZE {
@@ -163,8 +159,8 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
         self.items.last().cloned()
     }
 
-    fn from_value(prev: Point<Self>, (): &Self::History, value: Self::T) -> (Self, Self::History) {
-        (Self::new(Some(prev), vec![value]), ())
+    fn from_value(prev: Point<Self>, (): &mut Self::History, value: Self::T) -> Self {
+        Self::new(Some(prev), vec![value])
     }
 }
 
@@ -231,10 +227,11 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
         &mut self,
         len: u64,
         value: Self::T,
-        (history, prev): &Self::History,
-    ) -> object_rainbow::Result<Self::History> {
+        (history, prev): &mut Self::History,
+    ) -> object_rainbow::Result<()> {
         if let Some(last) = self.items.last_mut() {
             if len.is_multiple_of(T::CAPACITY) {
+                let last = last.clone();
                 if len / T::CAPACITY != (self.items.len() as u64) {
                     return Err(object_rainbow::error_fetch!("non-leaf len mismatch"));
                 }
@@ -245,14 +242,14 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
                         Self::CAPACITY,
                     ));
                 }
-                let (last, history) = T::from_value(prev.clone().point(), history, value);
+                let last = T::from_value(last, history, value);
                 self.items.push(last.clone().point());
-                Ok((history, last))
+                *prev = last;
+                Ok(())
             } else {
-                let mut prev = prev.clone();
-                let history = prev.push(len % T::CAPACITY, value, history)?;
+                prev.push(len % T::CAPACITY, value, history)?;
                 *last = prev.clone().point();
-                Ok((history, prev))
+                Ok(())
             }
         } else {
             Err(object_rainbow::error_fetch!("empty non-leaf encountered"))
@@ -263,27 +260,22 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
         node.last(history)
     }
 
-    fn from_value(
-        prev: Point<Self>,
-        (history, child): &Self::History,
-        value: Self::T,
-    ) -> (Self, Self::History) {
-        let (child, history) = T::from_value(child.clone().point(), history, value);
-        let parent = Self::new(Some(prev), vec![child.clone().point()]);
-        (parent, (history, child))
+    fn from_value(prev: Point<Self>, (history, child): &mut Self::History, value: Self::T) -> Self {
+        *child = T::from_value(child.clone().point(), history, value);
+        Self::new(Some(prev), vec![child.clone().point()])
     }
 }
 
-impl<T: Push + Traversible, N: Send + Sync + Unsigned> Node<Point<T>, N, NonLeaf> {
+impl<T: Push<History: Clone> + Traversible, N: Send + Sync + Unsigned> Node<Point<T>, N, NonLeaf> {
     fn from_inner(
         inner: T,
-        history: &T::History,
+        history: &mut T::History,
         value: T::T,
-    ) -> (Self, <Self as History>::History) {
+    ) -> (<Self as History>::History, Self) {
         let inner = inner.point();
-        let (next, history) = T::from_value(inner.clone(), history, value);
+        let next = T::from_value(inner.clone(), history, value);
         let parent = Self::new(None, vec![inner, next.clone().point()]);
-        (parent, (history, next))
+        ((history.clone(), next), parent)
     }
 }
 
@@ -447,11 +439,10 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
         macro_rules! upgrade {
             ($history:ident, $node:ident, $child:ident, $parent:ident) => {
                 if len == $child::<T>::CAPACITY {
-                    let (parent, history) =
-                        Node::from_inner(std::mem::take($node), $history, value);
-                    self.kind = TreeKind::$parent((history, parent));
+                    self.kind =
+                        TreeKind::$parent(Node::from_inner(std::mem::take($node), $history, value));
                 } else {
-                    *$history = $node.push(len, value, $history)?;
+                    $node.push(len, value, $history)?;
                 }
             };
         }
@@ -467,7 +458,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
                 if len == N8::<T>::CAPACITY {
                     return Err(object_rainbow::error_fetch!("root overflow"));
                 } else {
-                    *history = node.push(len, value, history)?;
+                    node.push(len, value, history)?;
                 }
             }
         }
