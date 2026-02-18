@@ -419,6 +419,17 @@ pub struct Point<T> {
     fetch: Arc<dyn Fetch<T = T>>,
 }
 
+impl<T> std::fmt::Debug for Point<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        #[derive(Debug)]
+        struct Arc;
+        f.debug_struct("Point")
+            .field("hash", &self.hash)
+            .field("fetch", &Arc)
+            .finish()
+    }
+}
+
 impl<T> Point<T> {
     pub fn raw<Extra: 'static + Clone>(self, extra: Extra) -> RawPoint<T, Extra> {
         {
