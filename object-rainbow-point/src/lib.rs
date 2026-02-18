@@ -63,6 +63,10 @@ impl FetchBytes for ByAddressInner {
     fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
         self.resolve.try_resolve_local(self.address)
     }
+
+    fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
+        Some(&self.resolve)
+    }
 }
 
 impl Singular for ByAddressInner {
