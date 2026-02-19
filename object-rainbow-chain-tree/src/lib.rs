@@ -47,7 +47,7 @@ assert_impl!(
     impl<T, E> Inline<E> for ChainTree<T>
     where
         E: 'static + Send + Sync + Clone,
-        T: Inline<E>,
+        T: Object<E>,
     {
     }
 );
