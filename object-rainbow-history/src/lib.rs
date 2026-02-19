@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use futures_util::TryStreamExt;
 use object_rainbow::{
@@ -103,6 +103,19 @@ impl<
         async move {
             let mut tree = tree.unwrap_or_default().fetch().await?;
             tree.insert(self.0, self.1);
+            Ok(tree.point())
+        }
+    }
+}
+
+impl<T: Send + Clone + Traversible + InlineOutput + Ord> Diff<Point<BTreeSet<T>>> for (T,) {
+    fn forward(
+        self,
+        tree: Option<Point<BTreeSet<T>>>,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Point<BTreeSet<T>>>> {
+        async move {
+            let mut tree = tree.unwrap_or_default().fetch().await?;
+            tree.insert(self.0);
             Ok(tree.point())
         }
     }
