@@ -26,7 +26,7 @@ assert_impl!(
     }
 );
 
-impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainNode<T> {
+impl<T: Send + Sync + Clone + Traversible> ChainNode<T> {
     pub fn value(&self) -> &T {
         &self.value
     }
