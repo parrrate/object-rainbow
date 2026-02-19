@@ -6,6 +6,7 @@ mod bool;
 mod boxed;
 mod btree;
 mod bytes;
+mod char;
 mod cow;
 mod cstr;
 mod cstring;
