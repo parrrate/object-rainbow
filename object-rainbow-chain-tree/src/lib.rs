@@ -220,13 +220,13 @@ mod test {
     use crate::ChainTree;
 
     #[apply(test!)]
-    async fn test() -> object_rainbow::Result<()> {
+    async fn follows() -> object_rainbow::Result<()> {
         let root = ChainTree::<char>::new();
-        assert!(!root.follows(&root).await?);
+        assert!(root.follows(&root).await?);
         let mut a = root.clone();
         a.push('a').await?;
         assert!(a.follows(&root).await?);
-        assert!(!a.follows(&a).await?);
+        assert!(a.follows(&a).await?);
         assert!(!root.follows(&a).await?);
         let mut b = root.clone();
         b.push('b').await?;
@@ -236,7 +236,7 @@ mod test {
         ac.push('c').await?;
         assert!(ac.follows(&root).await?);
         assert!(ac.follows(&a).await?);
-        assert!(!ac.follows(&ac).await?);
+        assert!(ac.follows(&ac).await?);
         assert!(!ac.follows(&b).await?);
         assert!(!root.follows(&ac).await?);
         assert!(!a.follows(&ac).await?);
