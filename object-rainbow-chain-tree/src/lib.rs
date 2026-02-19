@@ -119,6 +119,18 @@ impl<T: Clone + Traversible> ChainTree<T> {
             .ok_or_else(|| object_rainbow::error_fetch!("len overflow"))
     }
 
+    pub async fn slice(&self, n: u64) -> object_rainbow::Result<Self> {
+        let len = self.len().await?;
+        if n >= len {
+            return Ok(self.clone());
+        }
+        let Some(node) = self.0.as_ref() else {
+            return Ok(Self::EMPTY);
+        };
+        let tree = node.fetch().await?.tree.get(n).await?;
+        Ok(Self(tree))
+    }
+
     pub async fn last(&self) -> object_rainbow::Result<Option<T>> {
         let Some(node) = &self.0 else {
             return Ok(None);
