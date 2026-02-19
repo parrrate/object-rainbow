@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use futures_util::Stream;
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{
@@ -53,6 +55,12 @@ assert_impl!(
     {
     }
 );
+
+impl<T> Debug for ChainTree<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("ChainTree").field(&self.0).finish()
+    }
+}
 
 impl<T> PartialEq for ChainTree<T> {
     fn eq(&self, other: &Self) -> bool {
