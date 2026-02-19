@@ -249,11 +249,12 @@ where
                 .try_into()
                 .map_err(|_| object_rainbow::error_parse!("overflow"))?,
         )?;
+        let address = Address {
+            index: input.next_index(),
+            hash,
+        };
         items.push(Point::from_address_extra(
-            Address {
-                index: input.next_index(),
-                hash,
-            },
+            address,
             input.resolve(),
             input.extra().clone(),
         ));
