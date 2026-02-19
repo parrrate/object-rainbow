@@ -92,6 +92,13 @@ impl<T: Clone + Traversible + InlineOutput + Default, D: Clone + Traversible + D
             .unwrap_or_default())
     }
 
+    pub async fn rebase(&mut self, base: &Self) -> object_rainbow::Result<()> {
+        let mut base = base.clone();
+        base.rebase_other(self).await?;
+        *self = base;
+        Ok(())
+    }
+
     pub async fn rebase_other(&mut self, other: &Self) -> object_rainbow::Result<()> {
         let common_ancestor = self.0.common_ancestor(&[&other.0]).await?;
         let diff = other
