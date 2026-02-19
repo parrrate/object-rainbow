@@ -7,7 +7,7 @@ use object_rainbow::{
 use object_rainbow_append_tree::AppendTree;
 use object_rainbow_point::{IntoPoint, Point};
 
-#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, Clone)]
+#[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 #[topology(recursive)]
 pub struct ChainNode<T> {
     #[tags(skip)]
