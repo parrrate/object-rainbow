@@ -68,7 +68,7 @@ impl<T: Clone + Traversible + InlineOutput + Default, D: Clone + Traversible + D
                     .map(|(tree, _)| tree)
                     .unwrap_or_default();
                 let hash = tree.full_hash();
-                let tree = diff.clone().forward(tree).await?;
+                let tree = diff.forward(tree).await?;
                 if hash == tree.full_hash() {
                     Err(object_rainbow::error_fetch!("noop diff"))
                 } else if tree == node.value().0 {
