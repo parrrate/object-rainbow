@@ -20,6 +20,12 @@ impl<T, D> Default for History<T, D> {
     }
 }
 
+impl<T, D> History<T, D> {
+    pub const fn new() -> Self {
+        Self::ROOT
+    }
+}
+
 pub trait Diff<Tree> {
     fn forward(
         self,
