@@ -68,16 +68,13 @@ where
     }
 }
 
-#[derive(ToOutput, Tagged, ListHashes, Topological, Parse)]
-pub struct Bulk<D>(Vec<D>);
-
-impl<D: Diff<T>, T: Send> Diff<T> for Bulk<D> {
+impl<D: Diff<T>, T: Send> Diff<T> for Vec<D> {
     fn forward(
         self,
         mut tree: Option<T>,
     ) -> impl Send + Future<Output = object_rainbow::Result<T>> {
         async move {
-            for diff in self.0 {
+            for diff in self {
                 tree = Some(diff.forward(tree).await?);
             }
             tree.ok_or_else(|| object_rainbow::error_fetch!("empty diff"))
