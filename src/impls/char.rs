@@ -6,3 +6,5 @@ impl ToOutput for char {
         self.encode_utf8(&mut buf).to_output(output);
     }
 }
+
+impl InlineOutput for char {}
