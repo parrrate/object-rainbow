@@ -82,7 +82,7 @@ impl<T> Default for ChainTree<T> {
     }
 }
 
-impl<T: Send + Sync + Clone + Traversible> ChainTree<T> {
+impl<T: Clone + Traversible> ChainTree<T> {
     async fn next_tree(self) -> object_rainbow::Result<AppendTree<Point<ChainNode<T>>>> {
         Ok(if let Some(node) = self.0 {
             let mut tree = node.fetch().await?.tree;
