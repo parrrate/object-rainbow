@@ -1215,6 +1215,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "object-rainbow-history"
+version = "0.0.0-a.0"
+dependencies = [
+ "futures-util",
+ "object-rainbow",
+ "object-rainbow-chain-tree",
+ "object-rainbow-point",
+]
+
+[[package]]
 name = "object-rainbow-json"
 version = "0.0.0-a.15"
 dependencies = [
