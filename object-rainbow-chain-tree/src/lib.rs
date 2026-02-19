@@ -69,7 +69,7 @@ impl<T> Clone for ChainTree<T> {
 }
 
 impl<T> ChainTree<T> {
-    const EMPTY: Self = Self(None);
+    pub const EMPTY: Self = Self(None);
 
     pub const fn new() -> Self {
         Self::EMPTY
