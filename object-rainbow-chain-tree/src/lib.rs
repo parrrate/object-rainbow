@@ -83,6 +83,23 @@ impl<T> Default for ChainTree<T> {
 }
 
 impl<T: Clone + Traversible> ChainTree<T> {
+    pub fn from_values(values: impl IntoIterator<Item = T>) -> object_rainbow::Result<Self> {
+        let mut values = values.into_iter();
+        let Some(value) = values.next() else {
+            return Ok(Self::EMPTY);
+        };
+        let mut node = ChainNode {
+            tree: AppendTree::new(),
+            value,
+        };
+        for value in values {
+            let mut tree = node.tree.clone();
+            tree.push(node.point())?;
+            node = ChainNode { tree, value };
+        }
+        Ok(Self(Some(node.point())))
+    }
+
     async fn next_tree(self) -> object_rainbow::Result<AppendTree<Point<ChainNode<T>>>> {
         Ok(if let Some(node) = self.0 {
             let mut tree = node.fetch().await?.tree;
