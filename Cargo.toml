@@ -28,7 +28,7 @@ authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 
 [package]
 name = "object-rainbow"
-version = "0.0.0-a.36"
+version = "0.0.0-a.37"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -39,13 +39,13 @@ documentation = "https://docs.rs/object-rainbow"
 exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 
 [workspace.dependencies]
-object-rainbow = { version = "0.0.0-a.35", path = "." }
-object-rainbow-append-tree = { version = "0.0.0-a.5", path = "object-rainbow-append-tree" }
-object-rainbow-chain-tree = { version = "0.0.0-a.3", path = "object-rainbow-chain-tree" }
+object-rainbow = { version = "0.0.0-a.37", path = "." }
+object-rainbow-append-tree = { version = "0.0.0-a.6", path = "object-rainbow-append-tree" }
+object-rainbow-chain-tree = { version = "0.0.0-a.4", path = "object-rainbow-chain-tree" }
 object-rainbow-array-map = { version = "0.0.0-a.1", path = "object-rainbow-array-map" }
 object-rainbow-fetchall = { version = "0.0.0-a.2", path = "object-rainbow-fetchall" }
 object-rainbow-local-map = { version = "0.0.0-a.1", path = "object-rainbow-local-map" }
-object-rainbow-point = { version = "0.0.0-a.1", path = "object-rainbow-point" }
+object-rainbow-point = { version = "0.0.0-a.2", path = "object-rainbow-point" }
 object-rainbow-store = { version = "0.0.0-a.5", path = "object-rainbow-store" }
 
 [dependencies]
