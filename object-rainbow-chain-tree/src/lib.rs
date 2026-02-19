@@ -134,6 +134,9 @@ impl<T: Clone + Traversible> ChainTree<T> {
     }
 
     pub async fn follows(&self, other: &Self) -> object_rainbow::Result<bool> {
+        if self == other {
+            return Ok(true);
+        }
         let Some(late) = &self.0 else {
             return Ok(false);
         };
@@ -156,9 +159,6 @@ impl<T: Clone + Traversible> ChainTree<T> {
     /// Yield entries `since`. Order is unspecified.
     pub fn diff(&self, since: &Self) -> impl Stream<Item = object_rainbow::Result<ChainNode<T>>> {
         try_stream(async move |co| {
-            if self == since {
-                return Ok(());
-            }
             if !self.follows(since).await? {
                 return Err(object_rainbow::error_fetch!("divergent histories"));
             }
