@@ -9,3 +9,4 @@ impl ToOutput for char {
 
 impl InlineOutput for char {}
 impl Tagged for char {}
+impl ListHashes for char {}
