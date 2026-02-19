@@ -213,6 +213,34 @@ impl<T: Clone + Traversible> ChainTree<T> {
             Ok(())
         })
     }
+
+    pub async fn common_ancestor(&self, other: &[&Self]) -> object_rainbow::Result<Self> {
+        if other.iter().all(|other| *other == self) {
+            return Ok(self.clone());
+        }
+        let mut lo = 0;
+        let mut hi = self.len().await?;
+        for other in other {
+            hi = hi.min(other.len().await?);
+        }
+        hi = hi.saturating_add(1);
+        while let diff = (hi - lo) / 2
+            && diff > 0
+        {
+            let mid = lo + diff;
+            let tree = self.slice(mid).await?;
+            let mut precedes = true;
+            for other in other {
+                precedes = precedes && tree.precedes(other).await?;
+            }
+            if precedes {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+        }
+        self.slice(lo).await
+    }
 }
 
 #[cfg(test)]
@@ -258,6 +286,23 @@ mod test {
         assert_eq!(ab.slice(2).await?, ab);
         assert_eq!(ab.slice(1).await?, a);
         assert_eq!(ab.slice(0).await?, root);
+        Ok(())
+    }
+
+    #[apply(test!)]
+    async fn common_ancestor() -> object_rainbow::Result<()> {
+        let root = ChainTree::<char>::from_values([])?;
+        let a = ChainTree::<char>::from_values(['a'])?;
+        let ab = ChainTree::<char>::from_values(['a', 'b'])?;
+        let ac = ChainTree::<char>::from_values(['a', 'c'])?;
+        let b = ChainTree::<char>::from_values(['b'])?;
+        assert_eq!(ab.common_ancestor(&[]).await?, ab);
+        assert_eq!(ab.common_ancestor(&[&root]).await?, root);
+        assert_eq!(ab.common_ancestor(&[&ac]).await?, a);
+        assert_eq!(ac.common_ancestor(&[&ab]).await?, a);
+        assert_eq!(b.common_ancestor(&[&ab]).await?, root);
+        assert_eq!(ab.common_ancestor(&[&a]).await?, a);
+        assert_eq!(a.common_ancestor(&[&ab]).await?, a);
         Ok(())
     }
 }
