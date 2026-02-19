@@ -119,6 +119,13 @@ impl<T> Default for ChainTree<T> {
 }
 
 impl<T: Clone + Traversible> ChainTree<T> {
+    pub async fn handle(&self) -> object_rainbow::Result<ChainHandle<T>> {
+        Ok(match &self.0 {
+            Some(point) => ChainHandle(Some(point.fetch().await?)),
+            None => ChainHandle(None),
+        })
+    }
+
     pub fn from_values(values: impl IntoIterator<Item = T>) -> object_rainbow::Result<Self> {
         let mut values = values.into_iter();
         let Some(value) = values.next() else {
