@@ -145,8 +145,11 @@ impl<T: Clone + Traversible> ChainTree<T> {
     }
 
     pub async fn slice(&self, n: u64) -> object_rainbow::Result<Self> {
+        let Some(n) = n.checked_sub(1) else {
+            return Ok(Self::EMPTY);
+        };
         let len = self.len().await?;
-        if n >= len {
+        if n + 1 >= len {
             return Ok(self.clone());
         }
         let Some(node) = self.0.as_ref() else {
@@ -241,6 +244,20 @@ mod test {
         assert!(!root.follows(&ac).await?);
         assert!(!a.follows(&ac).await?);
         assert!(!b.follows(&ac).await?);
+        Ok(())
+    }
+
+    #[apply(test!)]
+    async fn slice() -> object_rainbow::Result<()> {
+        let root = ChainTree::<char>::from_values([])?;
+        assert_eq!(root.slice(0).await?, root);
+        let a = ChainTree::<char>::from_values(['a'])?;
+        assert_eq!(a.slice(1).await?, a);
+        assert_eq!(a.slice(0).await?, root);
+        let ab = ChainTree::<char>::from_values(['a', 'b'])?;
+        assert_eq!(ab.slice(2).await?, ab);
+        assert_eq!(ab.slice(1).await?, a);
+        assert_eq!(ab.slice(0).await?, root);
         Ok(())
     }
 }
