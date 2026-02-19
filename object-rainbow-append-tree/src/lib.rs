@@ -458,7 +458,7 @@ where
 }
 
 assert_impl!(
-    impl<T, E> Object<E> for AppendTree<T>
+    impl<T, E> Inline<E> for AppendTree<T>
     where
         E: 'static + Send + Sync + Clone,
         T: Inline<E>,
