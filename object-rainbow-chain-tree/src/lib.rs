@@ -198,6 +198,13 @@ impl<T: Clone + Traversible> ChainTree<T> {
 
     /// Yield entries `since`. Order is unspecified.
     pub fn diff(&self, since: &Self) -> impl Stream<Item = object_rainbow::Result<ChainNode<T>>> {
+        self.diff_backwards(since)
+    }
+
+    pub fn diff_backwards(
+        &self,
+        since: &Self,
+    ) -> impl Stream<Item = object_rainbow::Result<ChainNode<T>>> {
         try_stream(async move |co| {
             if !self.follows(since).await? {
                 return Err(object_rainbow::error_fetch!("divergent histories"));
