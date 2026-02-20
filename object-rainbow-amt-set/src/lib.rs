@@ -165,7 +165,7 @@ mod private {
     type N1 = DeepestLeaf;
 
     macro_rules! next_node {
-        ($prev:ident, $next:ident, $size:ident, $pk:ident, $k:ident) => {
+        ($prev:ident, $next:ident, $pk:ident, $k:ident) => {
             #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone, Default)]
             pub struct $next(SetNode<$prev, $pk>);
 
@@ -185,37 +185,37 @@ mod private {
         };
     }
 
-    next_node!(N1, N2, U2, K1, K2);
-    next_node!(N2, N3, U3, K2, K3);
-    next_node!(N3, N4, U4, K3, K4);
-    next_node!(N4, N5, U5, K4, K5);
-    next_node!(N5, N6, U6, K5, K6);
-    next_node!(N6, N7, U7, K6, K7);
-    next_node!(N7, N8, U8, K7, K8);
-    next_node!(N8, N9, U9, K8, K9);
-    next_node!(N9, N10, U10, K9, K10);
-    next_node!(N10, N11, U11, K10, K11);
-    next_node!(N11, N12, U12, K11, K12);
-    next_node!(N12, N13, U13, K12, K13);
-    next_node!(N13, N14, U14, K13, K14);
-    next_node!(N14, N15, U15, K14, K15);
-    next_node!(N15, N16, U16, K15, K16);
-    next_node!(N16, N17, U17, K16, K17);
-    next_node!(N17, N18, U18, K17, K18);
-    next_node!(N18, N19, U19, K18, K19);
-    next_node!(N19, N20, U20, K19, K20);
-    next_node!(N20, N21, U21, K20, K21);
-    next_node!(N21, N22, U22, K21, K22);
-    next_node!(N22, N23, U23, K22, K23);
-    next_node!(N23, N24, U24, K23, K24);
-    next_node!(N24, N25, U25, K24, K25);
-    next_node!(N25, N26, U26, K25, K26);
-    next_node!(N26, N27, U27, K26, K27);
-    next_node!(N27, N28, U28, K27, K28);
-    next_node!(N28, N29, U29, K28, K29);
-    next_node!(N29, N30, U30, K29, K30);
-    next_node!(N30, N31, U31, K30, K31);
-    next_node!(N31, N32, U32, K31, K32);
+    next_node!(N1, N2, K1, K2);
+    next_node!(N2, N3, K2, K3);
+    next_node!(N3, N4, K3, K4);
+    next_node!(N4, N5, K4, K5);
+    next_node!(N5, N6, K5, K6);
+    next_node!(N6, N7, K6, K7);
+    next_node!(N7, N8, K7, K8);
+    next_node!(N8, N9, K8, K9);
+    next_node!(N9, N10, K9, K10);
+    next_node!(N10, N11, K10, K11);
+    next_node!(N11, N12, K11, K12);
+    next_node!(N12, N13, K12, K13);
+    next_node!(N13, N14, K13, K14);
+    next_node!(N14, N15, K14, K15);
+    next_node!(N15, N16, K15, K16);
+    next_node!(N16, N17, K16, K17);
+    next_node!(N17, N18, K17, K18);
+    next_node!(N18, N19, K18, K19);
+    next_node!(N19, N20, K19, K20);
+    next_node!(N20, N21, K20, K21);
+    next_node!(N21, N22, K21, K22);
+    next_node!(N22, N23, K22, K23);
+    next_node!(N23, N24, K23, K24);
+    next_node!(N24, N25, K24, K25);
+    next_node!(N25, N26, K25, K26);
+    next_node!(N26, N27, K26, K27);
+    next_node!(N27, N28, K27, K28);
+    next_node!(N28, N29, K28, K29);
+    next_node!(N29, N30, K29, K30);
+    next_node!(N30, N31, K30, K31);
+    next_node!(N31, N32, K31, K32);
 }
 
 #[derive(
