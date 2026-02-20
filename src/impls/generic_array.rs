@@ -32,3 +32,15 @@ where
 {
     type Size = <N as Mul<T::Size>>::Output;
 }
+
+impl<T: ParseInline<I>, N: ArrayLength, I: ParseInput> Parse<I> for GenericArray<T, N> {
+    fn parse(input: I) -> crate::Result<Self> {
+        Self::parse_as_inline(input)
+    }
+}
+
+impl<T: ParseInline<I>, N: ArrayLength, I: ParseInput> ParseInline<I> for GenericArray<T, N> {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        input.parse_generic_array()
+    }
+}
