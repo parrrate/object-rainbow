@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 use crate::*;
 
 impl<T: InlineOutput, N: ArrayLength> ToOutput for GenericArray<T, N> {
@@ -22,4 +24,11 @@ impl<T: Topological, N: ArrayLength> Topological for GenericArray<T, N> {
 
 impl<T: Tagged, N: ArrayLength> Tagged for GenericArray<T, N> {
     const TAGS: Tags = T::TAGS;
+}
+
+impl<T: Size, N: ArrayLength> Size for GenericArray<T, N>
+where
+    N: Mul<T::Size, Output: Unsigned>,
+{
+    type Size = <N as Mul<T::Size>>::Output;
 }
