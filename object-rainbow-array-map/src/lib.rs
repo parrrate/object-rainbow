@@ -130,3 +130,9 @@ impl<T> FromIterator<(u8, T)> for ArrayMap<T> {
         map
     }
 }
+
+impl<T, const N: usize> From<[(u8, T); N]> for ArrayMap<T> {
+    fn from(value: [(u8, T); N]) -> Self {
+        value.into_iter().collect()
+    }
+}
