@@ -156,3 +156,14 @@ pub struct ArraySet {
 assert_impl!(
     impl<E> Inline<E> for ArraySet {}
 );
+
+impl ArraySet {
+    pub fn insert(&mut self, key: u8) -> bool {
+        if !self.bits[key as usize] {
+            self.bits.set(key as usize, true);
+            true
+        } else {
+            false
+        }
+    }
+}
