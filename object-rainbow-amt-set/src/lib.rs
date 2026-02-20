@@ -86,9 +86,9 @@ impl<T: Tree + Clone + Traversible> Tree for SubTree<T, T::N> {
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
-struct SetNode<T: Tree, N: ArrayLength>(ArrayMap<SubTree<T, N>>);
+struct SetNode<T, N: ArrayLength>(ArrayMap<SubTree<T, N>>);
 
-impl<T: Tree, N: ArrayLength> Default for SetNode<T, N> {
+impl<T, N: ArrayLength> Default for SetNode<T, N> {
     fn default() -> Self {
         Self(Default::default())
     }
