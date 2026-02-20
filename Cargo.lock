@@ -1141,6 +1141,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "object-rainbow-amt-set"
+version = "0.0.0-a.0"
+dependencies = [
+ "generic-array 1.3.5",
+ "object-rainbow",
+ "object-rainbow-array-map",
+ "object-rainbow-point",
+ "typenum",
+]
+
+[[package]]
 name = "object-rainbow-append-tree"
 version = "0.0.0-a.7"
 dependencies = [

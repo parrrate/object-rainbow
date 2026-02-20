@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "object-rainbow-amt-set",
     "object-rainbow-append-tree",
     "object-rainbow-array-map",
     "object-rainbow-chain-tree",
