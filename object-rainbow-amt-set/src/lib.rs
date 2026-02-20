@@ -53,12 +53,12 @@ impl Tree for DeepestLeaf {
 #[derive(
     Enum, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Clone,
 )]
-enum SubTree<T: Tree> {
-    Leaf(GenericArray<u8, T::N>),
+enum SubTree<T, N: ArrayLength> {
+    Leaf(GenericArray<u8, N>),
     SubTree(Point<T>),
 }
 
-impl<T: Tree + Clone + Traversible> Tree for SubTree<T> {
+impl<T: Tree + Clone + Traversible> Tree for SubTree<T, T::N> {
     type N = T::N;
 
     async fn insert(&mut self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<bool> {
@@ -86,9 +86,9 @@ impl<T: Tree + Clone + Traversible> Tree for SubTree<T> {
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
-struct SetNode<T: Tree>(ArrayMap<SubTree<T>>);
+struct SetNode<T: Tree, N: ArrayLength>(ArrayMap<SubTree<T, N>>);
 
-impl<T: Tree> Default for SetNode<T> {
+impl<T: Tree, N: ArrayLength> Default for SetNode<T, N> {
     fn default() -> Self {
         Self(Default::default())
     }
@@ -98,7 +98,7 @@ impl<
     T: Tree<N: Add<B1, Output: Send + Sync + ArrayLength + Sub<U1, Output = T::N>>>
         + Clone
         + Traversible,
-> Tree for SetNode<T>
+> Tree for SetNode<T, T::N>
 {
     type N = Add1<T::N>;
 
@@ -141,9 +141,9 @@ mod private {
     type N1 = DeepestLeaf;
 
     macro_rules! next_node {
-        ($prev:ident, $next:ident, $size:ident) => {
+        ($prev:ident, $ps:ident, $next:ident, $size:ident) => {
             #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone, Default)]
-            pub struct $next(SetNode<$prev>);
+            pub struct $next(SetNode<$prev, $ps>);
 
             impl Tree for $next {
                 type N = $size;
@@ -169,37 +169,37 @@ mod private {
         };
     }
 
-    next_node!(N1, N2, U2);
-    next_node!(N2, N3, U3);
-    next_node!(N3, N4, U4);
-    next_node!(N4, N5, U5);
-    next_node!(N5, N6, U6);
-    next_node!(N6, N7, U7);
-    next_node!(N7, N8, U8);
-    next_node!(N8, N9, U9);
-    next_node!(N9, N10, U10);
-    next_node!(N10, N11, U11);
-    next_node!(N11, N12, U12);
-    next_node!(N12, N13, U13);
-    next_node!(N13, N14, U14);
-    next_node!(N14, N15, U15);
-    next_node!(N15, N16, U16);
-    next_node!(N16, N17, U17);
-    next_node!(N17, N18, U18);
-    next_node!(N18, N19, U19);
-    next_node!(N19, N20, U20);
-    next_node!(N20, N21, U21);
-    next_node!(N21, N22, U22);
-    next_node!(N22, N23, U23);
-    next_node!(N23, N24, U24);
-    next_node!(N24, N25, U25);
-    next_node!(N25, N26, U26);
-    next_node!(N26, N27, U27);
-    next_node!(N27, N28, U28);
-    next_node!(N28, N29, U29);
-    next_node!(N29, N30, U30);
-    next_node!(N30, N31, U31);
-    next_node!(N31, N32, U32);
+    next_node!(N1, U1, N2, U2);
+    next_node!(N2, U2, N3, U3);
+    next_node!(N3, U3, N4, U4);
+    next_node!(N4, U4, N5, U5);
+    next_node!(N5, U5, N6, U6);
+    next_node!(N6, U6, N7, U7);
+    next_node!(N7, U7, N8, U8);
+    next_node!(N8, U8, N9, U9);
+    next_node!(N9, U9, N10, U10);
+    next_node!(N10, U10, N11, U11);
+    next_node!(N11, U11, N12, U12);
+    next_node!(N12, U12, N13, U13);
+    next_node!(N13, U13, N14, U14);
+    next_node!(N14, U14, N15, U15);
+    next_node!(N15, U15, N16, U16);
+    next_node!(N16, U16, N17, U17);
+    next_node!(N17, U17, N18, U18);
+    next_node!(N18, U18, N19, U19);
+    next_node!(N19, U19, N20, U20);
+    next_node!(N20, U20, N21, U21);
+    next_node!(N21, U21, N22, U22);
+    next_node!(N22, U22, N23, U23);
+    next_node!(N23, U23, N24, U24);
+    next_node!(N24, U24, N25, U25);
+    next_node!(N25, U25, N26, U26);
+    next_node!(N26, U26, N27, U27);
+    next_node!(N27, U27, N28, U28);
+    next_node!(N28, U28, N29, U29);
+    next_node!(N29, U29, N30, U30);
+    next_node!(N30, U30, N31, U31);
+    next_node!(N31, U31, N32, U32);
 }
 
 #[derive(
