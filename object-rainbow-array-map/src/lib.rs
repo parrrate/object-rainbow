@@ -184,3 +184,9 @@ impl FromIterator<u8> for ArraySet {
         set
     }
 }
+
+impl<const N: usize> From<[u8; N]> for ArraySet {
+    fn from(value: [u8; N]) -> Self {
+        value.into_iter().collect()
+    }
+}
