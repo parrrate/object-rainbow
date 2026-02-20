@@ -1,11 +1,12 @@
 [package]
 name = "object-rainbow-amt-set"
-version = "0.0.0-a.0"
+version = "0.0.0-a.1"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
+description = "HAMT-like non-iterable set for object-rainbow"
 
 [dependencies]
 object-rainbow.workspace = true
