@@ -13,3 +13,9 @@ impl<T: ListHashes, N: ArrayLength> ListHashes for GenericArray<T, N> {
         self.iter_list_hashes(f);
     }
 }
+
+impl<T: Topological, N: ArrayLength> Topological for GenericArray<T, N> {
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.iter_traverse(visitor);
+    }
+}
