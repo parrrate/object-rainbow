@@ -1,4 +1,4 @@
-#![recursion_limit = "256"]
+use std::pin::Pin;
 
 use object_rainbow::{
     Enum, Fetch, Hash, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged,
@@ -7,26 +7,29 @@ use object_rainbow::{
 use object_rainbow_array_map::{ArrayMap, ArraySet};
 use object_rainbow_point::{IntoPoint, Point};
 
+type BoolFuture<'a> = Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<bool>>>>;
+
 trait Tree<K> {
-    fn insert(&mut self, key: K) -> impl Future<Output = object_rainbow::Result<bool>>;
+    fn insert(&mut self, key: K) -> BoolFuture<'_>;
     fn from_pair(a: K, b: K) -> Self;
-    fn contains(&self, key: K) -> impl Future<Output = object_rainbow::Result<bool>>;
+    fn contains(&self, key: K) -> BoolFuture<'_>;
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
+/// what are you even doing at this point
 struct DeepestLeaf(ArraySet);
 
 impl Tree<u8> for DeepestLeaf {
-    async fn insert(&mut self, key: u8) -> object_rainbow::Result<bool> {
-        Ok(self.0.insert(key))
+    fn insert(&mut self, key: u8) -> BoolFuture<'_> {
+        Box::pin(async move { Ok(self.0.insert(key)) })
     }
 
     fn from_pair(a: u8, b: u8) -> Self {
         Self([a, b].into())
     }
 
-    async fn contains(&self, key: u8) -> object_rainbow::Result<bool> {
-        Ok(self.0.contains(key))
+    fn contains(&self, key: u8) -> BoolFuture<'_> {
+        Box::pin(async move { Ok(self.0.contains(key)) })
     }
 }
 
@@ -45,28 +48,34 @@ impl<T, K: Clone> Clone for SubTree<T, K> {
     }
 }
 
-impl<T: Tree<K> + Clone + Traversible, K: PartialEq + Clone> Tree<K> for SubTree<T, K> {
-    async fn insert(&mut self, key: K) -> object_rainbow::Result<bool> {
-        match self {
-            SubTree::Leaf(existing) => Ok(if *existing != key {
-                *self = Self::from_pair(existing.clone(), key);
-                true
-            } else {
-                false
-            }),
-            SubTree::SubTree(sub) => sub.fetch_mut().await?.insert(key).await,
-        }
+impl<T: Tree<K> + Clone + Traversible, K: Send + Sync + PartialEq + Clone> Tree<K>
+    for SubTree<T, K>
+{
+    fn insert(&mut self, key: K) -> BoolFuture<'_> {
+        Box::pin(async move {
+            match self {
+                SubTree::Leaf(existing) => Ok(if *existing != key {
+                    *self = Self::from_pair(existing.clone(), key);
+                    true
+                } else {
+                    false
+                }),
+                SubTree::SubTree(sub) => sub.fetch_mut().await?.insert(key).await,
+            }
+        })
     }
 
     fn from_pair(a: K, b: K) -> Self {
         Self::SubTree(T::from_pair(a, b).point())
     }
 
-    async fn contains(&self, key: K) -> object_rainbow::Result<bool> {
-        match self {
-            SubTree::Leaf(existing) => Ok(*existing == key),
-            SubTree::SubTree(sub) => sub.fetch().await?.contains(key).await,
-        }
+    fn contains(&self, key: K) -> BoolFuture<'_> {
+        Box::pin(async move {
+            match self {
+                SubTree::Leaf(existing) => Ok(*existing == key),
+                SubTree::SubTree(sub) => sub.fetch().await?.contains(key).await,
+            }
+        })
     }
 }
 
@@ -85,14 +94,18 @@ impl<T, K> Default for SetNode<T, K> {
     }
 }
 
-impl<T: Tree<K> + Clone + Traversible, K: PartialEq + Clone> Tree<(u8, K)> for SetNode<T, K> {
-    async fn insert(&mut self, (key, rest): (u8, K)) -> object_rainbow::Result<bool> {
-        if let Some(sub) = self.0.get_mut(key) {
-            sub.insert(rest).await
-        } else {
-            assert!(self.0.insert(key, SubTree::Leaf(rest)).is_none());
-            Ok(true)
-        }
+impl<T: Tree<K> + Clone + Traversible, K: Send + Sync + PartialEq + Clone> Tree<(u8, K)>
+    for SetNode<T, K>
+{
+    fn insert(&mut self, (key, rest): (u8, K)) -> BoolFuture<'_> {
+        Box::pin(async move {
+            if let Some(sub) = self.0.get_mut(key) {
+                sub.insert(rest).await
+            } else {
+                assert!(self.0.insert(key, SubTree::Leaf(rest)).is_none());
+                Ok(true)
+            }
+        })
     }
 
     fn from_pair((a, rest_a): (u8, K), (b, rest_b): (u8, K)) -> Self {
@@ -103,12 +116,14 @@ impl<T: Tree<K> + Clone + Traversible, K: PartialEq + Clone> Tree<(u8, K)> for S
         }
     }
 
-    async fn contains(&self, (key, rest): (u8, K)) -> object_rainbow::Result<bool> {
-        if let Some(sub) = self.0.get(key) {
-            sub.contains(rest).await
-        } else {
-            Ok(false)
-        }
+    fn contains(&self, (key, rest): (u8, K)) -> BoolFuture<'_> {
+        Box::pin(async move {
+            if let Some(sub) = self.0.get(key) {
+                sub.contains(rest).await
+            } else {
+                Ok(false)
+            }
+        })
     }
 }
 
@@ -155,10 +170,7 @@ mod private {
             pub struct $next(SetNode<$prev, $pk>);
 
             impl Tree<$k> for $next {
-                fn insert(
-                    &mut self,
-                    key: $k,
-                ) -> impl Future<Output = object_rainbow::Result<bool>> {
+                fn insert(&mut self, key: $k) -> BoolFuture<'_> {
                     self.0.insert(key)
                 }
 
@@ -166,7 +178,7 @@ mod private {
                     Self(Tree::from_pair(a, b))
                 }
 
-                fn contains(&self, key: $k) -> impl Future<Output = object_rainbow::Result<bool>> {
+                fn contains(&self, key: $k) -> BoolFuture<'_> {
                     self.0.contains(key)
                 }
             }
