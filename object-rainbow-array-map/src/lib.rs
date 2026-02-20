@@ -167,6 +167,10 @@ impl ArraySet {
             false
         }
     }
+
+    pub fn contains(&self, key: u8) -> bool {
+        self.bits[key as usize]
+    }
 }
 
 impl Extend<u8> for ArraySet {
