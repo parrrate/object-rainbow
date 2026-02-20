@@ -30,12 +30,19 @@ impl Tree<u8> for DeepestLeaf {
     }
 }
 
-#[derive(
-    Enum, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Clone,
-)]
+#[derive(Enum, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline)]
 enum SubTree<T, K> {
     Leaf(K),
     SubTree(Point<T>),
+}
+
+impl<T, K: Clone> Clone for SubTree<T, K> {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Leaf(arg0) => Self::Leaf(arg0.clone()),
+            Self::SubTree(arg0) => Self::SubTree(arg0.clone()),
+        }
+    }
 }
 
 impl<T: Tree<K> + Clone + Traversible, K: PartialEq + Clone> Tree<K> for SubTree<T, K> {
