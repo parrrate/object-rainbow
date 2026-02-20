@@ -7,7 +7,7 @@ use object_rainbow::{
     Enum, Hash, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged,
     ToOutput, Topological, Traversible,
 };
-use object_rainbow_array_map::ArrayMap;
+use object_rainbow_array_map::{ArrayMap, ArraySet};
 use object_rainbow_point::{IntoPoint, Point};
 use typenum::{
     Add1, B1, U1, U2, U3, U4, U5, U6, U7, U8, U9, U10, U11, U12, U13, U14, U15, U16, U17, U18, U19,
@@ -24,21 +24,21 @@ trait Tree {
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
-struct DeepestLeaf(ArrayMap<()>);
+struct DeepestLeaf(ArraySet);
 
 impl Tree for DeepestLeaf {
     type N = U1;
 
     async fn insert(&mut self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<()> {
         let [key] = <[u8; 1]>::from(key);
-        self.0.insert(key, ());
+        self.0.insert(key);
         Ok(())
     }
 
     fn from_pair(a: GenericArray<u8, Self::N>, b: GenericArray<u8, Self::N>) -> Self {
         let [a] = <[u8; 1]>::from(a);
         let [b] = <[u8; 1]>::from(b);
-        Self([(a, ()), (b, ())].into())
+        Self([a, b].into())
     }
 }
 
