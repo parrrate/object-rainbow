@@ -173,7 +173,7 @@ fn main() -> anyhow::Result<()> {
     smol::block_on(async move {
         let point = (
             (*b"alisa", *b"feistel").point().point(),
-            [1, 2, 3, 4].point(),
+            [1u8, 2, 3, 4].point(),
         )
             .point();
         let key = Test(std::array::from_fn(|i| i as _));

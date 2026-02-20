@@ -9,7 +9,7 @@ fn main() -> anyhow::Result<()> {
         let store = OpendalStore::from_operator(Operator::new(Memory::default())?.finish());
         let mut point = store
             .saved_point(
-                &((*b"alisa", *b"feistel").point(), [1, 2, 3, 4].point()).point(),
+                &((*b"alisa", *b"feistel").point(), [1u8, 2, 3, 4].point()).point(),
                 (),
             )
             .await?;
