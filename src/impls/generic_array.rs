@@ -5,3 +5,5 @@ impl<T: InlineOutput, N: ArrayLength> ToOutput for GenericArray<T, N> {
         T::slice_to_output(self, output);
     }
 }
+
+impl<T: InlineOutput, N: ArrayLength> InlineOutput for GenericArray<T, N> {}
