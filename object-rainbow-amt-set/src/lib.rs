@@ -218,6 +218,10 @@ mod private {
 pub struct AmtSet(Point<private::N32>);
 
 impl AmtSet {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     pub async fn insert(&mut self, hash: Hash) -> object_rainbow::Result<bool> {
         self.0
             .fetch_mut()
