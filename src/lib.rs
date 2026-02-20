@@ -960,6 +960,12 @@ pub trait ParseInput: Sized {
     fn parse_array<T: ParseInline<Self>, const N: usize>(&mut self) -> crate::Result<[T; N]> {
         T::parse_array(self)
     }
+
+    fn parse_generic_array<T: ParseInline<Self>, N: ArrayLength>(
+        &mut self,
+    ) -> crate::Result<GenericArray<T, N>> {
+        T::parse_generic_array(self)
+    }
 }
 
 pub trait PointInput: ParseInput {
