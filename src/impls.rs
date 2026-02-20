@@ -10,6 +10,7 @@ mod char;
 mod cow;
 mod cstr;
 mod cstring;
+mod generic_array;
 mod i8;
 mod infallible;
 mod option;
