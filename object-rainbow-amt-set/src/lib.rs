@@ -142,7 +142,7 @@ mod private {
 
     macro_rules! next_node {
         ($prev:ident, $next:ident, $size:ident) => {
-            #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
+            #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone, Default)]
             pub struct $next(SetNode<$prev>);
 
             impl Tree for $next {
@@ -213,6 +213,7 @@ mod private {
     Size,
     MaybeHasNiche,
     Clone,
+    Default,
 )]
 pub struct AmtSet(Point<private::N32>);
 
