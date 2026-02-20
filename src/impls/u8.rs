@@ -31,6 +31,10 @@ impl<I: ParseInput> ParseInline<I> for u8 {
     fn parse_vec(input: I) -> crate::Result<Vec<Self>> {
         Ok(input.parse_all()?.into())
     }
+
+    fn parse_array<const N: usize>(input: &mut I) -> crate::Result<[Self; N]> {
+        input.parse_chunk().copied()
+    }
 }
 
 impl Size for u8 {
