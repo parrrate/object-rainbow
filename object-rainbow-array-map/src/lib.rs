@@ -6,8 +6,8 @@ use std::{
 
 use bitvec::array::BitArray;
 use object_rainbow::{
-    Inline, InlineOutput, ListHashes, ParseAsInline, ParseInline, ParseInput, Tagged, ToOutput,
-    Topological, assert_impl,
+    Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseAsInline, ParseInline, ParseInput,
+    Size, Tagged, ToOutput, Topological, assert_impl,
 };
 
 type Bits = BitArray<[u8; 32]>;
@@ -136,3 +136,23 @@ impl<T, const N: usize> From<[(u8, T); N]> for ArrayMap<T> {
         value.into_iter().collect()
     }
 }
+
+#[derive(
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Clone,
+    Size,
+    MaybeHasNiche,
+)]
+pub struct ArraySet {
+    bits: Bits,
+}
+
+assert_impl!(
+    impl<E> Inline<E> for ArraySet {}
+);
