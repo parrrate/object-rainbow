@@ -1,8 +1,8 @@
 use std::pin::Pin;
 
 use object_rainbow::{
-    Enum, Fetch, Hash, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged,
-    ToOutput, Topological, Traversible,
+    Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseAsInline,
+    ParseInline, PointInput, Size, Tagged, ToOutput, Topological, Traversible, assert_impl,
 };
 use object_rainbow_array_map::{ArrayMap, ArraySet};
 use object_rainbow_point::{IntoPoint, Point};
@@ -166,7 +166,7 @@ mod private {
 
     macro_rules! next_node {
         ($prev:ident, $next:ident, $pk:ident, $k:ident) => {
-            #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone, Default)]
+            #[derive(ToOutput, Tagged, ListHashes, Topological, Clone, Default)]
             pub struct $next(SetNode<$prev, $pk>);
 
             impl Tree<$k> for $next {
@@ -180,6 +180,12 @@ mod private {
 
                 fn contains(&self, key: $k) -> BoolFuture<'_> {
                     self.0.contains(key)
+                }
+            }
+
+            impl<I: PointInput<Extra: Send + Sync>> Parse<I> for $next {
+                fn parse(input: I) -> object_rainbow::Result<Self> {
+                    Ok(Self(input.parse()?))
                 }
             }
         };
@@ -223,8 +229,7 @@ mod private {
     InlineOutput,
     ListHashes,
     Topological,
-    Parse,
-    ParseInline,
+    ParseAsInline,
     Size,
     MaybeHasNiche,
     Clone,
@@ -235,6 +240,16 @@ mod private {
 pub struct AmtSet(Point<private::N32>);
 
 impl Tagged for AmtSet {}
+
+impl<I: PointInput<Extra: Send + Sync>> ParseInline<I> for AmtSet {
+    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
+        Ok(Self(input.parse_inline()?))
+    }
+}
+
+assert_impl!(
+    impl<E> Inline<E> for AmtSet where E: 'static + Send + Sync + Clone {}
+);
 
 fn hash_key(hash: Hash) -> K32 {
     let [
