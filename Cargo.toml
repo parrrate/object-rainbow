@@ -30,7 +30,7 @@ authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 
 [package]
 name = "object-rainbow"
-version = "0.0.0-a.38"
+version = "0.0.0-a.39"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -41,7 +41,7 @@ documentation = "https://docs.rs/object-rainbow"
 exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 
 [workspace.dependencies]
-object-rainbow = { version = "0.0.0-a.38", path = "." }
+object-rainbow = { version = "0.0.0-a.39", path = "." }
 object-rainbow-amt-set = { version = "0.0.0-a.2", path = "object-rainbow-amt-set" }
 object-rainbow-append-tree = { version = "0.0.0-a.7", path = "object-rainbow-append-tree" }
 object-rainbow-array-map = { version = "0.0.0-a.2", path = "object-rainbow-array-map" }
