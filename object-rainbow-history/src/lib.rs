@@ -158,6 +158,7 @@ impl<T: Forward<D>, D: Send + Traversible> Forward<Point<D>> for Compat<T> {
 }
 
 #[derive(
+    Debug,
     ToOutput,
     InlineOutput,
     Tagged,
