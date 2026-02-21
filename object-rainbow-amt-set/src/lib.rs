@@ -1,8 +1,8 @@
 use std::pin::Pin;
 
 use object_rainbow::{
-    Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline,
-    PointInput, Size, Tagged, ToOutput, Topological, Traversible, assert_impl,
+    Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size,
+    Tagged, ToOutput, Topological, Traversible, assert_impl,
 };
 use object_rainbow_array_map::{ArrayMap, ArraySet};
 use object_rainbow_point::{IntoPoint, Point};
@@ -166,8 +166,13 @@ mod private {
 
     macro_rules! next_node {
         ($prev:ident, $next:ident, $pk:ident, $k:ident) => {
-            #[derive(ToOutput, Tagged, ListHashes, Topological, Clone, Default)]
-            pub struct $next(#[tags(skip)] SetNode<$prev, $pk>);
+            #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone, Default)]
+            #[topology(recursive)]
+            pub struct $next(
+                #[tags(skip)]
+                #[parse(unchecked)]
+                SetNode<$prev, $pk>,
+            );
 
             impl Tree<$k> for $next {
                 fn insert(&mut self, key: $k) -> BoolFuture<'_> {
@@ -180,12 +185,6 @@ mod private {
 
                 fn contains(&self, key: $k) -> BoolFuture<'_> {
                     self.0.contains(key)
-                }
-            }
-
-            impl<I: PointInput<Extra: Send + Sync>> Parse<I> for $next {
-                fn parse(input: I) -> object_rainbow::Result<Self> {
-                    Ok(Self(input.parse()?))
                 }
             }
         };
