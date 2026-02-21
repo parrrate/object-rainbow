@@ -178,7 +178,7 @@ fn main() -> anyhow::Result<()> {
             .point();
         let key = Test(std::array::from_fn(|i| i as _));
         let point = encrypt_point(key, point).await?;
-        let point = iterate(point, (key, ())).await?;
+        let point = iterate(point, key).await?;
         let point = point.fetch().await?.into_inner().point();
         let point = encrypt_point(key, point).await?;
         let point = point.fetch().await?.into_inner().point();
