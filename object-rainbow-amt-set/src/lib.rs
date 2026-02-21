@@ -1,8 +1,8 @@
 use std::pin::Pin;
 
 use object_rainbow::{
-    Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseAsInline,
-    ParseInline, PointInput, Size, Tagged, ToOutput, Topological, Traversible, assert_impl,
+    Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline,
+    PointInput, Size, Tagged, ToOutput, Topological, Traversible, assert_impl,
 };
 use object_rainbow_array_map::{ArrayMap, ArraySet};
 use object_rainbow_point::{IntoPoint, Point};
@@ -230,7 +230,8 @@ mod private {
     Tagged,
     ListHashes,
     Topological,
-    ParseAsInline,
+    Parse,
+    ParseInline,
     Size,
     MaybeHasNiche,
     Clone,
@@ -239,12 +240,6 @@ mod private {
     Eq,
 )]
 pub struct AmtSet(#[tags(skip)] Point<private::N32>);
-
-impl<I: PointInput<Extra: Send + Sync>> ParseInline<I> for AmtSet {
-    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        Ok(Self(input.parse_inline()?))
-    }
-}
 
 assert_impl!(
     impl<E> Inline<E> for AmtSet where E: 'static + Send + Sync + Clone {}
