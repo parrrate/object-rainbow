@@ -348,15 +348,30 @@ impl<K: Key> Resolve for Decrypt<K> {
     }
 }
 
+trait EncryptedExtra<K>: 'static + Send + Sync + Clone {
+    type Extra: 'static + Send + Sync + Clone;
+    fn parts(&self) -> (K, Self::Extra);
+}
+
+impl<K: 'static + Send + Sync + Clone, Extra: 'static + Send + Sync + Clone> EncryptedExtra<K>
+    for (K, Extra)
+{
+    type Extra = Extra;
+
+    fn parts(&self) -> (K, Self::Extra) {
+        self.clone()
+    }
+}
+
 impl<
     K: Key,
     T: Object<Extra>,
     Extra: 'static + Send + Sync + Clone,
-    I: PointInput<Extra = (K, Extra)>,
+    I: PointInput<Extra: EncryptedExtra<K, Extra = Extra>>,
 > Parse<I> for Encrypted<K, T>
 {
     fn parse(input: I) -> object_rainbow::Result<Self> {
-        let with_key = input.extra().clone();
+        let with_key = input.extra().parts();
         let resolve = input.resolve().clone();
         let source = with_key.0.decrypt(&input.parse_all()?)?;
         let EncryptedInner {
