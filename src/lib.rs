@@ -1079,7 +1079,7 @@ impl<
     'a,
     E: 'static + Send + Sync + Clone + ParseInline<Input<'a, X>>,
     X: 'static + Send + Sync + Clone,
-    T: ParseSliceExtra<(E, X)>,
+    T: for<'x> Parse<Input<'x, (E, X)>>,
 > Parse<Input<'a, X>> for WithExtra<E, T>
 {
     fn parse(mut input: Input<'a, X>) -> crate::Result<Self> {
