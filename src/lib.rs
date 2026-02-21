@@ -4,6 +4,7 @@ extern crate self as object_rainbow;
 
 use std::{
     any::{Any, TypeId},
+    borrow::Cow,
     cell::Cell,
     convert::Infallible,
     future::ready,
@@ -253,14 +254,14 @@ pub struct ReflessInput<'d> {
     data: Option<&'d [u8]>,
 }
 
-pub struct Input<'d, Extra = ()> {
+pub struct Input<'d, Extra: Clone = ()> {
     refless: ReflessInput<'d>,
     resolve: &'d Arc<dyn Resolve>,
     index: &'d Cell<usize>,
-    extra: &'d Extra,
+    extra: Cow<'d, Extra>,
 }
 
-impl<'a, Extra> Deref for Input<'a, Extra> {
+impl<'a, Extra: Clone> Deref for Input<'a, Extra> {
     type Target = ReflessInput<'a>;
 
     fn deref(&self) -> &Self::Target {
@@ -268,19 +269,19 @@ impl<'a, Extra> Deref for Input<'a, Extra> {
     }
 }
 
-impl<Extra> DerefMut for Input<'_, Extra> {
+impl<Extra: Clone> DerefMut for Input<'_, Extra> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.refless
     }
 }
 
-impl<'a, Extra> Input<'a, Extra> {
-    pub fn replace_extra<E>(self, extra: &'a E) -> Input<'a, E> {
+impl<'a, Extra: Clone> Input<'a, Extra> {
+    pub fn replace_extra<E: Clone>(self, extra: &'a E) -> Input<'a, E> {
         Input {
             refless: self.refless,
             resolve: self.resolve,
             index: self.index,
-            extra,
+            extra: Cow::Borrowed(extra),
         }
     }
 }
@@ -364,7 +365,7 @@ impl<'d> ParseInput for ReflessInput<'d> {
     }
 }
 
-impl<'d, Extra> ParseInput for Input<'d, Extra> {
+impl<'d, Extra: Clone> ParseInput for Input<'d, Extra> {
     type Data = &'d [u8];
 
     fn parse_chunk<'a, const N: usize>(&mut self) -> crate::Result<&'a [u8; N]>
@@ -387,7 +388,7 @@ impl<'d, Extra> ParseInput for Input<'d, Extra> {
             refless: ReflessInput { data: Some(data) },
             resolve: self.resolve,
             index: self.index,
-            extra: self.extra,
+            extra: self.extra.clone(),
         };
         T::parse(input)
     }
@@ -424,7 +425,7 @@ impl<'d, Extra: 'static + Clone> PointInput for Input<'d, Extra> {
     }
 
     fn extra(&self) -> &Self::Extra {
-        self.extra
+        &self.extra
     }
 
     fn map_extra<E: 'static + Clone>(
@@ -441,7 +442,10 @@ impl<'d, Extra: 'static + Clone> PointInput for Input<'d, Extra> {
             refless,
             resolve,
             index,
-            extra: f(extra),
+            extra: match extra {
+                Cow::Borrowed(extra) => Cow::Borrowed(f(extra)),
+                Cow::Owned(extra) => Cow::Owned(f(&extra).clone()),
+            },
         }
     }
 }
@@ -528,7 +532,7 @@ pub trait ParseSlice: for<'a> Parse<Input<'a>> {
 
 impl<T: for<'a> Parse<Input<'a>>> ParseSlice for T {}
 
-pub trait ParseSliceExtra<Extra>: for<'a> Parse<Input<'a, Extra>> {
+pub trait ParseSliceExtra<Extra: Clone>: for<'a> Parse<Input<'a, Extra>> {
     fn parse_slice_extra(
         data: &[u8],
         resolve: &Arc<dyn Resolve>,
@@ -538,7 +542,7 @@ pub trait ParseSliceExtra<Extra>: for<'a> Parse<Input<'a, Extra>> {
             refless: ReflessInput { data: Some(data) },
             resolve,
             index: &Cell::new(0),
-            extra,
+            extra: Cow::Borrowed(extra),
         };
         let object = Self::parse(input)?;
         Ok(object)
@@ -552,7 +556,7 @@ pub trait ParseSliceExtra<Extra>: for<'a> Parse<Input<'a, Extra>> {
     }
 }
 
-impl<T: for<'a> Parse<Input<'a, Extra>>, Extra> ParseSliceExtra<Extra> for T {}
+impl<T: for<'a> Parse<Input<'a, Extra>>, Extra: Clone> ParseSliceExtra<Extra> for T {}
 
 #[derive(ToOutput)]
 pub struct ObjectHashes {
@@ -1056,7 +1060,7 @@ pub trait ExtraFor<T> {
     }
 }
 
-impl<T: for<'a> Parse<Input<'a, Extra>>, Extra> ExtraFor<T> for Extra {
+impl<T: for<'a> Parse<Input<'a, Extra>>, Extra: Clone> ExtraFor<T> for Extra {
     fn parse(&self, data: &[u8], resolve: &Arc<dyn Resolve>) -> Result<T> {
         T::parse_slice_extra(data, resolve, self)
     }
