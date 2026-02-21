@@ -167,7 +167,7 @@ mod private {
     macro_rules! next_node {
         ($prev:ident, $next:ident, $pk:ident, $k:ident) => {
             #[derive(ToOutput, Tagged, ListHashes, Topological, Clone, Default)]
-            pub struct $next(SetNode<$prev, $pk>);
+            pub struct $next(#[tags(skip)] SetNode<$prev, $pk>);
 
             impl Tree<$k> for $next {
                 fn insert(&mut self, key: $k) -> BoolFuture<'_> {
