@@ -221,7 +221,6 @@ mod private {
 #[derive(
     ToOutput,
     InlineOutput,
-    Tagged,
     ListHashes,
     Topological,
     Parse,
@@ -232,6 +231,8 @@ mod private {
     Default,
 )]
 pub struct AmtSet(Point<private::N32>);
+
+impl Tagged for AmtSet {}
 
 fn hash_key(hash: Hash) -> K32 {
     let [
