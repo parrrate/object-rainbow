@@ -7,12 +7,6 @@ use object_rainbow::{
 };
 use object_rainbow_point::{ExtractResolve, IntoPoint, Point};
 
-#[derive(Clone)]
-pub struct WithKey<K, Extra> {
-    pub key: K,
-    pub extra: Extra,
-}
-
 pub trait Key: 'static + Sized + Send + Sync + Clone {
     fn encrypt(&self, data: &[u8]) -> Vec<u8>;
     fn decrypt(&self, data: &[u8]) -> object_rainbow::Result<Vec<u8>>;
@@ -27,13 +21,11 @@ impl<
     T: Parse<I::WithExtra<Extra>>,
     K: 'static + Clone,
     Extra: 'static + Clone,
-    I: PointInput<Extra = WithKey<K, Extra>>,
+    I: PointInput<Extra = (K, Extra)>,
 > Parse<I> for Unkeyed<T>
 {
     fn parse(input: I) -> object_rainbow::Result<Self> {
-        Ok(Self(T::parse(
-            input.map_extra(|WithKey { extra, .. }| extra),
-        )?))
+        Ok(Self(T::parse(input.map_extra(|(_, extra)| extra))?))
     }
 }
 
@@ -360,13 +352,13 @@ impl<
     K: Key,
     T: Object<Extra>,
     Extra: 'static + Send + Sync + Clone,
-    I: PointInput<Extra = WithKey<K, Extra>>,
+    I: PointInput<Extra = (K, Extra)>,
 > Parse<I> for Encrypted<K, T>
 {
     fn parse(input: I) -> object_rainbow::Result<Self> {
         let with_key = input.extra().clone();
         let resolve = input.resolve().clone();
-        let source = with_key.key.decrypt(&input.parse_all()?)?;
+        let source = with_key.0.decrypt(&input.parse_all()?)?;
         let EncryptedInner {
             resolution,
             decrypted,
@@ -376,7 +368,7 @@ impl<
             &(Arc::new(Decrypt {
                 resolution: resolution.clone(),
             }) as _),
-            &with_key.extra,
+            &with_key.1,
         )?;
         let decrypted = Unkeyed(Arc::new(decrypted));
         let inner = EncryptedInner {
@@ -384,7 +376,7 @@ impl<
             decrypted,
         };
         Ok(Self {
-            key: with_key.key,
+            key: with_key.0,
             inner,
         })
     }
@@ -404,7 +396,7 @@ struct ExtractResolution<'a, K> {
 }
 
 struct Untyped<K, T> {
-    key: WithKey<K, ()>,
+    key: (K, ()),
     encrypted: Point<Encrypted<K, T>>,
 }
 
@@ -488,7 +480,7 @@ impl<K: Key> PointVisitor for ExtractResolution<'_, K> {
             let encrypted = Point::from_fetch(
                 encrypted.hash(),
                 Arc::new(Untyped {
-                    key: WithKey { key, extra: () },
+                    key: (key, ()),
                     encrypted,
                 }),
             );
