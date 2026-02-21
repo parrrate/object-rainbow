@@ -363,6 +363,14 @@ impl<K: 'static + Send + Sync + Clone, Extra: 'static + Send + Sync + Clone> Enc
     }
 }
 
+impl<K: 'static + Send + Sync + Clone> EncryptedExtra<K> for K {
+    type Extra = ();
+
+    fn parts(&self) -> (K, Self::Extra) {
+        (self.clone(), ())
+    }
+}
+
 impl<
     K: Key,
     T: Object<Extra>,
