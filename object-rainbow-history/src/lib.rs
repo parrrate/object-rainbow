@@ -157,7 +157,7 @@ impl<T: Forward<D>, D: Send + Traversible> Forward<Point<D>> for Compat<T> {
     }
 }
 
-#[derive(ToOutput)]
+#[derive(ToOutput, InlineOutput)]
 pub struct DiscardHeader<T>(pub T);
 
 impl<T: Forward<D>, D: Send, H: Send> Forward<(H, D)> for DiscardHeader<T> {
