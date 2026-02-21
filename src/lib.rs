@@ -275,17 +275,6 @@ impl<Extra: Clone> DerefMut for Input<'_, Extra> {
     }
 }
 
-impl<'a, Extra: Clone> Input<'a, Extra> {
-    pub fn replace_extra<E: Clone>(self, extra: &'a E) -> Input<'a, E> {
-        Input {
-            refless: self.refless,
-            resolve: self.resolve,
-            index: self.index,
-            extra: Cow::Borrowed(extra),
-        }
-    }
-}
-
 impl<'a> ReflessInput<'a> {
     fn data(&self) -> crate::Result<&'a [u8]> {
         self.data.ok_or(Error::EndOfInput)
