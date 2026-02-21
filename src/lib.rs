@@ -1146,6 +1146,21 @@ impl<
     }
 }
 
+impl<
+    'a,
+    E: 'static + Send + Sync + Clone + ParseInline<Input<'a, X>>,
+    X: 'static + Send + Sync + Clone,
+    T: for<'x> ParseInline<Input<'x, (E, X)>>,
+> ParseInline<Input<'a, X>> for WithExtra<E, T>
+{
+    fn parse_inline(input: &mut Input<'a, X>) -> crate::Result<Self> {
+        let e = input.parse_inline::<E>()?;
+        let x = input.extra().clone();
+        let t = input.parse_inline_extra((e.clone(), x))?;
+        Ok(Self(e, t))
+    }
+}
+
 #[test]
 fn options() {
     type T0 = ();
