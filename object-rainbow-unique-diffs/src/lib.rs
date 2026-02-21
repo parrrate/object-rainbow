@@ -16,6 +16,7 @@ use object_rainbow_history::Forward;
     Clone,
     PartialEq,
     Eq,
+    Default,
 )]
 pub struct UniqueDiffs<T> {
     diffs: AmtSet,
