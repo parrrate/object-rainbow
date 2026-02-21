@@ -230,6 +230,7 @@ mod private {
     Clone,
     Default,
     PartialEq,
+    Eq,
 )]
 pub struct AmtSet(Point<private::N32>);
 
