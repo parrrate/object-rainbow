@@ -1135,7 +1135,7 @@ impl<T, E> BoundPair for (T, E) {
 }
 
 #[derive(Debug, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Clone, Copy)]
-pub struct WithExtra<E, T>(pub E, pub T);
+pub struct InlineExtra<E, T>(pub E, pub T);
 
 impl<
     E: 'static + Send + Sync + Clone + ParseInline<I>,
@@ -1143,7 +1143,7 @@ impl<
     T: Parse<J>,
     I: PointInput<Extra = X, WithExtra<(E, X)> = J>,
     J: ParseInput,
-> Parse<I> for WithExtra<E, T>
+> Parse<I> for InlineExtra<E, T>
 {
     fn parse(mut input: I) -> crate::Result<Self> {
         let e = input.parse_inline::<E>()?;
@@ -1159,7 +1159,7 @@ impl<
     T: ParseInline<J>,
     I: PointInput<Extra = X, WithExtra<(E, X)> = J>,
     J: ParseInput,
-> ParseInline<I> for WithExtra<E, T>
+> ParseInline<I> for InlineExtra<E, T>
 {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         let e = input.parse_inline::<E>()?;
