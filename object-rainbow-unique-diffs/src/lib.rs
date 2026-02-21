@@ -5,7 +5,9 @@ use object_rainbow::{
 use object_rainbow_amt_set::AmtSet;
 use object_rainbow_history::Forward;
 
-#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Clone)]
+#[derive(
+    ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Clone, PartialEq,
+)]
 pub struct UniqueDiffs<T> {
     diffs: AmtSet,
     tree: T,
