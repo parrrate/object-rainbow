@@ -175,6 +175,15 @@ impl<T: Forward<D>, D: Send + Traversible> Forward<Point<D>> for Compat<T> {
 )]
 pub struct DiscardHeader<T>(pub T);
 
+assert_impl!(
+    impl<T, E> Inline<E> for DiscardHeader<T>
+    where
+        T: Inline<E>,
+        E: 'static + Send + Sync + Clone,
+    {
+    }
+);
+
 impl<T: Forward<D>, D: Send, H: Send> Forward<(H, D)> for DiscardHeader<T> {
     fn forward(
         &mut self,
