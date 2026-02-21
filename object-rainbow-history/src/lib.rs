@@ -142,6 +142,15 @@ impl<T: Clone + Traversible + InlineOutput + Default + Forward<D>, D: Clone + Tr
 )]
 pub struct Compat<T>(pub T);
 
+assert_impl!(
+    impl<T, E> Inline<E> for Compat<T>
+    where
+        T: Inline<E>,
+        E: 'static + Send + Sync + Clone,
+    {
+    }
+);
+
 impl<T: Forward<D>, D: Send> Forward<Vec<D>> for Compat<T> {
     async fn forward(&mut self, diff: Vec<D>) -> object_rainbow::Result<()> {
         for diff in diff {
