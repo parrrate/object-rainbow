@@ -419,7 +419,7 @@ struct ExtractResolution<'a, K> {
 }
 
 struct Untyped<K, T> {
-    key: (K, ()),
+    key: K,
     encrypted: Point<Encrypted<K, T>>,
 }
 
@@ -500,13 +500,8 @@ impl<K: Key> PointVisitor for ExtractResolution<'_, K> {
         let key = self.key.clone();
         self.extracted.push(Box::pin(async move {
             let encrypted = encrypt_point(key.clone(), decrypted).await?;
-            let encrypted = Point::from_fetch(
-                encrypted.hash(),
-                Arc::new(Untyped {
-                    key: (key, ()),
-                    encrypted,
-                }),
-            );
+            let encrypted =
+                Point::from_fetch(encrypted.hash(), Arc::new(Untyped { key, encrypted }));
             Ok(encrypted)
         }));
     }
