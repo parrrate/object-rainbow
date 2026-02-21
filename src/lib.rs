@@ -1072,6 +1072,9 @@ impl<T, E> BoundPair for (T, E) {
     type E = E;
 }
 
+#[derive(Debug, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Clone, Copy)]
+pub struct WithExtra<E, T>(pub E, pub T);
+
 #[test]
 fn options() {
     type T0 = ();
