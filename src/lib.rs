@@ -1135,7 +1135,7 @@ impl<T, E> BoundPair for (T, E) {
 }
 
 #[derive(Debug, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Clone, Copy)]
-pub struct InlineExtra<T, E>(pub E, pub T);
+pub struct InlineExtra<T, E = ()>(pub E, pub T);
 
 impl<
     E: 'static + Send + Sync + Clone + ParseInline<I>,
