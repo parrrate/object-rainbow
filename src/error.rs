@@ -108,6 +108,11 @@ impl Error {
         Self::Fetch(e.into())
     }
 
+    /// Construct [`Error::Consistency`] from another error.
+    pub fn consistency(e: impl Into<anyhow::Error>) -> Self {
+        Self::Fetch(e.into())
+    }
+
     pub fn io(e: impl Into<std::io::Error>) -> Self {
         e.into().into()
     }
