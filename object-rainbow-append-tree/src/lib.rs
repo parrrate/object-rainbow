@@ -1,4 +1,4 @@
-use std::{future::ready, marker::PhantomData};
+use std::{fmt::Debug, future::ready, marker::PhantomData};
 
 use object_rainbow::{
     Address, Enum, ExtraFor, Fetch, FullHash, Inline, InlineOutput, ListHashes, Object, Output,
@@ -83,6 +83,12 @@ pub enum PushError<T> {
     NonLeafOverflow(T),
     #[error("root overflow")]
     RootOverflow(T),
+}
+
+impl<T: 'static + Send + Sync + Debug> From<PushError<T>> for object_rainbow::Error {
+    fn from(value: PushError<T>) -> Self {
+        Self::fetch(value)
+    }
 }
 
 trait Push: Clone + History {
