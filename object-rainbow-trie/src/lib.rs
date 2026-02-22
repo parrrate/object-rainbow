@@ -348,15 +348,15 @@ where
         try_stream(async |co| self.prefix_yield(&mut Vec::new(), prefix, &co).await)
     }
 
-    pub fn range_stream<'a>(
+    pub fn range_stream<'a, B: AsRef<[u8]>>(
         &'a self,
-        range: impl 'a + Send + Sync + RangeBounds<&'a [u8]>,
+        range: impl 'a + Send + Sync + RangeBounds<B>,
     ) -> impl Send + Stream<Item = object_rainbow::Result<(Vec<u8>, T)>> {
         try_stream(async move |co| {
             self.range_yield(
                 &mut Vec::new(),
-                range.start_bound().cloned(),
-                range.end_bound().cloned(),
+                range.start_bound().map(AsRef::as_ref),
+                range.end_bound().map(AsRef::as_ref),
                 &co,
             )
             .await
@@ -364,7 +364,7 @@ where
     }
 
     pub async fn count(&self) -> object_rainbow::Result<u64> {
-        self.range_stream(..)
+        self.range_stream::<&[u8]>(..)
             .try_fold(0u64, async |ctr, _| Ok(ctr.saturating_add(1)))
             .await
     }
@@ -449,7 +449,7 @@ where
         range: impl 'a + Send + Sync + RangeBounds<&'a K>,
     ) -> impl Send + Stream<Item = object_rainbow::Result<(K, V)>> {
         self.trie
-            .range_stream((
+            .range_stream::<&[u8]>((
                 range.start_bound().cloned().map(|b| b.as_ref()),
                 range.end_bound().cloned().map(|b| b.as_ref()),
             ))
@@ -523,7 +523,9 @@ mod test {
             ],
         );
         assert_eq!(
-            trie.range_stream(..).try_collect::<_, _, Vec<_>>().await?,
+            trie.range_stream::<&[u8]>(..)
+                .try_collect::<_, _, Vec<_>>()
+                .await?,
             [
                 (b"a".into(), 4),
                 (b"ab".into(), 3),
