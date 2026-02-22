@@ -504,6 +504,10 @@ impl<T: ReflessObject> TrieSet<T> {
     pub async fn insert(&mut self, value: &T) -> object_rainbow::Result<bool> {
         Ok(self.map.insert(value, ()).await?.is_none())
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.map.is_empty()
+    }
 }
 
 #[cfg(test)]
