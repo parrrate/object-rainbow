@@ -99,7 +99,7 @@ trait Push: Clone + History {
         len: u64,
         value: Self::T,
         history: &mut Self::History,
-    ) -> object_rainbow::Result<()>;
+    ) -> Result<(), PushError<Self::T>>;
     fn last<'a>(&'a self, history: &'a Self::History) -> Option<&'a Self::T>;
     fn from_value(prev: Point<Self>, history: &mut Self::History, value: Self::T) -> Self;
 }
@@ -193,11 +193,11 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
         len: u64,
         value: Self::T,
         (): &mut Self::History,
-    ) -> object_rainbow::Result<()> {
+    ) -> Result<(), PushError<Self::T>> {
         if len != (self.items.len() as u64) {
             panic!("a node has been parsed with invalid length")
         } else if self.items.len() >= N::USIZE {
-            Err(object_rainbow::error_fetch!("leaf overflow"))
+            Err(PushError::LeafOverflow(value))
         } else {
             self.items.push(value);
             Ok(())
@@ -299,7 +299,7 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
         len: u64,
         value: Self::T,
         (prev, history): &mut Self::History,
-    ) -> object_rainbow::Result<()> {
+    ) -> Result<(), PushError<Self::T>> {
         if let Some(last) = self.items.last_mut() {
             if len.is_multiple_of(T::CAPACITY) {
                 let last = last.clone();
@@ -307,11 +307,7 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
                     panic!("a node has been parsed with invalid length");
                 }
                 if self.items.len() >= N::USIZE {
-                    return Err(object_rainbow::error_fetch!(
-                        "non-leaf overflow: {}/{}",
-                        self.items.len(),
-                        Self::CAPACITY,
-                    ));
+                    return Err(PushError::NonLeafOverflow(value));
                 }
                 let last = T::from_value(last, history, value);
                 self.items.push(last.clone().point());
@@ -507,7 +503,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
         }
     }
 
-    pub fn push(&mut self, value: T) -> object_rainbow::Result<()> {
+    pub fn push(&mut self, value: T) -> Result<(), PushError<T>> {
         let len = self.len.0;
         macro_rules! upgrade {
             ($history:ident, $node:ident, $child:ident, $parent:ident) => {
@@ -529,7 +525,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
             TreeKind::N7((node, history)) => upgrade!(history, node, N7, N8),
             TreeKind::N8((node, history)) => {
                 if len == N8::<T>::CAPACITY {
-                    return Err(object_rainbow::error_fetch!("root overflow"));
+                    return Err(PushError::RootOverflow(value));
                 } else {
                     node.push(len, value, history)?;
                 }
