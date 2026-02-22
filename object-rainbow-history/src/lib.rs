@@ -313,7 +313,7 @@ impl<First, Second> Sequential<First, Second> {
     }
 }
 
-impl<Diff: Send + Clone, First: Forward<Diff>, Second: Forward<Diff>> Forward<Diff>
+impl<Diff: Send + Clone, First: Forward<Diff>, Second: Forward<(First::Output, Diff)>> Forward<Diff>
     for Sequential<First, Second>
 {
     type Output = Second::Output;
@@ -322,8 +322,9 @@ impl<Diff: Send + Clone, First: Forward<Diff>, Second: Forward<Diff>> Forward<Di
         diff: Diff,
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
         async move {
-            self.first.forward(diff.clone()).await?;
-            self.second.forward(diff).await
+            self.second
+                .forward((self.first.forward(diff.clone()).await?, diff))
+                .await
         }
     }
 }
