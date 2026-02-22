@@ -35,6 +35,9 @@ pub enum Error {
     /// Arbitrary operation error.
     #[error(transparent)]
     Operation(anyhow::Error),
+    /// Arbitrary consistency error.
+    #[error(transparent)]
+    Consistency(anyhow::Error),
     #[error(transparent)]
     Io(#[from] std::io::Error),
     /// Data left after an [`Inline`] got parsed.
@@ -107,6 +110,7 @@ impl Error {
             Error::Parse(_) => ErrorKind::InvalidData,
             Error::Fetch(_) => ErrorKind::Other,
             Error::Operation(_) => ErrorKind::Other,
+            Error::Consistency(_) => ErrorKind::InvalidData,
             Error::Io(e) => e.kind(),
             Error::ExtraInputLeft => ErrorKind::InvalidData,
             Error::EndOfInput => ErrorKind::UnexpectedEof,
