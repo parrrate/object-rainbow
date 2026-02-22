@@ -48,6 +48,9 @@ impl<T: Clone + Traversible> ChainHandle<T> {
     fn next_tree(&mut self) -> object_rainbow::Result<AppendTree<Point<ChainNode<T>>>> {
         Ok(if let Some(node) = self.0.take() {
             let mut tree = node.tree.clone();
+            if tree.len() == u64::MAX {
+                return Err(object_rainbow::error_operation!("overflow"));
+            }
             tree.push(node.point())?;
             tree
         } else {
@@ -146,6 +149,9 @@ impl<T: Clone + Traversible> ChainTree<T> {
     async fn next_tree(self) -> object_rainbow::Result<AppendTree<Point<ChainNode<T>>>> {
         Ok(if let Some(node) = self.0 {
             let mut tree = node.fetch().await?.tree;
+            if tree.len() == u64::MAX {
+                return Err(object_rainbow::error_operation!("overflow"));
+            }
             tree.push(node)?;
             tree
         } else {
@@ -176,7 +182,7 @@ impl<T: Clone + Traversible> ChainTree<T> {
             .tree
             .len()
             .checked_add(1)
-            .ok_or_else(|| object_rainbow::error_operation!("len overflow"))
+            .ok_or_else(|| object_rainbow::error_consistency!("len overflow"))
     }
 
     pub async fn slice(&self, n: u64) -> object_rainbow::Result<Self> {
