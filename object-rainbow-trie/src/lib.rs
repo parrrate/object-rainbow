@@ -6,8 +6,8 @@ use std::{
 use futures_util::{Stream, TryStream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    Fetch, Inline, InlineOutput, ListHashes, ObjectMarker, Parse, ParseInline, ParseSliceRefless,
-    ReflessObject, Tagged, ToOutput, Topological, Traversible, assert_impl,
+    Equivalent, Fetch, Inline, InlineOutput, ListHashes, ObjectMarker, Parse, ParseInline,
+    ParseSliceRefless, ReflessObject, Tagged, ToOutput, Topological, Traversible, assert_impl,
 };
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
@@ -533,6 +533,16 @@ impl<T: ReflessObject> TrieSet<T> {
         Ok(Self {
             map: TrieMap::from_stream(stream.map_ok(|value| (value, ()))).await?,
         })
+    }
+}
+
+impl<T> Equivalent<TrieMap<T, ()>> for TrieSet<T> {
+    fn into_equivalent(self) -> TrieMap<T, ()> {
+        self.map
+    }
+
+    fn from_equivalent(map: TrieMap<T, ()>) -> Self {
+        Self { map }
     }
 }
 
