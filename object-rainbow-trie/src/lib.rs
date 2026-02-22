@@ -512,6 +512,13 @@ impl<T: ReflessObject> TrieSet<T> {
     pub async fn remove(&mut self, value: &T) -> object_rainbow::Result<bool> {
         Ok(self.map.remove(value).await?.is_some())
     }
+
+    pub fn prefix_stream(
+        &self,
+        prefix: &[u8],
+    ) -> impl Send + Stream<Item = object_rainbow::Result<T>> {
+        self.map.prefix_stream(prefix).map_ok(|(value, ())| value)
+    }
 }
 
 #[cfg(test)]
