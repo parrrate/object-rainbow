@@ -147,6 +147,7 @@ impl<T: Clone + Traversible + InlineOutput + Default + Forward<D>, D: Clone + Tr
     Eq,
     PartialOrd,
     Ord,
+    Default,
 )]
 pub struct Compat<T>(pub T);
 
