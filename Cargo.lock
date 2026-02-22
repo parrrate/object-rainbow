@@ -1142,7 +1142,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-amt-set"
-version = "0.0.0-a.2"
+version = "0.0.0-a.3"
 dependencies = [
  "macro_rules_attribute",
  "object-rainbow",
@@ -1166,7 +1166,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-array-map"
-version = "0.0.0-a.2"
+version = "0.0.0-a.3"
 dependencies = [
  "bitvec",
  "object-rainbow",
@@ -1198,7 +1198,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-encrypted"
-version = "0.0.0-a.9"
+version = "0.0.0-a.10"
 dependencies = [
  "anyhow",
  "chacha20poly1305",
@@ -1214,7 +1214,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-fetchall"
-version = "0.0.0-a.2"
+version = "0.0.0-a.3"
 dependencies = [
  "anyhow",
  "async-executor",
@@ -1228,7 +1228,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.3"
+version = "0.0.0-a.4"
 dependencies = [
  "futures-util",
  "object-rainbow",
@@ -1238,7 +1238,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-json"
-version = "0.0.0-a.15"
+version = "0.0.0-a.16"
 dependencies = [
  "futures-util",
  "object-rainbow",
@@ -1258,7 +1258,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-marshall"
-version = "0.0.0-a.5"
+version = "0.0.0-a.6"
 dependencies = [
  "anyhow",
  "object-rainbow",
@@ -1295,7 +1295,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-store-opendal"
-version = "0.0.0-a.4"
+version = "0.0.0-a.5"
 dependencies = [
  "anyhow",
  "hex",
@@ -1323,7 +1323,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-unique-diffs"
-version = "0.0.0-a.0"
+version = "0.0.0-a.1"
 dependencies = [
  "object-rainbow",
  "object-rainbow-amt-set",
