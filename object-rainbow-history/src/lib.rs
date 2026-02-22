@@ -212,6 +212,16 @@ impl<T: Forward<D>, D: Send, H: Send> Forward<(H, D)> for DiscardHeader<T> {
     }
 }
 
+impl<T> Equivalent<T> for DiscardHeader<T> {
+    fn into_equivalent(self) -> T {
+        self.0
+    }
+
+    fn from_equivalent(tree: T) -> Self {
+        Self(tree)
+    }
+}
+
 pub trait MapDiff<Outer: Send>: Send + Sync {
     type Inner: Send;
     fn map(&self, outer: Outer)
