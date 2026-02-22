@@ -307,7 +307,7 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
                 Ok(())
             }
         } else {
-            Err(object_rainbow::error_fetch!("empty non-leaf encountered"))
+            panic!("a non-leaf node has been parsed without children")
         }
     }
 
