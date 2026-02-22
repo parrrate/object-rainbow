@@ -508,6 +508,10 @@ impl<T: ReflessObject> TrieSet<T> {
     pub fn is_empty(&self) -> bool {
         self.map.is_empty()
     }
+
+    pub async fn remove(&mut self, value: &T) -> object_rainbow::Result<bool> {
+        Ok(self.map.remove(value).await?.is_some())
+    }
 }
 
 #[cfg(test)]
