@@ -179,7 +179,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
         (): &mut Self::History,
     ) -> object_rainbow::Result<()> {
         if len != (self.items.len() as u64) {
-            Err(object_rainbow::error_fetch!("leaf len mismatch"))
+            panic!("the node has been parsed with invalid length")
         } else if self.items.len() >= N::USIZE {
             Err(object_rainbow::error_fetch!("leaf overflow"))
         } else {
