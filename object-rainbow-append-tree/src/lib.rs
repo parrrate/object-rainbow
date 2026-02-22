@@ -97,7 +97,7 @@ impl<T> PushError<T> {
 
 impl<T: 'static + Send + Sync + Debug> From<PushError<T>> for object_rainbow::Error {
     fn from(value: PushError<T>) -> Self {
-        Self::fetch(value)
+        Self::operation(value)
     }
 }
 
