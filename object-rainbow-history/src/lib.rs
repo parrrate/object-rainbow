@@ -1,7 +1,7 @@
 use futures_util::TryStreamExt;
 use object_rainbow::{
-    Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline, Size,
-    Tagged, ToOutput, Topological, Traversible, assert_impl,
+    Equivalent, Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline,
+    Size, Tagged, ToOutput, Topological, Traversible, assert_impl,
 };
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
@@ -301,5 +301,33 @@ impl<Diff: Send + Clone, A: Forward<Diff>, B: Forward<Diff>> Forward<Diff> for P
             futures_util::try_join!(self.a.forward(diff.clone()), self.b.forward(diff))?;
             Ok(())
         }
+    }
+}
+
+impl<A, B> Equivalent<Parallel<A, B>> for Sequential<A, B> {
+    fn into_equivalent(self) -> Parallel<A, B> {
+        let Self {
+            first: a,
+            second: b,
+        } = self;
+        Parallel { a, b }
+    }
+
+    fn from_equivalent(object: Parallel<A, B>) -> Self {
+        object.into_equivalent()
+    }
+}
+
+impl<A, B> Equivalent<Sequential<A, B>> for Parallel<A, B> {
+    fn into_equivalent(self) -> Sequential<A, B> {
+        let Self { a, b } = self;
+        Sequential {
+            first: a,
+            second: b,
+        }
+    }
+
+    fn from_equivalent(object: Sequential<A, B>) -> Self {
+        object.into_equivalent()
     }
 }
