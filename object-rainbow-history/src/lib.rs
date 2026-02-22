@@ -261,3 +261,24 @@ pub struct Sequential<First, Second> {
     first: First,
     second: Second,
 }
+
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Size,
+    MaybeHasNiche,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+)]
+pub struct Parallel<A, B> {
+    a: A,
+    b: B,
+}
