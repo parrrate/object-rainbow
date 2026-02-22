@@ -424,7 +424,7 @@ where
     }
 
     pub async fn insert(&mut self, key: &K, value: V) -> object_rainbow::Result<Option<V>> {
-        self.trie.insert(key.as_ref(), value).await
+        self.trie.insert(&key.vec(), value).await
     }
 
     pub fn is_empty(&self) -> bool {
