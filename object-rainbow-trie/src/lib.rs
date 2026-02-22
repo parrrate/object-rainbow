@@ -387,6 +387,16 @@ pub struct TrieMap<K, V> {
     trie: Trie<V>,
 }
 
+assert_impl!(
+    impl<K, V, E> Inline<E> for TrieMap<K, V>
+    where
+        K: ReflessObject,
+        Option<V>: Inline<E>,
+        E: 'static + Send + Sync + Clone,
+    {
+    }
+);
+
 impl<K, V: Clone> Clone for TrieMap<K, V> {
     fn clone(&self) -> Self {
         Self {
