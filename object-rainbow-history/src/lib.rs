@@ -258,6 +258,7 @@ pub trait MapDiff<Outer: Send>: Send + Sync {
     Copy,
     PartialEq,
     Eq,
+    Default,
 )]
 pub struct MappedDiff<T, M> {
     tree: T,
