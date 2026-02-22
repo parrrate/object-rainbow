@@ -449,9 +449,9 @@ where
         range: impl 'a + Send + Sync + RangeBounds<&'a K>,
     ) -> impl Send + Stream<Item = object_rainbow::Result<(K, V)>> {
         self.trie
-            .range_stream::<&[u8]>((
-                range.start_bound().cloned().map(|b| b.as_ref()),
-                range.end_bound().cloned().map(|b| b.as_ref()),
+            .range_stream((
+                range.start_bound().map(|b| b.vec()),
+                range.end_bound().map(|b| b.vec()),
             ))
             .and_then(async |(key, value)| Ok((K::parse_slice_refless(&key)?, value)))
     }
