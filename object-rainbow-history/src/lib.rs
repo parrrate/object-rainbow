@@ -289,6 +289,10 @@ impl<First, Second> Sequential<First, Second> {
     pub fn first(&self) -> &First {
         &self.first
     }
+
+    pub fn second(&self) -> &Second {
+        &self.second
+    }
 }
 
 impl<Diff: Send + Clone, First: Forward<Diff>, Second: Forward<Diff>> Forward<Diff>
