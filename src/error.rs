@@ -90,6 +90,11 @@ impl Error {
         Self::Fetch(e.into())
     }
 
+    /// Construct [`Error::Operation`] from another error.
+    pub fn operation(e: impl Into<anyhow::Error>) -> Self {
+        Self::Fetch(e.into())
+    }
+
     pub fn io(e: impl Into<std::io::Error>) -> Self {
         e.into().into()
     }
