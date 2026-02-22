@@ -228,3 +228,9 @@ pub struct MappedDiff<T, M> {
     tree: T,
     map: M,
 }
+
+impl<T, M> MappedDiff<T, M> {
+    pub fn tree(&self) -> &T {
+        &self.tree
+    }
+}
