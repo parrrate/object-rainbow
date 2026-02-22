@@ -14,6 +14,14 @@ macro_rules! error_fetch {
     };
 }
 
+#[macro_export]
+/// Construct [`Error::Operation`].
+macro_rules! error_operation {
+    ($($t:tt)*) => {
+        $crate::Error::Operation($crate::anyhow!($($t)*))
+    };
+}
+
 /// Errors encountered during fetching an object. Mostly related to parsing.
 #[derive(Debug, thiserror::Error)]
 #[non_exhaustive]
