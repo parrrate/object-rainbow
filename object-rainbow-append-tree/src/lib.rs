@@ -179,7 +179,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
         (): &mut Self::History,
     ) -> object_rainbow::Result<()> {
         if len != (self.items.len() as u64) {
-            panic!("the node has been parsed with invalid length")
+            panic!("a node has been parsed with invalid length")
         } else if self.items.len() >= N::USIZE {
             Err(object_rainbow::error_fetch!("leaf overflow"))
         } else {
@@ -288,7 +288,7 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
             if len.is_multiple_of(T::CAPACITY) {
                 let last = last.clone();
                 if len / T::CAPACITY != (self.items.len() as u64) {
-                    panic!("the node has been parsed with invalid length");
+                    panic!("a node has been parsed with invalid length");
                 }
                 if self.items.len() >= N::USIZE {
                     return Err(object_rainbow::error_fetch!(
