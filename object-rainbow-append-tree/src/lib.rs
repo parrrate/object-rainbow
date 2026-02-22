@@ -85,6 +85,16 @@ pub enum PushError<T> {
     RootOverflow(T),
 }
 
+impl<T> PushError<T> {
+    pub fn into_value(self) -> T {
+        match self {
+            PushError::LeafOverflow(value) => value,
+            PushError::NonLeafOverflow(value) => value,
+            PushError::RootOverflow(value) => value,
+        }
+    }
+}
+
 impl<T: 'static + Send + Sync + Debug> From<PushError<T>> for object_rainbow::Error {
     fn from(value: PushError<T>) -> Self {
         Self::fetch(value)
