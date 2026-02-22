@@ -224,4 +224,7 @@ pub trait MapDiff<Outer: Send> {
     PartialEq,
     Eq,
 )]
-pub struct MappedDiff<T, M>(T, M);
+pub struct MappedDiff<T, M> {
+    tree: T,
+    map: M,
+}
