@@ -1,3 +1,6 @@
+use std::collections::BTreeSet;
+
+use futures_util::TryStreamExt;
 use macro_rules_attribute::apply;
 use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
@@ -9,6 +12,7 @@ use smol_macros::main;
 use ulid::Ulid;
 
 #[derive(
+    Debug,
     ToOutput,
     InlineOutput,
     Tagged,
@@ -20,12 +24,15 @@ use ulid::Ulid;
     Copy,
     PartialEq,
     Eq,
+    PartialOrd,
+    Ord,
     Size,
     MaybeHasNiche,
 )]
 struct ChannelId(Ulid);
 
 #[derive(
+    Debug,
     ToOutput,
     InlineOutput,
     Tagged,
@@ -37,12 +44,15 @@ struct ChannelId(Ulid);
     Copy,
     PartialEq,
     Eq,
+    PartialOrd,
+    Ord,
     Size,
     MaybeHasNiche,
 )]
 struct MessageId(Ulid);
 
 #[derive(
+    Debug,
     ToOutput,
     InlineOutput,
     Tagged,
@@ -54,6 +64,8 @@ struct MessageId(Ulid);
     Copy,
     PartialEq,
     Eq,
+    PartialOrd,
+    Ord,
     Size,
     MaybeHasNiche,
 )]
@@ -80,6 +92,7 @@ struct Message {
 }
 
 #[derive(
+    Debug,
     ToOutput,
     InlineOutput,
     Tagged,
@@ -91,6 +104,8 @@ struct Message {
     Copy,
     PartialEq,
     Eq,
+    PartialOrd,
+    Ord,
 )]
 struct MessageByChannel {
     channel: ChannelId,
@@ -99,6 +114,7 @@ struct MessageByChannel {
 }
 
 #[derive(
+    Debug,
     ToOutput,
     InlineOutput,
     Tagged,
@@ -110,6 +126,8 @@ struct MessageByChannel {
     Copy,
     PartialEq,
     Eq,
+    PartialOrd,
+    Ord,
 )]
 struct MessageByUser {
     user: UserId,
@@ -260,6 +278,34 @@ async fn main() -> object_rainbow::Result<()> {
                 message
             })
             .await?
+    );
+    let messages_by_channel = history
+        .tree()
+        .await?
+        .second()
+        .a()
+        .tree()
+        .0
+        .range_stream(
+            &MessageByChannel {
+                channel,
+                message: MessageId(Ulid::from_parts(u64::MIN, u128::MIN)),
+                user: UserId(Ulid::from_parts(u64::MIN, u128::MIN)),
+            }..&MessageByChannel {
+                channel,
+                message: MessageId(Ulid::from_parts(u64::MAX, u128::MAX)),
+                user: UserId(Ulid::from_parts(u64::MAX, u128::MAX)),
+            },
+        )
+        .try_collect::<BTreeSet<_>>()
+        .await?;
+    assert_eq!(
+        messages_by_channel,
+        BTreeSet::from([MessageByChannel {
+            channel,
+            message,
+            user
+        }])
     );
     history.commit((message, None)).await?;
     assert!(
