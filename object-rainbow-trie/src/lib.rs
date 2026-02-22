@@ -526,6 +526,14 @@ impl<T: ReflessObject> TrieSet<T> {
     ) -> impl Send + Stream<Item = object_rainbow::Result<T>> {
         self.map.range_stream(range).map_ok(|(value, ())| value)
     }
+
+    pub async fn from_stream(
+        stream: impl TryStream<Ok = T, Error = object_rainbow::Error>,
+    ) -> object_rainbow::Result<Self> {
+        Ok(Self {
+            map: TrieMap::from_stream(stream.map_ok(|value| (value, ()))).await?,
+        })
+    }
 }
 
 #[cfg(test)]
