@@ -166,6 +166,16 @@ impl<T: Forward<D>, D: Send + Traversible> Forward<Point<D>> for Compat<T> {
     }
 }
 
+impl<T> Equivalent<T> for Compat<T> {
+    fn into_equivalent(self) -> T {
+        self.0
+    }
+
+    fn from_equivalent(tree: T) -> Self {
+        Self(tree)
+    }
+}
+
 #[derive(
     Debug,
     ToOutput,
