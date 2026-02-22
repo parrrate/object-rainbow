@@ -519,6 +519,13 @@ impl<T: ReflessObject> TrieSet<T> {
     ) -> impl Send + Stream<Item = object_rainbow::Result<T>> {
         self.map.prefix_stream(prefix).map_ok(|(value, ())| value)
     }
+
+    pub fn range_stream<'a>(
+        &'a self,
+        range: impl 'a + Send + Sync + RangeBounds<&'a T>,
+    ) -> impl Send + Stream<Item = object_rainbow::Result<T>> {
+        self.map.range_stream(range).map_ok(|(value, ())| value)
+    }
 }
 
 #[cfg(test)]
