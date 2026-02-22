@@ -24,6 +24,9 @@ pub enum Error {
     /// Arbitrary fetching error.
     #[error(transparent)]
     Fetch(anyhow::Error),
+    /// Arbitrary operation error.
+    #[error(transparent)]
+    Operation(anyhow::Error),
     #[error(transparent)]
     Io(#[from] std::io::Error),
     /// Data left after an [`Inline`] got parsed.
@@ -88,6 +91,7 @@ impl Error {
         match self {
             Error::Parse(_) => ErrorKind::InvalidData,
             Error::Fetch(_) => ErrorKind::Other,
+            Error::Operation(_) => ErrorKind::Other,
             Error::Io(e) => e.kind(),
             Error::ExtraInputLeft => ErrorKind::InvalidData,
             Error::EndOfInput => ErrorKind::UnexpectedEof,
