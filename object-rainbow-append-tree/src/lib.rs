@@ -288,7 +288,7 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
             if len.is_multiple_of(T::CAPACITY) {
                 let last = last.clone();
                 if len / T::CAPACITY != (self.items.len() as u64) {
-                    return Err(object_rainbow::error_fetch!("non-leaf len mismatch"));
+                    panic!("the node has been parsed with invalid length");
                 }
                 if self.items.len() >= N::USIZE {
                     return Err(object_rainbow::error_fetch!(
