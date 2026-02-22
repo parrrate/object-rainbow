@@ -47,6 +47,7 @@ impl<T, D> History<T, D> {
 }
 
 pub trait Forward<Diff: Send>: Send {
+    /// Must stay isomorphic under [`Equivalent`] conversions.
     fn forward(&mut self, diff: Diff) -> impl Send + Future<Output = object_rainbow::Result<()>>;
 }
 
