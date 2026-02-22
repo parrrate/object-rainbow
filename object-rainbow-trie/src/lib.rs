@@ -500,6 +500,10 @@ impl<T: ReflessObject> TrieSet<T> {
     pub async fn contains(&self, value: &T) -> object_rainbow::Result<bool> {
         Ok(self.map.get(value).await?.is_some())
     }
+
+    pub async fn insert(&mut self, value: &T) -> object_rainbow::Result<bool> {
+        Ok(self.map.insert(value, ()).await?.is_none())
+    }
 }
 
 #[cfg(test)]
