@@ -420,7 +420,7 @@ where
     Option<V>: Traversible + InlineOutput,
 {
     pub async fn get(&self, key: &K) -> object_rainbow::Result<Option<V>> {
-        self.trie.get(key.as_ref()).await
+        self.trie.get(&key.vec()).await
     }
 
     pub async fn insert(&mut self, key: &K, value: V) -> object_rainbow::Result<Option<V>> {
