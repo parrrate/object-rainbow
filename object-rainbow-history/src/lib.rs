@@ -234,3 +234,9 @@ impl<T, M> MappedDiff<T, M> {
         &self.tree
     }
 }
+
+impl<T: Forward<M::Inner>, M: MapDiff<Outer>, Outer: Send> Forward<Outer> for MappedDiff<T, M> {
+    fn forward(&mut self, outer: Outer) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+        async move { self.tree.forward(self.map.map(outer).await?).await }
+    }
+}
