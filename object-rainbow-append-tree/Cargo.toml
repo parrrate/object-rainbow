@@ -12,6 +12,7 @@ description = "append-only tree list for object-rainbow"
 object-rainbow.workspace = true
 object-rainbow-point.workspace = true
 
+thiserror = "2.0.17"
 typenum = { version = "1.18.0", features = ["const-generics"] }
 
 [dev-dependencies]
