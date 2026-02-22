@@ -78,11 +78,11 @@ impl<T: Clone + Traversible + InlineOutput + Default + Forward<D>, D: Clone + Tr
                 let hash = tree.full_hash();
                 tree.forward(diff).await?;
                 if hash == tree.full_hash() {
-                    Err(object_rainbow::error_operation!("noop diff"))
+                    Err(object_rainbow::error_consistency!("noop diff"))
                 } else if tree == node.value().0 {
                     Ok(())
                 } else {
-                    Err(object_rainbow::error_operation!(
+                    Err(object_rainbow::error_consistency!(
                         "diff doesn't match the new tree",
                     ))
                 }
