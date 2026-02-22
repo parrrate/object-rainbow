@@ -285,6 +285,12 @@ pub struct Sequential<First, Second> {
     second: Second,
 }
 
+impl<First, Second> Sequential<First, Second> {
+    pub fn first(&self) -> &First {
+        &self.first
+    }
+}
+
 impl<Diff: Send + Clone, First: Forward<Diff>, Second: Forward<Diff>> Forward<Diff>
     for Sequential<First, Second>
 {
