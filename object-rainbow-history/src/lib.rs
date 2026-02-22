@@ -262,6 +262,18 @@ pub struct Sequential<First, Second> {
     second: Second,
 }
 
+impl<Diff: Send + Clone, First: Forward<Diff>, Second: Forward<Diff>> Forward<Diff>
+    for Sequential<First, Second>
+{
+    fn forward(&mut self, diff: Diff) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+        async move {
+            self.first.forward(diff.clone()).await?;
+            self.second.forward(diff).await?;
+            Ok(())
+        }
+    }
+}
+
 #[derive(
     Debug,
     ToOutput,
