@@ -415,7 +415,7 @@ impl<K, V> Default for TrieMap<K, V> {
     }
 }
 
-impl<K: ReflessObject + AsRef<[u8]>, V: 'static + Send + Sync + Clone> TrieMap<K, V>
+impl<K: ReflessObject, V: 'static + Send + Sync + Clone> TrieMap<K, V>
 where
     Option<V>: Traversible + InlineOutput,
 {
