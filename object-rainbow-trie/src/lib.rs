@@ -466,6 +466,20 @@ where
     }
 }
 
+#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline)]
+pub struct TrieSet<T> {
+    map: TrieMap<T, ()>,
+}
+
+assert_impl!(
+    impl<T, E> Inline<E> for TrieSet<T>
+    where
+        T: ReflessObject,
+        E: 'static + Send + Sync + Clone,
+    {
+    }
+);
+
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
