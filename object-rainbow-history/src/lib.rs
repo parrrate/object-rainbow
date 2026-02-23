@@ -415,3 +415,14 @@ impl<D: Send> Forward<D> for Discard {
         async move { Ok(()) }
     }
 }
+
+impl Forward<()> for () {
+    type Output = ();
+
+    fn forward(
+        &mut self,
+        (): (),
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        async move { Ok(()) }
+    }
+}
