@@ -42,7 +42,7 @@ impl<T: Forward<D>, D: Send + FullHash> Forward<D> for UniqueDiffs<T> {
     type Output = Option<T::Output>;
 
     async fn forward(&mut self, diff: D) -> object_rainbow::Result<Self::Output> {
-        Ok(if !self.diffs.contains(diff.full_hash()).await? {
+        Ok(if self.diffs.insert(diff.full_hash()).await? {
             Some(self.tree.forward(diff).await?)
         } else {
             None
