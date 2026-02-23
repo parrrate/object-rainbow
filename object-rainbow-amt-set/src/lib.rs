@@ -284,10 +284,16 @@ mod private {
     Size,
     MaybeHasNiche,
     Clone,
-    PartialEq,
-    Eq,
 )]
 pub struct AmtMap<V>(Point<private::N32<V>>);
+
+impl<V> PartialEq for AmtMap<V> {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl<V> Eq for AmtMap<V> {}
 
 impl<V: Traversible + InlineOutput + Clone> Default for AmtMap<V> {
     fn default() -> Self {
