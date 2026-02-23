@@ -55,6 +55,17 @@ impl<T: ReflessObject> Forward<(bool, T)> for TrieSet<T> {
     }
 }
 
+impl<T: ReflessObject> Forward<T> for TrieSet<T> {
+    type Output = bool;
+
+    fn forward(
+        &mut self,
+        value: T,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        async move { self.insert(&value).await }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
