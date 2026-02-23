@@ -217,6 +217,9 @@ trait Table {
     fn messages_by_channels(
         &self,
     ) -> impl Send + Future<Output = object_rainbow::Result<TrieSet<MessageByChannel>>>;
+    fn messages_by_users(
+        &self,
+    ) -> impl Send + Future<Output = object_rainbow::Result<TrieSet<MessageByUser>>>;
 }
 
 impl Table for History {
@@ -224,6 +227,12 @@ impl Table for History {
         &self,
     ) -> impl Send + Future<Output = object_rainbow::Result<TrieSet<MessageByChannel>>> {
         async move { Ok(self.tree().await?.second().a().tree().0.clone()) }
+    }
+
+    fn messages_by_users(
+        &self,
+    ) -> impl Send + Future<Output = object_rainbow::Result<TrieSet<MessageByUser>>> {
+        async move { Ok(self.tree().await?.second().b().tree().0.clone()) }
     }
 }
 
@@ -249,12 +258,8 @@ async fn main() -> object_rainbow::Result<()> {
     );
     assert!(
         history
-            .tree()
+            .messages_by_users()
             .await?
-            .second()
-            .b()
-            .tree()
-            .0
             .contains(&MessageByUser {
                 user,
                 channel,
@@ -300,12 +305,8 @@ async fn main() -> object_rainbow::Result<()> {
     );
     assert!(
         !history
-            .tree()
+            .messages_by_users()
             .await?
-            .second()
-            .b()
-            .tree()
-            .0
             .contains(&MessageByUser {
                 user,
                 channel,
