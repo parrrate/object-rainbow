@@ -313,7 +313,7 @@ impl<V: Traversible + InlineOutput + Clone> Default for AmtMap<V> {
     PartialEq,
     Eq,
 )]
-pub struct AmtSet(Point<private::N32>);
+pub struct AmtSet(AmtMap<()>);
 
 assert_impl!(
     impl<E> Inline<E> for AmtSet where E: 'static + Send + Sync + Clone {}
@@ -365,6 +365,7 @@ impl AmtSet {
     pub async fn insert(&mut self, hash: Hash) -> object_rainbow::Result<bool> {
         Ok(self
             .0
+            .0
             .fetch_mut()
             .await?
             .insert(hash_key(hash), ())
@@ -373,7 +374,7 @@ impl AmtSet {
     }
 
     pub async fn contains(&self, hash: Hash) -> object_rainbow::Result<bool> {
-        Ok(self.0.fetch().await?.get(hash_key(hash)).await?.is_some())
+        Ok(self.0.0.fetch().await?.get(hash_key(hash)).await?.is_some())
     }
 }
 
