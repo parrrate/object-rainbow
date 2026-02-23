@@ -8,6 +8,7 @@ members = [
     "object-rainbow-encrypted",
     "object-rainbow-fetchall",
     "object-rainbow-history",
+    "object-rainbow-history-store",
     "object-rainbow-json",
     "object-rainbow-local-map",
     "object-rainbow-marshall",
