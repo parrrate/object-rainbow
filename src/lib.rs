@@ -902,7 +902,7 @@ impl Output for ArrayOutput<'_> {
     }
 }
 
-trait RainbowIterator: Sized + IntoIterator {
+pub trait RainbowIterator: Sized + IntoIterator {
     fn iter_to_output(self, output: &mut dyn Output)
     where
         Self::Item: InlineOutput,
