@@ -2,34 +2,34 @@ use std::{marker::PhantomData, sync::Arc};
 
 use object_rainbow_store::StoreMut;
 
-pub struct HistoryStore<T, S, Extra = ()> {
+pub struct HistoryStore<T, D, S, Extra = ()> {
     key: Arc<str>,
     store: StoreMut<S, Extra>,
-    _tree: PhantomData<T>,
+    _marker: PhantomData<(T, D)>,
 }
 
-impl<T, S> HistoryStore<T, S> {
+impl<T, D, S> HistoryStore<T, D, S> {
     pub fn new(key: &str, store: S) -> Self {
         Self::new_extra(key, store, ())
     }
 }
 
-impl<T, S, Extra> HistoryStore<T, S, Extra> {
+impl<T, D, S, Extra> HistoryStore<T, D, S, Extra> {
     pub fn new_extra(key: &str, store: S, extra: Extra) -> Self {
         Self {
             key: key.into(),
             store: StoreMut::new_extra(store, extra),
-            _tree: PhantomData,
+            _marker: PhantomData,
         }
     }
 }
 
-impl<T, S: Clone, Extra: Clone> Clone for HistoryStore<T, S, Extra> {
+impl<T, D, S: Clone, Extra: Clone> Clone for HistoryStore<T, D, S, Extra> {
     fn clone(&self) -> Self {
         Self {
             key: self.key.clone(),
             store: self.store.clone(),
-            _tree: PhantomData,
+            _marker: PhantomData,
         }
     }
 }
