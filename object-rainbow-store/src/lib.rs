@@ -180,6 +180,7 @@ impl<S: RainbowStoreMut, Extra: 'static + Send + Sync + Clone> StoreMut<S, Extra
         let key = self.store.create_ref(point.hash()).await?;
         Ok(self.store.store_ref_raw(key, point, self.extra.clone()))
     }
+
     pub async fn update<T: Object<Extra>, K: Send + Sync + AsRef<str>>(
         &self,
         key: K,
@@ -191,6 +192,7 @@ impl<S: RainbowStoreMut, Extra: 'static + Send + Sync + Clone> StoreMut<S, Extra
             .await?;
         Ok(self.store.store_ref_raw(key, point, self.extra.clone()))
     }
+
     pub async fn load<T: Object<Extra>, K: Send + Sync + AsRef<str>>(
         &self,
         key: K,
@@ -204,6 +206,7 @@ impl<S: RainbowStoreMut, Extra: 'static + Send + Sync + Clone> StoreMut<S, Extra
         let point = self.store.point_extra(hash, self.extra.clone());
         Ok(self.store.store_ref_raw(key, point, self.extra.clone()))
     }
+
     pub async fn reference<T: Object<Extra>, K: Send + Sync + AsRef<str>>(
         &self,
         key: K,
