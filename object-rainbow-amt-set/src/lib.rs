@@ -274,18 +274,15 @@ mod private {
 }
 
 #[derive(
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
+    ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Size, MaybeHasNiche,
 )]
 pub struct AmtMap<V>(Point<private::N32<V>>);
+
+impl<V> Clone for AmtMap<V> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
 
 impl<V> PartialEq for AmtMap<V> {
     fn eq(&self, other: &Self) -> bool {
