@@ -4,27 +4,32 @@ use object_rainbow::{
     Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size,
     Tagged, ToOutput, Topological, Traversible, assert_impl,
 };
-use object_rainbow_array_map::{ArrayMap, ArraySet};
+use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
 
+type OptionFuture<'a, T> =
+    Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<Option<T>>>>>;
 type BoolFuture<'a> = Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<bool>>>>;
 
 trait Tree<K> {
-    fn insert(&mut self, key: K) -> BoolFuture<'_>;
-    fn from_pair(a: K, b: K) -> Self;
+    type V: Send + Sync;
+    fn insert(&mut self, key: K, value: Self::V) -> OptionFuture<'_, Self::V>;
+    fn from_pair(a: (K, Self::V), b: (K, Self::V)) -> Self;
     fn contains(&self, key: K) -> BoolFuture<'_>;
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 /// what are you even doing at this point
-struct DeepestLeaf(ArraySet);
+struct DeepestLeaf<V = ()>(ArrayMap<V>);
 
-impl Tree<u8> for DeepestLeaf {
-    fn insert(&mut self, key: u8) -> BoolFuture<'_> {
-        Box::pin(async move { Ok(self.0.insert(key)) })
+impl<V: Send + Sync> Tree<u8> for DeepestLeaf<V> {
+    type V = V;
+
+    fn insert(&mut self, key: u8, value: Self::V) -> OptionFuture<'_, Self::V> {
+        Box::pin(async move { Ok(self.0.insert(key, value)) })
     }
 
-    fn from_pair(a: u8, b: u8) -> Self {
+    fn from_pair(a: (u8, Self::V), b: (u8, Self::V)) -> Self {
         Self([a, b].into())
     }
 
@@ -34,45 +39,47 @@ impl Tree<u8> for DeepestLeaf {
 }
 
 #[derive(Enum, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline)]
-enum SubTree<T, K> {
-    Leaf(K),
+enum SubTree<T, K, V = <T as Tree<K>>::V> {
+    Leaf(K, V),
     SubTree(Point<T>),
 }
 
-impl<T, K: Clone> Clone for SubTree<T, K> {
+impl<T, K: Clone, V: Clone> Clone for SubTree<T, K, V> {
     fn clone(&self) -> Self {
         match self {
-            Self::Leaf(arg0) => Self::Leaf(arg0.clone()),
-            Self::SubTree(arg0) => Self::SubTree(arg0.clone()),
+            Self::Leaf(key, value) => Self::Leaf(key.clone(), value.clone()),
+            Self::SubTree(point) => Self::SubTree(point.clone()),
         }
     }
 }
 
-impl<T: Tree<K> + Clone + Traversible, K: Send + Sync + PartialEq + Clone> Tree<K>
+impl<T: Tree<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clone> Tree<K>
     for SubTree<T, K>
 {
-    fn insert(&mut self, key: K) -> BoolFuture<'_> {
+    type V = T::V;
+
+    fn insert(&mut self, key: K, value: Self::V) -> OptionFuture<'_, Self::V> {
         Box::pin(async move {
             match self {
-                SubTree::Leaf(existing) => Ok(if *existing != key {
-                    *self = Self::from_pair(existing.clone(), key);
-                    true
+                SubTree::Leaf(xkey, xvalue) => Ok(if *xkey != key {
+                    *self = Self::from_pair((xkey.clone(), xvalue.clone()), (key, value));
+                    None
                 } else {
-                    false
+                    Some(std::mem::replace(xvalue, value))
                 }),
-                SubTree::SubTree(sub) => sub.fetch_mut().await?.insert(key).await,
+                SubTree::SubTree(sub) => sub.fetch_mut().await?.insert(key, value).await,
             }
         })
     }
 
-    fn from_pair(a: K, b: K) -> Self {
+    fn from_pair(a: (K, Self::V), b: (K, Self::V)) -> Self {
         Self::SubTree(T::from_pair(a, b).point())
     }
 
     fn contains(&self, key: K) -> BoolFuture<'_> {
         Box::pin(async move {
             match self {
-                SubTree::Leaf(existing) => Ok(*existing == key),
+                SubTree::Leaf(existing, _) => Ok(*existing == key),
                 SubTree::SubTree(sub) => sub.fetch().await?.contains(key).await,
             }
         })
@@ -80,39 +87,50 @@ impl<T: Tree<K> + Clone + Traversible, K: Send + Sync + PartialEq + Clone> Tree<
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse)]
-struct SetNode<T, K>(ArrayMap<SubTree<T, K>>);
+struct SetNode<T, K, V = <T as Tree<K>>::V>(ArrayMap<SubTree<T, K, V>>);
 
-impl<T, K: Clone> Clone for SetNode<T, K> {
+impl<T, K: Clone, V: Clone> Clone for SetNode<T, K, V> {
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
 }
 
-impl<T, K> Default for SetNode<T, K> {
+impl<T, K, V> Default for SetNode<T, K, V> {
     fn default() -> Self {
         Self(Default::default())
     }
 }
 
-impl<T: Tree<K> + Clone + Traversible, K: Send + Sync + PartialEq + Clone> Tree<(u8, K)>
+impl<T: Tree<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clone> Tree<(u8, K)>
     for SetNode<T, K>
 {
-    fn insert(&mut self, (key, rest): (u8, K)) -> BoolFuture<'_> {
+    type V = T::V;
+
+    fn insert(&mut self, (key, rest): (u8, K), value: Self::V) -> OptionFuture<'_, Self::V> {
         Box::pin(async move {
             if let Some(sub) = self.0.get_mut(key) {
-                sub.insert(rest).await
+                sub.insert(rest, value).await
             } else {
-                assert!(self.0.insert(key, SubTree::Leaf(rest)).is_none());
-                Ok(true)
+                assert!(self.0.insert(key, SubTree::Leaf(rest, value)).is_none());
+                Ok(None)
             }
         })
     }
 
-    fn from_pair((a, rest_a): (u8, K), (b, rest_b): (u8, K)) -> Self {
+    fn from_pair(
+        ((a, rest_a), value_a): ((u8, K), Self::V),
+        ((b, rest_b), value_b): ((u8, K), Self::V),
+    ) -> Self {
         if a == b {
-            Self([(a, SubTree::from_pair(rest_a, rest_b))].into())
+            Self([(a, SubTree::from_pair((rest_a, value_a), (rest_b, value_b)))].into())
         } else {
-            Self([(a, SubTree::Leaf(rest_a)), (b, SubTree::Leaf(rest_b))].into())
+            Self(
+                [
+                    (a, SubTree::Leaf(rest_a, value_a)),
+                    (b, SubTree::Leaf(rest_b, value_b)),
+                ]
+                .into(),
+            )
         }
     }
 
@@ -175,11 +193,13 @@ mod private {
             );
 
             impl Tree<$k> for $next {
-                fn insert(&mut self, key: $k) -> BoolFuture<'_> {
-                    self.0.insert(key)
+                type V = ();
+
+                fn insert(&mut self, key: $k, value: Self::V) -> OptionFuture<'_, Self::V> {
+                    self.0.insert(key, value)
                 }
 
-                fn from_pair(a: $k, b: $k) -> Self {
+                fn from_pair(a: ($k, Self::V), b: ($k, Self::V)) -> Self {
                     Self(Tree::from_pair(a, b))
                 }
 
@@ -293,7 +313,13 @@ impl AmtSet {
     }
 
     pub async fn insert(&mut self, hash: Hash) -> object_rainbow::Result<bool> {
-        self.0.fetch_mut().await?.insert(hash_key(hash)).await
+        Ok(self
+            .0
+            .fetch_mut()
+            .await?
+            .insert(hash_key(hash), ())
+            .await?
+            .is_none())
     }
 
     pub async fn contains(&self, hash: Hash) -> object_rainbow::Result<bool> {
