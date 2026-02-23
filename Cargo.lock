@@ -1258,7 +1258,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-json"
-version = "0.0.0-a.16"
+version = "0.0.0-a.17"
 dependencies = [
  "futures-util",
  "object-rainbow",
