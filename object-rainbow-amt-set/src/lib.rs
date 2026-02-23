@@ -310,6 +310,10 @@ impl<V: Traversible + InlineOutput + Clone> AmtMap<V> {
             .insert(hash_key(hash), value)
             .await
     }
+
+    pub async fn get(&self, hash: Hash) -> object_rainbow::Result<Option<V>> {
+        self.0.fetch().await?.get(hash_key(hash)).await
+    }
 }
 
 #[derive(
@@ -381,7 +385,7 @@ impl AmtSet {
     }
 
     pub async fn contains(&self, hash: Hash) -> object_rainbow::Result<bool> {
-        Ok(self.0.0.fetch().await?.get(hash_key(hash)).await?.is_some())
+        Ok(self.0.get(hash).await?.is_some())
     }
 }
 
