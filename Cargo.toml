@@ -6,7 +6,7 @@ members = [
     "object-rainbow-chain-tree",
     "object-rainbow-derive",
     "object-rainbow-encrypted",
-    "object-rainbow-fetchall",
+    "object-rainbow-fetchall", "object-rainbow-hamt",
     "object-rainbow-history",
     "object-rainbow-history-store",
     "object-rainbow-json",
@@ -43,14 +43,15 @@ exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 
 [workspace.dependencies]
 object-rainbow = { version = "0.0.0-a.41", path = "." }
-object-rainbow-amt-set = { version = "0.0.0-a.4", path = "object-rainbow-amt-set" }
+object-rainbow-amt-set = { version = "0.0.0-a.5", path = "object-rainbow-amt-set" }
 object-rainbow-append-tree = { version = "0.0.0-a.9", path = "object-rainbow-append-tree" }
 object-rainbow-array-map = { version = "0.0.0-a.5", path = "object-rainbow-array-map" }
 object-rainbow-chain-tree = { version = "0.0.0-a.8", path = "object-rainbow-chain-tree" }
 object-rainbow-fetchall = { version = "0.0.0-a.5", path = "object-rainbow-fetchall" }
+object-rainbow-hamt = { version = "0.0.0-a.0", path = "object-rainbow-hamt" }
 object-rainbow-history = { version = "0.0.0-a.11", path = "object-rainbow-history" }
 object-rainbow-local-map = { version = "0.0.0-a.1", path = "object-rainbow-local-map" }
-object-rainbow-point = { version = "0.0.0-a.3", path = "object-rainbow-point" }
+object-rainbow-point = { version = "0.0.0-a.4", path = "object-rainbow-point" }
 object-rainbow-store = { version = "0.0.0-a.7", path = "object-rainbow-store" }
 object-rainbow-store-opendal = { version = "0.0.0-a.5", path = "object-rainbow-store-opendal" }
 object-rainbow-trie = { version = "0.0.0-a.10", path = "object-rainbow-trie" }
