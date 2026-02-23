@@ -7,15 +7,22 @@ use std::{
 use bitvec::array::BitArray;
 use object_rainbow::{
     Equivalent, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseAsInline, ParseInline,
-    ParseInput, Size, Tagged, ToOutput, Topological, assert_impl,
+    ParseInput, RainbowIterator, Size, Tagged, ToOutput, Topological, assert_impl,
 };
 
 type Bits = BitArray<[u8; 32]>;
 
-#[derive(ToOutput, Tagged, ListHashes, Topological, ParseAsInline, Clone)]
+#[derive(Tagged, ListHashes, Topological, ParseAsInline, Clone)]
 pub struct ArrayMap<T> {
     bits: Bits,
     map: BTreeMap<u8, T>,
+}
+
+impl<T: InlineOutput> ToOutput for ArrayMap<T> {
+    fn to_output(&self, output: &mut dyn object_rainbow::Output) {
+        self.bits.to_output(output);
+        self.map.values().iter_to_output(output);
+    }
 }
 
 impl<T: InlineOutput> InlineOutput for ArrayMap<T> {}
@@ -215,4 +222,14 @@ impl Equivalent<ArrayMap<()>> for ArraySet {
     fn from_equivalent(ArrayMap { bits, .. }: ArrayMap<()>) -> Self {
         Self { bits }
     }
+}
+
+#[test]
+fn reparse() -> object_rainbow::Result<()> {
+    use object_rainbow::ParseSlice;
+    let mut map = ArrayMap::<u8>::new();
+    map.insert(12, 34);
+    map = map.reparse()?;
+    assert_eq!(*map.get(12).unwrap(), 34);
+    Ok(())
 }
