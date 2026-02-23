@@ -1,11 +1,12 @@
 [package]
 name = "object-rainbow-history-store"
-version = "0.0.0-a.1"
+version = "0.0.0-a.2"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
+description = "object-rainbow-{history+store} integration"
 
 [dependencies]
 object-rainbow.workspace = true
