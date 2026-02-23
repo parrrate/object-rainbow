@@ -32,22 +32,22 @@ pub trait MapToSet<K: Send, V: Send>: Send + Sync {
 )]
 pub struct MappedToSet<M>(M);
 
-impl<K: Send + Clone, V: Send, M: MapToSet<K, V>> MapDiff<(Option<V>, (K, Option<V>))>
+impl<K: Send + Clone, V: Send, M: MapToSet<K, V>> MapDiff<(Option<V>, (Option<V>, K))>
     for MappedToSet<M>
 {
-    type Inner = Vec<(M::T, bool)>;
+    type Inner = Vec<(bool, M::T)>;
 
     fn map(
         &self,
-        (old, (key, new)): (Option<V>, (K, Option<V>)),
+        (old, (new, key)): (Option<V>, (Option<V>, K)),
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Inner>> {
         async move {
             let mut diff = Vec::new();
             if let Some(value) = old {
-                diff.push((self.0.map(key.clone(), value).await?, true));
+                diff.push((true, self.0.map(key.clone(), value).await?));
             }
             if let Some(value) = new {
-                diff.push((self.0.map(key, value).await?, false));
+                diff.push((false, self.0.map(key, value).await?));
             }
             Ok(diff)
         }
