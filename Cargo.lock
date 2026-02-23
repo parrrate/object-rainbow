@@ -1142,7 +1142,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-amt-set"
-version = "0.0.0-a.6"
+version = "0.0.0-a.7"
 dependencies = [
  "macro_rules_attribute",
  "object-rainbow",
@@ -1228,7 +1228,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-hamt"
-version = "0.0.0-a.1"
+version = "0.0.0-a.2"
 dependencies = [
  "object-rainbow",
  "object-rainbow-array-map",

@@ -1,43 +1,4 @@
-use object_rainbow::{
-    Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged,
-    ToOutput, Topological, assert_impl,
-};
-use object_rainbow_hamt::HamtMap;
-
-#[derive(
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Default,
-    PartialEq,
-    Eq,
-)]
-pub struct AmtSet(HamtMap<()>);
-
-assert_impl!(
-    impl<E> Inline<E> for AmtSet where E: 'static + Send + Sync + Clone {}
-);
-
-impl AmtSet {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    pub async fn insert(&mut self, hash: Hash) -> object_rainbow::Result<bool> {
-        Ok(self.0.insert(hash, ()).await?.is_none())
-    }
-
-    pub async fn contains(&self, hash: Hash) -> object_rainbow::Result<bool> {
-        Ok(self.0.get(hash).await?.is_some())
-    }
-}
+pub use object_rainbow_hamt::HamtSet as AmtSet;
 
 #[cfg(test)]
 mod test {
