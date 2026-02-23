@@ -24,17 +24,17 @@ use crate::Forward;
     Ord,
     Default,
 )]
-pub struct SkipDiffs<T>(pub T);
+pub struct FilterDiffs<T>(pub T);
 
-impl<T: Forward<D>, D: Send> Forward<(bool, D)> for SkipDiffs<T> {
+impl<T: Forward<D>, D: Send> Forward<(bool, D)> for FilterDiffs<T> {
     type Output = Option<T::Output>;
 
     fn forward(
         &mut self,
-        (take, diff): (bool, D),
+        (include, diff): (bool, D),
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
         async move {
-            Ok(if take {
+            Ok(if include {
                 Some(self.0.forward(diff).await?)
             } else {
                 None
