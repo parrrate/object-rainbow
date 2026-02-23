@@ -1246,9 +1246,14 @@ dependencies = [
 name = "object-rainbow-history-store"
 version = "0.0.0-a.0"
 dependencies = [
+ "anyhow",
  "object-rainbow",
  "object-rainbow-history",
  "object-rainbow-store",
+ "object-rainbow-store-opendal",
+ "object-rainbow-trie",
+ "opendal",
+ "smol",
 ]
 
 [[package]]
