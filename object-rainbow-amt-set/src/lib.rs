@@ -222,8 +222,8 @@ mod private {
                 }
             }
 
-            impl Amt<$k> for $next {
-                type V = ();
+            impl<V: Traversible + InlineOutput + Clone> Amt<$k> for $next<V> {
+                type V = V;
 
                 fn insert(&mut self, key: $k, value: Self::V) -> OptionFuture<'_, Self::V> {
                     self.0.insert(key, value)
