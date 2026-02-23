@@ -3,7 +3,7 @@ use object_rainbow::{
     assert_impl,
 };
 use object_rainbow_hamt::HamtSet;
-use object_rainbow_history::Forward;
+use object_rainbow_history::{Forward, Sequential, hashed::HashedDiffs, skip::SkipDiffs};
 
 #[derive(
     ToOutput,
@@ -19,8 +19,7 @@ use object_rainbow_history::Forward;
     Default,
 )]
 pub struct UniqueDiffs<T> {
-    diffs: HamtSet,
-    tree: T,
+    inner: Sequential<HashedDiffs<HamtSet>, SkipDiffs<T>>,
 }
 
 assert_impl!(
@@ -34,18 +33,14 @@ assert_impl!(
 
 impl<T> UniqueDiffs<T> {
     pub fn tree(&self) -> &T {
-        &self.tree
+        &self.inner.second().0
     }
 }
 
-impl<T: Forward<D>, D: Send + FullHash> Forward<D> for UniqueDiffs<T> {
+impl<T: Forward<D>, D: Send + FullHash + Clone> Forward<D> for UniqueDiffs<T> {
     type Output = Option<T::Output>;
 
     async fn forward(&mut self, diff: D) -> object_rainbow::Result<Self::Output> {
-        Ok(if self.diffs.insert(diff.full_hash()).await? {
-            Some(self.tree.forward(diff).await?)
-        } else {
-            None
-        })
+        self.inner.forward(diff).await
     }
 }
