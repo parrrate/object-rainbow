@@ -6,7 +6,10 @@ use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
     Topological,
 };
-use object_rainbow_history::{Compat, History, MapDiff, MappedDiff, Parallel, Sequential};
+use object_rainbow_history::{
+    Compat, History, MappedDiff, Parallel, Sequential,
+    remap::{MapToSet, MappedToSet},
+};
 use object_rainbow_trie::{TrieMap, TrieSet};
 use smol_macros::main;
 use ulid::Ulid;
@@ -167,76 +170,45 @@ struct MessageToChannel;
 )]
 struct MessageToUser;
 
-impl MapDiff<(Option<Message>, (MessageId, Option<Message>))> for MessageToChannel {
-    type Inner = Vec<(MessageByChannel, bool)>;
+impl MapToSet<MessageId, Message> for MessageToChannel {
+    type T = MessageByChannel;
 
     fn map(
         &self,
-        (old, (message, new)): (Option<Message>, (MessageId, Option<Message>)),
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Inner>> {
+        message: MessageId,
+        Message { channel, user }: Message,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::T>> {
         async move {
-            let mut diff = Vec::new();
-            if let Some(Message { channel, user }) = old {
-                diff.push((
-                    MessageByChannel {
-                        channel,
-                        message,
-                        user,
-                    },
-                    true,
-                ));
-            }
-            if let Some(Message { channel, user }) = new {
-                diff.push((
-                    MessageByChannel {
-                        channel,
-                        message,
-                        user,
-                    },
-                    false,
-                ));
-            }
-            Ok(diff)
+            Ok(MessageByChannel {
+                channel,
+                message,
+                user,
+            })
         }
     }
 }
 
-impl MapDiff<(Option<Message>, (MessageId, Option<Message>))> for MessageToUser {
-    type Inner = Vec<(MessageByUser, bool)>;
+impl MapToSet<MessageId, Message> for MessageToUser {
+    type T = MessageByUser;
 
     fn map(
         &self,
-        (old, (message, new)): (Option<Message>, (MessageId, Option<Message>)),
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Inner>> {
+        message: MessageId,
+        Message { channel, user }: Message,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::T>> {
         async move {
-            let mut diff = Vec::new();
-            if let Some(Message { channel, user }) = old {
-                diff.push((
-                    MessageByUser {
-                        user,
-                        channel,
-                        message,
-                    },
-                    true,
-                ));
-            }
-            if let Some(Message { channel, user }) = new {
-                diff.push((
-                    MessageByUser {
-                        user,
-                        channel,
-                        message,
-                    },
-                    false,
-                ));
-            }
-            Ok(diff)
+            Ok(MessageByUser {
+                user,
+                channel,
+                message,
+            })
         }
     }
 }
 
-type MessagesByChannels = MappedDiff<Compat<TrieSet<MessageByChannel>>, MessageToChannel>;
-type MessagesByUsers = MappedDiff<Compat<TrieSet<MessageByUser>>, MessageToUser>;
+type MessagesByChannels =
+    MappedDiff<Compat<TrieSet<MessageByChannel>>, MappedToSet<MessageToChannel>>;
+type MessagesByUsers = MappedDiff<Compat<TrieSet<MessageByUser>>, MappedToSet<MessageToUser>>;
 type Tree = Sequential<TrieMap<MessageId, Message>, Parallel<MessagesByChannels, MessagesByUsers>>;
 type Diff = (MessageId, Option<Message>);
 
