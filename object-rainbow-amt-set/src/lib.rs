@@ -1,8 +1,8 @@
 use std::pin::Pin;
 
 use object_rainbow::{
-    Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size,
-    Tagged, ToOutput, Topological, Traversible, assert_impl,
+    Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseInline,
+    PointInput, PointVisitor, Size, Tagged, Tags, ToOutput, Topological, Traversible, assert_impl,
 };
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
@@ -184,13 +184,44 @@ mod private {
 
     macro_rules! next_node {
         ($prev:ident, $next:ident, $pk:ident, $k:ident) => {
-            #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone, Default)]
-            #[topology(recursive)]
-            pub struct $next(
-                #[tags(skip)]
-                #[parse(unchecked)]
-                SetNode<$prev, $pk>,
-            );
+            #[derive(Clone)]
+            pub struct $next<V = ()>(SetNode<$prev<V>, $pk, V>);
+
+            impl<V> Default for $next<V> {
+                fn default() -> Self {
+                    Self(Default::default())
+                }
+            }
+
+            impl<V: ParseInline<I> + Inline<I::Extra>, I: PointInput<Extra: Send + Sync>> Parse<I>
+                for $next<V>
+            {
+                fn parse(input: I) -> object_rainbow::Result<Self> {
+                    Ok(Self(input.parse()?))
+                }
+            }
+
+            impl<V: Tagged> Tagged for $next<V> {
+                const TAGS: Tags = V::TAGS;
+            }
+
+            impl<V: InlineOutput> ToOutput for $next<V> {
+                fn to_output(&self, output: &mut dyn Output) {
+                    self.0.to_output(output);
+                }
+            }
+
+            impl<V: ListHashes> ListHashes for $next<V> {
+                fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+                    self.0.list_hashes(f)
+                }
+            }
+
+            impl<V: Traversible + InlineOutput> Topological for $next<V> {
+                fn traverse(&self, visitor: &mut impl PointVisitor) {
+                    self.0.traverse(visitor)
+                }
+            }
 
             impl Amt<$k> for $next {
                 type V = ();
