@@ -284,6 +284,22 @@ mod private {
     Size,
     MaybeHasNiche,
     Clone,
+    PartialEq,
+    Eq,
+)]
+pub struct AmtMap<V>(Point<private::N32<V>>);
+
+#[derive(
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Size,
+    MaybeHasNiche,
+    Clone,
     Default,
     PartialEq,
     Eq,
