@@ -1,15 +1,15 @@
 use object_rainbow::{InlineOutput, ReflessObject, Traversible};
 use object_rainbow_trie::{TrieMap, TrieSet};
 
-use crate::Forward;
+use crate::Apply;
 
-impl<K: ReflessObject, V: 'static + Send + Sync + Clone> Forward<(Option<V>, K)> for TrieMap<K, V>
+impl<K: ReflessObject, V: 'static + Send + Sync + Clone> Apply<(Option<V>, K)> for TrieMap<K, V>
 where
     Option<V>: Traversible + InlineOutput,
 {
     type Output = Option<V>;
 
-    fn forward(
+    fn apply(
         &mut self,
         (value, key): (Option<V>, K),
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
@@ -23,13 +23,13 @@ where
     }
 }
 
-impl<K: ReflessObject, V: 'static + Send + Sync + Clone> Forward<(V, K)> for TrieMap<K, V>
+impl<K: ReflessObject, V: 'static + Send + Sync + Clone> Apply<(V, K)> for TrieMap<K, V>
 where
     Option<V>: Traversible + InlineOutput,
 {
     type Output = Option<V>;
 
-    fn forward(
+    fn apply(
         &mut self,
         (value, key): (V, K),
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
@@ -38,10 +38,10 @@ where
 }
 
 /// `true` represents removal, `false` represents insertion to keep layout equivalence.
-impl<T: ReflessObject> Forward<(bool, T)> for TrieSet<T> {
+impl<T: ReflessObject> Apply<(bool, T)> for TrieSet<T> {
     type Output = bool;
 
-    fn forward(
+    fn apply(
         &mut self,
         (remove, value): (bool, T),
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
@@ -55,10 +55,10 @@ impl<T: ReflessObject> Forward<(bool, T)> for TrieSet<T> {
     }
 }
 
-impl<T: ReflessObject> Forward<T> for TrieSet<T> {
+impl<T: ReflessObject> Apply<T> for TrieSet<T> {
     type Output = bool;
 
-    fn forward(
+    fn apply(
         &mut self,
         value: T,
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {

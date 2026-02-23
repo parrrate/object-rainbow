@@ -1,7 +1,7 @@
 use std::{marker::PhantomData, sync::Arc};
 
 use object_rainbow::{Fetch, Inline, Object};
-use object_rainbow_history::{Forward, History};
+use object_rainbow_history::{Apply, History};
 use object_rainbow_store::{RainbowStoreMut, StoreMut};
 
 pub struct HistoryStore<T, D, S, Extra = ()> {
@@ -37,7 +37,7 @@ impl<T, D, S: Clone, Extra: Clone> Clone for HistoryStore<T, D, S, Extra> {
 }
 
 impl<
-    T: Inline<Extra> + Clone + Default + Forward<D>,
+    T: Inline<Extra> + Clone + Default + Apply<D>,
     D: Object<Extra> + Clone,
     S: RainbowStoreMut,
     Extra: 'static + Send + Sync + Clone,

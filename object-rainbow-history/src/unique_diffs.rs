@@ -4,7 +4,7 @@ use object_rainbow::{
 };
 use object_rainbow_hamt::HamtSet;
 
-use crate::{Forward, Sequential, hashed::HashedDiffs, skip::FilterDiffs};
+use crate::{Apply, Sequential, hashed::HashedDiffs, skip::FilterDiffs};
 
 #[derive(
     ToOutput,
@@ -38,10 +38,10 @@ impl<T> UniqueDiffs<T> {
     }
 }
 
-impl<T: Forward<D>, D: Send + FullHash + Clone> Forward<D> for UniqueDiffs<T> {
+impl<T: Apply<D>, D: Send + FullHash + Clone> Apply<D> for UniqueDiffs<T> {
     type Output = Option<T::Output>;
 
-    async fn forward(&mut self, diff: D) -> object_rainbow::Result<Self::Output> {
-        self.inner.forward(diff).await
+    async fn apply(&mut self, diff: D) -> object_rainbow::Result<Self::Output> {
+        self.inner.apply(diff).await
     }
 }
