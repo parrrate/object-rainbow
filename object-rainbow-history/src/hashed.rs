@@ -6,6 +6,12 @@ pub struct HashedDiffs<T> {
     tree: T,
 }
 
+impl<T> HashedDiffs<T> {
+    pub fn tree(&self) -> &T {
+        &self.tree
+    }
+}
+
 impl<T: Forward<Hash>, D: Send + FullHash> Forward<D> for HashedDiffs<T> {
     type Output = T::Output;
 
