@@ -298,6 +298,12 @@ impl<V: Traversible + InlineOutput + Clone> Default for AmtMap<V> {
     }
 }
 
+impl<V: Traversible + InlineOutput + Clone> AmtMap<V> {
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
 #[derive(
     ToOutput,
     InlineOutput,
