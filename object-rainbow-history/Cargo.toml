@@ -20,6 +20,7 @@ futures-util = { version = "0.3.31", default-features = false }
 [features]
 hamt = ["dep:object-rainbow-hamt"]
 trie = ["dep:object-rainbow-trie"]
+unique-diffs = ["hamt"]
 
 [dev-dependencies]
 object-rainbow = { workspace = true, features = ["ulid"] }
