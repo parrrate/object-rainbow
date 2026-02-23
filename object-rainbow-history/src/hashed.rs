@@ -1,7 +1,29 @@
-use object_rainbow::{FullHash, Hash};
+use object_rainbow::{
+    FullHash, Hash, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged,
+    ToOutput, Topological,
+};
 
 use crate::Forward;
 
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Size,
+    MaybeHasNiche,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Default,
+)]
 pub struct HashedDiffs<T> {
     tree: T,
 }
