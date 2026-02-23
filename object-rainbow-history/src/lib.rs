@@ -426,3 +426,16 @@ impl Forward<()> for () {
         async move { Ok(()) }
     }
 }
+
+impl<A: Forward<DiffA>, B: Forward<DiffB>, DiffA: Send, DiffB: Send> Forward<(DiffA, DiffB)>
+    for (A, B)
+{
+    type Output = (A::Output, B::Output);
+
+    fn forward(
+        &mut self,
+        (a, b): (DiffA, DiffB),
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        async move { futures_util::try_join!(self.0.forward(a), self.1.forward(b)) }
+    }
+}
