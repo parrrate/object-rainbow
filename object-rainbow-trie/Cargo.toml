@@ -1,6 +1,6 @@
 [package]
 name = "object-rainbow-trie"
-version = "0.0.0-a.10"
+version = "0.0.0-a.11"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -24,3 +24,7 @@ serde = ["dep:serde"]
 macro_rules_attribute = "0.2.2"
 smol = "2.0.2"
 smol-macros = "0.1.1"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
