@@ -107,6 +107,19 @@ impl AsRef<[u8]> for Hash {
 )]
 pub struct OptionalHash([u8; HASH_SIZE]);
 
+impl Display for OptionalHash {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.is_some() {
+            for x in self.0 {
+                write!(f, "{x:X}")?;
+            }
+        } else {
+            write!(f, "NONE")?;
+        }
+        Ok(())
+    }
+}
+
 impl MaybeHasNiche for OptionalHash {
     type MnArray = SomeNiche<HashNiche<U1>>;
 }
