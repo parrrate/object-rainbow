@@ -6,6 +6,8 @@ use object_rainbow::{
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
 
+#[cfg(feature = "hamt")]
+mod hamt;
 pub mod hashed;
 pub mod remap;
 pub mod skip;
