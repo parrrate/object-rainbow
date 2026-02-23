@@ -297,7 +297,7 @@ async fn main() -> object_rainbow::Result<()> {
                 channel,
                 message: MessageId(Ulid::from_parts(u64::MIN, u128::MIN)),
                 user: UserId(Ulid::from_parts(u64::MIN, u128::MIN)),
-            }..&MessageByChannel {
+            }..=&MessageByChannel {
                 channel,
                 message: MessageId(Ulid::from_parts(u64::MAX, u128::MAX)),
                 user: UserId(Ulid::from_parts(u64::MAX, u128::MAX)),
