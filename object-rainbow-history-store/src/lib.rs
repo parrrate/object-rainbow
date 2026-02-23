@@ -46,7 +46,7 @@ impl<
     pub async fn commit(&self, diff: D) -> object_rainbow::Result<()> {
         let mut history = self
             .store
-            .load::<History<T, D>, _>(self.key.as_ref())
+            .load_or_init::<History<T, D>, _>(self.key.as_ref())
             .await?;
         history.fetch_mut().await?.commit(diff).await?;
         history.save().await?;
