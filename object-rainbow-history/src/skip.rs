@@ -3,6 +3,8 @@ use object_rainbow::{
     Topological,
 };
 
+use crate::Forward;
+
 #[derive(
     Debug,
     ToOutput,
@@ -23,3 +25,20 @@ use object_rainbow::{
     Default,
 )]
 pub struct SkipDiffs<T>(pub T);
+
+impl<T: Forward<D>, D: Send> Forward<(bool, D)> for SkipDiffs<T> {
+    type Output = Option<T::Output>;
+
+    fn forward(
+        &mut self,
+        (take, diff): (bool, D),
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        async move {
+            Ok(if take {
+                Some(self.0.forward(diff).await?)
+            } else {
+                None
+            })
+        }
+    }
+}
