@@ -9,20 +9,19 @@ use object_rainbow_point::{IntoPoint, Point};
 
 type OptionFuture<'a, T> =
     Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<Option<T>>>>>;
-type BoolFuture<'a> = Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<bool>>>>;
 
 trait Amt<K> {
     type V: Send + Sync;
     fn insert(&mut self, key: K, value: Self::V) -> OptionFuture<'_, Self::V>;
     fn from_pair(a: (K, Self::V), b: (K, Self::V)) -> Self;
-    fn contains(&self, key: K) -> BoolFuture<'_>;
+    fn get(&self, key: K) -> OptionFuture<'_, Self::V>;
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 /// what are you even doing at this point
 struct DeepestLeaf<V = ()>(ArrayMap<V>);
 
-impl<V: Send + Sync> Amt<u8> for DeepestLeaf<V> {
+impl<V: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V> {
     type V = V;
 
     fn insert(&mut self, key: u8, value: Self::V) -> OptionFuture<'_, Self::V> {
@@ -33,8 +32,8 @@ impl<V: Send + Sync> Amt<u8> for DeepestLeaf<V> {
         Self([a, b].into())
     }
 
-    fn contains(&self, key: u8) -> BoolFuture<'_> {
-        Box::pin(async move { Ok(self.0.contains(key)) })
+    fn get(&self, key: u8) -> OptionFuture<'_, Self::V> {
+        Box::pin(async move { Ok(self.0.get(key).cloned()) })
     }
 }
 
@@ -76,11 +75,11 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
         Self::SubTree(T::from_pair(a, b).point())
     }
 
-    fn contains(&self, key: K) -> BoolFuture<'_> {
+    fn get(&self, key: K) -> OptionFuture<'_, Self::V> {
         Box::pin(async move {
             match self {
-                SubTree::Leaf(existing, _) => Ok(*existing == key),
-                SubTree::SubTree(sub) => sub.fetch().await?.contains(key).await,
+                SubTree::Leaf(existing, value) => Ok((*existing == key).then(|| value.clone())),
+                SubTree::SubTree(sub) => sub.fetch().await?.get(key).await,
             }
         })
     }
@@ -134,12 +133,12 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
         }
     }
 
-    fn contains(&self, (key, rest): (u8, K)) -> BoolFuture<'_> {
+    fn get(&self, (key, rest): (u8, K)) -> OptionFuture<'_, Self::V> {
         Box::pin(async move {
             if let Some(sub) = self.0.get(key) {
-                sub.contains(rest).await
+                sub.get(rest).await
             } else {
-                Ok(false)
+                Ok(None)
             }
         })
     }
@@ -234,8 +233,8 @@ mod private {
                     Self(Amt::from_pair(a, b))
                 }
 
-                fn contains(&self, key: $k) -> BoolFuture<'_> {
-                    self.0.contains(key)
+                fn get(&self, key: $k) -> OptionFuture<'_, Self::V> {
+                    self.0.get(key)
                 }
             }
         };
@@ -354,7 +353,7 @@ impl AmtSet {
     }
 
     pub async fn contains(&self, hash: Hash) -> object_rainbow::Result<bool> {
-        self.0.fetch().await?.contains(hash_key(hash)).await
+        Ok(self.0.fetch().await?.get(hash_key(hash)).await?.is_some())
     }
 }
 
