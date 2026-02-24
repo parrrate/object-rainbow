@@ -1,4 +1,4 @@
-use std::num::NonZero;
+use std::{fmt::Display, num::NonZero};
 
 use crate::{enumkind::UsizeTag, *};
 
@@ -14,6 +14,12 @@ pub struct Le<T>(pub T);
 #[derive(ParseAsInline, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Be<T>(pub T);
+
+impl<T: Display> Display for Le<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 impl<T> Le<T> {
     pub const fn new(value: T) -> Self {
