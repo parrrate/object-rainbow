@@ -79,10 +79,7 @@ impl<T: Clone + Traversible + InlineOutput + Default + Apply<D>, D: Clone + Trav
         Ok(())
     }
 
-    pub async fn can_forward(&self, other: &Self) -> object_rainbow::Result<()>
-    where
-        T: PartialEq,
-    {
+    pub async fn can_forward(&self, other: &Self) -> object_rainbow::Result<()> {
         other
             .0
             .diff(&self.0)
@@ -96,9 +93,10 @@ impl<T: Clone + Traversible + InlineOutput + Default + Apply<D>, D: Clone + Trav
                     .unwrap_or_default();
                 let hash = tree.full_hash();
                 tree.apply(diff).await?;
-                if hash == tree.full_hash() {
+                let new_hash = tree.full_hash();
+                if new_hash == hash {
                     Err(object_rainbow::error_consistency!("noop diff"))
-                } else if tree == node.value().0 {
+                } else if new_hash == node.value().0.full_hash() {
                     Ok(())
                 } else {
                     Err(object_rainbow::error_consistency!(
