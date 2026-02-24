@@ -54,12 +54,14 @@ impl<
     }
 
     pub async fn load(&self) -> object_rainbow::Result<T> {
+        self.history().await?.tree().await
+    }
+
+    pub async fn history(&self) -> object_rainbow::Result<History<T, D>> {
         self.store
-            .load_or_init::<History<T, D>, _>(self.key.as_ref())
+            .load_or_init(self.key.as_ref())
             .await?
             .fetch()
-            .await?
-            .tree()
             .await
     }
 }
