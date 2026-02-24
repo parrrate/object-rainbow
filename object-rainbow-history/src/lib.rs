@@ -79,7 +79,7 @@ impl<T: Clone + Traversible + InlineOutput + Default + Apply<D>, D: Clone + Trav
         Ok(())
     }
 
-    pub async fn forward(&self, other: &Self) -> object_rainbow::Result<()>
+    pub async fn can_forward(&self, other: &Self) -> object_rainbow::Result<()>
     where
         T: PartialEq,
     {
