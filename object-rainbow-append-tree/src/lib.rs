@@ -103,7 +103,11 @@ impl<T: 'static + Send + Sync + Debug> From<PushError<T>> for object_rainbow::Er
 
 trait Push: Clone + History {
     type T: Send + Sync;
-    fn get(&self, index: u64) -> impl Send + Future<Output = object_rainbow::Result<Self::T>>;
+    fn get(
+        &self,
+        index: u64,
+        history: Option<&Self::History>,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::T>>;
     fn push(
         &mut self,
         len: u64,
@@ -185,7 +189,11 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
 {
     type T = T;
 
-    fn get(&self, index: u64) -> impl Send + Future<Output = object_rainbow::Result<Self::T>> {
+    fn get(
+        &self,
+        index: u64,
+        _: Option<&Self::History>,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::T>> {
         ready(
             usize::try_from(index)
                 .map_err(|_| object_rainbow::Error::UnsupportedLength)
@@ -289,18 +297,28 @@ where
 impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N, NonLeaf> {
     type T = T::T;
 
-    fn get(&self, index: u64) -> impl Send + Future<Output = object_rainbow::Result<Self::T>> {
+    fn get(
+        &self,
+        index: u64,
+        history: Option<&Self::History>,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::T>> {
         async move {
-            self.items
-                .get(
-                    usize::try_from(index / T::CAPACITY)
-                        .map_err(|_| object_rainbow::Error::UnsupportedLength)?,
-                )
-                .ok_or_else(|| object_rainbow::error_consistency!("out of bounds"))?
-                .fetch()
-                .await?
-                .get(index % T::CAPACITY)
-                .await
+            let n = usize::try_from(index / T::CAPACITY)
+                .map_err(|_| object_rainbow::Error::UnsupportedLength)?;
+            let r = index % T::CAPACITY;
+            if let Some((node, history)) = history
+                && n == self.items.len() - 1
+            {
+                node.get(r, Some(history)).await
+            } else {
+                self.items
+                    .get(n)
+                    .ok_or_else(|| object_rainbow::error_consistency!("out of bounds"))?
+                    .fetch()
+                    .await?
+                    .get(r, None)
+                    .await
+            }
         }
     }
 
@@ -498,14 +516,14 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
     pub async fn get(&self, index: u64) -> object_rainbow::Result<Option<T>> {
         if index < self.len.0 {
             match &self.kind {
-                TreeKind::N1((node, _)) => node.get(index).await,
-                TreeKind::N2((node, _)) => node.get(index).await,
-                TreeKind::N3((node, _)) => node.get(index).await,
-                TreeKind::N4((node, _)) => node.get(index).await,
-                TreeKind::N5((node, _)) => node.get(index).await,
-                TreeKind::N6((node, _)) => node.get(index).await,
-                TreeKind::N7((node, _)) => node.get(index).await,
-                TreeKind::N8((node, _)) => node.get(index).await,
+                TreeKind::N1((node, history)) => node.get(index, Some(history)).await,
+                TreeKind::N2((node, history)) => node.get(index, Some(history)).await,
+                TreeKind::N3((node, history)) => node.get(index, Some(history)).await,
+                TreeKind::N4((node, history)) => node.get(index, Some(history)).await,
+                TreeKind::N5((node, history)) => node.get(index, Some(history)).await,
+                TreeKind::N6((node, history)) => node.get(index, Some(history)).await,
+                TreeKind::N7((node, history)) => node.get(index, Some(history)).await,
+                TreeKind::N8((node, history)) => node.get(index, Some(history)).await,
             }
             .map(Some)
         } else {
