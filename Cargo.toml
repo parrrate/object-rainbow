@@ -30,7 +30,7 @@ authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 
 [package]
 name = "object-rainbow"
-version = "0.0.0-a.43"
+version = "0.0.0-a.44"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -41,7 +41,7 @@ documentation = "https://docs.rs/object-rainbow"
 exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 
 [workspace.dependencies]
-object-rainbow = { version = "0.0.0-a.43", path = "." }
+object-rainbow = { version = "0.0.0-a.44", path = "." }
 object-rainbow-append-tree = { version = "0.0.0-a.10", path = "object-rainbow-append-tree" }
 object-rainbow-array-map = { version = "0.0.0-a.5", path = "object-rainbow-array-map" }
 object-rainbow-chain-tree = { version = "0.0.0-a.9", path = "object-rainbow-chain-tree" }
@@ -55,7 +55,7 @@ object-rainbow-store-opendal = { version = "0.0.0-a.5", path = "object-rainbow-s
 object-rainbow-trie = { version = "0.0.0-a.11", path = "object-rainbow-trie" }
 
 [dependencies]
-object-rainbow-derive = { version = "=0.0.0-a.13", path = "object-rainbow-derive" }
+object-rainbow-derive = { version = "=0.0.0-a.14", path = "object-rainbow-derive" }
 
 anyhow = "1.0.96"
 bitvec = { version = "1.0.1", default-features = false, optional = true }
