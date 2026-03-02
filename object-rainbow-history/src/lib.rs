@@ -186,14 +186,6 @@ impl<T: Apply<D>, D: Send> Apply<Vec<D>> for Compat<T> {
     }
 }
 
-impl<T: Apply<D>, D: Send + Traversible> Apply<Point<D>> for Compat<T> {
-    type Output = T::Output;
-
-    async fn apply(&mut self, diff: Point<D>) -> object_rainbow::Result<Self::Output> {
-        self.0.apply(diff.fetch().await?).await
-    }
-}
-
 impl<T> Equivalent<T> for Compat<T> {
     fn into_equivalent(self) -> T {
         self.0
@@ -224,6 +216,14 @@ impl<T> Equivalent<T> for Compat<T> {
     Default,
 )]
 pub struct Points<T>(pub T);
+
+impl<T: Apply<D>, D: Send + Traversible> Apply<Point<D>> for Points<T> {
+    type Output = T::Output;
+
+    async fn apply(&mut self, diff: Point<D>) -> object_rainbow::Result<Self::Output> {
+        self.0.apply(diff.fetch().await?).await
+    }
+}
 
 #[derive(
     Debug,
