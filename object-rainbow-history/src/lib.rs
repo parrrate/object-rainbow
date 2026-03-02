@@ -163,9 +163,9 @@ impl<T: Clone + Traversible + InlineOutput + Default + Apply<D>, D: Clone + Trav
     Ord,
     Default,
 )]
-pub struct Compat<T>(pub T);
+pub struct FromIter<T>(pub T);
 
-impl<T: Apply<D>, D: Send> Apply<Vec<D>> for Compat<T> {
+impl<T: Apply<D>, D: Send> Apply<Vec<D>> for FromIter<T> {
     type Output = Vec<T::Output>;
 
     async fn apply(&mut self, diff: Vec<D>) -> object_rainbow::Result<Self::Output> {
