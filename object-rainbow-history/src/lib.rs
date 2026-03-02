@@ -219,6 +219,27 @@ impl<T> Equivalent<T> for Compat<T> {
     Copy,
     PartialEq,
     Eq,
+    PartialOrd,
+    Ord,
+    Default,
+)]
+pub struct Points<T>(pub T);
+
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Size,
+    MaybeHasNiche,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
     Default,
 )]
 pub struct DiscardHeader<T>(pub T);
