@@ -75,7 +75,7 @@ fn bounds_to_output(mut generics: Generics, data: &Data) -> syn::Result<Generics
     let g = &bounds_g(&generics);
     match data {
         Data::Struct(data) => {
-            let last_at = data.fields.len().checked_sub(1).unwrap_or_default();
+            let last_at = data.fields.len().saturating_sub(1);
             for (i, f) in data.fields.iter().enumerate() {
                 let last = i == last_at;
                 let ty = &f.ty;
@@ -95,7 +95,7 @@ fn bounds_to_output(mut generics: Generics, data: &Data) -> syn::Result<Generics
         }
         Data::Enum(data) => {
             for v in data.variants.iter() {
-                let last_at = v.fields.len().checked_sub(1).unwrap_or_default();
+                let last_at = v.fields.len().saturating_sub(1);
                 for (i, f) in v.fields.iter().enumerate() {
                     let last = i == last_at;
                     let ty = &f.ty;
@@ -1269,7 +1269,7 @@ fn bounds_parse(
     };
     match data {
         Data::Struct(data) => {
-            let last_at = data.fields.len().checked_sub(1).unwrap_or_default();
+            let last_at = data.fields.len().saturating_sub(1);
             'field: for (i, f) in data.fields.iter().enumerate() {
                 let last = i == last_at;
                 let ty = &f.ty;
@@ -1344,7 +1344,7 @@ fn bounds_parse(
         }
         Data::Enum(data) => {
             for v in data.variants.iter() {
-                let last_at = v.fields.len().checked_sub(1).unwrap_or_default();
+                let last_at = v.fields.len().saturating_sub(1);
                 'field: for (i, f) in v.fields.iter().enumerate() {
                     let ty = &f.ty;
                     let mut b = None;
@@ -1434,7 +1434,7 @@ fn gen_parse(
 }
 
 fn fields_parse(fields: &syn::Fields, ty_generics: &TypeGenerics<'_>) -> proc_macro2::TokenStream {
-    let last_at = fields.len().checked_sub(1).unwrap_or_default();
+    let last_at = fields.len().saturating_sub(1);
     match fields {
         syn::Fields::Named(fields) => {
             let parse = fields.named.iter().enumerate().map(|(i, f)| {
