@@ -16,3 +16,6 @@ darling = "0.23.0"
 proc-macro2 = "1.0.93"
 quote = "1.0.38"
 syn = { version = "2.0.98", features = ["full"] }
+
+[dev-dependencies]
+object-rainbow.workspace = true

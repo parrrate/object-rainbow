@@ -1,3 +1,5 @@
+//! `#[derive(...)]`s for [`object-rainbow`](<https://docs.rs/object-rainbow>).
+
 use std::collections::BTreeSet;
 
 use darling::FromMeta;
@@ -49,6 +51,25 @@ fn parse_for(name: &Ident, attrs: &[Attribute]) -> proc_macro2::TokenStream {
     name.to_token_stream()
 }
 
+/// ```rust
+/// use object_rainbow::{InlineOutput, ToOutput};
+///
+/// #[derive(ToOutput)]
+/// struct Three<A, B, C> {
+///     a: A,
+///     b: B,
+///     c: C,
+/// }
+///
+/// object_rainbow::assert_impl!(
+///     impl<A, B, C> ToOutput for Three<A, B, C>
+///     where
+///         A: InlineOutput,
+///         B: InlineOutput,
+///         C: ToOutput,
+///     {}
+/// );
+/// ```
 #[proc_macro_derive(ToOutput, attributes(rainbow))]
 pub fn derive_to_output(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
