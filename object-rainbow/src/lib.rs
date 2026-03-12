@@ -1065,6 +1065,7 @@ impl<T: Sized + IntoIterator> RainbowIterator for T {}
 /// Nothing can be parsed after this. It's implementation's responsibility to ensure there are no
 /// leftover bytes.
 pub trait Parse<I: ParseInput>: Sized {
+    /// Parse consuming the whole stream.
     fn parse(input: I) -> crate::Result<Self>;
 }
 
