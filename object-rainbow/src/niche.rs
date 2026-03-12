@@ -357,6 +357,7 @@ pub type AutoNiche<T> = <<T as Niche>::NeedsTag as NicheAuto>::Auto<T>;
 
 pub type AutoEnumNiche<E, const X: usize> = AutoNiche<EnumNiche<E, X>>;
 
+#[doc(hidden)]
 pub struct HackNiche<const X: usize>;
 
 impl<const X: usize> Niche for HackNiche<X> {
