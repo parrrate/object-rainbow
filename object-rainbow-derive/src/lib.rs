@@ -1900,6 +1900,22 @@ fn gen_parse_inline(data: &Data) -> (proc_macro2::TokenStream, Option<proc_macro
     }
 }
 
+/// ```rust
+/// use object_rainbow::{Parse, ParseAsInline, ParseInline, ParseInput};
+///
+/// #[derive(ParseAsInline)]
+/// struct Thing<T> {
+///     inner: T,
+/// }
+///
+/// object_rainbow::assert_impl!(
+///     impl<T, I> Parse<I> for Thing<T>
+///     where
+///         Thing<T>: ParseInline<I>,
+///         I: ParseInput,
+///     {}
+/// );
+/// ```
 #[proc_macro_derive(ParseAsInline)]
 pub fn derive_parse_as_inline(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
