@@ -29,6 +29,7 @@ pub struct AndNiche<V, T>(V, T);
 pub struct NicheAnd<T, V>(T, V);
 pub struct SomeNiche<T>(T);
 
+/// True or fake (placeholder) niche.
 pub trait Niche {
     /// Whether this is a fake niche (true niches, i.e. those which don't need a tag, don't
     /// represent a value).
