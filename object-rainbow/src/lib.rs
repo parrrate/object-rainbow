@@ -1073,6 +1073,7 @@ pub trait Parse<I: ParseInput>: Sized {
 /// When parsed as the last object, makes sure there are no bytes left in the input (fails if there
 /// are).
 pub trait ParseInline<I: ParseInput>: Parse<I> {
+    /// Parse without consuming the whole stream. Errors on unexpected EOF.
     fn parse_inline(input: &mut I) -> crate::Result<Self>;
     /// For implementing [`Parse::parse`].
     fn parse_as_inline(mut input: I) -> crate::Result<Self> {
