@@ -216,6 +216,7 @@ impl<T: AsHeadOf<R::MaybeNiche>, R: MnArray> MnArray for TArr<T, R> {
     type MaybeNiche = T::WithTail;
 }
 
+/// Already occupied/unusable byte representation filled with `0x00` bytes.
 pub struct ZeroNoNiche<N>(N);
 
 impl<N: ArrayLength> Niche for ZeroNoNiche<N> {
