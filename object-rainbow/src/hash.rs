@@ -147,6 +147,7 @@ impl From<Hash> for OptionalHash {
 }
 
 impl OptionalHash {
+    /// No [`Hash`].
     pub const NONE: Self = Self([0; HASH_SIZE]);
 
     /// Get [`Hash`] if this isn't [`Self::NONE`].
