@@ -42,7 +42,8 @@ pub trait Niche {
     type Next;
 }
 
-/// Conditionally implements `Niche`. Used to simplify derivations (and make them possible at all).
+/// Conditionally implements [`Niche`]. Used to simplify derivations (and make them possible at
+/// all).
 pub trait MaybeNiche {
     /// Length in bytes.
     type N: Unsigned;
@@ -209,6 +210,7 @@ impl<T: Niche<N: Add<U::N, Output: Unsigned>, NeedsTag = B0>, U: MaybeNiche> AsH
 }
 
 pub trait MnArray {
+    /// Possibly, [`Niche`].
     type MaybeNiche: MaybeNiche;
 }
 
