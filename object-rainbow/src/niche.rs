@@ -37,6 +37,7 @@ pub trait Niche {
 }
 
 pub trait MaybeNiche {
+    /// Lengths in bytes.
     type N: Unsigned;
 }
 
