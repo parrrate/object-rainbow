@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use crate::{InlineOutput, ToOutput};
+use crate::{InlineOutput, Tagged, ToOutput};
 
 impl ToOutput for Ordering {
     fn to_output(&self, output: &mut dyn crate::Output) {
@@ -9,3 +9,4 @@ impl ToOutput for Ordering {
 }
 
 impl InlineOutput for Ordering {}
+impl Tagged for Ordering {}
