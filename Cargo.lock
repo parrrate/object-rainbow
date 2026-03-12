@@ -1191,7 +1191,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.46"
+version = "0.0.0-a.47"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1246,7 +1246,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-derive"
-version = "0.0.0-a.15"
+version = "0.0.0-a.16"
 dependencies = [
  "darling",
  "object-rainbow",

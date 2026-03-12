@@ -1,6 +1,6 @@
 [package]
 name = "object-rainbow-derive"
-version = "0.0.0-a.15"
+version = "0.0.0-a.16"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -18,5 +18,5 @@ quote = "1.0.38"
 syn = { version = "2.0.98", features = ["full"] }
 
 [dev-dependencies]
-object-rainbow.workspace = true
+object-rainbow = { version = "0.0.0-a.0", path = "../object-rainbow" }
 typenum = { version = "1.18.0" }
