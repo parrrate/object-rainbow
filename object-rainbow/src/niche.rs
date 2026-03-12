@@ -353,6 +353,7 @@ impl NicheAuto for B1 {
     type Auto<T: Niche<NeedsTag = Self>> = NoNiche<T>;
 }
 
+#[doc(hidden)]
 pub type AutoNiche<T> = <<T as Niche>::NeedsTag as NicheAuto>::Auto<T>;
 
 #[doc(hidden)]
