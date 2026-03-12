@@ -1,6 +1,6 @@
 [package]
 name = "object-rainbow"
-version = "0.0.0-a.47"
+version = "0.0.0-a.48"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -11,7 +11,7 @@ documentation = "https://docs.rs/object-rainbow"
 exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 
 [dependencies]
-object-rainbow-derive = { version = "=0.0.0-a.16", path = "../object-rainbow-derive" }
+object-rainbow-derive = { version = "=0.0.0-a.17", path = "../object-rainbow-derive" }
 
 anyhow = "1.0.96"
 bitvec = { version = "1.0.1", default-features = false, optional = true }
