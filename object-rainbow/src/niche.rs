@@ -209,6 +209,7 @@ impl<T: Niche<N: Add<U::N, Output: Unsigned>, NeedsTag = B0>, U: MaybeNiche> AsH
     type WithTail = NicheAnd<Self, U>;
 }
 
+/// Array ([`typenum`]-ish) that *might* be reducible down to a [`Niche`].
 pub trait MnArray {
     /// Possibly, [`Niche`].
     type MaybeNiche: MaybeNiche;
