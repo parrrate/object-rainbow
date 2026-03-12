@@ -1136,6 +1136,7 @@ impl<T: for<'a> Parse<Input<'a, Extra>>, Extra: Clone> ExtraFor<T> for Extra {
     }
 }
 
+#[doc(hidden)]
 pub trait BoundPair: Sized {
     type T;
     type E;
