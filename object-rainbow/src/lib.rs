@@ -1079,6 +1079,7 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
         input.empty()?;
         Ok(object)
     }
+    /// Parse a `Vec` of `Self`. Customisable for optimisations.
     fn parse_vec(input: I) -> crate::Result<Vec<Self>> {
         input.parse_collect()
     }
