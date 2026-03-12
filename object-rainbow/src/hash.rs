@@ -161,6 +161,7 @@ impl OptionalHash {
         *self == Self::NONE
     }
 
+    /// Get [`Hash`] or panic.
     pub fn unwrap(&self) -> Hash {
         self.get().unwrap()
     }
