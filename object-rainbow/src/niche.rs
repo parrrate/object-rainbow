@@ -8,6 +8,7 @@ use crate::{
     enumkind::{EnumKind, UsizeTag},
 };
 
+/// This *might* contain a valid [`Niche`].
 pub trait MaybeHasNiche {
     type MnArray;
 }
