@@ -88,6 +88,7 @@ pub enum Error {
     Unimplemented,
     #[error("hash not found in the resolve")]
     HashNotFound,
+    /// Operation has been interrupted. Usually means some other error already occured.
     #[error("interrupted")]
     Interrupted,
 }
