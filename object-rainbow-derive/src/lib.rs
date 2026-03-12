@@ -1961,6 +1961,8 @@ fn attr_str(attr: &Attribute) -> Option<String> {
 }
 
 /// ```rust
+/// use std::num::NonZero;
+///
 /// use object_rainbow::{Enum, MaybeHasNiche, ToOutput};
 ///
 /// #[derive(Enum, ToOutput, MaybeHasNiche)]
@@ -1969,9 +1971,20 @@ fn attr_str(attr: &Attribute) -> Option<String> {
 ///     B(bool),
 /// }
 ///
-/// assert_eq!(None::<WithDefault>.vec(), [0, 0]);
-/// assert_eq!(Some(WithDefault::A(32)).vec(), [1, 32]);
-/// assert_eq!(Some(WithDefault::B(true)).vec(), [2, 1]);
+/// assert_eq!(Some(WithDefault::A(32)).vec(), [0, 32]);
+/// assert_eq!(Some(WithDefault::B(true)).vec(), [1, 1]);
+/// assert_eq!(None::<WithDefault>.vec(), [2, 0]);
+///
+/// #[derive(Enum, ToOutput, MaybeHasNiche)]
+/// #[enumtag("NonZero<u8>")]
+/// enum WithNz {
+///     A(u8),
+///     B(bool),
+/// }
+///
+/// assert_eq!(None::<WithNz>.vec(), [0, 0]);
+/// assert_eq!(Some(WithNz::A(32)).vec(), [1, 32]);
+/// assert_eq!(Some(WithNz::B(true)).vec(), [2, 1]);
 ///
 /// #[derive(Enum, ToOutput, MaybeHasNiche)]
 /// #[enumtag("bool")]
@@ -2013,6 +2026,7 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
     let generics = input.generics.clone();
     let (_, ty_generics, _) = generics.split_for_impl();
     let generics = input.generics;
+    let length = gen_length(&input.data);
     let variants = gen_variants(&input.data);
     let variant_count = gen_variant_count(&input.data);
     let to_tag = gen_to_tag(&input.data);
@@ -2035,8 +2049,11 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
             }
         }
     }
-    let enumtag = enumtag
-        .unwrap_or_else(|| parse_quote!(::object_rainbow::numeric::Le<::core::num::NonZero<u8>>));
+    let enumtag = enumtag.unwrap_or_else(|| {
+        parse_quote!(
+            ::object_rainbow::partial_byte_tag::PartialByteTag<#length>
+        )
+    });
     let errors = errors.into_iter().map(|e| e.into_compile_error());
     let target = parse_for(&name, &input.attrs);
     let output = quote! {
@@ -2083,6 +2100,22 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
         };
     };
     TokenStream::from(output)
+}
+
+fn gen_length(data: &Data) -> proc_macro2::TokenStream {
+    match data {
+        Data::Struct(data) => {
+            Error::new_spanned(data.struct_token, "`struct`s are not supported").to_compile_error()
+        }
+        Data::Enum(data) => {
+            let name = format!("U{}", data.variants.len());
+            let ident = Ident::new(&name, data.variants.span());
+            quote! { ::object_rainbow::typenum::#ident }
+        }
+        Data::Union(data) => {
+            Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
+        }
+    }
 }
 
 fn gen_variants(data: &Data) -> proc_macro2::TokenStream {
