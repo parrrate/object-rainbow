@@ -355,6 +355,7 @@ impl NicheAuto for B1 {
 
 pub type AutoNiche<T> = <<T as Niche>::NeedsTag as NicheAuto>::Auto<T>;
 
+#[doc(hidden)]
 pub type AutoEnumNiche<E, const X: usize> = AutoNiche<EnumNiche<E, X>>;
 
 #[doc(hidden)]
