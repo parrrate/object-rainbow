@@ -285,6 +285,25 @@ fn bounds_inline_output(mut generics: Generics, data: &Data) -> syn::Result<Gene
     Ok(generics)
 }
 
+/// ```rust
+/// use object_rainbow::ListHashes;
+///
+/// #[derive(ListHashes)]
+/// struct Three<A, B, C> {
+///     a: A,
+///     b: B,
+///     c: C,
+/// }
+///
+/// object_rainbow::assert_impl!(
+///     impl<A, B, C> ListHashes for Three<A, B, C>
+///     where
+///         A: ListHashes,
+///         B: ListHashes,
+///         C: ListHashes,
+///     {}
+/// );
+/// ```
 #[proc_macro_derive(ListHashes, attributes(topology))]
 pub fn derive_list_hashes(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
