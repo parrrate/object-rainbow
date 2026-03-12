@@ -87,6 +87,7 @@ pub enum Error {
     /// Extension type didn't match what we asked for. This might be turned into panic later.
     #[error("wrong extension type")]
     ExtensionType,
+    /// This functionality hasn't been implemented yet or won't ever be supported.
     #[error("not implemented")]
     Unimplemented,
     /// [`Hash`]-based [`Resolve`] couldn't find what we asked for.
