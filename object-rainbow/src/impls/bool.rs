@@ -17,7 +17,7 @@ impl Size for bool {
     type Size = U1;
 }
 
-pub struct BoolNiche<K>(K);
+pub struct IncrByteNiche<K>(K);
 
 pub trait NextNiche {
     type NextNiche;
@@ -28,7 +28,7 @@ pub trait WrapNext {
 }
 
 impl WrapNext for B1 {
-    type Wrap<J> = SomeNiche<BoolNiche<J>>;
+    type Wrap<J> = SomeNiche<IncrByteNiche<J>>;
 }
 
 impl WrapNext for B0 {
@@ -41,7 +41,7 @@ impl<K: IsLess<U256, Output = B1> + Add<B1, Output = J> + IsLess<U255, Output = 
     type NextNiche = B::Wrap<J>;
 }
 
-impl<K: ToInt<u8> + NextNiche> Niche for BoolNiche<K> {
+impl<K: ToInt<u8> + NextNiche> Niche for IncrByteNiche<K> {
     type NeedsTag = typenum::B0;
     type N = U1;
     fn niche() -> GenericArray<u8, Self::N> {
@@ -51,7 +51,7 @@ impl<K: ToInt<u8> + NextNiche> Niche for BoolNiche<K> {
 }
 
 impl MaybeHasNiche for bool {
-    type MnArray = SomeNiche<BoolNiche<U2>>;
+    type MnArray = SomeNiche<IncrByteNiche<U2>>;
 }
 
 impl<I: ParseInput> Parse<I> for bool {
