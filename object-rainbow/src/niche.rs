@@ -249,6 +249,7 @@ impl<N: ArrayLength> Niche for OneNiche<N> {
     type Next = NoNiche<ZeroNoNiche<N>>;
 }
 
+#[doc(hidden)]
 pub trait NicheOr: MaybeNiche {
     type NicheOr<U: NicheOr<N = Self::N>>: NicheOr<N = Self::N>;
     fn index(index: usize) -> usize;
