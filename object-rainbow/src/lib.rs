@@ -1043,6 +1043,7 @@ pub trait PointInput: ParseInput {
         f: impl FnOnce(&Self::Extra) -> &E,
     ) -> Self::WithExtra<E>;
     fn replace_extra<E: 'static + Clone>(self, extra: E) -> (Self::Extra, Self::WithExtra<E>);
+    /// [`Self::replace_extra`] but discarding [`Self::Extra`].
     fn with_extra<E: 'static + Clone>(self, extra: E) -> Self::WithExtra<E> {
         self.replace_extra(extra).1
     }
