@@ -37,6 +37,7 @@ pub trait Niche {
     type Next;
 }
 
+/// Conditionally implements `Niche`. Used to simplify derivations (and make them possible at all).
 pub trait MaybeNiche {
     /// Length in bytes.
     type N: Unsigned;
