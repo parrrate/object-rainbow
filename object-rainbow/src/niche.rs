@@ -10,6 +10,7 @@ use crate::{
 
 /// This *might* contain a valid [`Niche`].
 pub trait MaybeHasNiche {
+    /// Should implement [`MnArray`]. Not constraint explicitly, because that breaks things.
     type MnArray;
 }
 
