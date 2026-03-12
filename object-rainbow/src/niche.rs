@@ -30,6 +30,8 @@ pub struct NicheAnd<T, V>(T, V);
 pub struct SomeNiche<T>(T);
 
 pub trait Niche {
+    /// Whether this is a fake niche (true niches, i.e. those which don't need a tag, don't
+    /// represent a value).
     type NeedsTag: Bit;
     /// Length in bytes.
     type N: ArrayLength;
