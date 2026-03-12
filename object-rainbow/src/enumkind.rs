@@ -9,6 +9,7 @@ pub trait UsizeTag: Sized {
     fn from_usize(n: usize) -> Self;
     /// Convert a trusted value to [`usize`].
     fn to_usize(&self) -> usize;
+    /// Convert an untrusted value to [`usize`].
     fn try_to_usize(&self) -> Option<usize>;
 }
 
