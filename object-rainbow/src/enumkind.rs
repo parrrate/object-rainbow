@@ -75,8 +75,9 @@ impl<T: ParseInline<I> + UsizeTag, I: ParseInput, const MAX: usize> ParseInline<
     }
 }
 
-/// An [`Inline`] identifying variants of an [`Enum`].
+/// Marker identifying variants of an [`Enum`].
 pub trait EnumKind: Copy {
+    /// Underlying [`Inline`].
     type Tag;
     fn to_tag(self) -> Self::Tag;
     fn from_tag(tag: Self::Tag) -> Self;
