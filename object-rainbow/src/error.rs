@@ -113,6 +113,7 @@ impl Error {
         Self::Fetch(e.into())
     }
 
+    /// Convert from something that can be converted into [`std::io::Error`] (e.g. `zmq::Error`).
     pub fn io(e: impl Into<std::io::Error>) -> Self {
         e.into().into()
     }
