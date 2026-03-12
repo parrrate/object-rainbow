@@ -1058,6 +1058,10 @@ pub trait PointInput: ParseInput {
 
 impl<T: Sized + IntoIterator> RainbowIterator for T {}
 
+/// This can be parsed by consuming the whole rest of the input.
+///
+/// Nothing can be parsed after this. It's implementation's responsibility to ensure there are no
+/// leftover bytes.
 pub trait Parse<I: ParseInput>: Sized {
     fn parse(input: I) -> crate::Result<Self>;
 }
