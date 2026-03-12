@@ -436,6 +436,25 @@ fn gen_list_hashes(data: &Data) -> proc_macro2::TokenStream {
     }
 }
 
+/// ```rust
+/// use object_rainbow::{ListHashes, Topological};
+///
+/// #[derive(ListHashes, Topological)]
+/// struct Three<A, B, C> {
+///     a: A,
+///     b: B,
+///     c: C,
+/// }
+///
+/// object_rainbow::assert_impl!(
+///     impl<A, B, C> Topological for Three<A, B, C>
+///     where
+///         A: Topological,
+///         B: Topological,
+///         C: Topological,
+///     {}
+/// );
+/// ```
 #[proc_macro_derive(Topological, attributes(topology))]
 pub fn derive_topological(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
