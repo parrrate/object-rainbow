@@ -113,6 +113,7 @@ impl Tagged for LpBytes {}
 impl ListHashes for LpBytes {}
 impl Topological for LpBytes {}
 
+/// Length-prefixed [`String`].
 #[derive(Debug, Clone, ParseAsInline, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LpString(pub String);
