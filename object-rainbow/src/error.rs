@@ -153,4 +153,5 @@ impl From<Error> for std::io::Error {
     }
 }
 
+/// Default output for fallible functions.
 pub type Result<T> = std::result::Result<T, Error>;
