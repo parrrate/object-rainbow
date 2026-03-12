@@ -1052,6 +1052,7 @@ pub trait PointInput: ParseInput {
     ) -> crate::Result<T> {
         self.with_extra(extra).parse()
     }
+    /// [`ParseInput::parse_inline`] with a different `Extra`.
     fn parse_inline_extra<E: 'static + Clone, T: ParseInline<Self::WithExtra<E>>>(
         &mut self,
         extra: E,
