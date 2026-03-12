@@ -86,6 +86,7 @@ impl AsRef<[u8]> for Hash {
     }
 }
 
+/// `Option<Hash>` but more explicitly represented as `[u8; HASH_SIZE]`.
 #[derive(
     Debug,
     Clone,
