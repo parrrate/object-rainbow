@@ -1,5 +1,7 @@
 use std::cmp::Ordering;
 
+use typenum::U1;
+
 use crate::*;
 
 impl ToOutput for Ordering {
@@ -28,4 +30,9 @@ impl<I: ParseInput> ParseInline<I> for Ordering {
             _ => Err(Error::OutOfBounds),
         }
     }
+}
+
+impl Size for Ordering {
+    type Size = U1;
+    const SIZE: usize = 1;
 }
