@@ -95,6 +95,7 @@ pub trait Enum {
 /// [`Enum`]-specific [`Parse`].
 pub trait EnumParse<I: ParseInput>: Enum + Parse<I> {
     fn enum_parse(kind: Self::Kind, input: I) -> crate::Result<Self>;
+    /// For implementing [`Parse::parse`].
     fn parse_as_enum(mut input: I) -> crate::Result<Self>
     where
         <Self::Kind as EnumKind>::Tag: ParseInline<I>,
