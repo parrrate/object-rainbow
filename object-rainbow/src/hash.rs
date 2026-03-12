@@ -7,6 +7,7 @@ use crate::*;
 #[cfg(feature = "hex")]
 mod hex;
 
+/// Valid [`Hash`]. Has restrictions on its byte layout (e.g. cannot be all zeroes);
 #[derive(
     Debug,
     ToOutput,
