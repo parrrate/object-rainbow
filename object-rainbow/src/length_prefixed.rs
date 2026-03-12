@@ -68,6 +68,7 @@ fn prefixed() {
     assert_eq!(*a, *b);
 }
 
+/// Length-prefixed [`Vec<u8>`]
 #[derive(Debug, Clone, ParseAsInline, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LpBytes(pub Vec<u8>);
