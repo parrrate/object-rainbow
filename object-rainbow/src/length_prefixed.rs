@@ -5,6 +5,9 @@ use typenum::{Sum, U8, Unsigned, tarr};
 
 use crate::{numeric::Le, *};
 
+/// Length-prefixed value. Used to make [`Inline`]s out of arbitrary [`Object`]s.
+///
+/// If you can guarantee absence of zeroes, see [`zero_terminated::Zt`].
 #[derive(ListHashes, Topological, Tagged, ParseAsInline, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Lp<T>(pub T);
