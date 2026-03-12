@@ -1,3 +1,6 @@
+#[cfg(doc)]
+use crate::{Hash, Resolve};
+
 #[macro_export]
 /// Construct [`Error::Parse`].
 macro_rules! error_parse {
@@ -86,6 +89,7 @@ pub enum Error {
     ExtensionType,
     #[error("not implemented")]
     Unimplemented,
+    /// [`Hash`]-based [`Resolve`] couldn't find what we asked for.
     #[error("hash not found in the resolve")]
     HashNotFound,
     /// Operation has been interrupted. Usually means some other error already occured.
