@@ -14,6 +14,9 @@ pub struct Zt<T> {
 }
 
 impl<T: ToOutput> Zt<T> {
+    /// Create a zero-terminated value.
+    ///
+    /// Pre-computes the output, errors if it contains a zero.
     pub fn new(object: T) -> crate::Result<Self> {
         let data = object.vec();
         if data.contains(&0) {
