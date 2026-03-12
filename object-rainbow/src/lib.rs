@@ -1074,6 +1074,7 @@ pub trait Parse<I: ParseInput>: Sized {
 /// are).
 pub trait ParseInline<I: ParseInput>: Parse<I> {
     fn parse_inline(input: &mut I) -> crate::Result<Self>;
+    /// For implementing [`Parse::parse`].
     fn parse_as_inline(mut input: I) -> crate::Result<Self> {
         let object = Self::parse_inline(&mut input)?;
         input.empty()?;
