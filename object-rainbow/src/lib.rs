@@ -1038,6 +1038,7 @@ pub trait PointInput: ParseInput {
             .ok_or(Error::ExtensionType)
     }
     fn extra(&self) -> &Self::Extra;
+    /// Project the `Extra`. Under some circumstances, prevents an extra [`Clone::clone`].
     fn map_extra<E: 'static + Clone>(
         self,
         f: impl FnOnce(&Self::Extra) -> &E,
