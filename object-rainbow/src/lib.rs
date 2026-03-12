@@ -1114,6 +1114,7 @@ pub trait Equivalent<T>: Sized {
     fn from_equivalent(object: T) -> Self;
 }
 
+/// This `Extra` can be used to parse `T` via [`ParseSliceExtra::parse_slice_extra`].
 pub trait ExtraFor<T> {
     /// [`ParseSliceExtra::parse_slice_extra`].
     fn parse(&self, data: &[u8], resolve: &Arc<dyn Resolve>) -> Result<T>;
