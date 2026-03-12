@@ -157,6 +157,7 @@ impl OptionalHash {
         !self.is_none()
     }
 
+    /// Check whether this is [`Self::NONE`].
     pub fn is_none(&self) -> bool {
         *self == Self::NONE
     }
