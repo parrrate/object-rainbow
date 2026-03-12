@@ -1046,6 +1046,7 @@ pub trait PointInput: ParseInput {
     fn with_extra<E: 'static + Clone>(self, extra: E) -> Self::WithExtra<E> {
         self.replace_extra(extra).1
     }
+    /// [`ParseInput::parse`] with a different `Extra`.
     fn parse_extra<E: 'static + Clone, T: Parse<Self::WithExtra<E>>>(
         self,
         extra: E,
