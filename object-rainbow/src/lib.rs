@@ -1117,6 +1117,7 @@ pub trait Equivalent<T>: Sized {
 pub trait ExtraFor<T> {
     fn parse(&self, data: &[u8], resolve: &Arc<dyn Resolve>) -> Result<T>;
 
+    /// [`Self::parse`], then check that [`FullHash::full_hash`] matches.
     fn parse_checked(&self, hash: Hash, data: &[u8], resolve: &Arc<dyn Resolve>) -> Result<T>
     where
         T: FullHash,
