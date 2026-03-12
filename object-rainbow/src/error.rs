@@ -49,6 +49,7 @@ pub enum Error {
     /// Arbitrary consistency error.
     #[error(transparent)]
     Consistency(anyhow::Error),
+    /// Plain [`std::io::Error`], possibly converted from some other error.
     #[error(transparent)]
     Io(#[from] std::io::Error),
     /// Data left after an [`Inline`] got parsed.
