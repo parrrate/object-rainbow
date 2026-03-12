@@ -27,6 +27,7 @@ pub struct NoNiche<V>(V);
 pub struct NoNiche2<A, B>(A, B);
 pub struct AndNiche<V, T>(V, T);
 pub struct NicheAnd<T, V>(T, V);
+/// [`MaybeNiche`] asserting that `T` is a true niche.
 pub struct SomeNiche<T>(T);
 
 /// True or fake (placeholder) niche.
