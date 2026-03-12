@@ -1690,6 +1690,26 @@ fn fields_parse(fields: &syn::Fields, ty_generics: &TypeGenerics<'_>) -> proc_ma
     }
 }
 
+/// ```rust
+/// use object_rainbow::{Parse, ParseInline, ParseInput};
+///
+/// #[derive(Parse, ParseInline)]
+/// struct Three<A, B, C> {
+///     a: A,
+///     b: B,
+///     c: C,
+/// }
+///
+/// object_rainbow::assert_impl!(
+///     impl<A, B, C, I> ParseInline<I> for Three<A, B, C>
+///     where
+///         A: ParseInline<I>,
+///         B: ParseInline<I>,
+///         C: ParseInline<I>,
+///         I: ParseInput,
+///     {}
+/// );
+/// ```
 #[proc_macro_derive(ParseInline, attributes(parse))]
 pub fn derive_parse_inline(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
