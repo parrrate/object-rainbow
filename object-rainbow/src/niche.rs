@@ -12,6 +12,7 @@ pub trait MaybeHasNiche {
     type MnArray;
 }
 
+/// Special [`Niche`] to force use of a tag without any padding.
 pub struct NicheForUnsized;
 
 impl Niche for NicheForUnsized {
