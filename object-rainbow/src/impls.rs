@@ -14,6 +14,7 @@ mod generic_array;
 mod i8;
 mod infallible;
 mod option;
+mod ordering;
 mod phantom;
 mod refs;
 mod slice;
