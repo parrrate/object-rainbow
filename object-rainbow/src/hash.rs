@@ -153,6 +153,7 @@ impl OptionalHash {
         self.is_some().then_some(Hash(self.0))
     }
 
+    /// Check whether this is a [`Hash`].
     pub fn is_some(&self) -> bool {
         !self.is_none()
     }
