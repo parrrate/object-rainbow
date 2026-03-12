@@ -43,6 +43,7 @@ mod error;
 mod hash;
 pub mod hashed;
 mod impls;
+pub mod incr_byte_niche;
 pub mod length_prefixed;
 mod niche;
 pub mod numeric;
