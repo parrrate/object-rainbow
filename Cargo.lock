@@ -1191,7 +1191,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.50"
+version = "0.0.0-a.51"
 dependencies = [
  "anyhow",
  "bitvec",
