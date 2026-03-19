@@ -655,15 +655,76 @@ impl<T: Traversible + for<'a> Parse<Input<'a, Extra>>, Extra> Object<Extra> for 
 
 pub struct Tags(pub &'static [&'static str], pub &'static [&'static Self]);
 
-impl Tags {
-    const fn const_hash(&self, mut hasher: sha2_const::Sha256) -> sha2_const::Sha256 {
-        if let Some((first, rest)) = self.0.split_first() {
-            hasher = hasher.update(first.as_bytes());
-            return Tags(rest, self.1).const_hash(hasher);
+const fn bytes_compare(l: &[u8], r: &[u8]) -> std::cmp::Ordering {
+    let mut i = 0;
+    while i < l.len() && i < r.len() {
+        if l[i] > r[i] {
+            return std::cmp::Ordering::Greater;
+        } else if l[i] < r[i] {
+            return std::cmp::Ordering::Less;
+        } else {
+            i += 1;
         }
-        if let Some((first, rest)) = self.1.split_first() {
-            hasher = first.const_hash(hasher);
-            return Tags(&[], rest).const_hash(hasher);
+    }
+    if l.len() > r.len() {
+        std::cmp::Ordering::Greater
+    } else if l.len() < r.len() {
+        std::cmp::Ordering::Less
+    } else {
+        std::cmp::Ordering::Equal
+    }
+}
+
+const fn str_compare(l: &str, r: &str) -> std::cmp::Ordering {
+    bytes_compare(l.as_bytes(), r.as_bytes())
+}
+
+impl Tags {
+    const fn min_out(&self, strict_min: Option<&str>, min: &mut Option<&'static str>) {
+        {
+            let mut i = 0;
+            while i < self.0.len() {
+                let candidate = self.0[i];
+                i += 1;
+                if let Some(strict_min) = strict_min
+                    && str_compare(candidate, strict_min).is_le()
+                {
+                    continue;
+                }
+                if let Some(min) = min
+                    && str_compare(candidate, min).is_ge()
+                {
+                    continue;
+                }
+                *min = Some(candidate);
+            }
+        }
+        {
+            let mut i = 0;
+            while i < self.1.len() {
+                self.1[i].min_out(strict_min, min);
+                i += 1;
+            }
+        }
+        if let Some(l) = min
+            && let Some(r) = strict_min
+        {
+            assert!(str_compare(l, r).is_gt());
+        }
+    }
+
+    const fn const_hash(&self, mut hasher: sha2_const::Sha256) -> sha2_const::Sha256 {
+        let mut last = None;
+        let mut i = 0;
+        while let () = self.min_out(last.take(), &mut last)
+            && let Some(next) = last
+        {
+            i += 1;
+            if i > 1000 {
+                panic!("{}", next);
+            }
+            hasher = hasher.update(next.as_bytes());
+            last = Some(next);
         }
         hasher
     }
@@ -674,12 +735,21 @@ impl Tags {
 }
 
 #[test]
+fn min_out_respects_bounds() {
+    let mut min = None;
+    Tags(&["c", "b", "a"], &[]).min_out(Some("a"), &mut min);
+    assert_eq!(min, Some("b"));
+}
+
+#[test]
 fn const_hash() {
     assert_ne!(Tags(&["a", "b"], &[]).hash(), Tags(&["a"], &[]).hash());
     assert_eq!(
         Tags(&["a", "b"], &[]).hash(),
         Tags(&["a"], &[&Tags(&["b"], &[])]).hash(),
     );
+    assert_eq!(Tags(&["a", "b"], &[]).hash(), Tags(&["b", "a"], &[]).hash());
+    assert_eq!(Tags(&["a", "a"], &[]).hash(), Tags(&["a"], &[]).hash());
 }
 
 pub trait Inline<Extra = ()>:
