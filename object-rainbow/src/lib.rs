@@ -562,9 +562,7 @@ pub trait Topological: ListHashes {
 
 pub trait Tagged {
     const TAGS: Tags = Tags(&[], &[]);
-
-    const HASH: Hash =
-        const { Hash::from_sha256(Self::TAGS.const_hash(sha2_const::Sha256::new()).finalize()) };
+    const HASH: Hash = Self::TAGS.hash();
 }
 
 pub trait ParseSlice: for<'a> Parse<Input<'a>> {
@@ -668,6 +666,10 @@ impl Tags {
             return Tags(&[], rest).const_hash(hasher);
         }
         hasher
+    }
+
+    const fn hash(&self) -> Hash {
+        Hash::from_sha256(self.const_hash(sha2_const::Sha256::new()).finalize())
     }
 }
 
