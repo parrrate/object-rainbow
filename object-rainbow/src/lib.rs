@@ -659,19 +659,13 @@ pub struct Tags(pub &'static [&'static str], pub &'static [&'static Self]);
 
 impl Tags {
     const fn const_hash(&self, mut hasher: sha2_const::Sha256) -> sha2_const::Sha256 {
-        {
-            let mut i = 0;
-            while i < self.0.len() {
-                hasher = hasher.update(self.0[i].as_bytes());
-                i += 1;
-            }
+        if let Some((first, rest)) = self.0.split_first() {
+            hasher = hasher.update(first.as_bytes());
+            return Tags(rest, self.1).const_hash(hasher);
         }
-        {
-            let mut i = 0;
-            while i < self.1.len() {
-                hasher = self.1[i].const_hash(hasher);
-                i += 1;
-            }
+        if let Some((first, rest)) = self.1.split_first() {
+            hasher = first.const_hash(hasher);
+            return Tags(&[], rest).const_hash(hasher);
         }
         hasher
     }
