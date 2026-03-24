@@ -147,19 +147,11 @@ where
         Ok((new, o))
     }
 
-    async fn prepare<O>(
-        &mut self,
+    async fn prepare_point<O>(
+        point: &mut TriePoint<Self>,
         key: &[u8],
         f: impl AsyncFnOnce(&mut Self) -> object_rainbow::Result<O>,
     ) -> object_rainbow::Result<O> {
-        let Some((first, key)) = key.split_first() else {
-            return f(self).await;
-        };
-        let Some(point) = self.c_get_mut(*first) else {
-            let (new, o) = Self::from_f(f).await?;
-            self.c_insert(*first, (new, key.into()).point());
-            return Ok(o);
-        };
         let (trie, prefix) = &mut *point.fetch_mut().await?;
         if let Some(key) = key.strip_prefix(prefix.as_slice()) {
             return Box::pin(trie.prepare(key, f)).await;
@@ -181,6 +173,22 @@ where
             prefix.truncate(common);
         }
         Ok(o)
+    }
+
+    async fn prepare<O>(
+        &mut self,
+        key: &[u8],
+        f: impl AsyncFnOnce(&mut Self) -> object_rainbow::Result<O>,
+    ) -> object_rainbow::Result<O> {
+        let Some((first, key)) = key.split_first() else {
+            return f(self).await;
+        };
+        let Some(point) = self.c_get_mut(*first) else {
+            let (new, o) = Self::from_f(f).await?;
+            self.c_insert(*first, (new, key.into()).point());
+            return Ok(o);
+        };
+        Self::prepare_point(point, key, f).await
     }
 
     pub async fn insert(&mut self, key: &[u8], value: T) -> object_rainbow::Result<Option<T>> {
