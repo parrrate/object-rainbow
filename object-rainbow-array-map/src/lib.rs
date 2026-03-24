@@ -205,6 +205,16 @@ impl<'a, T> Iterator for EntriesMut<'a, T> {
     }
 }
 
+impl<'a, T> IntoIterator for &'a mut ArrayMap<T> {
+    type Item = (u8, &'a mut T);
+
+    type IntoIter = EntriesMut<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter_mut()
+    }
+}
+
 #[derive(
     ToOutput,
     InlineOutput,
