@@ -653,7 +653,7 @@ mod test {
     use smol::stream::StreamExt;
     use smol_macros::test;
 
-    use crate::Trie;
+    use crate::{Trie, TrieSet};
 
     #[apply(test!)]
     async fn test() -> object_rainbow::Result<()> {
@@ -774,21 +774,21 @@ mod test {
 
     #[apply(test!)]
     async fn append() -> object_rainbow::Result<()> {
-        let mut enormita = Trie::<u8>::new();
-        enormita.insert(b"Magia Baiser", 1).await?;
-        enormita.insert(b"Leopard", 2).await?;
-        enormita.insert(b"Nero Alice", 3).await?;
-        let mut rd = Trie::<u8>::new();
-        rd.insert(b"Lord Enorme", 4).await?;
-        rd.insert(b"Loco Musica", 5).await?;
-        rd.insert(b"Leberblume", 6).await?;
+        let mut enormita = TrieSet::new();
+        enormita.insert(&b"Magia Baiser".to_vec()).await?;
+        enormita.insert(&b"Leopard".to_vec()).await?;
+        enormita.insert(&b"Nero Alice".to_vec()).await?;
+        let mut rd = TrieSet::new();
+        rd.insert(&b"Lord Enorme".to_vec()).await?;
+        rd.insert(&b"Loco Musica".to_vec()).await?;
+        rd.insert(&b"Leberblume".to_vec()).await?;
         enormita.append(&mut rd).await?;
-        assert_eq!(enormita.get(b"Magia Baiser").await?.unwrap(), 1);
-        assert_eq!(enormita.get(b"Leopard").await?.unwrap(), 2);
-        assert_eq!(enormita.get(b"Nero Alice").await?.unwrap(), 3);
-        assert_eq!(enormita.get(b"Lord Enorme").await?.unwrap(), 4);
-        assert_eq!(enormita.get(b"Loco Musica").await?.unwrap(), 5);
-        assert_eq!(enormita.get(b"Leberblume").await?.unwrap(), 6);
+        assert!(enormita.contains(&b"Magia Baiser".to_vec()).await?);
+        assert!(enormita.contains(&b"Leopard".to_vec()).await?);
+        assert!(enormita.contains(&b"Nero Alice".to_vec()).await?);
+        assert!(enormita.contains(&b"Lord Enorme".to_vec()).await?);
+        assert!(enormita.contains(&b"Loco Musica".to_vec()).await?);
+        assert!(enormita.contains(&b"Leberblume".to_vec()).await?);
         assert!(rd.is_empty());
         Ok(())
     }
