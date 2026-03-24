@@ -580,8 +580,14 @@ impl<T> Clone for TrieSet<T> {
 
 impl<T> Default for TrieSet<T> {
     fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T> TrieSet<T> {
+    pub const fn new() -> Self {
         Self {
-            map: Default::default(),
+            map: TrieMap::new(),
         }
     }
 }
