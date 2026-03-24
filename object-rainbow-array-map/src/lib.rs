@@ -104,6 +104,12 @@ impl<T> ArrayMap<T> {
             map: BTreeMap::new(),
         }
     }
+
+    pub fn iter(&self) -> Entries<'_, T> {
+        Entries {
+            inner: self.map.iter(),
+        }
+    }
 }
 
 pub struct Range<'a, T> {
