@@ -242,8 +242,14 @@ impl<T: ?Sized> Copy for ObjectMarker<T> {}
 
 impl<T: ?Sized> Default for ObjectMarker<T> {
     fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T: ?Sized> ObjectMarker<T> {
+    pub const fn new() -> Self {
         Self {
-            object: Default::default(),
+            object: PhantomData,
         }
     }
 }
