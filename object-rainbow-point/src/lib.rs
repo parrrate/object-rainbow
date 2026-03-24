@@ -917,7 +917,9 @@ impl<T: FullHash> DerefMut for PointMut<'_, T> {
 
 impl<T: FullHash> Drop for PointMut<'_, T> {
     fn drop(&mut self) {
-        self.finalize();
+        if !std::thread::panicking() {
+            self.finalize();
+        }
     }
 }
 
