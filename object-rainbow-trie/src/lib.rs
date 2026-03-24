@@ -138,20 +138,35 @@ where
         Box::pin(trie.get(key)).await
     }
 
-    pub async fn insert(&mut self, key: &[u8], value: T) -> object_rainbow::Result<Option<T>> {
+    async fn prepare<O>(
+        &mut self,
+        key: &[u8],
+        f: impl AsyncFnOnce(&mut Self) -> object_rainbow::Result<O>,
+    ) -> object_rainbow::Result<O> {
         let Some((first, key)) = key.split_first() else {
-            return Ok(self.value.replace(value));
+            return f(self).await;
         };
+        let o;
+        let mut new;
+        macro_rules! new {
+            () => {
+                new = Trie::default();
+                o = f(&mut new).await?;
+                assert!(!new.is_empty());
+            };
+        }
         let Some(point) = self.c_get_mut(*first) else {
-            self.c_insert(*first, (Self::from_value(value), key.into()).point());
-            return Ok(None);
+            new!();
+            self.c_insert(*first, (new, key.into()).point());
+            return Ok(o);
         };
         let (trie, prefix) = &mut *point.fetch_mut().await?;
         if let Some(key) = key.strip_prefix(prefix.as_slice()) {
-            return Box::pin(trie.insert(key, value)).await;
+            return Box::pin(trie.prepare(key, f)).await;
         }
+        new!();
         if let Some(suffix) = prefix.strip_prefix(key) {
-            let child = std::mem::replace(trie, Self::from_value(value));
+            let child = std::mem::replace(trie, new);
             let (first, suffix) = suffix.split_first().expect("must be at least 1");
             trie.c_insert(*first, (child, suffix.into()).point());
             prefix.truncate(key.len());
@@ -162,13 +177,15 @@ where
                 prefix[common],
                 (child, prefix[common + 1..].to_vec()).point(),
             );
-            trie.c_insert(
-                key[common],
-                (Self::from_value(value), key[common + 1..].to_vec()).point(),
-            );
+            trie.c_insert(key[common], (new, key[common + 1..].to_vec()).point());
             prefix.truncate(common);
         }
-        Ok(None)
+        Ok(o)
+    }
+
+    pub async fn insert(&mut self, key: &[u8], value: T) -> object_rainbow::Result<Option<T>> {
+        self.prepare(key, async |trie| Ok(trie.value.replace(value)))
+            .await
     }
 
     pub fn is_empty(&self) -> bool {
