@@ -182,6 +182,23 @@ impl<'a, T> IntoIterator for &'a ArrayMap<T> {
     }
 }
 
+pub struct EntriesMut<'a, T> {
+    inner: std::collections::btree_map::IterMut<'a, u8, T>,
+}
+
+impl<'a, T> Iterator for EntriesMut<'a, T> {
+    type Item = (u8, &'a mut T);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let (key, value) = self.inner.next()?;
+        Some((*key, value))
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.inner.size_hint()
+    }
+}
+
 #[derive(
     ToOutput,
     InlineOutput,
