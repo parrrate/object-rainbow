@@ -189,10 +189,10 @@ where
                 trie.append(&mut overlay).await?;
                 prefix.truncate(common);
             }
-            assert!(!trie.is_empty());
-            assert!(trie.value.is_some() || trie.children.len() > 1);
             o
         };
+        assert!(!trie.is_empty());
+        assert!(trie.value.is_some() || trie.children.len() > 1);
         Ok(o)
     }
 
