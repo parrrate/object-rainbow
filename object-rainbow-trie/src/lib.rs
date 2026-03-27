@@ -207,12 +207,13 @@ where
         let Some((first, key)) = key.split_first() else {
             return f(self).await;
         };
-        let Some(point) = self.c_get_mut(*first) else {
+        if let Some(point) = self.c_get_mut(*first) {
+            Self::update_point(point, key, f).await
+        } else {
             let (new, o) = Self::from_f(f).await?;
             self.c_insert(*first, (new, key.into()).point());
-            return Ok(o);
-        };
-        Self::update_point(point, key, f).await
+            Ok(o)
+        }
     }
 
     pub async fn insert(&mut self, key: &[u8], value: T) -> object_rainbow::Result<Option<T>> {
