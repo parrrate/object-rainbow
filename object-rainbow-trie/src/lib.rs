@@ -164,7 +164,7 @@ where
         Ok((trie, o))
     }
 
-    async fn prepare_point<O>(
+    async fn update_point<O>(
         point: &mut TriePoint<Self>,
         key: &[u8],
         f: impl AsyncFnOnce(&mut Self) -> object_rainbow::Result<O>,
@@ -212,7 +212,7 @@ where
             self.c_insert(*first, (new, key.into()).point());
             return Ok(o);
         };
-        Self::prepare_point(point, key, f).await
+        Self::update_point(point, key, f).await
     }
 
     pub async fn insert(&mut self, key: &[u8], value: T) -> object_rainbow::Result<Option<T>> {
@@ -265,7 +265,7 @@ where
                 if let Some(other) = other.c_remove(key) {
                     futures.push(async move {
                         let (mut other, key) = other.fetch().await?;
-                        Self::prepare_point(point, &key, async |trie| trie.append(&mut other).await)
+                        Self::update_point(point, &key, async |trie| trie.append(&mut other).await)
                             .await
                     });
                 }
