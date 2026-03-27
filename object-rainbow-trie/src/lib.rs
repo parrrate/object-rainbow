@@ -153,11 +153,11 @@ where
     async fn from_f<O>(
         f: impl AsyncFnOnce(&mut Self) -> object_rainbow::Result<O>,
     ) -> object_rainbow::Result<(Self, O)> {
-        let mut new = Self::default();
-        let o = f(&mut new).await?;
-        assert!(!new.is_empty());
-        assert!(new.value.is_some() || new.children.len() > 1);
-        Ok((new, o))
+        let mut trie = Self::default();
+        let o = f(&mut trie).await?;
+        assert!(!trie.is_empty());
+        assert!(trie.value.is_some() || trie.children.len() > 1);
+        Ok((trie, o))
     }
 
     async fn prepare_point<O>(
