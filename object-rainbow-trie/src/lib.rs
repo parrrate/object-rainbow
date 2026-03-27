@@ -171,7 +171,7 @@ where
     ) -> object_rainbow::Result<O> {
         let (trie, prefix) = &mut *point.fetch_mut().await?;
         let o = if let Some(key) = key.strip_prefix(prefix.as_slice()) {
-            Box::pin(trie.prepare(key, f)).await?
+            Box::pin(trie.update(key, f)).await?
         } else {
             let (new, o) = Self::from_f(f).await?;
             if let Some(suffix) = prefix.strip_prefix(key) {
@@ -199,7 +199,7 @@ where
         Ok(o)
     }
 
-    async fn prepare<O>(
+    async fn update<O>(
         &mut self,
         key: &[u8],
         f: impl AsyncFnOnce(&mut Self) -> object_rainbow::Result<O>,
@@ -216,7 +216,7 @@ where
     }
 
     pub async fn insert(&mut self, key: &[u8], value: T) -> object_rainbow::Result<Option<T>> {
-        self.prepare(key, async |trie| Ok(trie.value.replace(value)))
+        self.update(key, async |trie| Ok(trie.value.replace(value)))
             .await
     }
 
