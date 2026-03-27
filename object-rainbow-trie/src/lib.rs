@@ -156,6 +156,7 @@ where
         let mut new = Self::default();
         let o = f(&mut new).await?;
         assert!(!new.is_empty());
+        assert!(new.value.is_some() || new.children.len() > 1);
         Ok((new, o))
     }
 
