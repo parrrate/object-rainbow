@@ -427,7 +427,7 @@ impl<D: Send> Apply<D> for Discard {
     type Output = ();
 
     fn apply(&mut self, _: D) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        async move { Ok(()) }
+        futures_util::future::ready(Ok(()))
     }
 }
 
@@ -438,7 +438,7 @@ impl Apply<()> for () {
         &mut self,
         (): (),
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        async move { Ok(()) }
+        futures_util::future::ready(Ok(()))
     }
 }
 
