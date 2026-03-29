@@ -433,6 +433,23 @@ impl<T: Clone + Traversible + Apply<D>, D: Send> Apply<D> for Point<T> {
     }
 }
 
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Size,
+    MaybeHasNiche,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Default,
+)]
 pub struct Return;
 
 impl<D: Send> Apply<D> for Return {
