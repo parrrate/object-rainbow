@@ -325,7 +325,11 @@ impl<K: Key> Resolve for Decrypt<K> {
         })
     }
 
-    fn try_resolve_local(&self, address: Address) -> object_rainbow::Result<Option<ByteNode>> {
+    fn try_resolve_local(
+        &self,
+        address: Address,
+        _: &Arc<dyn Resolve>,
+    ) -> object_rainbow::Result<Option<ByteNode>> {
         let Some((
             Encrypted {
                 key: _,

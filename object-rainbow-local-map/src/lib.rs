@@ -132,8 +132,12 @@ impl Resolve for LocalMap {
         Box::pin(async move { self.resolve_bytes(address) })
     }
 
-    fn try_resolve_local(&self, address: Address) -> object_rainbow::Result<Option<ByteNode>> {
+    fn try_resolve_local(
+        &self,
+        address: Address,
+        this: &Arc<dyn Resolve>,
+    ) -> object_rainbow::Result<Option<ByteNode>> {
         let data = self.resolve_bytes(address)?;
-        Ok(Some((data, self.to_resolve())))
+        Ok(Some((data, this.clone())))
     }
 }
