@@ -714,6 +714,13 @@ impl<T: FullHash> Fetch for Point<T> {
     fn try_unwrap(self: Arc<Self>) -> Option<Self::T> {
         Arc::try_unwrap(self).ok()?.fetch.try_unwrap()
     }
+
+    fn into_dyn_fetch<'a>(self) -> Arc<dyn 'a + Fetch<T = Self::T>>
+    where
+        Self: 'a + Sized,
+    {
+        self.fetch
+    }
 }
 
 /// This implementation is the main goal of [`Equivalent`]: we assume transmuting the pointer is
