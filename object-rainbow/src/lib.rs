@@ -160,7 +160,11 @@ impl<T> AsAny for T {
 /// Something that can resolve [`Address`]es to [`ByteNode`]s.
 pub trait Resolve: Send + Sync + AsAny {
     /// Resolve the address. For an [`Object`], this is what gets used as [`PointInput`].
-    fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode>;
+    fn resolve<'a>(
+        &'a self,
+        address: Address,
+        this: &'a Arc<dyn Resolve>,
+    ) -> FailFuture<'a, ByteNode>;
     fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>>;
     fn try_resolve_local(&self, address: Address) -> Result<Option<ByteNode>> {
         let _ = address;
@@ -921,7 +925,7 @@ impl ByTopology {
 }
 
 impl Resolve for ByTopology {
-    fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode> {
+    fn resolve(&'_ self, address: Address, _: &Arc<dyn Resolve>) -> FailFuture<'_, ByteNode> {
         self.try_resolve(address)
             .map_err(Err)
             .map_err(ready)

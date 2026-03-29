@@ -57,7 +57,7 @@ struct ByAddressInner {
 
 impl FetchBytes for ByAddressInner {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        self.resolve.resolve(self.address)
+        self.resolve.resolve(self.address, &self.resolve)
     }
 
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {

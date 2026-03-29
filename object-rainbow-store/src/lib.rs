@@ -38,13 +38,14 @@ struct StoreResolve<S> {
 }
 
 impl<S: 'static + Send + RainbowStore> Resolve for StoreResolve<S> {
-    fn resolve(
-        &'_ self,
+    fn resolve<'a>(
+        &'a self,
         address: Address,
-    ) -> object_rainbow::FailFuture<'_, object_rainbow::ByteNode> {
+        this: &'a Arc<dyn Resolve>,
+    ) -> object_rainbow::FailFuture<'a, object_rainbow::ByteNode> {
         Box::pin(async move {
             let bytes = self.store.fetch(address.hash).await?.as_ref().to_vec();
-            Ok((bytes, self.store.resolve()))
+            Ok((bytes, this.clone()))
         })
     }
 

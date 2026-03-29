@@ -117,10 +117,14 @@ impl LocalMap {
 }
 
 impl Resolve for LocalMap {
-    fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode> {
+    fn resolve<'a>(
+        &'a self,
+        address: Address,
+        this: &'a Arc<dyn Resolve>,
+    ) -> FailFuture<'a, ByteNode> {
         Box::pin(async move {
             let data = self.resolve_bytes(address)?;
-            Ok((data, self.to_resolve()))
+            Ok((data, this.clone()))
         })
     }
 
