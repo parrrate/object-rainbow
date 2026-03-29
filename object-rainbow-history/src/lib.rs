@@ -274,45 +274,6 @@ impl<T> Equivalent<T> for DiscardHeader<T> {
     Eq,
     Default,
 )]
-pub struct MappedDiff<M, T> {
-    map: M,
-    tree: T,
-}
-
-impl<T, M> MappedDiff<M, T> {
-    pub fn tree(&self) -> &T {
-        &self.tree
-    }
-}
-
-impl<T: Apply<M::Output>, M: Apply<Outer>, Outer: Send> Apply<Outer> for MappedDiff<M, T> {
-    type Output = T::Output;
-
-    fn apply(
-        &mut self,
-        outer: Outer,
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        async move { self.tree.apply(self.map.apply(outer).await?).await }
-    }
-}
-
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Default,
-)]
 pub struct Sequential<First, Second> {
     first: First,
     second: Second,
