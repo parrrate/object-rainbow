@@ -1191,7 +1191,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.53"
+version = "0.0.0-a.54"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1297,7 +1297,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.20"
+version = "0.0.0-a.21"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1359,7 +1359,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-point"
-version = "0.0.0-a.7"
+version = "0.0.0-a.8"
 dependencies = [
  "futures-util",
  "object-rainbow",
