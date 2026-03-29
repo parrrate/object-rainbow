@@ -650,6 +650,12 @@ pub trait FullHash: ToOutput + ListHashes + Tagged {
 
 impl<T: ?Sized + ToOutput + ListHashes + Tagged> FullHash for T {}
 
+pub trait DefaultHash: FullHash + Default {
+    fn default_hash() -> Hash {
+        Self::default().full_hash()
+    }
+}
+
 pub trait Traversible: 'static + Sized + Send + Sync + FullHash + Topological {
     fn to_resolve(&self) -> Arc<dyn Resolve> {
         let topology = self.topology();
