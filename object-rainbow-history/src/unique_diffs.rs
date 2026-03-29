@@ -4,7 +4,7 @@ use object_rainbow::{
 };
 use object_rainbow_hamt::HamtSet;
 
-use crate::{Apply, Sequential, hashed::HashedDiffs, skip::FilterDiffs};
+use crate::{Apply, Parallel, Return, Sequential, hashed::HashedDiffs, skip::FilterDiffs};
 
 #[derive(
     ToOutput,
@@ -20,7 +20,7 @@ use crate::{Apply, Sequential, hashed::HashedDiffs, skip::FilterDiffs};
     Default,
 )]
 pub struct UniqueDiffs<T> {
-    inner: Sequential<HashedDiffs<HamtSet>, FilterDiffs<T>>,
+    inner: Sequential<Parallel<HashedDiffs<HamtSet>, Return>, FilterDiffs<T>>,
 }
 
 assert_impl!(

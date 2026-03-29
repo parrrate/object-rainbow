@@ -7,7 +7,7 @@ use object_rainbow::{
     Topological,
 };
 use object_rainbow_history::{
-    FromIter, MappedDiff, Parallel, Sequential,
+    FromIter, MappedDiff, Parallel, Return, Sequential,
     remap::{MapToSet, MappedToSet},
 };
 use object_rainbow_trie::{TrieMap, TrieSet};
@@ -209,7 +209,10 @@ impl MapToSet<MessageId, Message> for MessageToUser {
 type MessagesByChannels =
     MappedDiff<FromIter<TrieSet<MessageByChannel>>, MappedToSet<MessageToChannel>>;
 type MessagesByUsers = MappedDiff<FromIter<TrieSet<MessageByUser>>, MappedToSet<MessageToUser>>;
-type Tree = Sequential<TrieMap<MessageId, Message>, Parallel<MessagesByChannels, MessagesByUsers>>;
+type Tree = Sequential<
+    Parallel<TrieMap<MessageId, Message>, Return>,
+    Parallel<MessagesByChannels, MessagesByUsers>,
+>;
 type Diff = (Option<Message>, MessageId);
 type History = object_rainbow_history::History<Tree, Diff>;
 

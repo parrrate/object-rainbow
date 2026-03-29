@@ -334,7 +334,7 @@ impl<First, Second> Sequential<First, Second> {
     }
 }
 
-impl<Diff: Send + Clone, First: Apply<Diff>, Second: Apply<(First::Output, Diff)>> Apply<Diff>
+impl<Diff: Send, First: Apply<Diff>, Second: Apply<First::Output>> Apply<Diff>
     for Sequential<First, Second>
 {
     type Output = Second::Output;
@@ -342,11 +342,7 @@ impl<Diff: Send + Clone, First: Apply<Diff>, Second: Apply<(First::Output, Diff)
         &mut self,
         diff: Diff,
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        async move {
-            self.second
-                .apply((self.first.apply(diff.clone()).await?, diff))
-                .await
-        }
+        async move { self.second.apply(self.first.apply(diff).await?).await }
     }
 }
 
