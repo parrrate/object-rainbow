@@ -3,7 +3,7 @@ use object_rainbow::{
     Topological,
 };
 
-use crate::MapDiff;
+use crate::Apply;
 
 pub trait MapToSet<K: Send, V: Send>: Send + Sync {
     type T: Send;
@@ -32,15 +32,15 @@ pub trait MapToSet<K: Send, V: Send>: Send + Sync {
 )]
 pub struct MappedToSet<M>(M);
 
-impl<K: Send + Clone, V: Send, M: MapToSet<K, V>> MapDiff<(Option<V>, (Option<V>, K))>
+impl<K: Send + Clone, V: Send, M: MapToSet<K, V>> Apply<(Option<V>, (Option<V>, K))>
     for MappedToSet<M>
 {
-    type Inner = Vec<(bool, M::T)>;
+    type Output = Vec<(bool, M::T)>;
 
-    fn map(
-        &self,
+    fn apply(
+        &mut self,
         (old, (new, key)): (Option<V>, (Option<V>, K)),
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Inner>> {
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
         async move {
             let mut diff = Vec::new();
             if let Some(value) = old {

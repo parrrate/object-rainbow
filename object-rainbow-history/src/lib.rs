@@ -257,12 +257,6 @@ impl<T> Equivalent<T> for DiscardHeader<T> {
     }
 }
 
-pub trait MapDiff<Outer: Send>: Send + Sync {
-    type Inner: Send;
-    fn map(&self, outer: Outer)
-    -> impl Send + Future<Output = object_rainbow::Result<Self::Inner>>;
-}
-
 #[derive(
     Debug,
     ToOutput,
@@ -291,14 +285,14 @@ impl<T, M> MappedDiff<T, M> {
     }
 }
 
-impl<T: Apply<M::Inner>, M: MapDiff<Outer>, Outer: Send> Apply<Outer> for MappedDiff<T, M> {
+impl<T: Apply<M::Output>, M: Apply<Outer>, Outer: Send> Apply<Outer> for MappedDiff<T, M> {
     type Output = T::Output;
 
     fn apply(
         &mut self,
         outer: Outer,
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        async move { self.tree.apply(self.map.map(outer).await?).await }
+        async move { self.tree.apply(self.map.apply(outer).await?).await }
     }
 }
 
