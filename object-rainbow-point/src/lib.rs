@@ -349,7 +349,7 @@ impl<T, Extra: 'static + Clone> RawPoint<T, Extra> {
 
 impl<T: 'static + FullHash, Extra: 'static + Send + Sync + ExtraFor<T>> RawPoint<T, Extra> {
     pub fn into_point(self) -> Point<T> {
-        Point::from_fetch(self.inner.hash, Arc::new(self))
+        Point::from_fetch(self.inner.hash, self.into_dyn_fetch())
     }
 }
 
@@ -539,10 +539,7 @@ impl<T: 'static + FullHash> Point<T> {
     ) -> Self {
         Self::from_fetch(
             address.hash,
-            Arc::new(ByAddress::from_inner(
-                ByAddressInner { address, resolve },
-                extra,
-            )),
+            ByAddress::from_inner(ByAddressInner { address, resolve }, extra).into_dyn_fetch(),
         )
     }
 
@@ -647,7 +644,7 @@ impl<T> Point<T> {
 
 impl<T: Traversible + Clone> Point<T> {
     pub fn from_object(object: T) -> Self {
-        Self::from_fetch(object.full_hash(), Arc::new(LocalFetch { object }))
+        Self::from_fetch(object.full_hash(), LocalFetch { object }.into_dyn_fetch())
     }
 
     fn yolo_mut(&mut self) -> bool {
@@ -658,7 +655,7 @@ impl<T: Traversible + Clone> Point<T> {
     async fn prepare_yolo_fetch(&mut self) -> object_rainbow::Result<()> {
         if !self.yolo_mut() {
             let object = self.fetch.fetch().await?;
-            self.fetch = Arc::new(LocalFetch { object });
+            self.fetch = LocalFetch { object }.into_dyn_fetch();
         }
         Ok(())
     }
@@ -724,19 +721,21 @@ impl<T: FullHash> Fetch for Point<T> {
 impl<U: 'static + Equivalent<T>, T: 'static> Equivalent<Point<T>> for Point<U> {
     fn into_equivalent(self) -> Point<T> {
         self.map_fetch(|fetch| {
-            Arc::new(MapEquivalent {
+            MapEquivalent {
                 fetch,
                 map: U::into_equivalent,
-            })
+            }
+            .into_dyn_fetch()
         })
     }
 
     fn from_equivalent(point: Point<T>) -> Self {
         point.map_fetch(|fetch| {
-            Arc::new(MapEquivalent {
+            MapEquivalent {
                 fetch,
                 map: U::from_equivalent,
-            })
+            }
+            .into_dyn_fetch()
         })
     }
 }
