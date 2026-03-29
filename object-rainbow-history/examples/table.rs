@@ -207,8 +207,8 @@ impl MapToSet<MessageId, Message> for MessageToUser {
 }
 
 type MessagesByChannels =
-    MappedDiff<FromIter<TrieSet<MessageByChannel>>, MappedToSet<MessageToChannel>>;
-type MessagesByUsers = MappedDiff<FromIter<TrieSet<MessageByUser>>, MappedToSet<MessageToUser>>;
+    MappedDiff<MappedToSet<MessageToChannel>, FromIter<TrieSet<MessageByChannel>>>;
+type MessagesByUsers = MappedDiff<MappedToSet<MessageToUser>, FromIter<TrieSet<MessageByUser>>>;
 type Tree = Sequential<
     Parallel<TrieMap<MessageId, Message>, Return>,
     Parallel<MessagesByChannels, MessagesByUsers>,

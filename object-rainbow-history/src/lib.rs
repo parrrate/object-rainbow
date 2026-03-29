@@ -274,18 +274,18 @@ impl<T> Equivalent<T> for DiscardHeader<T> {
     Eq,
     Default,
 )]
-pub struct MappedDiff<T, M> {
-    tree: T,
+pub struct MappedDiff<M, T> {
     map: M,
+    tree: T,
 }
 
-impl<T, M> MappedDiff<T, M> {
+impl<T, M> MappedDiff<M, T> {
     pub fn tree(&self) -> &T {
         &self.tree
     }
 }
 
-impl<T: Apply<M::Output>, M: Apply<Outer>, Outer: Send> Apply<Outer> for MappedDiff<T, M> {
+impl<T: Apply<M::Output>, M: Apply<Outer>, Outer: Send> Apply<Outer> for MappedDiff<M, T> {
     type Output = T::Output;
 
     fn apply(
