@@ -393,34 +393,6 @@ impl<Diff: Send + Clone, A: Apply<Diff>, B: Apply<Diff>> Apply<Diff> for Paralle
     }
 }
 
-impl<A, B> Equivalent<Parallel<A, B>> for Sequential<A, B> {
-    fn into_equivalent(self) -> Parallel<A, B> {
-        let Self {
-            first: a,
-            second: b,
-        } = self;
-        Parallel { a, b }
-    }
-
-    fn from_equivalent(object: Parallel<A, B>) -> Self {
-        object.into_equivalent()
-    }
-}
-
-impl<A, B> Equivalent<Sequential<A, B>> for Parallel<A, B> {
-    fn into_equivalent(self) -> Sequential<A, B> {
-        let Self { a, b } = self;
-        Sequential {
-            first: a,
-            second: b,
-        }
-    }
-
-    fn from_equivalent(object: Sequential<A, B>) -> Self {
-        object.into_equivalent()
-    }
-}
-
 pub struct Discard;
 
 impl<D: Send> Apply<D> for Discard {
