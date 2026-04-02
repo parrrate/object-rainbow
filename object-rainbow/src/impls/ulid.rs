@@ -5,7 +5,9 @@ use crate::*;
 
 impl ToOutput for Ulid {
     fn to_output(&self, output: &mut dyn crate::Output) {
-        self.to_bytes().to_output(output);
+        if output.is_real() {
+            self.to_bytes().to_output(output);
+        }
     }
 }
 
