@@ -528,6 +528,10 @@ pub trait ToOutput {
         output.hash()
     }
 
+    fn mangle_hash(&self) -> Hash {
+        Mangled(self).data_hash()
+    }
+
     fn output<T: Output + Default>(&self) -> T {
         let mut output = T::default();
         self.to_output(&mut output);
