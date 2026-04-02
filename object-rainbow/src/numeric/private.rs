@@ -153,9 +153,7 @@ macro_rules! ae {
 
         impl ToOutput for NonZero<$n> {
             fn to_output(&self, output: &mut dyn crate::Output) {
-                if output.is_real() {
-                    self.get().to_output(output);
-                }
+                self.get().to_output(output);
             }
         }
 

@@ -19,9 +19,7 @@ impl<T: ToOutput> ToOutput for Hashed<T> {
         if output.is_mangling() {
             self.0.to_output(output);
         }
-        if output.is_real() {
-            self.0.data_hash().to_output(output);
-        }
+        self.0.data_hash().to_output(output);
     }
 }
 

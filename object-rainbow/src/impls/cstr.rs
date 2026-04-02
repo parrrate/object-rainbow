@@ -4,9 +4,7 @@ use crate::*;
 
 impl ToOutput for CStr {
     fn to_output(&self, output: &mut dyn Output) {
-        if output.is_real() {
-            self.to_bytes_with_nul().to_output(output);
-        }
+        self.to_bytes_with_nul().to_output(output);
     }
 }
 
