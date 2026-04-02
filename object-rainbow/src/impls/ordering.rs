@@ -6,7 +6,9 @@ use crate::*;
 
 impl ToOutput for Ordering {
     fn to_output(&self, output: &mut dyn crate::Output) {
-        (*self as i8).to_output(output);
+        if output.is_real() {
+            (*self as i8).to_output(output);
+        }
     }
 }
 
