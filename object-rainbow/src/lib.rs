@@ -16,7 +16,6 @@ use std::{
     sync::Arc,
 };
 
-
 pub use anyhow::anyhow;
 use generic_array::{ArrayLength, GenericArray, functional::FunctionalSequence};
 pub use object_rainbow_derive::{
