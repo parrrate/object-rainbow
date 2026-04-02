@@ -28,13 +28,18 @@ impl<T> DerefMut for Lp<T> {
 
 impl<T: ToOutput> ToOutput for Lp<T> {
     fn to_output(&self, output: &mut dyn crate::Output) {
-        let data = self.0.vec();
-        let len = data.len();
-        let len = len as u64;
-        assert_ne!(len, u64::MAX);
-        let prefix = Le::<u64>(len);
-        prefix.to_output(output);
-        data.to_output(output);
+        if output.is_mangling() {
+            self.0.to_output(output);
+        }
+        if output.is_real() {
+            let data = self.0.vec();
+            let len = data.len();
+            let len = len as u64;
+            assert_ne!(len, u64::MAX);
+            let prefix = Le::<u64>(len);
+            prefix.to_output(output);
+            data.to_output(output);
+        }
     }
 }
 
