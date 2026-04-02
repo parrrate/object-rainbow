@@ -145,13 +145,15 @@ impl DerefMut for LpString {
 
 impl ToOutput for LpString {
     fn to_output(&self, output: &mut dyn crate::Output) {
-        let data = self.0.as_bytes();
-        let len = data.len();
-        let len = len as u64;
-        assert_ne!(len, u64::MAX);
-        let prefix = Le::<u64>(len);
-        prefix.to_output(output);
-        data.to_output(output);
+        if output.is_real() {
+            let data = self.0.as_bytes();
+            let len = data.len();
+            let len = len as u64;
+            assert_ne!(len, u64::MAX);
+            let prefix = Le::<u64>(len);
+            prefix.to_output(output);
+            data.to_output(output);
+        }
     }
 }
 
