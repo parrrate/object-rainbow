@@ -254,9 +254,14 @@ pub struct Marshalled<T> {
     object: T,
 }
 
-impl<T> ToOutput for Marshalled<T> {
+impl<T: ToOutput> ToOutput for Marshalled<T> {
     fn to_output(&self, output: &mut dyn Output) {
-        self.root.to_output(output);
+        if output.is_mangling() {
+            self.object.to_output(output);
+        }
+        if output.is_real() {
+            self.root.to_output(output);
+        }
     }
 }
 
