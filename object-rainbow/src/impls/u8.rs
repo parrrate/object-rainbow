@@ -4,7 +4,9 @@ use crate::*;
 
 impl ToOutput for u8 {
     fn to_output(&self, output: &mut dyn crate::Output) {
-        output.write(&[*self]);
+        if output.is_real() {
+            output.write(&[*self]);
+        }
     }
 }
 
