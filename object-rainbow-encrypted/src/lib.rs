@@ -32,6 +32,7 @@ impl<
 
 #[derive(ToOutput, Parse)]
 struct EncryptedInner<K, T> {
+    tags: Hash,
     resolution: Resolution<K>,
     decrypted: Unkeyed<Arc<T>>,
 }
@@ -39,6 +40,7 @@ struct EncryptedInner<K, T> {
 impl<K, T> Clone for EncryptedInner<K, T> {
     fn clone(&self) -> Self {
         Self {
+            tags: self.tags,
             resolution: self.resolution.clone(),
             decrypted: self.decrypted.clone(),
         }
@@ -91,6 +93,7 @@ impl<K: Key, P: Fetch<T: Traversible>> Fetch for Visited<K, P> {
                     key,
                     inner:
                         EncryptedInner {
+                            tags,
                             resolution,
                             decrypted: _,
                         },
@@ -103,6 +106,7 @@ impl<K: Key, P: Fetch<T: Traversible>> Fetch for Visited<K, P> {
                 Encrypted {
                     key,
                     inner: EncryptedInner {
+                        tags,
                         resolution,
                         decrypted,
                     },
@@ -118,6 +122,7 @@ impl<K: Key, P: Fetch<T: Traversible>> Fetch for Visited<K, P> {
                 key,
                 inner:
                     EncryptedInner {
+                        tags,
                         resolution,
                         decrypted: _,
                     },
@@ -127,6 +132,7 @@ impl<K: Key, P: Fetch<T: Traversible>> Fetch for Visited<K, P> {
             Ok(Encrypted {
                 key,
                 inner: EncryptedInner {
+                    tags,
                     resolution,
                     decrypted,
                 },
@@ -140,6 +146,7 @@ impl<K: Key, P: Fetch<T: Traversible>> Fetch for Visited<K, P> {
                 key,
                 inner:
                     EncryptedInner {
+                        tags,
                         resolution,
                         decrypted: _,
                     },
@@ -157,6 +164,7 @@ impl<K: Key, P: Fetch<T: Traversible>> Fetch for Visited<K, P> {
             Encrypted {
                 key,
                 inner: EncryptedInner {
+                    tags,
                     resolution,
                     decrypted,
                 },
@@ -170,6 +178,7 @@ impl<K: Key, P: Fetch<T: Traversible>> Fetch for Visited<K, P> {
             key,
             inner:
                 EncryptedInner {
+                    tags,
                     resolution,
                     decrypted: _,
                 },
@@ -178,6 +187,7 @@ impl<K: Key, P: Fetch<T: Traversible>> Fetch for Visited<K, P> {
         Some(Encrypted {
             key,
             inner: EncryptedInner {
+                tags,
                 resolution,
                 decrypted,
             },
@@ -305,6 +315,7 @@ impl<K: Key> Decrypt<K> {
             key: _,
             inner:
                 EncryptedInner {
+                    tags: _,
                     resolution,
                     decrypted,
                 },
@@ -345,6 +356,7 @@ impl<K: Key> Resolve for Decrypt<K> {
                 key: _,
                 inner:
                     EncryptedInner {
+                        tags: _,
                         resolution,
                         decrypted,
                     },
@@ -402,6 +414,7 @@ impl<
             .decrypt(&input.parse_all()?)
             .map_err(object_rainbow::Error::consistency)?;
         let EncryptedInner {
+            tags,
             resolution,
             decrypted,
         } = EncryptedInner::<K, Vec<u8>>::parse_slice_extra(&source, &resolve, &with_key)?;
@@ -414,6 +427,7 @@ impl<
         )?;
         let decrypted = Unkeyed(Arc::new(decrypted));
         let inner = EncryptedInner {
+            tags,
             resolution,
             decrypted,
         };
@@ -498,6 +512,7 @@ impl<K: Key, T: FullHash> Fetch for Untyped<K, T> {
             key,
             inner:
                 EncryptedInner {
+                    tags,
                     resolution,
                     decrypted,
                 },
@@ -506,6 +521,7 @@ impl<K: Key, T: FullHash> Fetch for Untyped<K, T> {
         Some(Encrypted {
             key,
             inner: EncryptedInner {
+                tags,
                 resolution,
                 decrypted,
             },
@@ -567,6 +583,7 @@ pub async fn encrypt<K: Key, T: Traversible>(
     let resolution = Arc::new(Lp(resolution));
     let decrypted = Unkeyed(Arc::new(decrypted));
     let inner = EncryptedInner {
+        tags: T::HASH,
         resolution,
         decrypted,
     };
