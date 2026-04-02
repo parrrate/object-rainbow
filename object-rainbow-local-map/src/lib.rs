@@ -1,7 +1,10 @@
 use std::sync::Arc;
 
 use imbl::{HashMap, OrdSet};
-use object_rainbow::{Address, ByteNode, FailFuture, Hash, ObjectHashes, Resolve, ToOutput};
+use object_rainbow::{
+    Address, ByteNode, DiffHashes, FailFuture, Hash, ObjectHashes, Resolve, ToOutput,
+    hashed::Hashed,
+};
 
 struct EntryInner {
     topology: Vec<Hash>,
@@ -28,6 +31,7 @@ impl LocalMap {
         &mut self,
         hash: Hash,
         tags_hash: Hash,
+        mangle_hash: Hash,
         topology: Vec<Hash>,
         data: Vec<u8>,
     ) -> object_rainbow::Result<()> {
@@ -36,8 +40,11 @@ impl LocalMap {
         }
         let mut map = self.map.clone();
         let expected = ObjectHashes {
-            tags: tags_hash,
-            topology: topology.data_hash(),
+            diff: Hashed(DiffHashes {
+                tags: tags_hash,
+                topology: topology.data_hash(),
+                mangle: mangle_hash,
+            }),
             data: data.data_hash(),
         }
         .data_hash();

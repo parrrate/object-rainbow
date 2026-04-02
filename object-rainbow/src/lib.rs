@@ -30,6 +30,7 @@ use typenum::Unsigned;
 pub use self::enumkind::Enum;
 pub use self::error::{Error, Result};
 pub use self::hash::{Hash, OptionalHash};
+use self::hashed::Hashed;
 pub use self::niche::{
     AutoEnumNiche, AutoNiche, HackNiche, MaybeHasNiche, Niche, NicheForUnsized, NoNiche, OneNiche,
     SomeNiche, ZeroNiche, ZeroNoNiche,
@@ -631,17 +632,30 @@ pub trait ParseSliceExtra<Extra: Clone>: for<'a> Parse<Input<'a, Extra>> {
 impl<T: for<'a> Parse<Input<'a, Extra>>, Extra: Clone> ParseSliceExtra<Extra> for T {}
 
 #[derive(ToOutput)]
-pub struct ObjectHashes {
+pub struct DiffHashes {
     pub tags: Hash,
     pub topology: Hash,
+    pub mangle: Hash,
+}
+
+#[derive(ToOutput)]
+pub struct ObjectHashes {
+    pub diff: Hashed<DiffHashes>,
     pub data: Hash,
 }
 
 pub trait FullHash: ToOutput + ListHashes + Tagged {
-    fn hashes(&self) -> ObjectHashes {
-        ObjectHashes {
+    fn diff_hashes(&self) -> DiffHashes {
+        DiffHashes {
             tags: Self::HASH,
             topology: self.topology_hash(),
+            mangle: self.mangle_hash(),
+        }
+    }
+
+    fn hashes(&self) -> ObjectHashes {
+        ObjectHashes {
+            diff: Hashed(self.diff_hashes()),
             data: self.data_hash(),
         }
     }
