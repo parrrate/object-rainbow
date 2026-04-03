@@ -5,6 +5,14 @@ use crate::*;
 )]
 pub struct MappedExtra<T, M = ()>(pub M, pub T);
 
+impl<T, M> Deref for MappedExtra<T, M> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.1
+    }
+}
+
 #[derive_for_wrapped]
 pub trait MapExtra<Extra: 'static + Clone = ()> {
     type Mapped: 'static + Clone;
