@@ -30,7 +30,6 @@ use typenum::Unsigned;
 pub use self::enumkind::Enum;
 pub use self::error::{Error, Result};
 pub use self::hash::{Hash, OptionalHash};
-use self::hashed::Hashed;
 pub use self::niche::{
     AutoEnumNiche, AutoNiche, HackNiche, MaybeHasNiche, Niche, NicheForUnsized, NoNiche, OneNiche,
     SomeNiche, ZeroNiche, ZeroNoNiche,
@@ -640,7 +639,7 @@ pub struct DiffHashes {
 
 #[derive(ToOutput)]
 pub struct ObjectHashes {
-    pub diff: Hashed<DiffHashes>,
+    pub diff: Hash,
     pub data: Hash,
 }
 
@@ -655,7 +654,7 @@ pub trait FullHash: ToOutput + ListHashes + Tagged {
 
     fn hashes(&self) -> ObjectHashes {
         ObjectHashes {
-            diff: Hashed(self.diff_hashes()),
+            diff: self.diff_hashes().data_hash(),
             data: self.data_hash(),
         }
     }

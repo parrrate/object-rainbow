@@ -6,7 +6,7 @@ use std::{
 use async_executor::Executor;
 use flume::Sender;
 use futures_channel::oneshot;
-use object_rainbow::{Hash, PointVisitor, SingularFetch, ToOutput, Traversible};
+use object_rainbow::{Hash, ObjectHashes, PointVisitor, SingularFetch, ToOutput, Traversible};
 use object_rainbow_local_map::LocalMap;
 
 type Dependency = Box<
@@ -75,14 +75,22 @@ impl<'r> Context<'r> {
         }
         {
             let (callback, wait) = oneshot::channel();
-            let hashes = object.hashes();
+            let diff = object.diff_hashes();
+            let diff_hash = diff.data_hash();
+            let data = object.vec();
+            let data_hash = data.data_hash();
+            let hashes = ObjectHashes {
+                diff: diff_hash,
+                data: data_hash,
+            };
+            let full_hash = hashes.data_hash();
             self.request
                 .send_async(Request::End {
-                    hash: hashes.data_hash(),
-                    tags_hash: hashes.diff.tags,
-                    mangle_hash: hashes.diff.mangle,
+                    hash: full_hash,
+                    tags_hash: diff.tags,
+                    mangle_hash: diff.mangle,
                     topology,
-                    data: object.output(),
+                    data,
                     callback,
                 })
                 .await
