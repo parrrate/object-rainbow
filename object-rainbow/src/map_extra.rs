@@ -1,6 +1,8 @@
 use crate::*;
 
-#[derive(Debug, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Clone, Copy, Size)]
+#[derive(
+    Debug, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Clone, Copy, Size, MaybeHasNiche,
+)]
 pub struct MappedExtra<T, M = ()>(pub M, pub T);
 
 pub trait MapExtra<Extra: 'static + Clone = ()> {
