@@ -23,7 +23,7 @@ mod point_deserialize;
 mod point_serialize;
 
 #[derive(Clone, ParseAsInline)]
-struct Extras<Extra>(Extra);
+pub struct Extras<Extra>(pub Extra);
 
 impl<Extra> Deref for Extras<Extra> {
     type Target = Extra;
