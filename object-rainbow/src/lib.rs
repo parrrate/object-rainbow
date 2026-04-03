@@ -1347,6 +1347,10 @@ impl<T, I: PointInput<Extra: ExtraFor<T>>> ParseInline<I> for Arc<dyn ExtraFor<T
     }
 }
 
+impl<T> MaybeHasNiche for dyn ExtraFor<T> {
+    type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
+}
+
 #[doc(hidden)]
 pub trait BoundPair: Sized {
     type T;
