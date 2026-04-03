@@ -354,7 +354,7 @@ impl<
 > Parse<I> for Stored<S, T>
 {
     fn parse(input: I) -> object_rainbow::Result<Self> {
-        Ok(Self::new(input.parse()?))
+        input.parse().map(Self::new)
     }
 }
 
@@ -365,7 +365,7 @@ impl<
 > ParseInline<I> for Stored<S, T>
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        Ok(Self::new(input.parse_inline()?))
+        input.parse_inline().map(Self::new)
     }
 }
 
