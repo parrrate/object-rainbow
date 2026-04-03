@@ -378,3 +378,9 @@ assert_impl!(
     {
     }
 );
+
+impl<S, T> Stored<S, T> {
+    pub fn load(&self) -> &Point<T> {
+        &self.point
+    }
+}
