@@ -1321,6 +1321,11 @@ impl<T> ToOutput for dyn ExtraFor<T> {
     fn to_output(&self, _: &mut dyn Output) {}
 }
 
+impl<T: Tagged> Tagged for dyn ExtraFor<T> {
+    const TAGS: Tags = T::TAGS;
+    const HASH: Hash = T::HASH;
+}
+
 #[doc(hidden)]
 pub trait BoundPair: Sized {
     type T;
