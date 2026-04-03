@@ -1332,6 +1332,7 @@ impl<T> Size for dyn ExtraFor<T> {
 }
 
 impl<T> ListHashes for dyn ExtraFor<T> {}
+impl<T> Topological for dyn ExtraFor<T> {}
 
 #[doc(hidden)]
 pub trait BoundPair: Sized {
