@@ -1,6 +1,6 @@
 use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
-    Topological,
+    Topological, map_extra::MappedExtra,
 };
 
 use crate::Apply;
@@ -51,5 +51,17 @@ impl<K: Send + Clone, V: Send, M: MapToSet<K, V>> Apply<(Option<V>, (Option<V>, 
             }
             Ok(diff)
         }
+    }
+}
+
+impl<K: Send, V: Send, T: MapToSet<K, V>, M: Send + Sync> MapToSet<K, V> for MappedExtra<T, M> {
+    type T = T::T;
+
+    fn map(
+        &self,
+        key: K,
+        value: V,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::T>> {
+        self.1.map(key, value)
     }
 }
