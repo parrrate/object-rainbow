@@ -1191,7 +1191,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.55"
+version = "0.0.0-a.56"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1259,7 +1259,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-encrypted"
-version = "0.0.0-a.13"
+version = "0.0.0-a.14"
 dependencies = [
  "anyhow",
  "chacha20poly1305",
@@ -1275,7 +1275,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-fetchall"
-version = "0.0.0-a.5"
+version = "0.0.0-a.6"
 dependencies = [
  "anyhow",
  "async-executor",
@@ -1328,7 +1328,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-json"
-version = "0.0.0-a.18"
+version = "0.0.0-a.19"
 dependencies = [
  "futures-util",
  "object-rainbow",
@@ -1340,7 +1340,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-local-map"
-version = "0.0.0-a.2"
+version = "0.0.0-a.3"
 dependencies = [
  "imbl",
  "object-rainbow",
@@ -1348,7 +1348,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-marshall"
-version = "0.0.0-a.8"
+version = "0.0.0-a.9"
 dependencies = [
  "anyhow",
  "object-rainbow",
