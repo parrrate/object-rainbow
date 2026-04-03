@@ -340,9 +340,7 @@ impl<S: Topological, T> Topological for Stored<S, T> {
 
 impl<S: RainbowStore, T: 'static + FullHash> Stored<S, T> {
     fn new<E: 'static + Send + Sync + Clone + ExtraFor<T>>(
-        hash: Hash,
-        extra: Extras<E>,
-        store: S,
+        StoredInner { hash, extra, store }: StoredInner<S, E>,
     ) -> Self {
         let point = store.point_extra(hash, extra.0);
         Self { point, store }
@@ -356,8 +354,7 @@ impl<
 > Parse<I> for Stored<S, T>
 {
     fn parse(input: I) -> object_rainbow::Result<Self> {
-        let StoredInner { hash, extra, store } = input.parse()?;
-        Ok(Self::new(hash, extra, store))
+        Ok(Self::new(input.parse()?))
     }
 }
 
@@ -368,8 +365,7 @@ impl<
 > ParseInline<I> for Stored<S, T>
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let StoredInner { hash, extra, store } = input.parse_inline()?;
-        Ok(Self::new(hash, extra, store))
+        Ok(Self::new(input.parse_inline()?))
     }
 }
 
