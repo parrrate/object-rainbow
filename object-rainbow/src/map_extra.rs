@@ -5,7 +5,7 @@ use crate::*;
 )]
 pub struct MappedExtra<T, M = ()>(pub M, pub T);
 
-#[derive_for_mapped]
+#[derive_for_wrapped]
 pub trait MapExtra<Extra: 'static + Clone = ()> {
     type Mapped: 'static + Clone;
     fn map_extra(&self, extra: Extra) -> Self::Mapped;
