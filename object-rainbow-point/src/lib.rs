@@ -462,6 +462,12 @@ pub struct Point<T> {
     fetch: Arc<dyn Fetch<T = T>>,
 }
 
+impl<T> std::hash::Hash for Point<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.hash.hash(state);
+    }
+}
+
 impl<T> std::fmt::Debug for Point<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         #[derive(Debug)]
