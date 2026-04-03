@@ -2382,6 +2382,7 @@ pub fn derive_for_mapped(args: TokenStream, input: TokenStream) -> TokenStream {
         __M: #sup
     });
     let (impl_generics, _, where_clause) = generics.split_for_impl();
+    let field = quote!(1);
     let i = input
         .items
         .clone()
@@ -2415,7 +2416,7 @@ pub fn derive_for_mapped(args: TokenStream, input: TokenStream) -> TokenStream {
                             let reference = receiver.reference.as_ref().map(|(and, _)| and);
                             let mutability = receiver.mutability.as_ref();
                             let ident = &receiver.self_token;
-                            quote!(#reference #mutability #ident.1)
+                            quote!(#reference #mutability #ident.#field)
                         }
                         FnArg::Typed(pat_type) => {
                             let ident = Ident::new(&format!("arg{n}"), pat_type.span());
