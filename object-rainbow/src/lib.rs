@@ -46,6 +46,7 @@ mod impls;
 pub mod incr_byte_niche;
 pub mod inline_extra;
 pub mod length_prefixed;
+pub mod map_extra;
 mod niche;
 pub mod numeric;
 pub mod partial_byte_tag;
