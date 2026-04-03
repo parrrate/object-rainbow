@@ -2363,13 +2363,18 @@ fn gen_mn_array(data: &Data) -> proc_macro2::TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn derive_for_mapped(_args: TokenStream, input: TokenStream) -> TokenStream {
+pub fn derive_for_mapped(args: TokenStream, input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as ItemTrait);
     let name = input.ident.clone();
     let generics = input.generics.clone();
     let (_, ty_generics, _) = generics.split_for_impl();
     let mut generics = input.generics.clone();
-    let sup = input.supertraits.clone();
+    let sup = if args.is_empty() {
+        let sup = input.supertraits.clone();
+        quote!(#sup)
+    } else {
+        args.into()
+    };
     generics.params.push(parse_quote! {
         __T: #name #ty_generics
     });
