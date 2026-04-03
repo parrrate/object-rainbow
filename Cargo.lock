@@ -1191,7 +1191,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.56"
+version = "0.0.0-a.57"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1247,7 +1247,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-derive"
-version = "0.0.0-a.17"
+version = "0.0.0-a.18"
 dependencies = [
  "darling",
  "object-rainbow",
@@ -1259,7 +1259,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-encrypted"
-version = "0.0.0-a.14"
+version = "0.0.0-a.15"
 dependencies = [
  "anyhow",
  "chacha20poly1305",
@@ -1298,7 +1298,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.21"
+version = "0.0.0-a.22"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1360,7 +1360,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-point"
-version = "0.0.0-a.8"
+version = "0.0.0-a.9"
 dependencies = [
  "futures-util",
  "object-rainbow",
@@ -1377,7 +1377,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-store"
-version = "0.0.0-a.8"
+version = "0.0.0-a.9"
 dependencies = [
  "object-rainbow",
  "object-rainbow-point",
