@@ -5,7 +5,7 @@
 use futures_util::TryStreamExt;
 use object_rainbow::{
     Equivalent, Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline,
-    Size, Tagged, ToOutput, Topological, Traversible, assert_impl,
+    Size, Tagged, ToOutput, Topological, Traversible, assert_impl, map_extra::MappedExtra,
 };
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
@@ -458,5 +458,16 @@ impl<A: Send, B: Send> Apply<(A, B)> for Swap {
         (a, b): (A, B),
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
         futures_util::future::ready(Ok((b, a)))
+    }
+}
+
+impl<Diff: Send, T: Apply<Diff>, M: Send> Apply<Diff> for MappedExtra<T, M> {
+    type Output = T::Output;
+
+    fn apply(
+        &mut self,
+        diff: Diff,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        self.1.apply(diff)
     }
 }
