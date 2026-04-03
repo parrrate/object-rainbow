@@ -338,10 +338,10 @@ impl<
 > Parse<I> for Stored<S, T>
 {
     fn parse(mut input: I) -> object_rainbow::Result<Self> {
-        let hash = input.parse_inline::<Hash>()?;
+        let hash = input.parse_inline()?;
         let extra = input.extra().clone();
         let store = input.parse::<S>()?;
-        let point = store.point_extra::<T, I::Extra>(hash, extra);
+        let point = store.point_extra(hash, extra);
         Ok(Self { point, store })
     }
 }
@@ -353,10 +353,10 @@ impl<
 > ParseInline<I> for Stored<S, T>
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let hash = input.parse_inline::<Hash>()?;
+        let hash = input.parse_inline()?;
         let extra = input.extra().clone();
         let store = input.parse_inline::<S>()?;
-        let point = store.point_extra::<T, I::Extra>(hash, extra);
+        let point = store.point_extra(hash, extra);
         Ok(Self { point, store })
     }
 }
