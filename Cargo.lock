@@ -1362,7 +1362,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-point"
-version = "0.0.0-a.9"
+version = "0.0.0-a.10"
 dependencies = [
  "futures-util",
  "object-rainbow",
@@ -1379,7 +1379,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-store"
-version = "0.0.0-a.9"
+version = "0.0.0-a.10"
 dependencies = [
  "object-rainbow",
  "object-rainbow-point",
