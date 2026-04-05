@@ -1,18 +1,9 @@
-use std::{
-    collections::{BTreeMap, BTreeSet},
-    future::ready,
-    ops::Deref,
-    sync::Arc,
-};
-
 use chacha20poly1305::{ChaCha20Poly1305, aead::Aead};
-use object_rainbow::{
-    ByteNode, FailFuture, Fetch, Hash, Object, PointVisitor, Resolve, SingularFetch, Traversible,
-};
+use object_rainbow::{Fetch, Object};
 use object_rainbow_encrypted::{Key, encrypt_point};
+use object_rainbow_fetchall::fetchall;
 use object_rainbow_point::{IntoPoint, Point};
 use sha2::digest::generic_array::GenericArray;
-use smol::{Executor, channel::Sender};
 
 #[derive(Debug, Clone, Copy)]
 struct Test([u8; 32]);
@@ -48,125 +39,12 @@ impl Key for Test {
     }
 }
 
-type Callback<'a> = dyn 'a + Send + FnOnce(&mut BTreeSet<Hash>);
-
-struct Event<'a>(Hash, Vec<u8>, Box<Callback<'a>>);
-
-#[derive(Debug, Clone)]
-struct EventContext<'ex> {
-    executor: Arc<Executor<'ex>>,
-    send: Sender<Event<'ex>>,
-}
-
-struct EventVisitor<'ex, 't> {
-    fetching: &'t mut BTreeSet<Hash>,
-    context: EventContext<'ex>,
-}
-
-impl<'ex> Deref for EventVisitor<'ex, '_> {
-    type Target = EventContext<'ex>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.context
-    }
-}
-
-impl EventContext<'_> {
-    async fn send(self, object: impl Traversible) {
-        let send = self.send.clone();
-        let event = Event::from_object(object, self);
-        let _ = send.send(event).await;
-    }
-
-    async fn resolve(self, point: impl Fetch<T: Traversible>) {
-        match point.fetch().await {
-            Ok(object) => self.send(object).await,
-            Err(e) => tracing::error!("{e:?}"),
-        }
-    }
-}
-
-impl PointVisitor for EventVisitor<'_, '_> {
-    fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone)) {
-        if !self.fetching.contains(&point.hash()) {
-            self.fetching.insert(point.hash());
-            let point = point.clone();
-            let context = self.context.clone();
-            self.executor.spawn(context.resolve(point)).detach();
-        }
-    }
-}
-
-impl<'ex> Event<'ex> {
-    fn from_object<T: Traversible>(object: T, context: EventContext<'ex>) -> Self {
-        let hash = object.full_hash();
-        let data = object.output();
-        Event(
-            hash,
-            data,
-            Box::new(move |fetching| object.traverse(&mut EventVisitor { fetching, context })),
-        )
-    }
-}
-
-#[derive(Debug, Clone)]
-struct MapResolve(Arc<BTreeMap<Hash, Vec<u8>>>);
-
-impl Resolve for MapResolve {
-    fn resolve<'a>(
-        &'a self,
-        address: object_rainbow::Address,
-        this: &'a Arc<dyn Resolve>,
-    ) -> FailFuture<'a, ByteNode> {
-        Box::pin(ready(match self.0.get(&address.hash) {
-            Some(data) => Ok((data.clone(), this.clone())),
-            None => Err(object_rainbow::Error::HashNotFound),
-        }))
-    }
-
-    fn resolve_data(&'_ self, address: object_rainbow::Address) -> FailFuture<'_, Vec<u8>> {
-        Box::pin(ready(match self.0.get(&address.hash) {
-            Some(data) => Ok(data.clone()),
-            None => Err(object_rainbow::Error::HashNotFound),
-        }))
-    }
-}
-
 async fn iterate<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
     point: Point<T>,
     extra: Extra,
 ) -> anyhow::Result<Point<T>> {
-    let (send, recv) = smol::channel::unbounded::<Event>();
-    let executor = Arc::new(Executor::new());
-    EventContext {
-        executor: executor.clone(),
-        send,
-    }
-    .send(point.fetch().await?)
-    .await;
-    let fetched = executor
-        .run(async {
-            let mut fetching = BTreeSet::new();
-            let mut fetched = BTreeMap::new();
-            while let Ok(Event(hash, data, process)) = recv.recv().await {
-                fetched.insert(hash, data);
-                process(&mut fetching);
-            }
-            fetched
-        })
-        .await;
-    for (k, v) in &fetched {
-        println!(
-            "{} {}",
-            hex::encode(k),
-            if v.iter().all(|x| *x >= b' ') {
-                String::from_utf8(v.clone()).unwrap_or_else(|e| hex::encode(e.into_bytes()))
-            } else {
-                hex::encode(v)
-            },
-        );
-    }
-    let resolve = Arc::new(MapResolve(Arc::new(fetched)));
+    let map = fetchall(&point.fetch().await?).await?;
+    let resolve = map.to_resolve();
     Ok(point.with_resolve(resolve, extra))
 }
 
@@ -181,9 +59,11 @@ fn main() -> anyhow::Result<()> {
             .point();
         let key = Test(std::array::from_fn(|i| i as _));
         let point = encrypt_point(key, point).await?;
+        println!("after encryption 1");
         let point = iterate(point, key).await?;
         let point = point.fetch().await?.into_inner().point();
         let point = encrypt_point(key, point).await?;
+        println!("after encryption 2");
         let point = point.fetch().await?.into_inner().point();
         assert_eq!(
             point.fetch().await?.0.fetch().await?.fetch().await?.0,
