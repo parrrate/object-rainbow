@@ -17,6 +17,7 @@ license.workspace = true
 repository.workspace = true
 authors.workspace = true
 description = "distributed object model"
+documentation = "https://docs.rs/object-rainbow"
 
 [dependencies]
 object-rainbow-derive = { version = "0.0.0-a.1", path = "object-rainbow-derive" }
