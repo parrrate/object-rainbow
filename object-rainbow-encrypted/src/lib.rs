@@ -252,6 +252,10 @@ impl<K, D> FetchBytes for InnerFetch<K, D> {
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
         self.encrypted.fetch_data()
     }
+
+    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
+        self.encrypted.fetch_bytes_local()
+    }
 }
 
 impl<K: Key, D: Fetch<T: Topological + Tagged>> Fetch for InnerFetch<K, D> {
