@@ -57,6 +57,10 @@ impl Hash {
     pub(crate) const fn from_sha256(hash: [u8; HASH_SIZE]) -> Self {
         Self(hash)
     }
+
+    pub fn into_bytes(self) -> [u8; HASH_SIZE] {
+        self.0
+    }
 }
 
 impl Deref for Hash {
