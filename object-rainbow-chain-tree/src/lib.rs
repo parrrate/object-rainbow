@@ -45,6 +45,26 @@ impl<T: Clone + Traversible> ChainNode<T> {
 pub struct ChainHandle<T>(Option<ChainNode<T>>);
 
 impl<T: Clone + Traversible> ChainHandle<T> {
+    fn next_tree(&mut self) -> object_rainbow::Result<AppendTree<Point<ChainNode<T>>>> {
+        Ok(if let Some(node) = self.0.take() {
+            let mut tree = node.tree.clone();
+            tree.push(node.point())?;
+            tree
+        } else {
+            Default::default()
+        })
+    }
+
+    fn with_value(&mut self, value: T) -> object_rainbow::Result<ChainNode<T>> {
+        let tree = self.next_tree()?;
+        Ok(ChainNode { value, tree })
+    }
+
+    pub fn push(&mut self, value: T) -> object_rainbow::Result<()> {
+        self.0 = Some(self.with_value(value)?);
+        Ok(())
+    }
+
     pub fn into_tree(self) -> ChainTree<T> {
         ChainTree(self.0.map(|node| node.point()))
     }
