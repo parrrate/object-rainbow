@@ -1158,10 +1158,10 @@ impl<T: Traversible + Clone> Point<T> {
 
     fn yolo_mut(&mut self) -> bool {
         self.fetch.get().is_some()
-            && Arc::get_mut(&mut self.fetch).is_some_and(|origin| origin.get_mut().is_some())
+            && Arc::get_mut(&mut self.fetch).is_some_and(|fetch| fetch.get_mut().is_some())
     }
 
-    async fn prepare_yolo_origin(&mut self) -> crate::Result<()> {
+    async fn prepare_yolo_fetch(&mut self) -> crate::Result<()> {
         if !self.yolo_mut() {
             let object = self.fetch.fetch().await?;
             self.fetch = Arc::new(LocalFetch { object });
@@ -1170,7 +1170,7 @@ impl<T: Traversible + Clone> Point<T> {
     }
 
     pub async fn fetch_mut(&'_ mut self) -> crate::Result<PointMut<'_, T>> {
-        self.prepare_yolo_origin().await?;
+        self.prepare_yolo_fetch().await?;
         let origin = Arc::get_mut(&mut self.fetch).unwrap();
         assert!(origin.get_mut().is_some());
         self.hash.clear();
@@ -1181,7 +1181,7 @@ impl<T: Traversible + Clone> Point<T> {
     }
 
     pub async fn fetch_ref(&mut self) -> crate::Result<&T> {
-        self.prepare_yolo_origin().await?;
+        self.prepare_yolo_fetch().await?;
         Ok(self.fetch.get().unwrap())
     }
 }
