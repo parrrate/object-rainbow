@@ -2376,6 +2376,7 @@ pub fn derive_for_mapped(args: TokenStream, input: TokenStream) -> TokenStream {
     let (_, ty_generics, _) = generics.split_for_impl();
     let mut derived = Vec::new();
     {
+        let path = quote!(map_extra::MappedExtra);
         let field = quote!(1);
         let extra = vec![(quote!(__M), quote!(#sup))];
         let mut generics = input.generics.clone();
@@ -2456,7 +2457,7 @@ pub fn derive_for_mapped(args: TokenStream, input: TokenStream) -> TokenStream {
             .collect::<Vec<_>>();
         let extra = extra.into_iter().map(|(k, _)| k);
         derived.push(quote! {
-            impl #impl_generics #name #ty_generics for ::object_rainbow::map_extra::MappedExtra<
+            impl #impl_generics #name #ty_generics for ::object_rainbow::#path<
                 __T,
                 #(#extra),*
             >
