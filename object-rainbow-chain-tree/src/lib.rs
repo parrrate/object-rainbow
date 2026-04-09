@@ -1,3 +1,5 @@
+use futures_util::Stream;
+use genawaiter_try_stream::try_stream;
 use object_rainbow::{
     Fetch, Inline, InlineOutput, ListHashes, Object, Parse, ParseInline, Tagged, ToOutput,
     Topological, Traversible, assert_impl,
@@ -7,7 +9,7 @@ use object_rainbow_point::{IntoPoint, Point};
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 #[topology(recursive)]
-struct ChainNode<T> {
+pub struct ChainNode<T> {
     value: T,
     #[tags(skip)]
     #[parse(unchecked)]
@@ -126,6 +128,27 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainTree<T> {
 
     pub async fn precedes(&self, other: &Self) -> object_rainbow::Result<bool> {
         other.follows(self).await
+    }
+
+    /// Yield entries `since`. Order is unspecified.
+    pub fn diff(&self, since: &Self) -> impl Stream<Item = object_rainbow::Result<ChainNode<T>>> {
+        try_stream(async move |co| {
+            if self == since {
+                return Ok(());
+            }
+            if !self.follows(since).await? {
+                return Err(object_rainbow::error_fetch!("divergent histories"));
+            }
+            let mut current = self.clone();
+            while current != *since
+                && let Some(node) = current.0
+            {
+                let node = node.fetch().await?;
+                current.0 = node.tree.last().cloned();
+                co.yield_(node).await;
+            }
+            Ok(())
+        })
     }
 }
 
