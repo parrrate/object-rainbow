@@ -871,6 +871,9 @@ pub trait Output {
     fn is_mangling(&self) -> bool {
         false
     }
+    fn is_real(&self) -> bool {
+        !self.is_mangling()
+    }
 }
 
 impl Output for Vec<u8> {
@@ -883,6 +886,7 @@ struct MangleOutput<'a>(&'a mut dyn Output);
 
 impl<'a> MangleOutput<'a> {
     fn new(output: &'a mut dyn Output) -> Self {
+        assert!(output.is_real());
         assert!(!output.is_mangling());
         Self(output)
     }
