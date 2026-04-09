@@ -168,3 +168,11 @@ impl ArraySet {
         }
     }
 }
+
+impl Extend<u8> for ArraySet {
+    fn extend<T: IntoIterator<Item = u8>>(&mut self, iter: T) {
+        iter.into_iter().for_each(|key| {
+            self.insert(key);
+        });
+    }
+}
