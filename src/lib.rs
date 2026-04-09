@@ -1094,6 +1094,10 @@ impl<T> FetchBytes for Point<T> {
         self.fetch.fetch_data()
     }
 
+    fn fetch_bytes_local(&self) -> Result<Option<ByteNode>> {
+        self.fetch.fetch_bytes_local()
+    }
+
     fn fetch_data_local(&self) -> Option<Vec<u8>> {
         self.fetch.fetch_data_local()
     }
