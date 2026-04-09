@@ -238,3 +238,28 @@ impl AmtSet {
             .await
     }
 }
+
+#[cfg(test)]
+mod test {
+    use macro_rules_attribute::apply;
+    use object_rainbow::ToOutput;
+    use smol_macros::test;
+
+    use crate::AmtSet;
+
+    #[apply(test!)]
+    async fn test() -> object_rainbow::Result<()> {
+        let mut tree = AmtSet::default();
+        assert!(tree.insert(1u8.data_hash()).await?);
+        assert!(tree.contains(1u8.data_hash()).await?);
+        assert!(!tree.insert(1u8.data_hash()).await?);
+        assert!(tree.contains(1u8.data_hash()).await?);
+        assert!(tree.insert(2u8.data_hash()).await?);
+        assert!(tree.contains(1u8.data_hash()).await?);
+        assert!(tree.contains(2u8.data_hash()).await?);
+        assert!(!tree.insert(2u8.data_hash()).await?);
+        assert!(tree.contains(1u8.data_hash()).await?);
+        assert!(tree.contains(2u8.data_hash()).await?);
+        Ok(())
+    }
+}
