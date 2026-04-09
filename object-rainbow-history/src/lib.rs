@@ -13,6 +13,12 @@ use object_rainbow_point::{IntoPoint, Point};
 )]
 pub struct History<T, D>(ChainTree<(T, D)>);
 
+impl<T, D> Clone for History<T, D> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
 impl<T, D> History<T, D> {
     pub const ROOT: Self = Self(ChainTree::EMPTY);
 }
