@@ -1161,6 +1161,7 @@ dependencies = [
  "object-rainbow-point",
  "smol",
  "smol-macros",
+ "thiserror",
  "typenum",
 ]
 

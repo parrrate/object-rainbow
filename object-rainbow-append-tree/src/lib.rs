@@ -75,6 +75,16 @@ trait ParseWithLen<I: ParseInput>: History {
     fn parse_with_len(input: &mut I, len: u64) -> object_rainbow::Result<(Self, Self::History)>;
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum PushError<T> {
+    #[error("leaf overflow")]
+    LeafOverflow(T),
+    #[error("non-leaf overflow")]
+    NonLeafOverflow(T),
+    #[error("root overflow")]
+    RootOverflow(T),
+}
+
 trait Push: Clone + History {
     type T: Send + Sync;
     fn get(&self, index: u64) -> impl Send + Future<Output = object_rainbow::Result<Self::T>>;
