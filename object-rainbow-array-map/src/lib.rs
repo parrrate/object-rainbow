@@ -7,7 +7,7 @@ use std::{
 use bitvec::array::BitArray;
 use object_rainbow::{
     Equivalent, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseAsInline, ParseInline,
-    ParseInput, RainbowIterator, Size, Tagged, ToOutput, Topological, assert_impl,
+    ParseInput, PointInput, RainbowIterator, Size, Tagged, ToOutput, Topological, assert_impl,
 };
 
 type Bits = BitArray<[u8; 32]>;
@@ -42,6 +42,34 @@ assert_impl!(
     impl<T, E> Inline<E> for ArrayMap<T>
     where
         T: Inline<E>,
+        E: Clone,
+    {
+    }
+);
+
+#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, ParseAsInline, Clone)]
+pub struct KeyedArrayMap<T>(pub ArrayMap<T>);
+
+impl<T: ParseInline<I::WithExtra<(u8, I::Extra)>>, I: PointInput> ParseInline<I>
+    for KeyedArrayMap<T>
+{
+    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
+        let bits = input.parse_inline::<Bits>()?;
+        let map = bits
+            .iter_ones()
+            .map(|one| {
+                let key = u8::try_from(one).expect("overflow");
+                Ok((key, input.parse_inline_extra((key, input.extra().clone()))?))
+            })
+            .collect::<object_rainbow::Result<_>>()?;
+        Ok(Self(ArrayMap { bits, map }))
+    }
+}
+
+assert_impl!(
+    impl<T, E> Inline<E> for KeyedArrayMap<T>
+    where
+        T: Inline<(u8, E)>,
         E: Clone,
     {
     }
