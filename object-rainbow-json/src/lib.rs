@@ -1,8 +1,8 @@
 use std::{collections::BTreeMap, io::Write};
 
 use object_rainbow::{
-    Enum, Inline, MaybeHasNiche, Object, Output, Parse, ParseAsInline, ParseInline, ParseInput,
-    Point, ReflessObject, Size, SomeNiche, Tagged, ToOutput, Topological, ZeroNiche,
+    Enum, Fetch, Inline, MaybeHasNiche, Object, Output, Parse, ParseAsInline, ParseInline,
+    ParseInput, Point, ReflessObject, Size, SomeNiche, Tagged, ToOutput, Topological, ZeroNiche,
     length_prefixed::LpString, numeric::Le,
 };
 use serde::{Serialize, de::DeserializeOwned};
@@ -53,7 +53,7 @@ impl MaybeHasNiche for Json<()> {
     type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
 }
 
-#[derive(Enum, ToOutput, Topological, ParseAsInline, ParseInline, Size, MaybeHasNiche)]
+#[derive(Enum, ToOutput, Topological, ParseAsInline, ParseInline, Size, MaybeHasNiche, Clone)]
 pub enum Distributed {
     Null,
     Bool(bool),
@@ -68,3 +68,30 @@ pub enum Distributed {
 impl Tagged for Distributed {}
 impl Object for Distributed {}
 impl Inline for Distributed {}
+
+impl Distributed {
+    pub async fn to_value(&self) -> object_rainbow::Result<serde_json::Value> {
+        Ok(match *self {
+            Distributed::Null => serde_json::Value::Null,
+            Distributed::Bool(x) => x.into(),
+            Distributed::I64(x) => x.0.into(),
+            Distributed::U64(x) => x.0.into(),
+            Distributed::F64(x) => x.0.into(),
+            Distributed::String(ref point) => point.fetch().await?.into(),
+            Distributed::Array(ref point) => {
+                let mut vec = Vec::new();
+                for x in point.fetch().await? {
+                    vec.push(Box::pin(x.to_value()).await?);
+                }
+                vec.into()
+            }
+            Distributed::Object(ref point) => {
+                let mut map = serde_json::Map::new();
+                for (k, v) in point.fetch().await? {
+                    map.insert(k.0, Box::pin(v.to_value()).await?);
+                }
+                map.into()
+            }
+        })
+    }
+}
