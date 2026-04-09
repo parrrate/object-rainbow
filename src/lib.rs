@@ -56,6 +56,8 @@ pub enum Error {
     DataMismatch,
     #[error("discriminant overflow")]
     DiscriminantOverflow,
+    #[error("zero")]
+    Zero,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -937,22 +939,18 @@ impl<T: AsHeadOf<R::MaybeNiche>, R: MnArray> MnArray for TArr<T, R> {
     type MaybeNiche = T::WithTail;
 }
 
-mod point_niche {
-    use crate::*;
+pub struct ZeroNiche<N>(N);
 
-    pub struct PointNiche;
-
-    impl Niche for PointNiche {
-        type NeedsTag = B0;
-        type N = typenum::generic_const_mappings::U<HASH_SIZE>;
-        fn niche() -> GenericArray<u8, Self::N> {
-            GenericArray::default()
-        }
+impl<N: ArrayLength> Niche for ZeroNiche<N> {
+    type NeedsTag = B0;
+    type N = N;
+    fn niche() -> GenericArray<u8, Self::N> {
+        GenericArray::default()
     }
+}
 
-    impl<T> MaybeHasNiche for Point<T> {
-        type MnArray = SomeNiche<PointNiche>;
-    }
+impl<T> MaybeHasNiche for Point<T> {
+    type MnArray = SomeNiche<ZeroNiche<Self::Size>>;
 }
 
 #[test]
