@@ -733,6 +733,13 @@ pub trait ToOutput {
         self.to_output(&mut output);
         output.hash()
     }
+
+    fn slice_to_output(slice: &[Self], output: &mut dyn Output)
+    where
+        Self: Sized,
+    {
+        slice.iter_to_output(output)
+    }
 }
 
 pub trait ToOutputExt: ToOutput {
