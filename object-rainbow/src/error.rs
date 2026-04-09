@@ -106,12 +106,12 @@ impl Error {
 
     /// Construct [`Error::Operation`] from another error.
     pub fn operation(e: impl Into<anyhow::Error>) -> Self {
-        Self::Fetch(e.into())
+        Self::Operation(e.into())
     }
 
     /// Construct [`Error::Consistency`] from another error.
     pub fn consistency(e: impl Into<anyhow::Error>) -> Self {
-        Self::Fetch(e.into())
+        Self::Consistency(e.into())
     }
 
     /// Convert from something that can be converted into [`std::io::Error`] (e.g. `zmq::Error`).
