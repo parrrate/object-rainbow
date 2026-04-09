@@ -334,6 +334,14 @@ pub struct ObjectMarker<T: ?Sized> {
     object: PhantomData<fn() -> T>,
 }
 
+impl<T: ?Sized> Clone for ObjectMarker<T> {
+    fn clone(&self) -> Self {
+        Self {
+            object: PhantomData,
+        }
+    }
+}
+
 impl<T: ?Sized> Default for ObjectMarker<T> {
     fn default() -> Self {
         Self {
