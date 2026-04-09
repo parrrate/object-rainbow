@@ -1605,43 +1605,6 @@ impl<T, F: Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
     }
 }
 
-impl<T: 'static + ToOutput> Point<T> {
-    pub fn map<U>(self, map: impl 'static + Send + Sync + Fn(T) -> U) -> Point<U> {
-        self.map_fetch(|fetch| Arc::new(Map { fetch, map }))
-    }
-}
-
-struct Map<T, F> {
-    fetch: Arc<dyn Fetch<T = T>>,
-    map: F,
-}
-
-impl<T: ToOutput, F> FetchBytes for Map<T, F> {
-    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        Box::pin(self.fetch.fetch_full().map_ok(|(x, r)| (x.output(), r)))
-    }
-
-    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        Box::pin(self.fetch.fetch().map_ok(|x| x.output()))
-    }
-}
-
-impl<T: ToOutput, F: Send + Sync + Map1<T>> Fetch for Map<T, F> {
-    type T = F::U;
-
-    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
-        Box::pin(self.fetch.fetch_full().map_ok(|(x, r)| ((self.map)(x), r)))
-    }
-
-    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        Box::pin(self.fetch.fetch().map_ok(&self.map))
-    }
-
-    fn fetch_local(&self) -> Option<Self::T> {
-        self.fetch.fetch_local().map(&self.map)
-    }
-}
-
 impl<T> MaybeHasNiche for Point<T> {
     type MnArray = <Hash as MaybeHasNiche>::MnArray;
 }
