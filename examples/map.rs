@@ -6,8 +6,8 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Refless, Resolve,
-    Singular, ToOutputExt, error_parse,
+    Address, ByteNode, FailFuture, Fetch, FullHash, Hash, Object, Point, PointVisitor, Refless,
+    Resolve, Singular, ToOutputExt, error_parse,
 };
 use smol::{Executor, channel::Sender};
 

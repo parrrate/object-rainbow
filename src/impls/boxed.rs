@@ -37,11 +37,7 @@ impl<T: ?Sized + Tagged> Tagged for Box<T> {
     const HASH: Hash = T::HASH;
 }
 
-impl<T: Object> Object for Box<T> {
-    fn full_hash(&self) -> Hash {
-        (**self).full_hash()
-    }
-}
+impl<T: Object> Object for Box<T> {}
 
 impl<T: Inline> Inline for Box<T> {}
 
