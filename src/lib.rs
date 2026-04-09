@@ -218,7 +218,7 @@ pub trait Fetch: Send + Sync + FetchBytes {
     fn get_mut_finalize(&mut self) {}
 }
 
-trait FetchBytesExt: FetchBytes {
+trait InnerCast: FetchBytes {
     fn inner_cast<T: FromInner>(&self, extra: &T::Extra) -> Option<T> {
         self.as_inner()?
             .downcast_ref()
@@ -227,7 +227,7 @@ trait FetchBytesExt: FetchBytes {
     }
 }
 
-impl<T: ?Sized + FetchBytes> FetchBytesExt for T {}
+impl<T: ?Sized + FetchBytes> InnerCast for T {}
 
 #[derive(Clone, ParseAsInline)]
 pub struct RawPointInner {
