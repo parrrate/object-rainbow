@@ -1,26 +1,24 @@
 use crate::*;
 
+pub trait UsizeTag: Sized {
+    fn from_usize(n: usize) -> Self;
+    fn to_usize(&self) -> usize;
+}
+
 #[derive(ToOutput, Topological, Tagged, ParseAsInline, Size)]
 pub struct EnumTag<T, const MAX: usize>(T);
 
-impl<T: Deref, const MAX: usize> Deref for EnumTag<T, MAX> {
-    type Target = T::Target;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
 impl<T: Deref + From<T::Target>, const MAX: usize> EnumTag<T, MAX>
 where
-    T::Target: TryFrom<usize>,
+    T::Target: UsizeTag,
 {
+    pub fn to_usize(&self) -> usize {
+        self.0.to_usize()
+    }
+
     pub fn from_const<const N: usize>() -> Self {
         assert!(N < MAX);
-        match N.try_into() {
-            Ok(n) => Self(T::from(n)),
-            Err(_) => panic!("cannot convert"),
-        }
+        Self(T::from(UsizeTag::from_usize(N)))
     }
 }
 
