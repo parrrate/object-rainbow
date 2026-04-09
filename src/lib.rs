@@ -607,6 +607,12 @@ impl FetchBytes for ByAddressInner {
     }
 }
 
+impl Singular for ByAddressInner {
+    fn hash(&self) -> Hash {
+        self.address.hash
+    }
+}
+
 struct ByAddress<T, Extra> {
     inner: ByAddressInner,
     extra: Extra,
