@@ -89,6 +89,12 @@ impl<T> DerefMut for KeyedArrayMap<T> {
     }
 }
 
+impl<T> Default for KeyedArrayMap<T> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
 impl<T> ArrayMap<T> {
     pub fn get_mut(&mut self, key: u8) -> Option<&mut T> {
         self.map.get_mut(&key)
