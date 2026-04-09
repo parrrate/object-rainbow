@@ -18,3 +18,11 @@ futures-util = { version = "0.3.31", default-features = false }
 
 [features]
 trie = ["dep:object-rainbow-trie"]
+
+[dev-dependencies]
+object-rainbow = { workspace = true, features = ["ulid"] }
+
+macro_rules_attribute = "0.2.2"
+smol = "2.0.2"
+smol-macros = "0.1.1"
+ulid = { version = "1.2.1" }
