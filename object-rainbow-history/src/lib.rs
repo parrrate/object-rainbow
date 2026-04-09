@@ -45,7 +45,11 @@ impl<T: Clone + Traversible + InlineOutput + Default, D: Clone + Traversible + D
             .await?
             .map(|(tree, _)| tree)
             .unwrap_or_default();
+        let hash = tree.full_hash();
         let tree = diff.clone().forward(tree).await?;
+        if hash == tree.full_hash() {
+            return Err(object_rainbow::error_fetch!("tree didn't change"));
+        }
         self.0.push((tree, diff)).await?;
         Ok(())
     }
