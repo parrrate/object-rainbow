@@ -122,17 +122,37 @@ impl<T: Clone + Traversible + InlineOutput + Default + Forward<D>, D: Clone + Tr
     }
 }
 
-impl<T: Forward<D>, D: Send> Forward<Vec<D>> for T {
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Size,
+    MaybeHasNiche,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+)]
+pub struct Compat<T>(pub T);
+
+impl<T: Forward<D>, D: Send> Forward<Vec<D>> for Compat<T> {
     async fn forward(&mut self, diff: Vec<D>) -> object_rainbow::Result<()> {
         for diff in diff {
-            self.forward(diff).await?;
+            self.0.forward(diff).await?;
         }
         Ok(())
     }
 }
 
-impl<T: Forward<D>, D: Send + Traversible> Forward<Point<D>> for T {
+impl<T: Forward<D>, D: Send + Traversible> Forward<Point<D>> for Compat<T> {
     async fn forward(&mut self, diff: Point<D>) -> object_rainbow::Result<()> {
-        self.forward(diff.fetch().await?).await
+        self.0.forward(diff.fetch().await?).await
     }
 }
