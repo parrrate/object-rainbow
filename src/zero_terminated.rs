@@ -4,8 +4,17 @@ use crate::*;
 
 #[derive(Tagged, Topological, ParseAsInline)]
 pub struct Zt<T> {
-    object: T,
-    data: Vec<u8>,
+    object: Arc<T>,
+    data: Arc<Vec<u8>>,
+}
+
+impl<T> Clone for Zt<T> {
+    fn clone(&self) -> Self {
+        Self {
+            object: self.object.clone(),
+            data: self.data.clone(),
+        }
+    }
 }
 
 impl<T: ToOutput> ToOutput for Zt<T> {
@@ -19,7 +28,7 @@ impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Zt<T> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         let data = input.parse_until_zero()?;
         let object = input.reparse(data)?;
-        let data = data.into();
+        let data = data.into().into();
         Ok(Self { object, data })
     }
 }
