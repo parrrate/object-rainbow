@@ -29,6 +29,7 @@ impl UsizeTag for bool {
     }
 }
 
+/// [`EnumKind::Tag`].
 #[derive(
     ToOutput, InlineOutput, ListHashes, Topological, Tagged, ParseAsInline, Size, MaybeHasNiche,
 )]
