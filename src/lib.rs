@@ -738,7 +738,7 @@ pub trait ToOutput {
     where
         Self: Sized,
     {
-        slice.iter_to_output(output)
+        slice.iter_to_output(output);
     }
 }
 
