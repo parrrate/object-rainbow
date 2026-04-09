@@ -81,14 +81,18 @@ impl<T> Default for ChainTree<T> {
 }
 
 impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainTree<T> {
-    pub async fn with_value(self, value: T) -> object_rainbow::Result<ChainNode<T>> {
-        let tree = if let Some(node) = self.0 {
+    async fn next_tree(self) -> object_rainbow::Result<AppendTree<Point<ChainNode<T>>>> {
+        Ok(if let Some(node) = self.0 {
             let mut tree = node.fetch().await?.tree;
             tree.push(node)?;
             tree
         } else {
             Default::default()
-        };
+        })
+    }
+
+    pub async fn with_value(self, value: T) -> object_rainbow::Result<ChainNode<T>> {
+        let tree = self.next_tree().await?;
         Ok(ChainNode { value, tree })
     }
 
