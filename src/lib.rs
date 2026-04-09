@@ -10,7 +10,8 @@ use std::{
 
 pub use anyhow::anyhow;
 pub use object_rainbow_derive::{
-    Inline, Object, Parse, ParseInline, ReflessInline, ReflessObject, Size, ToOutput, Topological,
+    Inline, Object, Parse, ParseInline, ReflessInline, ReflessObject, Size, Tagged, ToOutput,
+    Topological,
 };
 use sha2::{Digest, Sha256};
 
@@ -244,6 +245,18 @@ impl Input<'_> {
 
 pub trait ToOutput {
     fn to_output(&self, output: &mut dyn Output);
+
+    fn output<T: Output + Default>(&self) -> T {
+        let mut output = T::default();
+        self.to_output(&mut output);
+        output
+    }
+
+    fn data_hash(&self) -> Hash {
+        let mut output = HashOutput::default();
+        self.to_output(&mut output);
+        output.hash()
+    }
 }
 
 pub trait Topological {
@@ -262,18 +275,8 @@ pub trait Topological {
     }
 }
 
-pub trait Object:
-    'static + Sized + Send + Sync + ToOutput + Topological + for<'a> Parse<Input<'a>>
-{
-    fn parse_slice(data: &[u8], resolve: &Arc<dyn Resolve>) -> crate::Result<Self> {
-        let input = Input {
-            refless: ReflessInput { data, at: 0 },
-            resolve,
-            index: &mut 0,
-        };
-        let object = Self::parse(input)?;
-        Ok(object)
-    }
+pub trait Tagged {
+    const TAGS: Tags = Tags(&[], &[]);
 
     fn tag_hash(&self) -> Hash {
         let mut hasher = Sha256::new();
@@ -286,17 +289,19 @@ pub trait Object:
         });
         hasher.finalize().into()
     }
+}
 
-    fn output<T: Output + Default>(&self) -> T {
-        let mut output = T::default();
-        self.to_output(&mut output);
-        output
-    }
-
-    fn data_hash(&self) -> Hash {
-        let mut output = HashOutput::default();
-        self.to_output(&mut output);
-        output.hash()
+pub trait Object:
+    'static + Sized + Send + Sync + ToOutput + Topological + Tagged + for<'a> Parse<Input<'a>>
+{
+    fn parse_slice(data: &[u8], resolve: &Arc<dyn Resolve>) -> crate::Result<Self> {
+        let input = Input {
+            refless: ReflessInput { data, at: 0 },
+            resolve,
+            index: &mut 0,
+        };
+        let object = Self::parse(input)?;
+        Ok(object)
     }
 
     fn full_hash(&self) -> Hash {
@@ -306,8 +311,6 @@ pub trait Object:
         output.hasher.update(self.tag_hash());
         output.hash()
     }
-
-    const TAGS: Tags = Tags(&[], &[]);
 }
 
 pub struct Tags(pub &'static [&'static str], pub &'static [&'static Self]);
@@ -342,6 +345,8 @@ impl<T: Object> ParseInline<Input<'_>> for Point<T> {
         input.parse_point()
     }
 }
+
+impl<T> Tagged for Point<T> {}
 
 impl<T: Object> Object for Point<T> {}
 
@@ -397,7 +402,7 @@ impl Topology for TopoVec {
 }
 
 pub trait ReflessObject:
-    'static + Sized + Send + Sync + ToOutput + for<'a> Parse<ReflessInput<'a>>
+    'static + Sized + Send + Sync + ToOutput + Tagged + for<'a> Parse<ReflessInput<'a>>
 {
     fn parse_slice(data: &[u8]) -> crate::Result<Self> {
         let input = ReflessInput { data, at: 0 };
@@ -453,6 +458,10 @@ impl<'a, T: ParseInline<ReflessInput<'a>>> ParseInline<Input<'a>> for Refless<T>
     }
 }
 
+impl<T: Tagged> Tagged for Refless<T> {
+    const TAGS: Tags = T::TAGS;
+}
+
 impl<T: ReflessObject> Object for Refless<T> {}
 
 impl<T: ReflessInline> Inline for Refless<T> {}
@@ -476,6 +485,8 @@ impl<I: ParseInput> ParseInline<I> for () {
         Ok(())
     }
 }
+
+impl Tagged for () {}
 
 impl Object for () {}
 
@@ -513,9 +524,11 @@ impl<T: ParseInline<I>, I: ParseInput> ParseInline<I> for (T,) {
     }
 }
 
-impl<T: Object> Object for (T,) {
+impl<T: Tagged> Tagged for (T,) {
     const TAGS: Tags = T::TAGS;
 }
+
+impl<T: Object> Object for (T,) {}
 
 impl<T: Inline> Inline for (T,) {}
 
@@ -641,6 +654,7 @@ impl<const N: usize> ParseInline<ReflessInput<'_>> for [u8; N] {
         input.parse_chunk().copied()
     }
 }
+impl<const N: usize> Tagged for [u8; N] {}
 
 impl<const N: usize> ReflessObject for [u8; N] {}
 
@@ -678,12 +692,14 @@ impl<T: Topological> Topological for Arc<T> {
     }
 }
 
+impl<T: Tagged> Tagged for Arc<T> {
+    const TAGS: Tags = T::TAGS;
+}
+
 impl<T: Object> Object for Arc<T> {
     fn full_hash(&self) -> Hash {
         (**self).full_hash()
     }
-
-    const TAGS: Tags = T::TAGS;
 }
 
 impl<T: Inline> Inline for Arc<T> {}
@@ -707,6 +723,8 @@ impl Parse<ReflessInput<'_>> for Vec<u8> {
         Ok(input.parse_all()?.into())
     }
 }
+
+impl Tagged for Vec<u8> {}
 
 impl ReflessObject for Vec<u8> {}
 
@@ -798,7 +816,16 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
 }
 
 #[derive(
-    ToOutput, Topological, Object, Inline, ReflessObject, ReflessInline, Size, Parse, ParseInline,
+    ToOutput,
+    Topological,
+    Tagged,
+    Object,
+    Inline,
+    ReflessObject,
+    ReflessInline,
+    Size,
+    Parse,
+    ParseInline,
 )]
 pub struct DeriveExample<A, B> {
     a: A,
