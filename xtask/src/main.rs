@@ -322,7 +322,11 @@ fn per_n(n: usize) -> String {
             members: vec![Box::new("TAGS".co().tags(n))],
         },
         Impl {
-            header: "Inline".bound().last("Object").header(n),
+            header: "Inline<Extra>"
+                .bound()
+                .last("Object<Extra>")
+                .header(n)
+                .prefix("Extra: 'static,"),
             members: vec![],
         },
         Impl {
