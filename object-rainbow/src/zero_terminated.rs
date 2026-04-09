@@ -8,6 +8,9 @@ struct ZtInner<T> {
     data: Vec<u8>,
 }
 
+/// Zero-terminated value. Used to make [`Inline`]s out of [`Object`]s which don't contain zeroes.
+///
+/// If you can't guarantee absence of zeroes, see [`length_prefixed::Lp`].
 #[derive(Tagged, ListHashes, Topological, ParseAsInline)]
 pub struct Zt<T> {
     inner: Arc<ZtInner<T>>,
