@@ -70,8 +70,14 @@ impl<T: Tree<K> + Clone + Traversible, K: PartialEq + Clone> Tree<K> for SubTree
     }
 }
 
-#[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
+#[derive(ToOutput, Tagged, ListHashes, Topological, Parse)]
 struct SetNode<T, K>(ArrayMap<SubTree<T, K>>);
+
+impl<T, K: Clone> Clone for SetNode<T, K> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
 
 impl<T, K> Default for SetNode<T, K> {
     fn default() -> Self {
