@@ -42,6 +42,7 @@ pub mod numeric;
 mod sha2_const;
 
 #[macro_export]
+/// Construct [`Error::Parse`].
 macro_rules! error_parse {
     ($($t:tt)*) => {
         $crate::Error::Parse($crate::anyhow!($($t)*))
