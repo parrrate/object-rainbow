@@ -9,7 +9,7 @@ use std::{
 };
 
 pub use anyhow::anyhow;
-pub use object_rainbow_derive::{Inline, Object, ReflessInline, ReflessObject, ToOutput};
+pub use object_rainbow_derive::{Inline, Object, ReflessInline, ReflessObject, Size, ToOutput};
 use sha2::{Digest, Sha256};
 
 mod tuple;
@@ -473,6 +473,10 @@ impl ReflessInline for () {
     }
 }
 
+impl Size for () {
+    const SIZE: usize = 0;
+}
+
 impl<T: ToOutput> ToOutput for (T,) {
     fn to_output(&self, output: &mut dyn Output) {
         self.0.to_output(output);
@@ -690,8 +694,9 @@ impl<const N: usize> Size for [u8; N] {
     const SIZE: usize = N;
 }
 
-#[derive(ToOutput, Object, Inline, ReflessObject, ReflessInline)]
+#[derive(ToOutput, Object, Inline, ReflessObject, ReflessInline, Size)]
 pub struct DeriveExample<A, B> {
+    stuff: (),
     field1: A,
     field2: B,
 }
