@@ -2,8 +2,8 @@ use std::pin::Pin;
 
 use object_rainbow::{
     Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Output, Parse,
-    ParseInline, PointInput, PointVisitor, Size, Tagged, Tags, ToOutput, Topological, Traversible,
-    assert_impl,
+    ParseInline, PointInput, PointVisitor, Size, SizeExt, Tagged, Tags, ToOutput, Topological,
+    Traversible, assert_impl,
     inline_extra::InlineExtra,
     map_extra::{MapExtra, MappedExtra},
     without_header::WithoutHeader,
@@ -620,9 +620,68 @@ impl<V: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V> {
     }
 }
 
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct Merge;
+
+macro_rules! to_array {
+    ($k:ident, $x:ident) => {
+        impl<E: 'static + Clone> MapExtra<($k, $x<E>)> for Merge {
+            type Mapped = ([u8; 32], E);
+
+            fn map_extra(&self, (suffix, (prefix, extra)): ($k, $x<E>)) -> Self::Mapped {
+                (From::from((prefix, suffix).to_array()), extra)
+            }
+        }
+    };
+}
+
+to_array!(K1, X1);
+to_array!(K2, X2);
+to_array!(K3, X3);
+to_array!(K4, X4);
+to_array!(K5, X5);
+to_array!(K6, X6);
+to_array!(K7, X7);
+to_array!(K8, X8);
+to_array!(K9, X9);
+to_array!(K10, X10);
+to_array!(K11, X11);
+to_array!(K12, X12);
+to_array!(K13, X13);
+to_array!(K14, X14);
+to_array!(K15, X15);
+to_array!(K16, X16);
+to_array!(K17, X17);
+to_array!(K18, X18);
+to_array!(K19, X19);
+to_array!(K20, X20);
+to_array!(K21, X21);
+to_array!(K22, X22);
+to_array!(K23, X23);
+to_array!(K24, X24);
+to_array!(K25, X25);
+to_array!(K26, X26);
+to_array!(K27, X27);
+to_array!(K28, X28);
+to_array!(K29, X29);
+to_array!(K30, X30);
+to_array!(K31, X31);
+
 #[derive(Enum, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline)]
 enum SubTree<T, K, V = <T as Amt<K>>::V> {
-    Leaf(MappedExtra<MappedExtra<MappedExtra<V, WithoutHeader>, WithoutHeader>, InlineExtra<K>>),
+    Leaf(MappedExtra<MappedExtra<MappedExtra<V, WithoutHeader>, Merge>, InlineExtra<K>>),
     SubTree(Point<T>),
 }
 
@@ -708,7 +767,7 @@ impl<
                                 R::default(),
                                 SubTree::Leaf(MappedExtra(
                                     InlineExtra(rest),
-                                    MappedExtra(WithoutHeader, MappedExtra(WithoutHeader, value))
+                                    MappedExtra(Merge, MappedExtra(WithoutHeader, value))
                                 ))
                             )
                         )
@@ -743,7 +802,7 @@ impl<
                             R::default(),
                             SubTree::Leaf(MappedExtra(
                                 InlineExtra(rest_a),
-                                MappedExtra(WithoutHeader, MappedExtra(WithoutHeader, value_a)),
+                                MappedExtra(Merge, MappedExtra(WithoutHeader, value_a)),
                             )),
                         ),
                     ),
@@ -753,7 +812,7 @@ impl<
                             R::default(),
                             SubTree::Leaf(MappedExtra(
                                 InlineExtra(rest_b),
-                                MappedExtra(WithoutHeader, MappedExtra(WithoutHeader, value_b)),
+                                MappedExtra(Merge, MappedExtra(WithoutHeader, value_b)),
                             )),
                         ),
                     ),
