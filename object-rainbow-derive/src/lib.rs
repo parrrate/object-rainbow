@@ -216,16 +216,18 @@ fn gen_to_output(data: &Data) -> proc_macro2::TokenStream {
 pub fn derive_topological(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
+    let generics = input.generics.clone();
+    let (_, ty_generics, _) = generics.split_for_impl();
     let generics = match bounds_topological(input.generics, &input.data) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
     let accept_points = gen_accept_points(&input.data);
-    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let (impl_generics, _, where_clause) = generics.split_for_impl();
     let output = quote! {
         #[automatically_derived]
-        impl #impl_generics ::object_rainbow::Topological for #name #ty_generics #where_clause {
-            fn accept_points(&self, visitor: &mut impl ::object_rainbow::PointVisitor) {
+        impl #impl_generics ::object_rainbow::Topological<__E> for #name #ty_generics #where_clause {
+            fn accept_points(&self, visitor: &mut impl ::object_rainbow::PointVisitor<__E>) {
                 #accept_points
             }
         }
@@ -242,7 +244,7 @@ fn bounds_topological(mut generics: Generics, data: &Data) -> syn::Result<Generi
                 if type_contains_generics(&g, ty) {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
-                            #ty: ::object_rainbow::Topological
+                            #ty: ::object_rainbow::Topological<__E>
                         },
                     );
                 }
@@ -255,7 +257,7 @@ fn bounds_topological(mut generics: Generics, data: &Data) -> syn::Result<Generi
                     if type_contains_generics(&g, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
-                                #ty: ::object_rainbow::Topological
+                                #ty: ::object_rainbow::Topological<__E>
                             },
                         );
                     }
@@ -269,6 +271,7 @@ fn bounds_topological(mut generics: Generics, data: &Data) -> syn::Result<Generi
             ));
         }
     }
+    generics.params.push(parse_quote!(__E: 'static));
     Ok(generics)
 }
 
