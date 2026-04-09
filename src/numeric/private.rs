@@ -186,13 +186,13 @@ macro_rules! ae {
             type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
         }
 
-        impl Topological for Ae<$n> {}
+        impl<E: 'static> Topological<E> for Ae<$n> {}
         impl Tagged for Ae<$n> {}
         impl Tagged for Ae<NonZero<$n>> {}
         impl ReflessObject for Ae<$n> {}
         impl ReflessInline for Ae<$n> {}
-        impl Object for Ae<$n> {}
-        impl Inline for Ae<$n> {}
+        impl<E: 'static> Object<E> for Ae<$n> {}
+        impl<E: 'static> Inline<E> for Ae<$n> {}
 
         impl Equivalent<Ae<$n>> for Option<Ae<NonZero<$n>>> {
             fn into_equivalent(self) -> Ae<$n> {
@@ -360,18 +360,18 @@ macro_rules! lebe {
             type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
         }
 
-        impl Topological for Le<$n> {}
-        impl Topological for Be<$n> {}
+        impl<E: 'static> Topological<E> for Le<$n> {}
+        impl<E: 'static> Topological<E> for Be<$n> {}
         impl Tagged for Le<$n> {}
         impl Tagged for Be<$n> {}
         impl ReflessObject for Le<$n> {}
         impl ReflessObject for Be<$n> {}
         impl ReflessInline for Le<$n> {}
         impl ReflessInline for Be<$n> {}
-        impl Object for Le<$n> {}
-        impl Object for Be<$n> {}
-        impl Inline for Le<$n> {}
-        impl Inline for Be<$n> {}
+        impl<E: 'static> Object<E> for Le<$n> {}
+        impl<E: 'static> Object<E> for Be<$n> {}
+        impl<E: 'static> Inline<E> for Le<$n> {}
+        impl<E: 'static> Inline<E> for Be<$n> {}
 
         impl Equivalent<Le<$n>> for Option<Le<NonZero<$n>>> {
             fn into_equivalent(self) -> Le<$n> {
@@ -478,12 +478,12 @@ impl<T: NonZeroable + Size> MaybeHasNiche for Nz<T> {
     type MnArray = SomeNiche<ZeroNiche<T::Size>>;
 }
 
-impl<T: NonZeroable> Topological for Nz<T> {}
+impl<T: NonZeroable, E: 'static> Topological<E> for Nz<T> {}
 impl<T: NonZeroable> Tagged for Nz<T> {}
 impl<T: NonZeroable + ReflessInline> ReflessObject for Nz<T> {}
 impl<T: NonZeroable + ReflessInline> ReflessInline for Nz<T> {}
-impl<T: NonZeroable + Inline> Object for Nz<T> {}
-impl<T: NonZeroable + Inline> Inline for Nz<T> {}
+impl<T: NonZeroable + Inline<E>, E: 'static> Object<E> for Nz<T> {}
+impl<T: NonZeroable + Inline<E>, E: 'static> Inline<E> for Nz<T> {}
 
 #[test]
 fn nonzero() {
