@@ -230,8 +230,8 @@ fn per_n(n: usize) -> String {
             header: "Inline".bound().last("Object").header(n),
             members: vec![
                 Box::new(
-                    "accept_refs"
-                        .method("visitor", "&mut impl RefVisitor")
+                    "accept_points"
+                        .method("visitor", "&mut impl PointVisitor")
                         .out(n),
                 ),
                 Box::new(

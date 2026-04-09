@@ -8,9 +8,9 @@ impl<A: ToOutput, B: ToOutput> ToOutput for (A, B) {
 }
 
 impl<A: Inline, B: Object> Object for (A, B) {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor) {
-        self.0.accept_refs(visitor);
-        self.1.accept_refs(visitor);
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        self.0.accept_points(visitor);
+        self.1.accept_points(visitor);
     }
 
     fn parse(mut input: Input) -> crate::Result<Self> {
@@ -51,10 +51,10 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput> ToOutput for (A, B, C) {
 }
 
 impl<A: Inline, B: Inline, C: Object> Object for (A, B, C) {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor) {
-        self.0.accept_refs(visitor);
-        self.1.accept_refs(visitor);
-        self.2.accept_refs(visitor);
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        self.0.accept_points(visitor);
+        self.1.accept_points(visitor);
+        self.2.accept_points(visitor);
     }
 
     fn parse(mut input: Input) -> crate::Result<Self> {
@@ -104,11 +104,11 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput> ToOutput for (A, B, C, 
 }
 
 impl<A: Inline, B: Inline, C: Inline, D: Object> Object for (A, B, C, D) {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor) {
-        self.0.accept_refs(visitor);
-        self.1.accept_refs(visitor);
-        self.2.accept_refs(visitor);
-        self.3.accept_refs(visitor);
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        self.0.accept_points(visitor);
+        self.1.accept_points(visitor);
+        self.2.accept_points(visitor);
+        self.3.accept_points(visitor);
     }
 
     fn parse(mut input: Input) -> crate::Result<Self> {
@@ -175,12 +175,12 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput> ToOutput f
 }
 
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Object> Object for (A, B, C, D, E) {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor) {
-        self.0.accept_refs(visitor);
-        self.1.accept_refs(visitor);
-        self.2.accept_refs(visitor);
-        self.3.accept_refs(visitor);
-        self.4.accept_refs(visitor);
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        self.0.accept_points(visitor);
+        self.1.accept_points(visitor);
+        self.2.accept_points(visitor);
+        self.3.accept_points(visitor);
+        self.4.accept_points(visitor);
     }
 
     fn parse(mut input: Input) -> crate::Result<Self> {
@@ -256,13 +256,13 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutpu
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Object> Object
     for (A, B, C, D, E, F)
 {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor) {
-        self.0.accept_refs(visitor);
-        self.1.accept_refs(visitor);
-        self.2.accept_refs(visitor);
-        self.3.accept_refs(visitor);
-        self.4.accept_refs(visitor);
-        self.5.accept_refs(visitor);
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        self.0.accept_points(visitor);
+        self.1.accept_points(visitor);
+        self.2.accept_points(visitor);
+        self.3.accept_points(visitor);
+        self.4.accept_points(visitor);
+        self.5.accept_points(visitor);
     }
 
     fn parse(mut input: Input) -> crate::Result<Self> {
@@ -360,14 +360,14 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutpu
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Object> Object
     for (A, B, C, D, E, F, G)
 {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor) {
-        self.0.accept_refs(visitor);
-        self.1.accept_refs(visitor);
-        self.2.accept_refs(visitor);
-        self.3.accept_refs(visitor);
-        self.4.accept_refs(visitor);
-        self.5.accept_refs(visitor);
-        self.6.accept_refs(visitor);
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        self.0.accept_points(visitor);
+        self.1.accept_points(visitor);
+        self.2.accept_points(visitor);
+        self.3.accept_points(visitor);
+        self.4.accept_points(visitor);
+        self.5.accept_points(visitor);
+        self.6.accept_points(visitor);
     }
 
     fn parse(mut input: Input) -> crate::Result<Self> {
@@ -488,15 +488,15 @@ impl<
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline, H: Object> Object
     for (A, B, C, D, E, F, G, H)
 {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor) {
-        self.0.accept_refs(visitor);
-        self.1.accept_refs(visitor);
-        self.2.accept_refs(visitor);
-        self.3.accept_refs(visitor);
-        self.4.accept_refs(visitor);
-        self.5.accept_refs(visitor);
-        self.6.accept_refs(visitor);
-        self.7.accept_refs(visitor);
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        self.0.accept_points(visitor);
+        self.1.accept_points(visitor);
+        self.2.accept_points(visitor);
+        self.3.accept_points(visitor);
+        self.4.accept_points(visitor);
+        self.5.accept_points(visitor);
+        self.6.accept_points(visitor);
+        self.7.accept_points(visitor);
     }
 
     fn parse(mut input: Input) -> crate::Result<Self> {
@@ -638,16 +638,16 @@ impl<
     I: Object,
 > Object for (A, B, C, D, E, F, G, H, I)
 {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor) {
-        self.0.accept_refs(visitor);
-        self.1.accept_refs(visitor);
-        self.2.accept_refs(visitor);
-        self.3.accept_refs(visitor);
-        self.4.accept_refs(visitor);
-        self.5.accept_refs(visitor);
-        self.6.accept_refs(visitor);
-        self.7.accept_refs(visitor);
-        self.8.accept_refs(visitor);
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        self.0.accept_points(visitor);
+        self.1.accept_points(visitor);
+        self.2.accept_points(visitor);
+        self.3.accept_points(visitor);
+        self.4.accept_points(visitor);
+        self.5.accept_points(visitor);
+        self.6.accept_points(visitor);
+        self.7.accept_points(visitor);
+        self.8.accept_points(visitor);
     }
 
     fn parse(mut input: Input) -> crate::Result<Self> {
@@ -808,17 +808,17 @@ impl<
     J: Object,
 > Object for (A, B, C, D, E, F, G, H, I, J)
 {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor) {
-        self.0.accept_refs(visitor);
-        self.1.accept_refs(visitor);
-        self.2.accept_refs(visitor);
-        self.3.accept_refs(visitor);
-        self.4.accept_refs(visitor);
-        self.5.accept_refs(visitor);
-        self.6.accept_refs(visitor);
-        self.7.accept_refs(visitor);
-        self.8.accept_refs(visitor);
-        self.9.accept_refs(visitor);
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        self.0.accept_points(visitor);
+        self.1.accept_points(visitor);
+        self.2.accept_points(visitor);
+        self.3.accept_points(visitor);
+        self.4.accept_points(visitor);
+        self.5.accept_points(visitor);
+        self.6.accept_points(visitor);
+        self.7.accept_points(visitor);
+        self.8.accept_points(visitor);
+        self.9.accept_points(visitor);
     }
 
     fn parse(mut input: Input) -> crate::Result<Self> {
@@ -998,18 +998,18 @@ impl<
     K: Object,
 > Object for (A, B, C, D, E, F, G, H, I, J, K)
 {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor) {
-        self.0.accept_refs(visitor);
-        self.1.accept_refs(visitor);
-        self.2.accept_refs(visitor);
-        self.3.accept_refs(visitor);
-        self.4.accept_refs(visitor);
-        self.5.accept_refs(visitor);
-        self.6.accept_refs(visitor);
-        self.7.accept_refs(visitor);
-        self.8.accept_refs(visitor);
-        self.9.accept_refs(visitor);
-        self.10.accept_refs(visitor);
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        self.0.accept_points(visitor);
+        self.1.accept_points(visitor);
+        self.2.accept_points(visitor);
+        self.3.accept_points(visitor);
+        self.4.accept_points(visitor);
+        self.5.accept_points(visitor);
+        self.6.accept_points(visitor);
+        self.7.accept_points(visitor);
+        self.8.accept_points(visitor);
+        self.9.accept_points(visitor);
+        self.10.accept_points(visitor);
     }
 
     fn parse(mut input: Input) -> crate::Result<Self> {
@@ -1212,19 +1212,19 @@ impl<
     L: Object,
 > Object for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
-    fn accept_refs(&self, visitor: &mut impl RefVisitor) {
-        self.0.accept_refs(visitor);
-        self.1.accept_refs(visitor);
-        self.2.accept_refs(visitor);
-        self.3.accept_refs(visitor);
-        self.4.accept_refs(visitor);
-        self.5.accept_refs(visitor);
-        self.6.accept_refs(visitor);
-        self.7.accept_refs(visitor);
-        self.8.accept_refs(visitor);
-        self.9.accept_refs(visitor);
-        self.10.accept_refs(visitor);
-        self.11.accept_refs(visitor);
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        self.0.accept_points(visitor);
+        self.1.accept_points(visitor);
+        self.2.accept_points(visitor);
+        self.3.accept_points(visitor);
+        self.4.accept_points(visitor);
+        self.5.accept_points(visitor);
+        self.6.accept_points(visitor);
+        self.7.accept_points(visitor);
+        self.8.accept_points(visitor);
+        self.9.accept_points(visitor);
+        self.10.accept_points(visitor);
+        self.11.accept_points(visitor);
     }
 
     fn parse(mut input: Input) -> crate::Result<Self> {
