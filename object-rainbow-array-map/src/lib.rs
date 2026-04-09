@@ -37,7 +37,12 @@ impl<T: ParseInline<I>, I: ParseInput> ParseInline<I> for ArrayMap<T> {
 }
 
 assert_impl!(
-    impl<T, E> Inline<E> for ArrayMap<T> where T: Inline<E> {}
+    impl<T, E> Inline<E> for ArrayMap<T>
+    where
+        T: Inline<E>,
+        E: Clone,
+    {
+    }
 );
 
 impl<T> ArrayMap<T> {
@@ -155,7 +160,7 @@ pub struct ArraySet {
 }
 
 assert_impl!(
-    impl<E> Inline<E> for ArraySet {}
+    impl<E> Inline<E> for ArraySet where E: Clone {}
 );
 
 impl ArraySet {

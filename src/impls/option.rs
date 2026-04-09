@@ -226,22 +226,28 @@ impl<T, U: Equivalent<T>> Equivalent<Option<T>> for Option<U> {
 }
 
 assert_impl!(
-    impl<T, E> Inline<E> for Option<T> where
-        T: Inline<E> + MaybeHasNiche<MnArray: MaybeNiche + Niche<NeedsTag = B0>>
+    impl<T, E> Inline<E> for Option<T>
+    where
+        T: Inline<E> + MaybeHasNiche<MnArray: MaybeNiche + Niche<NeedsTag = B0>>,
+        E: Clone,
     {
     }
 );
 
 assert_impl!(
-    impl<T, E> Inline<E> for Option<T> where
-        T: Inline<E> + MaybeHasNiche<MnArray: MaybeNiche + Niche<NeedsTag = B1>>
+    impl<T, E> Inline<E> for Option<T>
+    where
+        T: Inline<E> + MaybeHasNiche<MnArray: MaybeNiche + Niche<NeedsTag = B1>>,
+        E: Clone,
     {
     }
 );
 
 assert_impl!(
-    impl<T, E> Object<E> for Option<T> where
-        T: Object<E> + MaybeHasNiche<MnArray: MaybeNiche + Niche<NeedsTag = B1>>
+    impl<T, E> Object<E> for Option<T>
+    where
+        T: Object<E> + MaybeHasNiche<MnArray: MaybeNiche + Niche<NeedsTag = B1>>,
+        E: Clone,
     {
     }
 );
