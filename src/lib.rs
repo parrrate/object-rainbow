@@ -118,7 +118,7 @@ pub struct HashVisitor<F>(F);
 
 impl<F: FnMut(Hash)> RefVisitor for HashVisitor<F> {
     fn visit<T: Object>(&mut self, point: &Point<T>) {
-        self.0(point.hash)
+        self.0(point.hash);
     }
 }
 
@@ -245,6 +245,18 @@ pub trait Object: 'static + Sized + Send + Sync + ToOutput {
         hasher.finalize().into()
     }
 
+    fn tag_hash(&self) -> Hash {
+        let mut hasher = Sha256::new();
+        self.to_output(&mut TagOutput(|tag| {
+            hasher.update({
+                let mut hasher = Sha256::new();
+                hasher.update(tag);
+                hasher.finalize()
+            })
+        }));
+        hasher.finalize().into()
+    }
+
     fn topology(&self) -> TopoVec {
         let mut topolog = TopoVec::new();
         self.accept_refs(&mut topolog);
@@ -267,6 +279,7 @@ pub trait Object: 'static + Sized + Send + Sync + ToOutput {
         let mut output = HashOutput::default();
         output.hasher.update(self.topology_hash());
         output.hasher.update(self.data_hash());
+        output.hasher.update(self.tag_hash());
         output.hash()
     }
 }
@@ -487,6 +500,18 @@ impl Output for Vec<&'static str> {
 
     fn write_tag(&mut self, tag: &'static str) {
         self.push(tag);
+    }
+}
+
+pub struct TagOutput<F>(F);
+
+impl<F: FnMut(&'static str)> Output for TagOutput<F> {
+    fn write(&mut self, data: &[u8]) {
+        let _ = data;
+    }
+
+    fn write_tag(&mut self, tag: &'static str) {
+        self.0(tag);
     }
 }
 
