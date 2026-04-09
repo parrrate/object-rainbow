@@ -211,6 +211,7 @@ pub trait FetchBytes: AsAny {
 
 pub trait Fetch: Send + Sync + FetchBytes {
     type T;
+    type Extra;
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)>;
     fn fetch(&'_ self) -> FailFuture<'_, Self::T>;
     fn get(&self) -> Option<&Self::T> {
@@ -365,6 +366,7 @@ impl<T, Extra: 'static> FetchBytes for RawPoint<T, Extra> {
 
 impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for RawPoint<T, Extra> {
     type T = T;
+    type Extra = Extra;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         Box::pin(async {
@@ -410,7 +412,7 @@ impl<T, Extra: 'static> Point<T, Extra> {
 pub struct Point<T, Extra = ()> {
     hash: OptionalHash,
     extra: Extra,
-    origin: Arc<dyn Fetch<T = T>>,
+    origin: Arc<dyn Fetch<T = T, Extra = Extra>>,
 }
 
 impl<T> PartialOrd for Point<T> {
@@ -444,7 +446,7 @@ impl<T, Extra: Clone> Clone for Point<T, Extra> {
 }
 
 impl<T, Extra> Point<T, Extra> {
-    fn from_origin(hash: Hash, origin: Arc<dyn Fetch<T = T>>, extra: Extra) -> Self {
+    fn from_origin(hash: Hash, origin: Arc<dyn Fetch<T = T, Extra = Extra>>, extra: Extra) -> Self {
         Self {
             hash: hash.into(),
             extra,
@@ -527,6 +529,7 @@ impl<T, Extra: 'static> FetchBytes for ByAddress<T, Extra> {
 
 impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for ByAddress<T, Extra> {
     type T = T;
+    type Extra = Extra;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         Box::pin(async {
@@ -1036,12 +1039,12 @@ impl HashOutput {
     }
 }
 
-pub struct PointMut<'a, T: Object> {
+pub struct PointMut<'a, T: Object<Extra>, Extra = ()> {
     hash: &'a mut OptionalHash,
-    origin: &'a mut dyn Fetch<T = T>,
+    origin: &'a mut dyn Fetch<T = T, Extra = Extra>,
 }
 
-impl<T: Object> Deref for PointMut<'_, T> {
+impl<T: Object<Extra>, Extra> Deref for PointMut<'_, T, Extra> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -1049,13 +1052,13 @@ impl<T: Object> Deref for PointMut<'_, T> {
     }
 }
 
-impl<T: Object> DerefMut for PointMut<'_, T> {
+impl<T: Object<Extra>, Extra> DerefMut for PointMut<'_, T, Extra> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.origin.get_mut().unwrap()
     }
 }
 
-impl<T: Object> Drop for PointMut<'_, T> {
+impl<T: Object<Extra>, Extra> Drop for PointMut<'_, T, Extra> {
     fn drop(&mut self) {
         self.origin.get_mut_finalize();
         self.hash.0 = self.full_hash();
@@ -1105,6 +1108,7 @@ impl<T> DerefMut for LocalOrigin<T> {
 
 impl<T: Object + Clone> Fetch for LocalOrigin<T> {
     type T = T;
+    type Extra = ();
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         let extension = self.0.clone();
@@ -1203,6 +1207,7 @@ impl Resolve for ByTopology {
 
 impl<T: Object<Extra>, Extra: Send + Sync> Fetch for Point<T, Extra> {
     type T = T;
+    type Extra = Extra;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         self.origin.fetch_full()
@@ -1411,12 +1416,12 @@ impl<U: 'static + Equivalent<T>, T: 'static> Equivalent<Point<T>> for Point<U> {
     }
 }
 
-struct MapEquivalent<T, F> {
-    origin: Arc<dyn Fetch<T = T>>,
+struct MapEquivalent<T, F, Extra> {
+    origin: Arc<dyn Fetch<T = T, Extra = Extra>>,
     map: F,
 }
 
-impl<T, F> FetchBytes for MapEquivalent<T, F> {
+impl<T, F, Extra> FetchBytes for MapEquivalent<T, F, Extra> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.origin.fetch_bytes()
     }
@@ -1434,8 +1439,9 @@ impl<T, U, F: Fn(T) -> U> Map1<T> for F {
     type U = U;
 }
 
-impl<T, F: 'static + Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
+impl<T, F: 'static + Send + Sync + Map1<T>, Extra> Fetch for MapEquivalent<T, F, Extra> {
     type T = F::U;
+    type Extra = Extra;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         Box::pin(self.origin.fetch_full().map_ok(|(x, r)| ((self.map)(x), r)))
@@ -1459,19 +1465,20 @@ impl<T: 'static + ToOutput> Point<T> {
     }
 }
 
-struct Map<T, F> {
-    origin: Arc<dyn Fetch<T = T>>,
+struct Map<T, F, Extra> {
+    origin: Arc<dyn Fetch<T = T, Extra = Extra>>,
     map: F,
 }
 
-impl<T: ToOutput, F> FetchBytes for Map<T, F> {
+impl<T: ToOutput, F, Extra> FetchBytes for Map<T, F, Extra> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         Box::pin(self.origin.fetch_full().map_ok(|(x, r)| (x.output(), r)))
     }
 }
 
-impl<T: ToOutput, F: 'static + Send + Sync + Map1<T>> Fetch for Map<T, F> {
+impl<T: ToOutput, F: 'static + Send + Sync + Map1<T>, Extra> Fetch for Map<T, F, Extra> {
     type T = F::U;
+    type Extra = Extra;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         Box::pin(self.origin.fetch_full().map_ok(|(x, r)| ((self.map)(x), r)))
