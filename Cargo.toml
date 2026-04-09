@@ -3,6 +3,7 @@ members = [
     "object-rainbow-derive",
     "object-rainbow-encrypted",
     "object-rainbow-json",
+    "object-rainbow-local-map",
     "object-rainbow-sled",
     "object-rainbow-store",
     "object-rainbow-store-opendal",
