@@ -6,7 +6,6 @@ use crate::*;
     Tagged,
     Topological,
     ParseAsInline,
-    ParseInline,
     Clone,
     Copy,
     PartialEq,
@@ -16,6 +15,8 @@ use crate::*;
     Hash,
     Object,
     Inline,
+    ReflessObject,
+    ReflessInline,
 )]
 pub struct Hash([u8; HASH_SIZE]);
 
@@ -48,7 +49,25 @@ impl AsRef<[u8]> for Hash {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, ParseAsInline, ParseInline)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    ToOutput,
+    ParseAsInline,
+    ParseInline,
+    Tagged,
+    Topological,
+    Object,
+    Inline,
+    ReflessObject,
+    ReflessInline,
+)]
 pub struct OptionalHash([u8; HASH_SIZE]);
 
 impl Default for OptionalHash {
