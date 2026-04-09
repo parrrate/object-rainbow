@@ -13,6 +13,19 @@ pub struct Zt<T> {
     inner: Arc<ZtInner<T>>,
 }
 
+impl<T: ToOutput> Zt<T> {
+    pub fn new(object: T) -> crate::Result<Self> {
+        let data = object.vec();
+        if data.contains(&0) {
+            Err(Error::Zero)
+        } else {
+            Ok(Self {
+                inner: Arc::new(ZtInner { object, data }),
+            })
+        }
+    }
+}
+
 impl<T> Clone for Zt<T> {
     fn clone(&self) -> Self {
         Self {
