@@ -4,7 +4,9 @@ use crate::*;
 
 impl ToOutput for i8 {
     fn to_output(&self, output: &mut dyn crate::Output) {
-        output.write(&self.to_le_bytes());
+        if output.is_real() {
+            output.write(&self.to_le_bytes());
+        }
     }
 }
 
