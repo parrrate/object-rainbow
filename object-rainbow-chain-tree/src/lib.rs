@@ -176,7 +176,7 @@ impl<T: Clone + Traversible> ChainTree<T> {
             .tree
             .len()
             .checked_add(1)
-            .ok_or_else(|| object_rainbow::error_fetch!("len overflow"))
+            .ok_or_else(|| object_rainbow::error_operation!("len overflow"))
     }
 
     pub async fn slice(&self, n: u64) -> object_rainbow::Result<Self> {
@@ -242,7 +242,7 @@ impl<T: Clone + Traversible> ChainTree<T> {
     ) -> impl Stream<Item = object_rainbow::Result<ChainNode<T>>> {
         try_stream(async move |co| {
             if !self.follows(since).await? {
-                return Err(object_rainbow::error_fetch!("divergent histories"));
+                return Err(object_rainbow::error_operation!("divergent histories"));
             }
             let mut current = self.clone();
             while current != *since
