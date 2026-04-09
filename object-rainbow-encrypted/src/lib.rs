@@ -276,8 +276,18 @@ impl<K: Key, T: Topological> Topological for Encrypted<K, T> {
 
 impl<K: Key, T: ToOutput> ToOutput for Encrypted<K, T> {
     fn to_output(&self, output: &mut dyn object_rainbow::Output) {
-        let source = self.inner.vec();
-        output.write(&self.key.encrypt(&source));
+        if output.is_mangling() {
+            output.write(
+                &self
+                    .key
+                    .encrypt(b"this encrypted constant is followed by an unencrypted inner hash"),
+            );
+            self.inner.decrypted.0.data_hash();
+        }
+        if output.is_real() {
+            let source = self.inner.vec();
+            output.write(&self.key.encrypt(&source));
+        }
     }
 }
 
