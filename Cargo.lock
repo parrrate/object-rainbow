@@ -1154,7 +1154,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-append-tree"
-version = "0.0.0-a.7"
+version = "0.0.0-a.8"
 dependencies = [
  "macro_rules_attribute",
  "object-rainbow",
@@ -1167,7 +1167,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-array-map"
-version = "0.0.0-a.3"
+version = "0.0.0-a.4"
 dependencies = [
  "bitvec",
  "object-rainbow",
@@ -1175,7 +1175,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-chain-tree"
-version = "0.0.0-a.6"
+version = "0.0.0-a.7"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
@@ -1199,7 +1199,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-encrypted"
-version = "0.0.0-a.10"
+version = "0.0.0-a.11"
 dependencies = [
  "anyhow",
  "chacha20poly1305",
@@ -1215,7 +1215,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-fetchall"
-version = "0.0.0-a.3"
+version = "0.0.0-a.4"
 dependencies = [
  "anyhow",
  "async-executor",
@@ -1229,7 +1229,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.4"
+version = "0.0.0-a.5"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1314,7 +1314,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-trie"
-version = "0.0.0-a.8"
+version = "0.0.0-a.9"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
@@ -1329,7 +1329,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-unique-diffs"
-version = "0.0.0-a.1"
+version = "0.0.0-a.2"
 dependencies = [
  "object-rainbow",
  "object-rainbow-amt-set",
