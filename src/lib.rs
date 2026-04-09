@@ -119,6 +119,7 @@ impl Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+/// SHA-256 hash size in bytes.
 pub const HASH_SIZE: usize = sha2_const::Sha256::DIGEST_SIZE;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, ParseAsInline)]
