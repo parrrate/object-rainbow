@@ -85,6 +85,20 @@ impl<T: Clone + Traversible + InlineOutput + Default, D: Clone + Traversible + D
             .map(|(tree, _)| tree)
             .unwrap_or_default())
     }
+
+    pub async fn rebase_other(&mut self, other: &Self) -> object_rainbow::Result<()> {
+        let common_ancestor = self.0.common_ancestor(&[&other.0]).await?;
+        let diff = other
+            .0
+            .diff_backwards(&common_ancestor)
+            .map_ok(|node| node.value().1.clone())
+            .try_collect::<Vec<_>>()
+            .await?;
+        for diff in diff.into_iter().rev() {
+            self.commit(diff).await?;
+        }
+        Ok(())
+    }
 }
 
 impl<D: Diff<T>, T: Send> Diff<T> for Vec<D> {
