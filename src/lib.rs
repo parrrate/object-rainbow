@@ -751,8 +751,9 @@ impl<Extra> ParseInput for Input<'_, Extra> {
     }
 }
 
-impl<Extra: 'static + Send + Sync + Clone> PointInput for Input<'_, Extra> {
+impl<'a, Extra: 'static + Send + Sync + Clone> PointInput for Input<'a, Extra> {
     type Extra = Extra;
+    type WithExtra<E: 'static + Send + Sync + Clone> = Input<'a, E>;
 
     fn parse_address(&mut self) -> crate::Result<Address> {
         let hash = *self.parse_chunk()?;
@@ -1387,6 +1388,7 @@ pub trait ParseInput: Sized {
 
 pub trait PointInput: ParseInput {
     type Extra: 'static + Send + Sync + Clone;
+    type WithExtra<E: 'static + Send + Sync + Clone>: PointInput<Extra = E, WithExtra<Self::Extra> = Self>;
     fn parse_address(&mut self) -> crate::Result<Address>;
     fn resolve_arc_ref(&self) -> &Arc<dyn Resolve>;
     fn resolve(&self) -> Arc<dyn Resolve> {
