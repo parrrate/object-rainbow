@@ -278,6 +278,10 @@ impl<T: ToOutput> FetchBytes for Marshalled<T> {
         self.root.fetch_data()
     }
 
+    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
+        self.root.fetch_bytes_local()
+    }
+
     fn fetch_data_local(&self) -> Option<Vec<u8>> {
         Some(self.object.output())
     }
