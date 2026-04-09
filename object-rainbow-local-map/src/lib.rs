@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use imbl::{HashMap, OrdSet};
-use object_rainbow::{Hash, ObjectHashes, ToOutput};
+use object_rainbow::{Address, ByteNode, FailFuture, Hash, ObjectHashes, Resolve, ToOutput};
 
 struct EntryInner {
     topology: Vec<Hash>,
@@ -91,5 +91,32 @@ impl LocalMap {
 
     pub fn contains(&self, hash: Hash) -> bool {
         self.map.contains_key(&hash)
+    }
+
+    pub fn to_resolve(&self) -> Arc<dyn Resolve> {
+        Arc::new(self.clone())
+    }
+
+    async fn resolve_bytes(&self, address: Address) -> object_rainbow::Result<Vec<u8>> {
+        self.get(address.hash)
+            .map(|(_, data)| data.to_owned())
+            .ok_or(object_rainbow::Error::HashNotFound)
+    }
+}
+
+impl Resolve for LocalMap {
+    fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode> {
+        Box::pin(async move {
+            let data = self.resolve_bytes(address).await?;
+            Ok((data, self.to_resolve()))
+        })
+    }
+
+    fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>> {
+        Box::pin(self.resolve_bytes(address))
+    }
+
+    fn name(&self) -> &str {
+        "local map"
     }
 }
