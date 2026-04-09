@@ -118,6 +118,12 @@ pub type FailFuture<'a, T> = Pin<Box<dyn 'a + Send + Future<Output = Result<T>>>
 
 pub type ByteNode = (Vec<u8>, Arc<dyn Resolve>);
 
+pub trait FromInner {
+    type Inner: 'static + Clone;
+
+    fn from_inner(inner: Self::Inner) -> Self;
+}
+
 pub trait AsAny {
     fn any_ref(&self) -> &dyn Any
     where
@@ -204,7 +210,7 @@ pub trait Fetch: Send + Sync + FetchBytes {
 }
 
 #[derive(Clone)]
-struct RawPointInner {
+pub struct RawPointInner {
     hash: Hash,
     origin: Arc<dyn Send + Sync + FetchBytes>,
 }
@@ -221,6 +227,17 @@ impl RawPointInner {
 pub struct RawPoint<T = Infallible> {
     inner: RawPointInner,
     _object: PhantomData<fn() -> T>,
+}
+
+impl<T> FromInner for RawPoint<T> {
+    type Inner = RawPointInner;
+
+    fn from_inner(inner: Self::Inner) -> Self {
+        Self {
+            inner,
+            _object: PhantomData,
+        }
+    }
 }
 
 impl<T> Clone for RawPoint<T> {
@@ -381,9 +398,24 @@ struct ByAddress<T> {
     _object: PhantomData<fn() -> T>,
 }
 
+impl<T> FromInner for ByAddress<T> {
+    type Inner = ByAddressInner;
+
+    fn from_inner(inner: Self::Inner) -> Self {
+        Self {
+            inner,
+            _object: PhantomData,
+        }
+    }
+}
+
 impl<T> FetchBytes for ByAddress<T> {
     fn fetch_bytes(&self) -> FailFuture<ByteNode> {
         self.inner.fetch_bytes()
+    }
+
+    fn as_inner(&self) -> Option<&dyn Any> {
+        Some(&self.inner)
     }
 }
 
