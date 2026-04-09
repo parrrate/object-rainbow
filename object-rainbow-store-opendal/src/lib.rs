@@ -43,4 +43,8 @@ impl RainbowStore for OpendalStore {
             .map_err(|e| object_rainbow::error_fetch!("{e}"))
             .map(|b| b.to_bytes())
     }
+
+    fn name(&self) -> &str {
+        "opendal"
+    }
 }

@@ -1,7 +1,8 @@
-use std::pin::Pin;
+use std::{pin::Pin, sync::Arc};
 
 use object_rainbow::{
-    Fetch, Hash, Object, ObjectHashes, Point, PointVisitor, Singular, ToOutputExt, Topological,
+    Address, Fetch, Hash, Object, ObjectHashes, Point, PointVisitor, Resolve, Singular,
+    ToOutputExt, Topological,
 };
 
 pub trait RainbowFuture: Send + Future<Output = object_rainbow::Result<Self::T>> {
@@ -17,7 +18,7 @@ struct StoreVisitor<'a, 'x, S: ?Sized> {
     futures: &'x mut Vec<Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<()>>>>>,
 }
 
-impl<'a, 'x, S: ?Sized + RainbowStore, Extra: 'static + Send + Sync> PointVisitor<Extra>
+impl<'a, 'x, S: RainbowStore, Extra: 'static + Send + Sync> PointVisitor<Extra>
     for StoreVisitor<'a, 'x, S>
 {
     fn visit<T: Object<Extra>>(&mut self, point: &Point<T, Extra>) {
@@ -28,7 +29,32 @@ impl<'a, 'x, S: ?Sized + RainbowStore, Extra: 'static + Send + Sync> PointVisito
     }
 }
 
-pub trait RainbowStore: Sync {
+struct StoreResolve<S> {
+    store: S,
+}
+
+impl<S: 'static + Send + RainbowStore> Resolve for StoreResolve<S> {
+    fn resolve(
+        &'_ self,
+        address: Address,
+    ) -> object_rainbow::FailFuture<'_, object_rainbow::ByteNode> {
+        Box::pin(async move {
+            let bytes = self.store.fetch(address.hash).await?.as_ref().to_vec();
+            Ok((
+                bytes,
+                Arc::new(Self {
+                    store: self.store.clone(),
+                }) as _,
+            ))
+        })
+    }
+
+    fn name(&self) -> &str {
+        self.store.name()
+    }
+}
+
+pub trait RainbowStore: 'static + Send + Sync + Clone {
     fn save_point<Extra: 'static + Send + Sync>(
         &self,
         point: &Point<impl Object<Extra>, Extra>,
@@ -67,7 +93,21 @@ pub trait RainbowStore: Sync {
             Ok(())
         }
     }
+    fn point_extra<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
+        &self,
+        address: Address,
+        extra: Extra,
+    ) -> Point<T, Extra> {
+        Point::from_address_extra(
+            address,
+            Arc::new(StoreResolve {
+                store: self.clone(),
+            }),
+            extra,
+        )
+    }
     fn save_data(&self, hashes: ObjectHashes, data: &[u8]) -> impl RainbowFuture<T = ()>;
     fn contains(&self, hash: Hash) -> impl RainbowFuture<T = bool>;
     fn fetch(&self, hash: Hash) -> impl RainbowFuture<T: Send + Sync + AsRef<[u8]>>;
+    fn name(&self) -> &str;
 }
