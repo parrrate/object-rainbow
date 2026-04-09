@@ -166,8 +166,13 @@ pub trait Resolve: Send + Sync + AsAny {
         this: &'a Arc<dyn Resolve>,
     ) -> FailFuture<'a, ByteNode>;
     fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>>;
-    fn try_resolve_local(&self, address: Address) -> Result<Option<ByteNode>> {
+    fn try_resolve_local(
+        &self,
+        address: Address,
+        this: &Arc<dyn Resolve>,
+    ) -> Result<Option<ByteNode>> {
         let _ = address;
+        let _ = this;
         Ok(None)
     }
     /// Get a dynamic extension for a specific [`Address`].
@@ -941,7 +946,11 @@ impl Resolve for ByTopology {
             .unwrap_or_else(|x| x)
     }
 
-    fn try_resolve_local(&self, address: Address) -> Result<Option<ByteNode>> {
+    fn try_resolve_local(
+        &self,
+        address: Address,
+        _: &Arc<dyn Resolve>,
+    ) -> Result<Option<ByteNode>> {
         let point = self
             .topology
             .get(address.index)

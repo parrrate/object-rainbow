@@ -121,7 +121,11 @@ impl Resolve for MarshalledInner {
         })
     }
 
-    fn try_resolve_local(&self, address: Address) -> object_rainbow::Result<Option<ByteNode>> {
+    fn try_resolve_local(
+        &self,
+        address: Address,
+        _: &Arc<dyn Resolve>,
+    ) -> object_rainbow::Result<Option<ByteNode>> {
         self.resolve_node(address).map(Some)
     }
 }
