@@ -238,6 +238,7 @@ impl<N: ArrayLength, Next> Niche for ZeroNiche<N, Next> {
     type Next = Next;
 }
 
+/// Niche filled with `0xFF` bytes.
 pub struct OneNiche<N>(N);
 
 impl<N: ArrayLength> Niche for OneNiche<N> {
