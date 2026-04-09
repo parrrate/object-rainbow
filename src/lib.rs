@@ -947,4 +947,18 @@ fn options() {
     assert_eq!(T3::SIZE, 2);
     assert_eq!(T4::SIZE, 3);
     assert_eq!(T5::SIZE, 3);
+    assert_eq!(false.output::<Vec<u8>>(), [0]);
+    assert_eq!(true.output::<Vec<u8>>(), [1]);
+    assert_eq!(Some(false).output::<Vec<u8>>(), [0]);
+    assert_eq!(Some(true).output::<Vec<u8>>(), [1]);
+    assert_eq!(None::<bool>.output::<Vec<u8>>(), [2]);
+    assert_eq!(Some(Some(false)).output::<Vec<u8>>(), [0, 0]);
+    assert_eq!(Some(Some(true)).output::<Vec<u8>>(), [0, 1]);
+    assert_eq!(Some(None::<bool>).output::<Vec<u8>>(), [0, 2]);
+    assert_eq!(None::<Option<bool>>.output::<Vec<u8>>(), [1, 0]);
+    assert_eq!(Some(Some(Some(false))).output::<Vec<u8>>(), [0, 0]);
+    assert_eq!(Some(Some(Some(true))).output::<Vec<u8>>(), [0, 1]);
+    assert_eq!(Some(Some(None::<bool>)).output::<Vec<u8>>(), [0, 2]);
+    assert_eq!(Some(None::<Option<bool>>).output::<Vec<u8>>(), [1, 0]);
+    assert_eq!(None::<Option<Option<bool>>>.output::<Vec<u8>>(), [2, 0]);
 }
