@@ -60,42 +60,42 @@ where
             return Ok(None);
         };
         let (prefix, trie) = &mut *point.fetch_mut().await?;
-        let Some(key) = key.strip_prefix(prefix.as_slice()) else {
-            if let Some(suffix) = prefix.strip_prefix(key) {
-                let child = std::mem::replace(
-                    trie,
+        if let Some(key) = key.strip_prefix(prefix.as_slice()) {
+            return Box::pin(trie.insert(key, value)).await;
+        }
+        if let Some(suffix) = prefix.strip_prefix(key) {
+            let child = std::mem::replace(
+                trie,
+                Self {
+                    value: Some(value),
+                    children: Default::default(),
+                },
+            );
+            let (first, suffix) = suffix.split_first().expect("must be at least 1");
+            trie.children
+                .insert(*first, (LpBytes(suffix.into()), child).point());
+            prefix.0.truncate(key.len());
+        } else {
+            let common = prefix.iter().zip(key).take_while(|(a, b)| a == b).count();
+            let child = std::mem::take(trie);
+            trie.children.insert(
+                prefix[common],
+                (LpBytes(prefix[common + 1..].to_vec()), child).point(),
+            );
+            trie.children.insert(
+                key[common],
+                (
+                    LpBytes(prefix[common + 1..].to_vec()),
                     Self {
                         value: Some(value),
                         children: Default::default(),
                     },
-                );
-                let (first, suffix) = suffix.split_first().expect("must be at least 1");
-                trie.children
-                    .insert(*first, (LpBytes(suffix.into()), child).point());
-                prefix.0.truncate(key.len());
-            } else {
-                let common = prefix.iter().zip(key).take_while(|(a, b)| a == b).count();
-                let child = std::mem::take(trie);
-                trie.children.insert(
-                    prefix[common],
-                    (LpBytes(prefix[common + 1..].to_vec()), child).point(),
-                );
-                trie.children.insert(
-                    key[common],
-                    (
-                        LpBytes(prefix[common + 1..].to_vec()),
-                        Self {
-                            value: Some(value),
-                            children: Default::default(),
-                        },
-                    )
-                        .point(),
-                );
-                prefix.0.truncate(common);
-            }
-            return Ok(None);
-        };
-        Box::pin(trie.insert(key, value)).await
+                )
+                    .point(),
+            );
+            prefix.0.truncate(common);
+        }
+        Ok(None)
     }
 }
 
