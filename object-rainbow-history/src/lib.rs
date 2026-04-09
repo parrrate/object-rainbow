@@ -8,6 +8,7 @@ use object_rainbow_point::Point;
 
 pub mod hashed;
 pub mod remap;
+pub mod skip;
 #[cfg(feature = "trie")]
 mod trie;
 
