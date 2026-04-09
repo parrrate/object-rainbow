@@ -454,7 +454,7 @@ impl<K: Key> PointVisitor for ExtractResolution<'_, K> {
         let decrypted = decrypted.clone();
         let key = self.key.clone();
         self.extracted.push(Box::pin(async move {
-            Ok(Arc::new(encrypt_point(key.clone(), decrypted).await?) as _)
+            Ok(Arc::new(encrypt_point(key, decrypted).await?) as _)
         }));
     }
 }
