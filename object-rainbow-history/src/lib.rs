@@ -324,6 +324,7 @@ impl<Diff: Send + Clone, First: Forward<Diff>, Second: Forward<Diff>> Forward<Di
     Copy,
     PartialEq,
     Eq,
+    Default,
 )]
 pub struct Parallel<A, B> {
     a: A,
