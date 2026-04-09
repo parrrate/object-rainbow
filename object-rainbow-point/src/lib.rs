@@ -254,6 +254,10 @@ impl FetchBytes for RawPointInner {
     fn fetch_data_local(&self) -> Option<Vec<u8>> {
         self.fetch.fetch_data_local()
     }
+
+    fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
+        self.fetch.as_resolve()
+    }
 }
 
 #[derive(ToOutput, InlineOutput, Tagged, Parse, ParseInline)]
