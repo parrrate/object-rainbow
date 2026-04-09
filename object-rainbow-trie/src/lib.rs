@@ -122,15 +122,6 @@ impl<T> TrieChildren for Trie<T> {
     }
 }
 
-impl<T> Trie<T> {
-    fn from_value(value: T) -> Self {
-        Self {
-            value: Some(value),
-            children: Default::default(),
-        }
-    }
-}
-
 fn common_length(a: &[u8], b: &[u8]) -> usize {
     a.iter().zip(b).take_while(|(a, b)| a == b).count()
 }
