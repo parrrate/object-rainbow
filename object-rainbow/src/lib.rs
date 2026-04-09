@@ -268,7 +268,10 @@ impl<T: ?Sized> ObjectMarker<T> {
     }
 }
 
-impl<T: ?Sized + Tagged> Tagged for ObjectMarker<T> {}
+impl<T: ?Sized + Tagged> Tagged for ObjectMarker<T> {
+    const TAGS: Tags = T::TAGS;
+    const HASH: Hash = T::HASH;
+}
 
 pub trait PointVisitor {
     fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone));
