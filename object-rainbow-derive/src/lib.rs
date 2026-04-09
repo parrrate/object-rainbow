@@ -554,10 +554,16 @@ fn bounds_inline(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
             }
         }
         Data::Enum(data) => {
-            return Err(Error::new_spanned(
-                data.enum_token,
-                "`enum`s are not supported",
-            ));
+            for v in data.variants.iter() {
+                for f in v.fields.iter() {
+                    let ty = &f.ty;
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: ::object_rainbow::Inline
+                        },
+                    );
+                }
+            }
         }
         Data::Union(data) => {
             return Err(Error::new_spanned(
