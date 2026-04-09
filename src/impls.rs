@@ -1,4 +1,5 @@
 mod arc;
+mod array;
 mod btree;
 mod bytes;
 mod refs;
