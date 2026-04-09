@@ -36,6 +36,8 @@ impl<T: PartialEq, N, M> PartialEq for Node<T, N, M> {
     }
 }
 
+impl<T: Eq, N, M> Eq for Node<T, N, M> {}
+
 trait History: Sized + Send + Sync {
     type History: Send + Sync;
     type Block: Send + Sync;
