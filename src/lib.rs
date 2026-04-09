@@ -902,7 +902,7 @@ pub trait ParseSlice: for<'a> Parse<Input<'a>> {
     where
         Self: Traversible,
     {
-        Self::parse_slice(&self.vec(), &self.to_resolve())
+        self.reparse_extra(&())
     }
 }
 
