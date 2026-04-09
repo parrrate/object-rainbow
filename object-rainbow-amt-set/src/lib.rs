@@ -88,6 +88,12 @@ impl<T: Tree + Clone + Traversible> Tree for SubTree<T> {
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 struct SetNode<T: Tree>(ArrayMap<SubTree<T>>);
 
+impl<T: Tree> Default for SetNode<T> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
 impl<
     T: Tree<N: Add<B1, Output: Send + Sync + ArrayLength + Sub<U1, Output = T::N>>>
         + Clone
