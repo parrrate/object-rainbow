@@ -6,6 +6,7 @@ use object_rainbow::{
     Traversible, assert_impl,
     inline_extra::InlineExtra,
     map_extra::{MapExtra, MappedExtra},
+    parse_extra::ParseExtra,
     without_header::WithoutHeader,
 };
 use object_rainbow_array_map::KeyedArrayMap;
@@ -15,10 +16,11 @@ type OptionFuture<'a, T> =
     Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<Option<T>>>>>;
 
 trait Amt<K> {
+    type H: Send + Sync;
     type V: Send + Sync;
-    fn insert(&mut self, key: K, value: Self::V) -> OptionFuture<'_, Self::V>;
-    fn from_pair(a: (K, Self::V), b: (K, Self::V)) -> Self;
-    fn get(&self, key: K) -> OptionFuture<'_, Self::V>;
+    fn insert(&mut self, key: K, hash: Self::H, value: Self::V) -> OptionFuture<'_, Self::V>;
+    fn from_pair(a: (K, Self::H, Self::V), b: (K, Self::H, Self::V)) -> Self;
+    fn get(&self, key: K) -> OptionFuture<'_, (Self::H, Self::V)>;
 }
 
 type P1 = u8;
@@ -52,7 +54,6 @@ type P28 = (P27, u8);
 type P29 = (P28, u8);
 type P30 = (P29, u8);
 type P31 = (P30, u8);
-type P32 = (P31, u8);
 
 type X32<E> = E;
 type X31<E> = (P1, E);
@@ -86,7 +87,6 @@ type X4<E> = (P28, E);
 type X3<E> = (P29, E);
 type X2<E> = (P30, E);
 type X1<E> = (P31, E);
-type X0<E> = (P32, E);
 
 #[derive(
     Debug,
@@ -587,36 +587,67 @@ rearrange!(X5, R5, X4);
 rearrange!(X4, R4, X3);
 rearrange!(X3, R3, X2);
 rearrange!(X2, R2, X1);
-rearrange!(X1, R1, X0);
+
+impl<E: 'static + Clone> MapExtra<(u8, X1<E>)> for R1 {
+    type Mapped = ([u8; 32], E);
+    fn map_extra(&self, (key, (prefix, extra)): (u8, X1<E>)) -> Self::Mapped {
+        (From::from((prefix, key).to_array()), extra)
+    }
+}
+
+#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Clone)]
+struct Entry<V, H = Hash>(ParseExtra<H>, MappedExtra<V, WithoutHeader>);
+
+impl<V, H> Entry<V, H> {
+    fn parts(self) -> (H, V) {
+        (self.0.0, self.1.1)
+    }
+}
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 /// what are you even doing at this point
-struct DeepestLeaf<V = ()>(KeyedArrayMap<MappedExtra<MappedExtra<V, WithoutHeader>, R1>>);
+struct DeepestLeaf<V = (), H = Hash>(KeyedArrayMap<MappedExtra<Entry<V, H>, R1>>);
 
-impl<V: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V> {
+impl<V: Send + Sync + Clone, H: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V, H> {
+    type H = H;
     type V = V;
 
-    fn insert(&mut self, key: u8, value: Self::V) -> OptionFuture<'_, Self::V> {
+    fn insert(&mut self, key: u8, hash: Self::H, value: Self::V) -> OptionFuture<'_, Self::V> {
         Box::pin(async move {
             Ok(self
                 .0
-                .insert(key, MappedExtra(R1, MappedExtra(WithoutHeader, value)))
-                .map(|value| value.1.1))
+                .insert(
+                    key,
+                    MappedExtra(
+                        R1,
+                        Entry(ParseExtra(hash), MappedExtra(WithoutHeader, value)),
+                    ),
+                )
+                .map(|value| value.1.1.1))
         })
     }
 
-    fn from_pair((ka, va): (u8, Self::V), (kb, vb): (u8, Self::V)) -> Self {
+    fn from_pair(
+        (ka, ha, va): (u8, Self::H, Self::V),
+        (kb, hb, vb): (u8, Self::H, Self::V),
+    ) -> Self {
         Self(KeyedArrayMap(
             [
-                (ka, MappedExtra(R1, MappedExtra(WithoutHeader, va))),
-                (kb, MappedExtra(R1, MappedExtra(WithoutHeader, vb))),
+                (
+                    ka,
+                    MappedExtra(R1, Entry(ParseExtra(ha), MappedExtra(WithoutHeader, va))),
+                ),
+                (
+                    kb,
+                    MappedExtra(R1, Entry(ParseExtra(hb), MappedExtra(WithoutHeader, vb))),
+                ),
             ]
             .into(),
         ))
     }
 
-    fn get(&self, key: u8) -> OptionFuture<'_, Self::V> {
-        Box::pin(async move { Ok(self.0.get(key).cloned().map(|value| value.1.1)) })
+    fn get(&self, key: u8) -> OptionFuture<'_, (Self::H, Self::V)> {
+        Box::pin(async move { Ok(self.0.get(key).cloned().map(|value| value.1.parts())) })
     }
 }
 
@@ -680,12 +711,12 @@ to_array!(K30, X30);
 to_array!(K31, X31);
 
 #[derive(Enum, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline)]
-enum SubTree<T, K, V = <T as Amt<K>>::V> {
-    Leaf(MappedExtra<MappedExtra<MappedExtra<V, WithoutHeader>, Merge>, InlineExtra<K>>),
+enum SubTree<T, K, V = <T as Amt<K>>::V, H = <T as Amt<K>>::H> {
+    Leaf(MappedExtra<MappedExtra<Entry<V, H>, Merge>, InlineExtra<K>>),
     SubTree(Point<T>),
 }
 
-impl<T, K: Clone, V: Clone> Clone for SubTree<T, K, V> {
+impl<T, K: Clone, V: Clone, H: Clone> Clone for SubTree<T, K, V, H> {
     fn clone(&self) -> Self {
         match self {
             Self::Leaf(mapped) => Self::Leaf(mapped.clone()),
@@ -694,36 +725,40 @@ impl<T, K: Clone, V: Clone> Clone for SubTree<T, K, V> {
     }
 }
 
-impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clone> Amt<K>
+impl<T: Amt<K, H: Clone, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clone> Amt<K>
     for SubTree<T, K>
 {
+    type H = T::H;
     type V = T::V;
 
-    fn insert(&mut self, key: K, value: Self::V) -> OptionFuture<'_, Self::V> {
+    fn insert(&mut self, key: K, hash: Self::H, value: Self::V) -> OptionFuture<'_, Self::V> {
         Box::pin(async move {
             match self {
                 SubTree::Leaf(MappedExtra(InlineExtra(xkey), MappedExtra(_, xvalue))) => {
                     Ok(if *xkey != key {
-                        *self = Self::from_pair((xkey.clone(), xvalue.1.clone()), (key, value));
+                        *self = Self::from_pair(
+                            (xkey.clone(), xvalue.0.0.clone(), xvalue.1.1.clone()),
+                            (key, hash, value),
+                        );
                         None
                     } else {
-                        Some(std::mem::replace(&mut xvalue.1, value))
+                        Some(std::mem::replace(&mut xvalue.1.1, value))
                     })
                 }
-                SubTree::SubTree(sub) => sub.fetch_mut().await?.insert(key, value).await,
+                SubTree::SubTree(sub) => sub.fetch_mut().await?.insert(key, hash, value).await,
             }
         })
     }
 
-    fn from_pair(a: (K, Self::V), b: (K, Self::V)) -> Self {
+    fn from_pair(a: (K, Self::H, Self::V), b: (K, Self::H, Self::V)) -> Self {
         Self::SubTree(T::from_pair(a, b).point())
     }
 
-    fn get(&self, key: K) -> OptionFuture<'_, Self::V> {
+    fn get(&self, key: K) -> OptionFuture<'_, (Self::H, Self::V)> {
         Box::pin(async move {
             match self {
                 SubTree::Leaf(MappedExtra(InlineExtra(existing), MappedExtra(_, value))) => {
-                    Ok((*existing == key).then(|| value.1.clone()))
+                    Ok((*existing == key).then(|| (value.0.0.clone(), value.1.1.clone())))
                 }
                 SubTree::SubTree(sub) => sub.fetch().await?.get(key).await,
             }
@@ -732,32 +767,40 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse)]
-struct SetNode<T, K, R, V = <T as Amt<K>>::V>(KeyedArrayMap<MappedExtra<SubTree<T, K, V>, R>>);
+struct SetNode<T, K, R, V = <T as Amt<K>>::V, H = <T as Amt<K>>::H>(
+    KeyedArrayMap<MappedExtra<SubTree<T, K, V, H>, R>>,
+);
 
-impl<T, K: Clone, R: Clone, V: Clone> Clone for SetNode<T, K, R, V> {
+impl<T, K: Clone, R: Clone, V: Clone, H: Clone> Clone for SetNode<T, K, R, V, H> {
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
 }
 
-impl<T, K, R, V> Default for SetNode<T, K, R, V> {
+impl<T, K, R, V, H> Default for SetNode<T, K, R, V, H> {
     fn default() -> Self {
         Self(Default::default())
     }
 }
 
 impl<
-    T: Amt<K, V: Clone> + Clone + Traversible,
+    T: Amt<K, H: Clone, V: Clone> + Clone + Traversible,
     K: Send + Sync + PartialEq + Clone,
     R: Send + Sync + Clone + Default,
 > Amt<(u8, K)> for SetNode<T, K, R>
 {
+    type H = T::H;
     type V = T::V;
 
-    fn insert(&mut self, (key, rest): (u8, K), value: Self::V) -> OptionFuture<'_, Self::V> {
+    fn insert(
+        &mut self,
+        (key, rest): (u8, K),
+        hash: Self::H,
+        value: Self::V,
+    ) -> OptionFuture<'_, Self::V> {
         Box::pin(async move {
             if let Some(sub) = self.0.get_mut(key) {
-                sub.insert(rest, value).await
+                sub.insert(rest, hash, value).await
             } else {
                 assert!(
                     self.0
@@ -767,7 +810,10 @@ impl<
                                 R::default(),
                                 SubTree::Leaf(MappedExtra(
                                     InlineExtra(rest),
-                                    MappedExtra(Merge, MappedExtra(WithoutHeader, value))
+                                    MappedExtra(
+                                        Merge,
+                                        Entry(ParseExtra(hash), MappedExtra(WithoutHeader, value))
+                                    )
                                 ))
                             )
                         )
@@ -779,8 +825,8 @@ impl<
     }
 
     fn from_pair(
-        ((a, rest_a), value_a): ((u8, K), Self::V),
-        ((b, rest_b), value_b): ((u8, K), Self::V),
+        ((a, rest_a), hash_a, value_a): ((u8, K), Self::H, Self::V),
+        ((b, rest_b), hash_b, value_b): ((u8, K), Self::H, Self::V),
     ) -> Self {
         if a == b {
             Self(KeyedArrayMap(
@@ -788,7 +834,7 @@ impl<
                     a,
                     MappedExtra(
                         R::default(),
-                        SubTree::from_pair((rest_a, value_a), (rest_b, value_b)),
+                        SubTree::from_pair((rest_a, hash_a, value_a), (rest_b, hash_b, value_b)),
                     ),
                 )]
                 .into(),
@@ -802,7 +848,10 @@ impl<
                             R::default(),
                             SubTree::Leaf(MappedExtra(
                                 InlineExtra(rest_a),
-                                MappedExtra(Merge, MappedExtra(WithoutHeader, value_a)),
+                                MappedExtra(
+                                    Merge,
+                                    Entry(ParseExtra(hash_a), MappedExtra(WithoutHeader, value_a)),
+                                ),
                             )),
                         ),
                     ),
@@ -812,7 +861,10 @@ impl<
                             R::default(),
                             SubTree::Leaf(MappedExtra(
                                 InlineExtra(rest_b),
-                                MappedExtra(Merge, MappedExtra(WithoutHeader, value_b)),
+                                MappedExtra(
+                                    Merge,
+                                    Entry(ParseExtra(hash_b), MappedExtra(WithoutHeader, value_b)),
+                                ),
                             )),
                         ),
                     ),
@@ -822,7 +874,7 @@ impl<
         }
     }
 
-    fn get(&self, (key, rest): (u8, K)) -> OptionFuture<'_, Self::V> {
+    fn get(&self, (key, rest): (u8, K)) -> OptionFuture<'_, (Self::H, Self::V)> {
         Box::pin(async move {
             if let Some(sub) = self.0.get(key) {
                 sub.get(rest).await
@@ -870,14 +922,14 @@ mod private {
     use object_rainbow::ParseSliceExtra;
 
     use super::*;
-    type N1<V = ()> = DeepestLeaf<V>;
+    type N1<V = (), H = Hash> = DeepestLeaf<V, H>;
 
     macro_rules! next_node {
         ($prev:ident, $next:ident, $pk:ident, $k:ident, $r:ident, $x:ident) => {
             #[derive(Clone)]
-            pub struct $next<V = ()>(SetNode<$prev<V>, $pk, $r, V>);
+            pub struct $next<V = (), H = Hash>(SetNode<$prev<V, H>, $pk, $r, V, H>);
 
-            impl<V> Default for $next<V> {
+            impl<V, H> Default for $next<V, H> {
                 fn default() -> Self {
                     Self(Default::default())
                 }
@@ -885,9 +937,10 @@ mod private {
 
             impl<
                 V: Inline<Extra>,
+                H: Object<Extra>,
                 I: PointInput<Extra = $x<Extra>>,
                 Extra: 'static + Send + Sync + Clone,
-            > Parse<I> for $next<V>
+            > Parse<I> for $next<V, H>
             {
                 fn parse(input: I) -> object_rainbow::Result<Self> {
                     let extra = &input.extra().clone();
@@ -899,40 +952,48 @@ mod private {
                 }
             }
 
-            impl<V: Tagged> Tagged for $next<V> {
-                const TAGS: Tags = V::TAGS;
+            impl<V: Tagged, H: Tagged> Tagged for $next<V, H> {
+                const TAGS: Tags = <(V, H) as Tagged>::TAGS;
             }
 
-            impl<V: InlineOutput> ToOutput for $next<V> {
+            impl<V: InlineOutput, H: ToOutput> ToOutput for $next<V, H> {
                 fn to_output(&self, output: &mut dyn Output) {
                     self.0.to_output(output);
                 }
             }
 
-            impl<V: ListHashes> ListHashes for $next<V> {
+            impl<V: ListHashes, H: ListHashes> ListHashes for $next<V, H> {
                 fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
                     self.0.list_hashes(f)
                 }
             }
 
-            impl<V: Traversible + InlineOutput> Topological for $next<V> {
+            impl<V: Traversible + InlineOutput, H: Traversible> Topological for $next<V, H> {
                 fn traverse(&self, visitor: &mut impl PointVisitor) {
                     self.0.traverse(visitor)
                 }
             }
 
-            impl<V: Traversible + InlineOutput + Clone> Amt<$k> for $next<V> {
+            impl<V: Traversible + InlineOutput + Clone, H: Traversible + Clone> Amt<$k>
+                for $next<V, H>
+            {
+                type H = H;
                 type V = V;
 
-                fn insert(&mut self, key: $k, value: Self::V) -> OptionFuture<'_, Self::V> {
-                    self.0.insert(key, value)
+                fn insert(
+                    &mut self,
+                    key: $k,
+                    hash: Self::H,
+                    value: Self::V,
+                ) -> OptionFuture<'_, Self::V> {
+                    self.0.insert(key, hash, value)
                 }
 
-                fn from_pair(a: ($k, Self::V), b: ($k, Self::V)) -> Self {
+                fn from_pair(a: ($k, Self::H, Self::V), b: ($k, Self::H, Self::V)) -> Self {
                     Self(Amt::from_pair(a, b))
                 }
 
-                fn get(&self, key: $k) -> OptionFuture<'_, Self::V> {
+                fn get(&self, key: $k) -> OptionFuture<'_, (Self::H, Self::V)> {
                     self.0.get(key)
                 }
             }
@@ -970,67 +1031,71 @@ mod private {
     next_node!(N29, N30, K29, K30, R30, X30);
     next_node!(N30, N31, K30, K31, R31, X31);
     next_node!(N31, N32, K31, K32, R32, X32);
-
-    fn _test<E>(_: impl Object<X2<E>>) {}
-
-    fn __test<E: 'static + Send + Sync + Clone, V: Inline<E>>(x: SetNode<N1<V>, K1, R2, V>) {
-        _test::<E>(x);
-    }
 }
 
 #[derive(
     ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Size, MaybeHasNiche,
 )]
-pub struct HamtMap<V>(Point<private::N32<V>>);
+pub struct HamtMap<V, H = Hash>(Point<private::N32<V, H>>);
 
 assert_impl!(
-    impl<V, E> Inline<E> for HamtMap<V>
+    impl<V, H, E> Inline<E> for HamtMap<V, H>
     where
         E: 'static + Send + Sync + Clone,
         V: Inline<E>,
+        H: Object<E>,
     {
     }
 );
 
-impl<V> Clone for HamtMap<V> {
+impl<V, H> Clone for HamtMap<V, H> {
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
 }
 
-impl<V> PartialEq for HamtMap<V> {
+impl<V, H> PartialEq for HamtMap<V, H> {
     fn eq(&self, other: &Self) -> bool {
         self.0 == other.0
     }
 }
 
-impl<V> Eq for HamtMap<V> {}
+impl<V, H> Eq for HamtMap<V, H> {}
 
-impl<V: Traversible + InlineOutput + Clone> Default for HamtMap<V> {
+impl<V: Traversible + InlineOutput + Clone, H: Traversible + Clone> Default for HamtMap<V, H> {
     fn default() -> Self {
         Self(Default::default())
     }
 }
 
-impl<V: Traversible + InlineOutput + Clone> HamtMap<V> {
+impl<
+    V: Traversible + InlineOutput + Clone,
+    H: Traversible + Clone + Size<Size = <Hash as Size>::Size>,
+> HamtMap<V, H>
+{
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub async fn insert(&mut self, hash: Hash, value: V) -> object_rainbow::Result<Option<V>> {
+    pub async fn insert(&mut self, hash: H, value: V) -> object_rainbow::Result<Option<V>> {
         self.0
             .fetch_mut()
             .await?
-            .insert(hash_key(hash), value)
+            .insert(hash_key(From::from(hash.to_array())), hash, value)
             .await
     }
 
     pub async fn get(&self, hash: Hash) -> object_rainbow::Result<Option<V>> {
-        self.0.fetch().await?.get(hash_key(hash)).await
+        self.0
+            .fetch()
+            .await?
+            .get(hash_key(hash.into_bytes()))
+            .await
+            .map(|value| value.map(|(_, value)| value))
     }
 }
 
-fn hash_key(hash: Hash) -> K32 {
+fn hash_key(hash: [u8; 32]) -> K32 {
     let [
         x0,
         x1,
@@ -1064,7 +1129,7 @@ fn hash_key(hash: Hash) -> K32 {
         x29,
         x30,
         x31,
-    ] = hash.into_bytes();
+    ] = hash;
     (x0,(x1,(x2,(x3,(x4,(x5,(x6,(x7,(x8,(x9,(x10,(x11,(x12,(x13,(x14,(x15,(x16,(x17,(x18,(x19,(x20,(x21,(x22,(x23,(x24,(x25,(x26,(x27,(x28,(x29,(x30,(x31))))))))))))))))))))))))))))))))
 }
 
