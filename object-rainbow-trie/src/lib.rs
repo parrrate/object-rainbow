@@ -34,19 +34,21 @@ impl<T> Default for Trie<T> {
     }
 }
 
-trait TrieChildren: Sized {
-    fn c_get_mut(&mut self, key: u8) -> Option<&mut Point<(LpBytes, Self)>>;
-    fn c_get(&self, key: u8) -> Option<&Point<(LpBytes, Self)>>;
-    fn c_insert(&mut self, key: u8, point: Point<(LpBytes, Self)>);
+trait TrieChildren<Tr = Self>: Sized {
+    fn c_get_mut(&mut self, key: u8) -> Option<&mut Point<(LpBytes, Tr)>>;
+    fn c_get(&self, key: u8) -> Option<&Point<(LpBytes, Tr)>>;
+    fn c_insert(&mut self, key: u8, point: Point<(LpBytes, Tr)>);
     fn c_empty(&self) -> bool;
     fn c_len(&self) -> usize;
     fn c_remove(&mut self, key: u8);
-    fn c_range(
-        &self,
+    fn c_range<'a>(
+        &'a self,
         min_inclusive: u8,
         max_inclusive: u8,
-    ) -> impl Iterator<Item = (&u8, &Point<(LpBytes, Self)>)>;
-    fn c_pop_first(&mut self) -> Option<(u8, Point<(LpBytes, Self)>)>;
+    ) -> impl Iterator<Item = (&'a u8, &'a Point<(LpBytes, Tr)>)>
+    where
+        Tr: 'a;
+    fn c_pop_first(&mut self) -> Option<(u8, Point<(LpBytes, Tr)>)>;
 }
 
 impl<T> TrieChildren for Trie<T> {
@@ -74,11 +76,14 @@ impl<T> TrieChildren for Trie<T> {
         self.children.remove(&key);
     }
 
-    fn c_range(
-        &self,
+    fn c_range<'a>(
+        &'a self,
         min_inclusive: u8,
         max_inclusive: u8,
-    ) -> impl Iterator<Item = (&u8, &Point<(LpBytes, Self)>)> {
+    ) -> impl Iterator<Item = (&'a u8, &'a Point<(LpBytes, Self)>)>
+    where
+        Self: 'a,
+    {
         self.children.range(min_inclusive..=max_inclusive)
     }
 
