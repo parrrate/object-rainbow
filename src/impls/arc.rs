@@ -34,6 +34,10 @@ impl<T: Topological> Topological for Arc<T> {
 
 impl<T: Tagged> Tagged for Arc<T> {
     const TAGS: Tags = T::TAGS;
+
+    fn tag_hash() -> Hash {
+        T::tag_hash()
+    }
 }
 
 impl<T: Object> Object for Arc<T> {
