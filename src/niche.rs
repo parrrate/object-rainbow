@@ -19,7 +19,7 @@ pub struct NicheAnd<T, V>(T, V);
 pub struct SomeNiche<T>(T);
 
 pub trait Niche {
-    type NeedsTag: NicheAuto;
+    type NeedsTag: Bit;
     type N: ArrayLength;
     fn niche() -> GenericArray<u8, Self::N>;
     type Next: MaybeNiche<N = Self::N>;
@@ -88,8 +88,11 @@ impl<A: MaybeNiche<N: Add<B::N, Output: Unsigned>>, B: MaybeNiche, U: AsTailOf<S
     type WithTail = U::WithHead;
 }
 
-impl<V: Niche<N = N>, N: ArrayLength + Add<T::N, Output: ArrayLength>, T: Niche> Niche
-    for AndNiche<V, T>
+impl<
+    V: Niche<N = N, NeedsTag: NicheAuto>,
+    N: ArrayLength + Add<T::N, Output: ArrayLength>,
+    T: Niche,
+> Niche for AndNiche<V, T>
 {
     type NeedsTag = T::NeedsTag;
     type N = Sum<N, T::N>;
@@ -126,8 +129,8 @@ where
     type WithTail = NicheAnd<Self, U>;
 }
 
-impl<T: Niche<N: Add<N, Output: ArrayLength>>, V: Niche<N = N>, N: ArrayLength> Niche
-    for NicheAnd<T, V>
+impl<T: Niche<N: Add<N, Output: ArrayLength>>, V: Niche<N = N, NeedsTag: NicheAuto>, N: ArrayLength>
+    Niche for NicheAnd<T, V>
 {
     type NeedsTag = T::NeedsTag;
     type N = Sum<T::N, N>;
