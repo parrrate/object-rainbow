@@ -2448,9 +2448,7 @@ pub fn derive_for_mapped(args: TokenStream, input: TokenStream) -> TokenStream {
             _ => unimplemented!("unknown/unsupported item"),
         })
         .collect::<Vec<_>>();
-    let output = quote! {
-        #input
-
+    let derived = quote! {
         impl #impl_generics #name #ty_generics for ::object_rainbow::map_extra::MappedExtra<
             __T,
             __M,
@@ -2459,6 +2457,11 @@ pub fn derive_for_mapped(args: TokenStream, input: TokenStream) -> TokenStream {
         {
             #(#i)*
         }
+    };
+    let output = quote! {
+        #input
+
+        #derived
     };
     output.into()
 }
