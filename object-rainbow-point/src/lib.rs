@@ -800,7 +800,7 @@ impl<T: Traversible + Clone> Fetch for LocalFetch<T> {
     }
 }
 
-impl<T: Traversible + Clone> FetchBytes for LocalFetch<T> {
+impl<T: Traversible> FetchBytes for LocalFetch<T> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         Box::pin(ready(Ok((self.object.output(), self.object.to_resolve()))))
     }
