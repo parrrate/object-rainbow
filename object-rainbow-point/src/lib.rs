@@ -826,6 +826,11 @@ impl<T, F: Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
     fn fetch_local(&self) -> Option<Self::T> {
         self.fetch.fetch_local().map(&self.map)
     }
+
+    fn try_unwrap(self: Arc<Self>) -> Option<Self::T> {
+        let Self { fetch, map } = Arc::try_unwrap(self).ok()?;
+        fetch.try_unwrap().map(map)
+    }
 }
 
 pub struct PointMut<'a, T: FullHash> {
