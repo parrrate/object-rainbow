@@ -87,6 +87,12 @@ pub enum Error {
     ExtensionType,
 }
 
+impl Error {
+    pub fn parse(e: impl Into<anyhow::Error>) -> Self {
+        Self::Parse(e.into())
+    }
+}
+
 pub type Result<T> = std::result::Result<T, Error>;
 
 pub const HASH_SIZE: usize = sha2_const::Sha256::DIGEST_SIZE;
