@@ -1,6 +1,6 @@
 [package]
 name = "object-rainbow-amt-set"
-version = "0.0.0-a.4"
+version = "0.0.0-a.5"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -10,8 +10,7 @@ description = "HAMT-like non-iterable set for object-rainbow"
 
 [dependencies]
 object-rainbow.workspace = true
-object-rainbow-array-map.workspace = true
-object-rainbow-point.workspace = true
+object-rainbow-hamt.workspace = true
 
 [dev-dependencies]
 macro_rules_attribute = "0.2.2"

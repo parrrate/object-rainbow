@@ -1142,12 +1142,11 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-amt-set"
-version = "0.0.0-a.4"
+version = "0.0.0-a.5"
 dependencies = [
  "macro_rules_attribute",
  "object-rainbow",
- "object-rainbow-array-map",
- "object-rainbow-point",
+ "object-rainbow-hamt",
  "smol",
  "smol-macros",
 ]
@@ -1228,6 +1227,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "object-rainbow-hamt"
+version = "0.0.0-a.0"
+dependencies = [
+ "object-rainbow",
+ "object-rainbow-array-map",
+ "object-rainbow-point",
+]
+
+[[package]]
 name = "object-rainbow-history"
 version = "0.0.0-a.11"
 dependencies = [
@@ -1290,7 +1298,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-point"
-version = "0.0.0-a.3"
+version = "0.0.0-a.4"
 dependencies = [
  "futures-util",
  "object-rainbow",
