@@ -32,12 +32,7 @@ impl<T: ParseInline<I>, I: ParseInput> ParseInline<I> for ArrayMap<T> {
         let bits = input.parse_inline::<Bits>()?;
         let map = bits
             .iter_ones()
-            .map(|one| {
-                Ok((
-                    u8::try_from(one).expect("overflow"),
-                    input.parse_inline::<T>()?,
-                ))
-            })
+            .map(|one| Ok((u8::try_from(one).expect("overflow"), input.parse_inline()?)))
             .collect::<object_rainbow::Result<_>>()?;
         Ok(Self { bits, map })
     }
