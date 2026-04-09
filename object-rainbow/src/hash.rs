@@ -149,6 +149,7 @@ impl From<Hash> for OptionalHash {
 impl OptionalHash {
     pub const NONE: Self = Self([0; HASH_SIZE]);
 
+    /// Get [`Hash`] if this isn't [`Self::NONE`].
     pub fn get(&self) -> Option<Hash> {
         self.is_some().then_some(Hash(self.0))
     }
