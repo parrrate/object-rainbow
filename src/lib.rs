@@ -468,6 +468,18 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for RawPoint<T, Extra> {
             }
         })
     }
+
+    fn try_fetch_local(&self) -> Result<Option<Node<Self::T>>> {
+        let Some((data, resolve)) = self.inner.fetch.fetch_bytes_local()? else {
+            return Ok(None);
+        };
+        let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
+        if self.inner.hash != object.full_hash() {
+            Err(Error::FullHashMismatch)
+        } else {
+            Ok(Some((object, resolve)))
+        }
+    }
 }
 
 impl<T> Point<T> {
