@@ -106,6 +106,10 @@ impl LocalMap {
             .map(|(_, data)| data.to_owned())
             .ok_or(object_rainbow::Error::HashNotFound)
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.map.is_empty()
+    }
 }
 
 impl Resolve for LocalMap {
