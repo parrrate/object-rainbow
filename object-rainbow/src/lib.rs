@@ -1317,39 +1317,52 @@ impl<T: for<'a> Parse<Input<'a, Extra>>, Extra: Clone> ExtraFor<T> for Extra {
     }
 }
 
-impl<T> ToOutput for dyn ExtraFor<T> {
+impl<T> ToOutput for dyn Send + Sync + ExtraFor<T> {
     fn to_output(&self, _: &mut dyn Output) {}
 }
 
-impl<T: Tagged> Tagged for dyn ExtraFor<T> {
+impl<T: Tagged> Tagged for dyn Send + Sync + ExtraFor<T> {
     const TAGS: Tags = T::TAGS;
     const HASH: Hash = T::HASH;
 }
 
-impl<T> Size for dyn ExtraFor<T> {
+impl<T> Size for dyn Send + Sync + ExtraFor<T> {
     type Size = typenum::U0;
     const SIZE: usize = 0;
 }
 
-impl<T> InlineOutput for dyn ExtraFor<T> {}
-impl<T> ListHashes for dyn ExtraFor<T> {}
-impl<T> Topological for dyn ExtraFor<T> {}
+impl<T> InlineOutput for dyn Send + Sync + ExtraFor<T> {}
+impl<T> ListHashes for dyn Send + Sync + ExtraFor<T> {}
+impl<T> Topological for dyn Send + Sync + ExtraFor<T> {}
 
-impl<T, I: PointInput<Extra: ExtraFor<T>>> Parse<I> for Arc<dyn ExtraFor<T>> {
+impl<T, I: PointInput<Extra: Send + Sync + ExtraFor<T>>> Parse<I>
+    for Arc<dyn Send + Sync + ExtraFor<T>>
+{
     fn parse(input: I) -> crate::Result<Self> {
         Self::parse_as_inline(input)
     }
 }
 
-impl<T, I: PointInput<Extra: ExtraFor<T>>> ParseInline<I> for Arc<dyn ExtraFor<T>> {
+impl<T, I: PointInput<Extra: Send + Sync + ExtraFor<T>>> ParseInline<I>
+    for Arc<dyn Send + Sync + ExtraFor<T>>
+{
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         Ok(Arc::new(input.extra().clone()))
     }
 }
 
-impl<T> MaybeHasNiche for dyn ExtraFor<T> {
+impl<T> MaybeHasNiche for dyn Send + Sync + ExtraFor<T> {
     type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
 }
+
+assert_impl!(
+    impl<T, E> Inline<E> for Arc<dyn Send + Sync + ExtraFor<T>>
+    where
+        T: Object<E>,
+        E: 'static + Send + Sync + Clone + ExtraFor<T>,
+    {
+    }
+);
 
 #[doc(hidden)]
 pub trait BoundPair: Sized {
