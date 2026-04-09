@@ -868,7 +868,7 @@ impl<T: Object> Topological for Point<T> {
     }
 }
 
-impl<T: Object, I: PointInput> ParseInline<I> for Point<T> {
+impl<T: Object<I::Extra>, I: PointInput> ParseInline<I> for Point<T, I::Extra> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         input.parse_point()
     }
@@ -1339,9 +1339,13 @@ pub trait PointInput: ParseInput {
     fn resolve_ref(&self) -> &dyn Resolve {
         self.resolve_arc_ref().as_ref()
     }
-    fn parse_point<T: Object>(&mut self) -> crate::Result<Point<T>> {
+    fn parse_point<T: Object<Self::Extra>>(&mut self) -> crate::Result<Point<T, Self::Extra>> {
         let address = self.parse_address()?;
-        Ok(Point::from_address(address, self.resolve()))
+        Ok(Point::from_address_extra(
+            address,
+            self.resolve(),
+            self.extra().clone(),
+        ))
     }
     fn parse_raw_point_inner(&mut self) -> crate::Result<RawPointInner<Self::Extra>> {
         let address = self.parse_address()?;
