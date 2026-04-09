@@ -254,15 +254,7 @@ impl<T: ListNode + Traversible, N: Send + Sync + Unsigned> ListNode for Node<Poi
                     Ok(last.fetch().await?.merge_history(history))
                 }
             } else {
-                let prev = if let Some(prev) = self.prev.as_ref() {
-                    prev.fetch().await?.items.last().cloned()
-                } else {
-                    None
-                };
-                let mut first = T::new(prev);
-                let history = first.push(len, value).await?;
-                self.items.push(first.clone().point());
-                Ok(first.merge_history(history))
+                Err(object_rainbow::error_fetch!("empty non-leaf encountered"))
             }
         }
     }
