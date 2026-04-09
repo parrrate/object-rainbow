@@ -1282,6 +1282,26 @@ fn gen_size(data: &Data) -> proc_macro2::TokenStream {
     }
 }
 
+/// ```rust
+/// use object_rainbow::{Parse, ParseInline, ParseInput};
+///
+/// #[derive(Parse)]
+/// struct Three<A, B, C> {
+///     a: A,
+///     b: B,
+///     c: C,
+/// }
+///
+/// object_rainbow::assert_impl!(
+///     impl<A, B, C, I> Parse<I> for Three<A, B, C>
+///     where
+///         A: ParseInline<I>,
+///         B: ParseInline<I>,
+///         C: Parse<I>,
+///         I: ParseInput,
+///     {}
+/// );
+/// ```
 #[proc_macro_derive(Parse, attributes(parse))]
 pub fn derive_parse(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
