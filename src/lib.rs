@@ -1735,6 +1735,16 @@ impl<T: Default + Traversible + Clone> Default for Point<T> {
     }
 }
 
+pub trait ExtraFor<T> {
+    fn parse(&self, data: &[u8], resolve: &Arc<dyn Resolve>) -> Result<T>;
+}
+
+impl<T: for<'a> Parse<Input<'a, Extra>>, Extra> ExtraFor<T> for Extra {
+    fn parse(&self, data: &[u8], resolve: &Arc<dyn Resolve>) -> Result<T> {
+        T::parse_slice_extra(data, resolve, self)
+    }
+}
+
 #[test]
 fn options() {
     type T0 = ();
