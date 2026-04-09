@@ -15,3 +15,6 @@ impl<I: ParseInput> Parse<I> for String {
 impl Tagged for String {}
 impl ListHashes for String {}
 impl Topological for String {}
+impl MaybeHasNiche for String {
+    type MnArray = NoNiche<NicheForUnsized>;
+}
