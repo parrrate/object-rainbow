@@ -16,26 +16,38 @@ pub trait Key: 'static + Sized + Send + Sync + Clone {
 
 type Resolution<K> = Arc<Lp<Vec<Point<Encrypted<K, Vec<u8>>>>>>;
 
-#[derive(ToOutput, Clone)]
-struct Unkeyed<T>(T);
-
-impl<
-    T: Parse<I::WithExtra<Extra>>,
-    K: 'static + Clone,
-    Extra: 'static + Clone,
-    I: PointInput<Extra = (K, Extra)>,
-> Parse<I> for Unkeyed<T>
-{
-    fn parse(input: I) -> object_rainbow::Result<Self> {
-        Ok(Self(T::parse(input.map_extra(|(_, extra)| extra))?))
-    }
-}
-
-#[derive(ToOutput, Parse)]
+#[derive(ToOutput)]
 struct EncryptedInner<K, T> {
     tags: Hash,
     resolution: Resolution<K>,
-    decrypted: Unkeyed<Arc<T>>,
+    decrypted: Arc<T>,
+}
+
+impl<
+    K: Key,
+    T: Object<Extra>,
+    Extra: 'static + Send + Sync + Clone,
+    I: PointInput<Extra: EncryptedExtra<K, Extra = Extra>>,
+> Parse<I> for EncryptedInner<K, T>
+{
+    fn parse(mut input: I) -> object_rainbow::Result<Self> {
+        let tags = input.parse_inline()?;
+        let resolution: Resolution<K> = input.parse_inline()?;
+        let (_, extra) = input.extra().parts();
+        let resolve = Decrypt {
+            resolution: resolution.clone(),
+        };
+        let decrypted = Arc::new(T::parse_slice_extra(
+            &input.parse_all()?,
+            &(Arc::new(resolve) as _),
+            &extra,
+        )?);
+        Ok(Self {
+            tags,
+            resolution,
+            decrypted,
+        })
+    }
 }
 
 impl<K, T> Clone for EncryptedInner<K, T> {
@@ -102,7 +114,7 @@ impl<K: Key, P: Fetch<T: Traversible>> Fetch for Visited<K, P> {
                 resolve,
             ) = self.encrypted.fetch_full().await?;
             let decrypted = self.decrypted.fetch().await?;
-            let decrypted = Unkeyed(Arc::new(decrypted));
+            let decrypted = Arc::new(decrypted);
             Ok((
                 Encrypted {
                     key,
@@ -129,7 +141,7 @@ impl<K: Key, P: Fetch<T: Traversible>> Fetch for Visited<K, P> {
                     },
             } = self.encrypted.fetch().await?;
             let decrypted = self.decrypted.fetch().await?;
-            let decrypted = Unkeyed(Arc::new(decrypted));
+            let decrypted = Arc::new(decrypted);
             Ok(Encrypted {
                 key,
                 inner: EncryptedInner {
@@ -160,7 +172,7 @@ impl<K: Key, P: Fetch<T: Traversible>> Fetch for Visited<K, P> {
         let Some((decrypted, _)) = self.decrypted.try_fetch_local()? else {
             return Ok(None);
         };
-        let decrypted = Unkeyed(Arc::new(decrypted));
+        let decrypted = Arc::new(decrypted);
         Ok(Some((
             Encrypted {
                 key,
@@ -184,7 +196,7 @@ impl<K: Key, P: Fetch<T: Traversible>> Fetch for Visited<K, P> {
                     decrypted: _,
                 },
         } = self.encrypted.fetch_local()?;
-        let decrypted = Unkeyed(Arc::new(self.decrypted.fetch_local()?));
+        let decrypted = Arc::new(self.decrypted.fetch_local()?);
         Some(Encrypted {
             key,
             inner: EncryptedInner {
@@ -229,7 +241,7 @@ impl<K, T> ListHashes for EncryptedInner<K, T> {
 impl<K: Key, T: Topological> Topological for EncryptedInner<K, T> {
     fn traverse(&self, visitor: &mut impl PointVisitor) {
         let resolution = &mut self.resolution.iter();
-        self.decrypted.0.traverse(&mut IterateResolution {
+        self.decrypted.traverse(&mut IterateResolution {
             resolution,
             visitor,
         });
@@ -244,7 +256,7 @@ pub struct Encrypted<K, T> {
 
 impl<K, T: Clone> Encrypted<K, T> {
     pub fn into_inner(self) -> T {
-        Arc::unwrap_or_clone(self.inner.decrypted.0)
+        Arc::unwrap_or_clone(self.inner.decrypted)
     }
 }
 
@@ -252,7 +264,7 @@ impl<K, T> Deref for Encrypted<K, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        self.inner.decrypted.0.as_ref()
+        self.inner.decrypted.as_ref()
     }
 }
 
@@ -293,7 +305,7 @@ impl<K: Key, T: ToOutput> ToOutput for Encrypted<K, T> {
                     .key
                     .encrypt(b"this encrypted constant is followed by an unencrypted inner hash"),
             );
-            self.inner.decrypted.0.data_hash();
+            self.inner.decrypted.data_hash();
         }
         if output.is_real() {
             let source = self.inner.vec();
@@ -327,7 +339,7 @@ impl<K: Key> Decrypt<K> {
             .clone()
             .fetch()
             .await?;
-        let data = Arc::unwrap_or_clone(decrypted.0);
+        let data = Arc::unwrap_or_clone(decrypted);
         Ok((data, resolution))
     }
 }
@@ -372,7 +384,7 @@ impl<K: Key> Resolve for Decrypt<K> {
         else {
             return Ok(None);
         };
-        let data = Arc::unwrap_or_clone(decrypted.0);
+        let data = Arc::unwrap_or_clone(decrypted);
         Ok(Some((data, Arc::new(Decrypt { resolution }) as _)))
     }
 }
@@ -414,24 +426,7 @@ impl<
             .0
             .decrypt(&input.parse_all()?)
             .map_err(object_rainbow::Error::consistency)?;
-        let EncryptedInner {
-            tags,
-            resolution,
-            decrypted,
-        } = EncryptedInner::<K, Vec<u8>>::parse_slice_extra(&source, &resolve, &with_key)?;
-        let decrypted = T::parse_slice_extra(
-            &decrypted.0,
-            &(Arc::new(Decrypt {
-                resolution: resolution.clone(),
-            }) as _),
-            &with_key.1,
-        )?;
-        let decrypted = Unkeyed(Arc::new(decrypted));
-        let inner = EncryptedInner {
-            tags,
-            resolution,
-            decrypted,
-        };
+        let inner = EncryptedInner::<K, T>::parse_slice_extra(&source, &resolve, &with_key)?;
         Ok(Self {
             key: with_key.0,
             inner,
@@ -518,7 +513,7 @@ impl<K: Key, T: FullHash> Fetch for Untyped<K, T> {
                     decrypted,
                 },
         } = self.encrypted.fetch_local()?;
-        let decrypted = Unkeyed(Arc::new(decrypted.vec()));
+        let decrypted = Arc::new(decrypted.vec());
         Some(Encrypted {
             key,
             inner: EncryptedInner {
@@ -582,7 +577,7 @@ pub async fn encrypt<K: Key, T: Traversible>(
     });
     let resolution = futures_util::future::try_join_all(futures).await?;
     let resolution = Arc::new(Lp(resolution));
-    let decrypted = Unkeyed(Arc::new(decrypted));
+    let decrypted = Arc::new(decrypted);
     let inner = EncryptedInner {
         tags: T::HASH,
         resolution,
