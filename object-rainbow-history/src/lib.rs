@@ -10,6 +10,10 @@ use object_rainbow_chain_tree::ChainTree;
 )]
 pub struct History<T, D>(ChainTree<(T, D)>);
 
+impl<T, D> History<T, D> {
+    pub const ROOT: Self = Self(ChainTree::EMPTY);
+}
+
 pub trait Diff<Tree> {
     fn forward(
         self,
