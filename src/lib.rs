@@ -573,8 +573,11 @@ impl<T: ?Sized + ToOutput + ListHashes + Tagged> FullHash for T {}
 
 pub trait Traversible: 'static + Sized + Send + Sync + FullHash + Topological {
     fn to_resolve(&self) -> Arc<dyn Resolve> {
+        let topology = self.topology();
+        let topology_hash = topology.data_hash();
         Arc::new(ByTopology {
-            topology: self.topology(),
+            topology,
+            topology_hash,
         })
     }
 }
@@ -718,6 +721,7 @@ impl HashOutput {
 
 struct ByTopology {
     topology: TopoVec,
+    topology_hash: Hash,
 }
 
 impl ByTopology {
@@ -773,6 +777,10 @@ impl Resolve for ByTopology {
         } else {
             point.fetch_bytes_local()
         }
+    }
+
+    fn topology_hash(&self) -> Option<Hash> {
+        Some(self.topology_hash)
     }
 }
 
