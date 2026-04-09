@@ -8,6 +8,7 @@ use object_rainbow::{
     Address, ExtraFor, FullHash, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object,
     ObjectHashes, OptionalHash, Parse, ParseInline, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Size, Tagged, ToOutput, Topological, Traversible, assert_impl,
+    map_extra::MappedExtra,
 };
 use object_rainbow_point::Point;
 
@@ -389,5 +390,58 @@ impl<S: RainbowStore, T: Traversible> Stored<S, T> {
     pub async fn replace(&mut self, point: Point<T>) -> object_rainbow::Result<Point<T>> {
         self.store.save_point(&point).await?;
         Ok(std::mem::replace(&mut self.point, point))
+    }
+}
+
+impl<S: RainbowStore, M: 'static + Send + Sync + Clone> RainbowStore for MappedExtra<S, M> {
+    fn save_data(&self, hashes: ObjectHashes, data: &[u8]) -> impl RainbowFuture<T = ()> {
+        self.1.save_data(hashes, data)
+    }
+
+    fn contains(&self, hash: Hash) -> impl RainbowFuture<T = bool> {
+        self.1.contains(hash)
+    }
+
+    fn fetch(
+        &self,
+        hash: Hash,
+    ) -> impl RainbowFuture<T = impl 'static + Send + Sync + AsRef<[u8]>> {
+        self.1.fetch(hash)
+    }
+
+    fn saved_point<T: 'static + Traversible, Extra: 'static + Send + Sync + Clone + ExtraFor<T>>(
+        &self,
+        point: &Point<T>,
+        extra: Extra,
+    ) -> impl RainbowFuture<T = Point<T>> {
+        self.1.saved_point(point, extra)
+    }
+
+    fn save_point(&self, point: &impl SingularFetch<T: Traversible>) -> impl RainbowFuture<T = ()> {
+        self.1.save_point(point)
+    }
+
+    fn save_topology(&self, object: &impl Topological) -> impl RainbowFuture<T = ()> {
+        self.1.save_topology(object)
+    }
+
+    fn save_object(&self, object: &impl Traversible) -> impl RainbowFuture<T = ()> {
+        self.1.save_object(object)
+    }
+
+    fn resolve(&self) -> Arc<dyn Resolve> {
+        self.1.resolve()
+    }
+
+    fn point_extra<T: 'static + FullHash, Extra: 'static + Send + Sync + Clone + ExtraFor<T>>(
+        &self,
+        hash: Hash,
+        extra: Extra,
+    ) -> Point<T> {
+        self.1.point_extra(hash, extra)
+    }
+
+    fn point<T: Object>(&self, hash: Hash) -> Point<T> {
+        self.1.point(hash)
     }
 }
