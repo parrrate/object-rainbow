@@ -15,6 +15,8 @@ impl ToOutput for u8 {
     }
 }
 
+impl InlineOutput for u8 {}
+
 impl<I: ParseInput> Parse<I> for u8 {
     fn parse(input: I) -> crate::Result<Self> {
         ParseInline::parse_as_inline(input)
