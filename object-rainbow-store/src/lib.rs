@@ -1,4 +1,8 @@
-use std::{ops::Deref, pin::Pin, sync::Arc};
+use std::{
+    ops::{Deref, DerefMut},
+    pin::Pin,
+    sync::Arc,
+};
 
 use object_rainbow::{
     Address, Fetch, Hash, Object, ObjectHashes, Point, PointVisitor, Resolve, Singular,
@@ -204,6 +208,12 @@ impl<S, K, T, Extra> Deref for StoreRef<S, K, T, Extra> {
 
     fn deref(&self) -> &Self::Target {
         &self.point
+    }
+}
+
+impl<S, K, T, Extra> DerefMut for StoreRef<S, K, T, Extra> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.point
     }
 }
 
