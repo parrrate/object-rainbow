@@ -228,10 +228,8 @@ pub fn marshall(map: &LocalMap, root: Hash) -> MarshalledRoot {
 
 impl ToOutput for MarshalledRoot {
     fn to_output(&self, output: &mut dyn Output) {
-        if output.is_real() {
-            self.marshalled.root.to_output(output);
-            self.marshalled.data.to_output(output);
-        }
+        self.marshalled.root.to_output(output);
+        self.marshalled.data.to_output(output);
     }
 }
 
@@ -259,9 +257,7 @@ impl<T: ToOutput> ToOutput for Marshalled<T> {
         if output.is_mangling() {
             self.object.to_output(output);
         }
-        if output.is_real() {
-            self.root.to_output(output);
-        }
+        self.root.to_output(output);
     }
 }
 

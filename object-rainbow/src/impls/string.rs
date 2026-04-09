@@ -2,9 +2,7 @@ use crate::*;
 
 impl ToOutput for String {
     fn to_output(&self, output: &mut dyn Output) {
-        if output.is_real() {
-            self.as_str().to_output(output);
-        }
+        self.as_str().to_output(output);
     }
 }
 
