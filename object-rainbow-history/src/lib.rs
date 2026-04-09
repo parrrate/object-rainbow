@@ -6,6 +6,7 @@ use object_rainbow::{
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
 
+pub mod remap;
 #[cfg(feature = "trie")]
 mod trie;
 
