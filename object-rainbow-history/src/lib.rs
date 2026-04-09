@@ -294,3 +294,12 @@ pub struct Parallel<A, B> {
     a: A,
     b: B,
 }
+
+impl<Diff: Send + Clone, A: Forward<Diff>, B: Forward<Diff>> Forward<Diff> for Parallel<A, B> {
+    fn forward(&mut self, diff: Diff) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+        async move {
+            futures_util::try_join!(self.a.forward(diff.clone()), self.b.forward(diff))?;
+            Ok(())
+        }
+    }
+}
