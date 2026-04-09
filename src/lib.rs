@@ -1653,15 +1653,15 @@ fn options() {
     assert_eq!(Some(false).output::<Vec<u8>>(), [0]);
     assert_eq!(Some(true).output::<Vec<u8>>(), [1]);
     assert_eq!(None::<bool>.output::<Vec<u8>>(), [2]);
-    assert_eq!(Some(Some(false)).output::<Vec<u8>>(), [0, 0]);
-    assert_eq!(Some(Some(true)).output::<Vec<u8>>(), [0, 1]);
-    assert_eq!(Some(None::<bool>).output::<Vec<u8>>(), [0, 2]);
-    assert_eq!(None::<Option<bool>>.output::<Vec<u8>>(), [1, 0]);
-    assert_eq!(Some(Some(Some(false))).output::<Vec<u8>>(), [0, 0]);
-    assert_eq!(Some(Some(Some(true))).output::<Vec<u8>>(), [0, 1]);
-    assert_eq!(Some(Some(None::<bool>)).output::<Vec<u8>>(), [0, 2]);
-    assert_eq!(Some(None::<Option<bool>>).output::<Vec<u8>>(), [1, 0]);
-    assert_eq!(None::<Option<Option<bool>>>.output::<Vec<u8>>(), [2, 0]);
+    assert_eq!(Some(Some(false)).output::<Vec<u8>>(), [0]);
+    assert_eq!(Some(Some(true)).output::<Vec<u8>>(), [1]);
+    assert_eq!(Some(None::<bool>).output::<Vec<u8>>(), [2]);
+    assert_eq!(None::<Option<bool>>.output::<Vec<u8>>(), [3]);
+    assert_eq!(Some(Some(Some(false))).output::<Vec<u8>>(), [0]);
+    assert_eq!(Some(Some(Some(true))).output::<Vec<u8>>(), [1]);
+    assert_eq!(Some(Some(None::<bool>)).output::<Vec<u8>>(), [2]);
+    assert_eq!(Some(None::<Option<bool>>).output::<Vec<u8>>(), [3]);
+    assert_eq!(None::<Option<Option<bool>>>.output::<Vec<u8>>(), [4]);
     assert_eq!(Option::<Point<()>>::SIZE, HASH_SIZE);
     assert_eq!(Some(()).output::<Vec<u8>>(), [0]);
     assert_eq!(Some(((), ())).output::<Vec<u8>>(), [0]);
@@ -1670,10 +1670,10 @@ fn options() {
     assert_eq!(Some((Some(true), true)).output::<Vec<u8>>(), [1, 1]);
     assert_eq!(Some((None::<bool>, true)).output::<Vec<u8>>(), [2, 1]);
     assert_eq!(Some((true, None::<bool>)).output::<Vec<u8>>(), [1, 2]);
-    assert_eq!(None::<(Option<bool>, bool)>.output::<Vec<u8>>(), [0, 2]);
-    assert_eq!(None::<(bool, Option<bool>)>.output::<Vec<u8>>(), [2, 0]);
+    assert_eq!(None::<(Option<bool>, bool)>.output::<Vec<u8>>(), [3, 2]);
+    assert_eq!(None::<(bool, Option<bool>)>.output::<Vec<u8>>(), [2, 3]);
     assert_eq!(
         Some(Some((Some(true), Some(true)))).output::<Vec<u8>>(),
-        [0, 1, 1],
+        [1, 1],
     );
 }
