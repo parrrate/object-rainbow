@@ -22,14 +22,15 @@ pub struct DeriveExample<A, B> {
     b: B,
 }
 
-fn main() {
-    println!("{}", hex::encode(DeriveExample::<(), ()>::HASH));
-    println!("{}", DeriveExample::<Be<u8>, Le<u8>>::SIZE);
-}
-
-#[derive(Enum, ToOutput, Topological, Parse, ParseInline)]
-enum _Test<U, V, Y> {
+#[derive(Enum, ToOutput, Topological, Parse, ParseInline, Size)]
+enum Test<U, V, Y> {
     A,
     B(U),
     C { y: Y, x: V },
+}
+
+fn main() {
+    println!("{}", hex::encode(DeriveExample::<(), ()>::HASH));
+    println!("{}", DeriveExample::<Be<u8>, Le<u8>>::SIZE);
+    println!("{}", Test::<(), (), ()>::SIZE);
 }
