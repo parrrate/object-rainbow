@@ -17,8 +17,8 @@ pub use anyhow::anyhow;
 use futures_util::TryFutureExt;
 use generic_array::{ArrayLength, GenericArray};
 pub use object_rainbow_derive::{
-    Enum, ListPoints, MaybeHasNiche, Parse, ParseAsInline, ParseInline, ReflessInline,
-    ReflessObject, Size, Tagged, ToOutput, Topological,
+    Enum, ListPoints, MaybeHasNiche, Parse, ParseAsInline, ParseInline, Size, Tagged, ToOutput,
+    Topological,
 };
 use sha2::{Digest, Sha256};
 #[doc(hidden)]
@@ -1190,7 +1190,14 @@ pub trait ReflessObject:
 {
 }
 
+impl<T: 'static + Sized + Send + Sync + ToOutput + Tagged + for<'a> Parse<ReflessInput<'a>>>
+    ReflessObject for T
+{
+}
+
 pub trait ReflessInline: ReflessObject + for<'a> ParseInline<ReflessInput<'a>> {}
+
+impl<T: ReflessObject + for<'a> ParseInline<ReflessInput<'a>>> ReflessInline for T {}
 
 pub trait Output {
     fn write(&mut self, data: &[u8]);

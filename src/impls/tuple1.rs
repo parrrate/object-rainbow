@@ -42,9 +42,6 @@ impl<T: Tagged> Tagged for (T,) {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: ReflessObject> ReflessObject for (T,) {}
-impl<T: ReflessInline> ReflessInline for (T,) {}
-
 impl<T: Size> Size for (T,) {
     const SIZE: usize = T::SIZE;
     type Size = T::Size;

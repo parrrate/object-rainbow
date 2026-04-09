@@ -194,8 +194,6 @@ macro_rules! ae {
         impl Topological for Ae<$n> {}
         impl Tagged for Ae<$n> {}
         impl Tagged for Ae<NonZero<$n>> {}
-        impl ReflessObject for Ae<$n> {}
-        impl ReflessInline for Ae<$n> {}
 
         impl Equivalent<Ae<$n>> for Option<Ae<NonZero<$n>>> {
             fn into_equivalent(self) -> Ae<$n> {
@@ -369,10 +367,6 @@ macro_rules! lebe {
         impl Topological for Be<$n> {}
         impl Tagged for Le<$n> {}
         impl Tagged for Be<$n> {}
-        impl ReflessObject for Le<$n> {}
-        impl ReflessObject for Be<$n> {}
-        impl ReflessInline for Le<$n> {}
-        impl ReflessInline for Be<$n> {}
 
         impl Equivalent<Le<$n>> for Option<Le<NonZero<$n>>> {
             fn into_equivalent(self) -> Le<$n> {
@@ -494,10 +488,6 @@ macro_rules! float {
         impl Topological for Be<$n> {}
         impl Tagged for Le<$n> {}
         impl Tagged for Be<$n> {}
-        impl ReflessObject for Le<$n> {}
-        impl ReflessObject for Be<$n> {}
-        impl ReflessInline for Le<$n> {}
-        impl ReflessInline for Be<$n> {}
     };
 }
 
@@ -556,8 +546,6 @@ impl<T: NonZeroable + Size> MaybeHasNiche for Nz<T> {
 impl<T: NonZeroable> ListPoints for Nz<T> {}
 impl<T: NonZeroable> Topological for Nz<T> {}
 impl<T: NonZeroable> Tagged for Nz<T> {}
-impl<T: NonZeroable + ReflessInline> ReflessObject for Nz<T> {}
-impl<T: NonZeroable + ReflessInline> ReflessInline for Nz<T> {}
 
 #[test]
 fn nonzero() {

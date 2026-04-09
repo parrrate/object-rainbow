@@ -47,9 +47,6 @@ impl<T: ?Sized + Tagged> Tagged for Arc<T> {
     const HASH: Hash = T::HASH;
 }
 
-impl<T: ReflessObject> ReflessObject for Arc<T> {}
-impl<T: ReflessInline> ReflessInline for Arc<T> {}
-
 impl<T: ?Sized + Size> Size for Arc<T> {
     const SIZE: usize = T::SIZE;
     type Size = T::Size;

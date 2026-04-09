@@ -58,6 +58,3 @@ impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Zt<T> {
         Ok(Self { inner })
     }
 }
-
-impl<T: ReflessObject> ReflessObject for Zt<T> {}
-impl<T: ReflessObject> ReflessInline for Zt<T> {}

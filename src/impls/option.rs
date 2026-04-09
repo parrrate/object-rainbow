@@ -203,22 +203,6 @@ impl<
     }
 }
 
-impl<
-    T: ReflessObject + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
-    N: Niche<NeedsTag = B>,
-    B: for<'a> OptionParseBit<T, ReflessInput<'a>>,
-> ReflessObject for Option<T>
-{
-}
-
-impl<
-    T: ReflessInline + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
-    N: Niche<NeedsTag = B>,
-    B: for<'a> OptionParseBitInline<T, ReflessInput<'a>>,
-> ReflessInline for Option<T>
-{
-}
-
 impl Equivalent<bool> for Option<()> {
     fn into_equivalent(self) -> bool {
         self.is_none()

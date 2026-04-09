@@ -5,18 +5,7 @@ use object_rainbow::{
     *,
 };
 
-#[derive(
-    ToOutput,
-    ListPoints,
-    Topological,
-    Tagged,
-    ReflessObject,
-    ReflessInline,
-    Size,
-    Parse,
-    ParseInline,
-    MaybeHasNiche,
-)]
+#[derive(ToOutput, ListPoints, Topological, Tagged, Size, Parse, ParseInline, MaybeHasNiche)]
 #[tags("example")]
 pub struct DeriveExample<A, B> {
     a: A,
@@ -25,17 +14,7 @@ pub struct DeriveExample<A, B> {
 }
 
 #[derive(
-    Enum,
-    ToOutput,
-    ListPoints,
-    Topological,
-    Tagged,
-    ReflessObject,
-    ReflessInline,
-    Size,
-    Parse,
-    ParseInline,
-    MaybeHasNiche,
+    Enum, ToOutput, ListPoints, Topological, Tagged, Size, Parse, ParseInline, MaybeHasNiche,
 )]
 #[enumtag("Le<u16>")]
 enum Test<U, V, Y> {
@@ -45,17 +24,7 @@ enum Test<U, V, Y> {
 }
 
 #[derive(
-    Enum,
-    ToOutput,
-    ListPoints,
-    Topological,
-    Tagged,
-    ReflessObject,
-    ReflessInline,
-    Size,
-    Parse,
-    ParseInline,
-    MaybeHasNiche,
+    Enum, ToOutput, ListPoints, Topological, Tagged, Size, Parse, ParseInline, MaybeHasNiche,
 )]
 #[enumtag("Le<NonZero<u16>>")]
 enum Stuff<T> {
@@ -67,17 +36,7 @@ enum Stuff<T> {
 }
 
 #[derive(
-    Enum,
-    ToOutput,
-    ListPoints,
-    Topological,
-    Tagged,
-    ReflessObject,
-    ReflessInline,
-    Size,
-    Parse,
-    ParseInline,
-    MaybeHasNiche,
+    Enum, ToOutput, ListPoints, Topological, Tagged, Size, Parse, ParseInline, MaybeHasNiche,
 )]
 #[enumtag("bool")]
 enum Either<L, R> {
@@ -86,17 +45,7 @@ enum Either<L, R> {
 }
 
 #[derive(
-    Enum,
-    ToOutput,
-    ListPoints,
-    Topological,
-    Tagged,
-    ReflessObject,
-    ReflessInline,
-    Size,
-    Parse,
-    ParseInline,
-    MaybeHasNiche,
+    Enum, ToOutput, ListPoints, Topological, Tagged, Size, Parse, ParseInline, MaybeHasNiche,
 )]
 #[enumtag("Le<u8>")]
 enum Abc {
