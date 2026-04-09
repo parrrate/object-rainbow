@@ -549,6 +549,7 @@ impl<T> Equivalent<TrieMap<T, ()>> for TrieSet<T> {
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
+    use object_rainbow::ParseSlice;
     use smol::stream::StreamExt;
     use smol_macros::test;
 
@@ -649,6 +650,15 @@ mod test {
         assert_eq!(trie.remove(b"abce").await?.unwrap(), 5);
         assert_eq!(trie.remove(b"abd").await?.unwrap(), 2);
         assert!(trie.is_empty());
+        Ok(())
+    }
+
+    #[apply(test!)]
+    async fn reparse() -> object_rainbow::Result<()> {
+        let mut trie = Trie::<u8>::default();
+        trie.insert(b"abc", 123).await?;
+        trie = trie.reparse()?;
+        assert_eq!(trie.get(b"abc").await?.unwrap(), 123);
         Ok(())
     }
 }
