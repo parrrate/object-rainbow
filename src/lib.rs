@@ -1481,6 +1481,10 @@ pub trait ParseInput: Sized {
     fn parse<T: Parse<Self>>(self) -> crate::Result<T> {
         T::parse(self)
     }
+
+    fn parse_vec<T: ParseInline<Self>>(self) -> crate::Result<Vec<T>> {
+        T::parse_vec(self)
+    }
 }
 
 pub trait PointInput: ParseInput {
