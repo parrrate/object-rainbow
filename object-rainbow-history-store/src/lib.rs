@@ -64,4 +64,14 @@ impl<
             .fetch()
             .await
     }
+
+    pub async fn forward(&self, other: History<T, D>) -> object_rainbow::Result<()> {
+        let mut history = self
+            .store
+            .load_or_init::<History<T, D>, _>(self.key.as_ref())
+            .await?;
+        history.fetch_mut().await?.forward(other).await?;
+        history.save().await?;
+        Ok(())
+    }
 }
