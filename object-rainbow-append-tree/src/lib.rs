@@ -1,9 +1,9 @@
 use std::{fmt::Debug, future::ready, marker::PhantomData};
 
 use object_rainbow::{
-    Address, Enum, ExtraFor, Fetch, FullHash, Inline, InlineOutput, ListHashes, Object, Output,
-    Parse, ParseAsInline, ParseInline, ParseInput, PointInput, Tagged, ToOutput, Topological,
-    Traversible, assert_impl, numeric::Be,
+    Enum, ExtraFor, Fetch, FullHash, Inline, InlineOutput, ListHashes, Object, Output, Parse,
+    ParseAsInline, ParseInline, ParseInput, PointInput, Tagged, ToOutput, Topological, Traversible,
+    assert_impl, numeric::Be,
 };
 use object_rainbow_point::{IntoPoint, Point};
 use typenum::{U256, Unsigned};
@@ -116,6 +116,7 @@ trait Push: Clone + History {
     ) -> Result<(), PushError<Self::T>>;
     fn last<'a>(&'a self, history: &'a Self::History) -> Option<&'a Self::T>;
     fn from_value(prev: Point<Self>, history: &mut Self::History, value: Self::T) -> Self;
+    fn to_point(&self, history: &Self::History) -> Point<Self>;
 }
 
 impl<T: Clone, N, M> Clone for Node<T, N, M> {
@@ -198,10 +199,12 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
             usize::try_from(index)
                 .map_err(|_| object_rainbow::Error::UnsupportedLength)
                 .and_then(|index| {
-                    self.items
-                        .get(index)
-                        .cloned()
-                        .ok_or_else(|| object_rainbow::error_consistency!("out of bounds"))
+                    self.items.get(index).cloned().ok_or_else(|| {
+                        object_rainbow::error_consistency!(
+                            "out of bounds L {index}/{}",
+                            self.items.len()
+                        )
+                    })
                 }),
         )
     }
@@ -229,6 +232,10 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
     fn from_value(prev: Point<Self>, (): &mut Self::History, value: Self::T) -> Self {
         Self::new(Some(prev), vec![value])
     }
+
+    fn to_point(&self, (): &Self::History) -> Point<Self> {
+        self.clone().point()
+    }
 }
 
 struct NonLeaf;
@@ -242,10 +249,10 @@ impl<T: Send + Sync + History, N: Send + Sync + Unsigned> History for Node<Point
 impl<T: ToContiguousOutput, N: Send + Sync + Unsigned> ToContiguousOutput
     for Node<Point<T>, N, NonLeaf>
 {
-    fn to_contiguous_output(&self, (prev, history): &Self::History, output: &mut dyn Output) {
+    fn to_contiguous_output(&self, (child, history): &Self::History, output: &mut dyn Output) {
         self.prev.to_output(output);
-        self.items[..self.items.len() - 1].to_output(output);
-        prev.to_contiguous_output(history, output);
+        self.items.to_output(output);
+        child.to_contiguous_output(history, output);
     }
 }
 
@@ -269,12 +276,11 @@ where
             return Err(object_rainbow::error_parse!("overflow"));
         }
         let prev = input.parse_inline()?;
-        let mut items = input.parse_vec_n::<Point<T>>(
+        let items = input.parse_vec_n::<Point<T>>(
             own.saturating_sub(1)
                 .try_into()
                 .map_err(|_| object_rainbow::error_parse!("overflow"))?,
         )?;
-        let index = input.next_index();
         let history = T::parse_with_len(
             input,
             if len.is_multiple_of(T::CAPACITY) {
@@ -283,13 +289,6 @@ where
                 len % T::CAPACITY
             },
         )?;
-        let hash = history.0.full_hash();
-        let address = Address { index, hash };
-        items.push(Point::from_address_extra(
-            address,
-            input.resolve(),
-            input.extra().clone(),
-        ));
         Ok((Self::new(prev, items), history))
     }
 }
@@ -306,14 +305,22 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
             let n = usize::try_from(index / T::CAPACITY)
                 .map_err(|_| object_rainbow::Error::UnsupportedLength)?;
             let r = index % T::CAPACITY;
+            println!("g {n} {}", self.items.len());
             if let Some((node, history)) = history
-                && n == self.items.len() - 1
+                && n == self.items.len()
             {
+                println!("AAA");
                 node.get(r, Some(history)).await
             } else {
+                println!("BBB");
                 self.items
                     .get(n)
-                    .ok_or_else(|| object_rainbow::error_consistency!("out of bounds"))?
+                    .ok_or_else(|| {
+                        object_rainbow::error_consistency!(
+                            "out of bounds N {n}/{}",
+                            self.items.len(),
+                        )
+                    })?
                     .fetch()
                     .await?
                     .get(r, None)
@@ -326,28 +333,22 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
         &mut self,
         len: u64,
         value: Self::T,
-        (prev, history): &mut Self::History,
+        (node, history): &mut Self::History,
     ) -> Result<(), PushError<Self::T>> {
-        if let Some(last) = self.items.last_mut() {
-            if len.is_multiple_of(T::CAPACITY) {
-                let last = last.clone();
-                if len / T::CAPACITY != (self.items.len() as u64) {
-                    panic!("a node has been parsed with invalid length");
-                }
-                if self.items.len() >= N::USIZE {
-                    return Err(PushError::NonLeafOverflow(value));
-                }
-                let last = T::from_value(last, history, value);
-                self.items.push(last.clone().point());
-                *prev = last;
-                Ok(())
-            } else {
-                prev.push(len % T::CAPACITY, value, history)?;
-                *last = prev.clone().point();
-                Ok(())
+        if len.is_multiple_of(T::CAPACITY) {
+            if len / T::CAPACITY != (self.items.len() as u64 + 1) {
+                panic!("a node has been parsed with invalid length");
             }
+            if (self.items.len() + 1) >= N::USIZE {
+                return Err(PushError::NonLeafOverflow(value));
+            }
+            let node =
+                std::mem::replace(node, T::from_value(node.to_point(history), history, value));
+            self.items.push(node.point());
+            Ok(())
         } else {
-            panic!("a non-leaf node has been parsed without children")
+            node.push(len % T::CAPACITY, value, history)?;
+            Ok(())
         }
     }
 
@@ -357,7 +358,13 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
 
     fn from_value(prev: Point<Self>, (child, history): &mut Self::History, value: Self::T) -> Self {
         *child = T::from_value(child.clone().point(), history, value);
-        Self::new(Some(prev), vec![child.clone().point()])
+        Self::new(Some(prev), vec![])
+    }
+
+    fn to_point(&self, (child, history): &Self::History) -> Point<Self> {
+        let mut node = self.clone();
+        node.items.push(child.to_point(history));
+        node.point()
     }
 }
 
@@ -369,7 +376,7 @@ impl<T: Push<History: Clone> + Traversible, N: Send + Sync + Unsigned> Node<Poin
     ) -> (Self, <Self as History>::History) {
         let inner = inner.point();
         let next = T::from_value(inner.clone(), history, value);
-        let parent = Self::new(None, vec![inner, next.clone().point()]);
+        let parent = Self::new(None, vec![inner]);
         (parent, (next, history.clone()))
     }
 }
@@ -607,6 +614,7 @@ mod test {
             let new = tree.reparse()?;
             assert_eq!(new, tree);
             tree = new;
+            assert_eq!(tree.get(i).await?.unwrap().0, i);
         }
         Ok(())
     }
@@ -618,6 +626,9 @@ mod test {
             tree.push(Le(i))?;
             assert_eq!(tree.get(i).await?.unwrap().0, i);
             assert_eq!(tree.get(i / 2).await?.unwrap().0, i / 2);
+            assert_eq!(tree.get(i / 3).await?.unwrap().0, i / 3);
+            assert_eq!(tree.get(i / 17).await?.unwrap().0, i / 17);
+            assert_eq!(tree.get(i / 101).await?.unwrap().0, i / 101);
         }
         Ok(())
     }
