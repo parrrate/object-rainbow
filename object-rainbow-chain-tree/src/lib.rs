@@ -10,11 +10,11 @@ use object_rainbow_point::{IntoPoint, Point};
 #[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Clone)]
 #[topology(recursive)]
 pub struct ChainNode<T> {
-    value: T,
     #[tags(skip)]
     #[parse(unchecked)]
     #[topology(unchecked)]
     tree: AppendTree<Point<Self>>,
+    value: T,
 }
 
 assert_impl!(
