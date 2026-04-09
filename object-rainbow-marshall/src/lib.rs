@@ -9,6 +9,7 @@
 
 use std::{
     collections::{BTreeMap, BTreeSet},
+    ops::Deref,
     sync::Arc,
 };
 
@@ -295,5 +296,13 @@ impl<T: Traversible> Marshalled<T> {
         let map = fetchall(&object).await?;
         let root = marshall(&map, object.full_hash());
         Ok(Self { root, object })
+    }
+}
+
+impl<T> Deref for Marshalled<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.object
     }
 }
