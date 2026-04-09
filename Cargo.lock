@@ -1161,6 +1161,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "object-rainbow-chain-tree"
+version = "0.0.0-a.0"
+dependencies = [
+ "object-rainbow",
+ "object-rainbow-append-tree",
+ "object-rainbow-point",
+]
+
+[[package]]
 name = "object-rainbow-derive"
 version = "0.0.0-a.12"
 dependencies = [
