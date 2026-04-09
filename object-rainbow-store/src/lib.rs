@@ -384,3 +384,10 @@ impl<S, T> Stored<S, T> {
         &self.point
     }
 }
+
+impl<S: RainbowStore, T: Traversible> Stored<S, T> {
+    pub async fn replace(&mut self, point: Point<T>) -> object_rainbow::Result<Point<T>> {
+        self.store.save_point(&point).await?;
+        Ok(std::mem::replace(&mut self.point, point))
+    }
+}
