@@ -1,6 +1,6 @@
 use std::{marker::PhantomData, sync::Arc};
 
-use object_rainbow::{Inline, Object};
+use object_rainbow::{Fetch, Inline, Object};
 use object_rainbow_history::{Forward, History};
 use object_rainbow_store::{RainbowStoreMut, StoreMut};
 
@@ -51,5 +51,15 @@ impl<
         history.fetch_mut().await?.commit(diff).await?;
         history.save().await?;
         Ok(())
+    }
+
+    pub async fn load(&self) -> object_rainbow::Result<T> {
+        self.store
+            .load_or_init::<History<T, D>, _>(self.key.as_ref())
+            .await?
+            .fetch()
+            .await?
+            .tree()
+            .await
     }
 }
