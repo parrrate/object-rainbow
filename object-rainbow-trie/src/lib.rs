@@ -32,7 +32,22 @@ impl<T> Default for Trie<T> {
     }
 }
 
-impl<T> Trie<T> {
+trait TrieNode: Sized {
+    fn c_get_mut(&mut self, key: u8) -> Option<&mut Point<(LpBytes, Self)>>;
+    fn c_get(&self, key: u8) -> Option<&Point<(LpBytes, Self)>>;
+    fn c_insert(&mut self, key: u8, point: Point<(LpBytes, Self)>);
+    fn c_empty(&self) -> bool;
+    fn c_len(&self) -> usize;
+    fn c_remove(&mut self, key: u8);
+    fn c_range(
+        &self,
+        min_inclusive: u8,
+        max_inclusive: u8,
+    ) -> impl Iterator<Item = (&u8, &Point<(LpBytes, Self)>)>;
+    fn c_pop_first(&mut self) -> Option<(u8, Point<(LpBytes, Self)>)>;
+}
+
+impl<T> TrieNode for Trie<T> {
     fn c_get_mut(&mut self, key: u8) -> Option<&mut Point<(LpBytes, Self)>> {
         self.children.get_mut(&key)
     }
@@ -68,7 +83,9 @@ impl<T> Trie<T> {
     fn c_pop_first(&mut self) -> Option<(u8, Point<(LpBytes, Self)>)> {
         self.children.pop_first()
     }
+}
 
+impl<T> Trie<T> {
     fn from_value(value: T) -> Self {
         Self {
             value: Some(value),
