@@ -460,3 +460,16 @@ impl<T: Clone + Traversible + Apply<D>, D: Send> Apply<D> for Point<T> {
         self.fetch_mut().await?.apply(diff).await
     }
 }
+
+pub struct Return;
+
+impl<D: Send> Apply<D> for Return {
+    type Output = D;
+
+    fn apply(
+        &mut self,
+        diff: D,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        futures_util::future::ready(Ok(diff))
+    }
+}
