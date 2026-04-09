@@ -20,7 +20,7 @@ use object_rainbow_local_map::LocalMap;
 
 #[derive(Clone)]
 struct MarshalledInner {
-    data: Arc<Vec<u8>>,
+    data: Arc<[u8]>,
     root: Hash,
     at: usize,
 }
@@ -204,7 +204,7 @@ pub fn marshall(map: &LocalMap, root: Hash) -> MarshalledRoot {
         }
     }
     assert_eq!(*locations.get(&root).unwrap(), 0);
-    let data = Arc::new(data);
+    let data = Arc::from(data);
     let marshalled = MarshalledInner { data, root, at: 0 };
     MarshalledRoot { marshalled }
 }
