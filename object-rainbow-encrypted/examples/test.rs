@@ -8,8 +8,8 @@ use std::{
 
 use chacha20poly1305::{ChaCha20Poly1305, aead::Aead};
 use object_rainbow::{
-    Address, ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Resolve, Singular,
-    ToOutputExt, error_fetch, error_parse,
+    Address, ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Resolve, SimpleObject,
+    Singular, ToOutputExt, error_fetch, error_parse,
 };
 use object_rainbow_encrypted::{Key, WithKey, encrypt_point};
 use sha2::digest::generic_array::GenericArray;
@@ -174,19 +174,20 @@ fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt().init();
     tracing::info!("starting");
     smol::block_on(async move {
-        let point = Point::from_object((
-            Point::from_object(Point::from_object((*b"alisa", *b"feistel"))),
-            Point::from_object([1, 2, 3, 4]),
-        ));
+        let point = (
+            (*b"alisa", *b"feistel").point().point(),
+            [1, 2, 3, 4].point(),
+        )
+            .point();
         let key = Test(std::array::from_fn(|i| i as _));
         let point = encrypt_point(key, point).await?;
         let point = iterate(point, WithKey { key, extra: () })
             .await
             .fetch()
             .await?;
-        let point = Point::from_object(point.fetch().await?.into_inner());
+        let point = point.fetch().await?.into_inner().point();
         let point = encrypt_point(key, point).await?;
-        let point = Point::from_object(point.fetch().await?.into_inner());
+        let point = point.fetch().await?.into_inner().point();
         assert_eq!(
             point.fetch().await?.0.fetch().await?.fetch().await?.0,
             *b"alisa",

@@ -251,13 +251,10 @@ pub async fn encrypt_point<K: Key, T: Object<Extra>, Extra: 'static + Send + Syn
     }
     let decrypted = point.fetch().await?;
     let encrypted = encrypt(key.clone(), decrypted).await?;
-    let point = Point::from_object_extra(
-        encrypted,
-        WithKey {
-            key,
-            extra: point.extra().clone(),
-        },
-    );
+    let point = encrypted.point_extra(WithKey {
+        key,
+        extra: point.extra().clone(),
+    });
     Ok(point)
 }
 

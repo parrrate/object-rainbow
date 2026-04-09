@@ -7,7 +7,7 @@ use std::{
 
 use object_rainbow::{
     Address, ByteNode, FailFuture, Fetch, FullHash, Hash, Object, Point, PointVisitor, Resolve,
-    Singular, ToOutputExt, error_parse,
+    SimpleObject, Singular, ToOutputExt, error_parse,
 };
 use smol::{Executor, channel::Sender};
 
@@ -129,11 +129,7 @@ fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt().init();
     tracing::info!("starting");
     smol::block_on(async move {
-        let mut point = iterate((
-            Point::from_object((*b"alisa", *b"feistel")),
-            Point::from_object([1, 2, 3, 4]),
-        ))
-        .await;
+        let mut point = iterate(((*b"alisa", *b"feistel").point(), [1, 2, 3, 4].point())).await;
         assert_eq!(point.fetch().await?.0.fetch().await?.0, *b"alisa");
         assert_eq!(point.fetch().await?.0.fetch().await?.1, *b"feistel");
         assert_eq!(point.fetch().await?.1.fetch().await?, [1, 2, 3, 4]);
