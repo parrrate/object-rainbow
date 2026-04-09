@@ -3,7 +3,7 @@ members = [
     "object-rainbow-derive",
     "object-rainbow-encrypted",
     "object-rainbow-json",
-    "object-rainbow-local-map",
+    "object-rainbow-local-map", "object-rainbow-marshall",
     "object-rainbow-sled",
     "object-rainbow-store",
     "object-rainbow-store-opendal",
@@ -21,7 +21,7 @@ authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 
 [package]
 name = "object-rainbow"
-version = "0.0.0-a.24"
+version = "0.0.0-a.25"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -32,7 +32,8 @@ documentation = "https://docs.rs/object-rainbow"
 exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 
 [workspace.dependencies]
-object-rainbow = { version = "0.0.0-a.24", path = "." }
+object-rainbow = { version = "0.0.0-a.25", path = "." }
+object-rainbow-local-map = { version = "0.0.0-a.0", path = "object-rainbow-local-map" }
 object-rainbow-store = { version = "0.0.0-a.2", path = "object-rainbow-store" }
 
 [dependencies]
