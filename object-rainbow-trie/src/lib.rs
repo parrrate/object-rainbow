@@ -154,11 +154,11 @@ mod test {
         assert_eq!(trie.get(b"a").await?.unwrap(), 4);
         trie.insert(b"abce", 5).await?;
         assert_eq!(trie.get(b"abce").await?.unwrap(), 5);
-        trie.remove(b"a").await?;
-        trie.remove(b"ab").await?;
-        trie.remove(b"abc").await?;
-        trie.remove(b"abce").await?;
-        trie.remove(b"abd").await?;
+        assert_eq!(trie.remove(b"a").await?.unwrap(), 4);
+        assert_eq!(trie.remove(b"ab").await?.unwrap(), 3);
+        assert_eq!(trie.remove(b"abc").await?.unwrap(), 1);
+        assert_eq!(trie.remove(b"abce").await?.unwrap(), 5);
+        assert_eq!(trie.remove(b"abd").await?.unwrap(), 2);
         assert!(trie.is_empty());
         Ok(())
     }
