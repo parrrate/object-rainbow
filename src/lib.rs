@@ -1171,12 +1171,12 @@ impl<T: Traversible + Clone> Point<T> {
 
     pub async fn fetch_mut(&'_ mut self) -> crate::Result<PointMut<'_, T>> {
         self.prepare_yolo_fetch().await?;
-        let origin = Arc::get_mut(&mut self.fetch).unwrap();
-        assert!(origin.get_mut().is_some());
+        let fetch = Arc::get_mut(&mut self.fetch).unwrap();
+        assert!(fetch.get_mut().is_some());
         self.hash.clear();
         Ok(PointMut {
             hash: &mut self.hash,
-            fetch: origin,
+            fetch,
         })
     }
 
@@ -1303,9 +1303,9 @@ impl<T: FullHash> Fetch for Point<T> {
     }
 
     fn get_mut_finalize(&mut self) {
-        let origin = Arc::get_mut(&mut self.fetch).unwrap();
-        origin.get_mut_finalize();
-        self.hash = origin.get().unwrap().full_hash().into();
+        let fetch = Arc::get_mut(&mut self.fetch).unwrap();
+        fetch.get_mut_finalize();
+        self.hash = fetch.get().unwrap().full_hash().into();
     }
 }
 
@@ -1500,18 +1500,18 @@ pub trait Equivalent<T>: Sized {
 /// safe.
 impl<U: 'static + Equivalent<T>, T: 'static> Equivalent<Point<T>> for Point<U> {
     fn into_equivalent(self) -> Point<T> {
-        self.map_fetch(|origin| {
+        self.map_fetch(|fetch| {
             Arc::new(MapEquivalent {
-                origin,
+                fetch,
                 map: U::into_equivalent,
             })
         })
     }
 
     fn from_equivalent(point: Point<T>) -> Self {
-        point.map_fetch(|origin| {
+        point.map_fetch(|fetch| {
             Arc::new(MapEquivalent {
-                origin,
+                fetch,
                 map: U::from_equivalent,
             })
         })
@@ -1519,17 +1519,17 @@ impl<U: 'static + Equivalent<T>, T: 'static> Equivalent<Point<T>> for Point<U> {
 }
 
 struct MapEquivalent<T, F> {
-    origin: Arc<dyn Fetch<T = T>>,
+    fetch: Arc<dyn Fetch<T = T>>,
     map: F,
 }
 
 impl<T, F> FetchBytes for MapEquivalent<T, F> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        self.origin.fetch_bytes()
+        self.fetch.fetch_bytes()
     }
 
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        self.origin.fetch_data()
+        self.fetch.fetch_data()
     }
 }
 
@@ -1545,11 +1545,11 @@ impl<T, F: Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
     type T = F::U;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
-        Box::pin(self.origin.fetch_full().map_ok(|(x, r)| ((self.map)(x), r)))
+        Box::pin(self.fetch.fetch_full().map_ok(|(x, r)| ((self.map)(x), r)))
     }
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        Box::pin(self.origin.fetch().map_ok(&self.map))
+        Box::pin(self.fetch.fetch().map_ok(&self.map))
     }
 }
 
