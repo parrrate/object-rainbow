@@ -160,7 +160,7 @@ where
             );
             trie.c_insert(
                 key[common],
-                (Self::from_value(value), prefix[common + 1..].to_vec()).point(),
+                (Self::from_value(value), key[common + 1..].to_vec()).point(),
             );
             prefix.truncate(common);
         }
@@ -663,6 +663,16 @@ mod test {
         trie.insert(b"abc", 123).await?;
         trie = trie.reparse()?;
         assert_eq!(trie.get(b"abc").await?.unwrap(), 123);
+        Ok(())
+    }
+
+    #[apply(test!)]
+    async fn test_apple_apricot() -> object_rainbow::Result<()> {
+        let mut trie = Trie::<u8>::default();
+        trie.insert(b"apple", 1).await?;
+        trie.insert(b"apricot", 2).await?;
+        assert_eq!(trie.get(b"apple").await?, Some(1));
+        assert_eq!(trie.get(b"apricot").await?, Some(2));
         Ok(())
     }
 }
