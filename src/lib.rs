@@ -39,6 +39,8 @@ mod impls;
 pub mod length_prefixed;
 mod niche;
 pub mod numeric;
+#[cfg(feature = "serde")]
+mod point_deserialize;
 mod sha2_const;
 
 #[macro_export]

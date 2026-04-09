@@ -5,7 +5,8 @@ members = [
     "object-rainbow-json",
     "object-rainbow-sled",
     "object-rainbow-store",
-    "object-rainbow-store-opendal", "object-rainbow-trie",
+    "object-rainbow-store-opendal",
+    "object-rainbow-trie",
     "xtask",
     "xtask-release",
 ]
@@ -37,11 +38,15 @@ object-rainbow-store = { version = "0.0.0-a.1", path = "object-rainbow-store" }
 object-rainbow-derive = { version = "=0.0.0-a.7", path = "object-rainbow-derive" }
 
 anyhow = "1.0.96"
+futures-util = { version = "0.3.31", default-features = false }
+generic-array = { version = "1.2.0", features = [] }
 sha2 = "0.10.8"
+serde = { version = "1.0.218", optional = true }
 thiserror = "2.0.11"
 typenum = { version = "1.18.0", features = ["const-generics"] }
-generic-array = { version = "1.2.0", features = [] }
-futures-util = { version = "0.3.31", default-features = false }
+
+[features]
+serde = ["dep:serde"]
 
 [dev-dependencies]
 hex = "0.4.3"
