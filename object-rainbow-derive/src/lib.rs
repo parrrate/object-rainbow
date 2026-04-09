@@ -214,6 +214,25 @@ fn gen_to_output(data: &Data) -> proc_macro2::TokenStream {
     }
 }
 
+/// ```rust
+/// use object_rainbow::{InlineOutput, ToOutput};
+///
+/// #[derive(ToOutput, InlineOutput)]
+/// struct Three<A, B, C> {
+///     a: A,
+///     b: B,
+///     c: C,
+/// }
+///
+/// object_rainbow::assert_impl!(
+///     impl<A, B, C> InlineOutput for Three<A, B, C>
+///     where
+///         A: InlineOutput,
+///         B: InlineOutput,
+///         C: InlineOutput,
+///     {}
+/// );
+/// ```
 #[proc_macro_derive(InlineOutput)]
 pub fn derive_inline_output(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
