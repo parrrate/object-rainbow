@@ -667,6 +667,18 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for ByAddress<T, Extra> {
             }
         })
     }
+
+    fn try_fetch_local(&self) -> Result<Option<Node<Self::T>>> {
+        let Some((data, resolve)) = self.fetch_bytes_local()? else {
+            return Ok(None);
+        };
+        let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
+        if self.inner.address.hash != object.full_hash() {
+            Err(Error::FullHashMismatch)
+        } else {
+            Ok(Some((object, resolve)))
+        }
+    }
 }
 
 pub trait PointVisitor {
