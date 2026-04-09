@@ -156,3 +156,14 @@ impl<T: Forward<D>, D: Send + Traversible> Forward<Point<D>> for Compat<T> {
         self.0.forward(diff.fetch().await?).await
     }
 }
+
+pub struct DiscardHeader<T>(pub T);
+
+impl<T: Forward<D>, D: Send, H: Send> Forward<(H, D)> for DiscardHeader<T> {
+    fn forward(
+        &mut self,
+        (_, diff): (H, D),
+    ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+        self.0.forward(diff)
+    }
+}
