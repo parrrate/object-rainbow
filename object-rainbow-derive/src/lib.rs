@@ -2374,95 +2374,98 @@ pub fn derive_for_mapped(args: TokenStream, input: TokenStream) -> TokenStream {
     let name = input.ident.clone();
     let generics = input.generics.clone();
     let (_, ty_generics, _) = generics.split_for_impl();
-    let mut generics = input.generics.clone();
-    generics.params.push(parse_quote! {
-        __T: #name #ty_generics
-    });
-    generics.params.push(parse_quote! {
-        __M: #sup
-    });
-    let (impl_generics, _, where_clause) = generics.split_for_impl();
-    let field = quote!(1);
-    let i = input
-        .items
-        .clone()
-        .into_iter()
-        .map(|i| match i {
-            TraitItem::Const(i) => ImplItem::Const({
-                let const_token = i.const_token;
-                let ident = i.ident;
-                let colon_token = i.colon_token;
-                let ty = i.ty;
-                let semi_token = i.semi_token;
-                parse_quote! {
-                    #const_token
-                    #ident
-                    #colon_token
-                    #ty
-                    =
-                    <__T as #name #ty_generics>::#ident
-                    #semi_token
-                }
-            }),
-            TraitItem::Fn(i) => ImplItem::Fn({
-                let mut sig = i.sig;
-                let ident = sig.ident.clone();
-                let args = sig
-                    .inputs
-                    .iter_mut()
-                    .enumerate()
-                    .map(|(n, i)| match i {
-                        FnArg::Receiver(receiver) => {
-                            let reference = receiver.reference.as_ref().map(|(and, _)| and);
-                            let mutability = receiver.mutability.as_ref();
-                            let ident = &receiver.self_token;
-                            quote!(#reference #mutability #ident.#field)
-                        }
-                        FnArg::Typed(pat_type) => {
-                            let ident = Ident::new(&format!("arg{n}"), pat_type.span());
-                            *pat_type.pat = parse_quote!(#ident);
-                            quote!(#ident)
-                        }
-                    })
-                    .collect::<Vec<_>>();
-                parse_quote! {
-                    #sig
-                    {
-                        <__T as #name #ty_generics>::#ident(
-                            #(#args),*
-                        )
+    let mut derived = Vec::new();
+    {
+        let field = quote!(1);
+        let mut generics = input.generics.clone();
+        generics.params.push(parse_quote! {
+            __T: #name #ty_generics
+        });
+        generics.params.push(parse_quote! {
+            __M: #sup
+        });
+        let (impl_generics, _, where_clause) = generics.split_for_impl();
+        let i = input
+            .items
+            .clone()
+            .into_iter()
+            .map(|i| match i {
+                TraitItem::Const(i) => ImplItem::Const({
+                    let const_token = i.const_token;
+                    let ident = i.ident;
+                    let colon_token = i.colon_token;
+                    let ty = i.ty;
+                    let semi_token = i.semi_token;
+                    parse_quote! {
+                        #const_token
+                        #ident
+                        #colon_token
+                        #ty
+                        =
+                        <__T as #name #ty_generics>::#ident
+                        #semi_token
                     }
-                }
-            }),
-            TraitItem::Type(i) => ImplItem::Type({
-                let type_token = i.type_token;
-                let ident = i.ident;
-                let semi_token = i.semi_token;
-                parse_quote! {
-                    #type_token
-                    #ident
-                    =
-                    <__T as #name #ty_generics>::#ident
-                    #semi_token
-                }
-            }),
-            _ => unimplemented!("unknown/unsupported item"),
-        })
-        .collect::<Vec<_>>();
-    let derived = quote! {
-        impl #impl_generics #name #ty_generics for ::object_rainbow::map_extra::MappedExtra<
-            __T,
-            __M,
-        >
-        #where_clause
-        {
-            #(#i)*
-        }
-    };
+                }),
+                TraitItem::Fn(i) => ImplItem::Fn({
+                    let mut sig = i.sig;
+                    let ident = sig.ident.clone();
+                    let args = sig
+                        .inputs
+                        .iter_mut()
+                        .enumerate()
+                        .map(|(n, i)| match i {
+                            FnArg::Receiver(receiver) => {
+                                let reference = receiver.reference.as_ref().map(|(and, _)| and);
+                                let mutability = receiver.mutability.as_ref();
+                                let ident = &receiver.self_token;
+                                quote!(#reference #mutability #ident.#field)
+                            }
+                            FnArg::Typed(pat_type) => {
+                                let ident = Ident::new(&format!("arg{n}"), pat_type.span());
+                                *pat_type.pat = parse_quote!(#ident);
+                                quote!(#ident)
+                            }
+                        })
+                        .collect::<Vec<_>>();
+                    parse_quote! {
+                        #sig
+                        {
+                            <__T as #name #ty_generics>::#ident(
+                                #(#args),*
+                            )
+                        }
+                    }
+                }),
+                TraitItem::Type(i) => ImplItem::Type({
+                    let type_token = i.type_token;
+                    let ident = i.ident;
+                    let semi_token = i.semi_token;
+                    parse_quote! {
+                        #type_token
+                        #ident
+                        =
+                        <__T as #name #ty_generics>::#ident
+                        #semi_token
+                    }
+                }),
+                _ => unimplemented!("unknown/unsupported item"),
+            })
+            .collect::<Vec<_>>();
+        derived.push(quote! {
+            impl #impl_generics #name #ty_generics for ::object_rainbow::map_extra::MappedExtra<
+                __T,
+                __M,
+            >
+            #where_clause
+            {
+                #(#i)*
+            }
+        });
+    }
     let output = quote! {
         #input
 
-        #derived
+        #(#derived)*
     };
     output.into()
 }
