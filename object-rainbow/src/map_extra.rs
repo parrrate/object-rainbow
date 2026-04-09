@@ -43,3 +43,11 @@ impl<
         Ok(Self(m, t))
     }
 }
+
+impl<Extra: 'static + Clone, T: MapExtra<Extra>, M> MapExtra<Extra> for MappedExtra<T, M> {
+    type Mapped = T::Mapped;
+
+    fn map_extra(&self, extra: Extra) -> Self::Mapped {
+        self.1.map_extra(extra)
+    }
+}
