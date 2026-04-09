@@ -20,7 +20,7 @@ authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 
 [package]
 name = "object-rainbow"
-version = "0.0.0-a.18"
+version = "0.0.0-a.19"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -47,6 +47,7 @@ typenum = { version = "1.18.0", features = ["const-generics"] }
 
 [features]
 serde = ["dep:serde"]
+point-serialize = ["serde"]
 
 [dev-dependencies]
 hex = "0.4.3"

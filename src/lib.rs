@@ -41,6 +41,8 @@ mod niche;
 pub mod numeric;
 #[cfg(feature = "serde")]
 mod point_deserialize;
+#[cfg(feature = "point-serialize")]
+mod point_serialize;
 mod sha2_const;
 
 #[macro_export]
