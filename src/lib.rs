@@ -995,7 +995,7 @@ impl<T: Object<Extra>, Extra: 'static> Topological<Extra> for Point<T, Extra> {
 
 impl<T: Object<I::Extra>, I: PointInput<Extra: Send + Sync>> ParseInline<I> for Point<T, I::Extra> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        Ok(Point::from_address_extra(
+        Ok(Self::from_address_extra(
             input.parse_address()?,
             input.resolve(),
             input.extra().clone(),
