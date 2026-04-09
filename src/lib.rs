@@ -639,7 +639,7 @@ impl ParseInput for ReflessInput<'_> {
     }
 }
 
-impl ParseInput for Input<'_> {
+impl<Extra> ParseInput for Input<'_, Extra> {
     fn parse_chunk<'a, const N: usize>(&mut self) -> crate::Result<&'a [u8; N]>
     where
         Self: 'a,
