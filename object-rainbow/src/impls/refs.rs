@@ -6,9 +6,9 @@ impl<T: ?Sized + ToOutput> ToOutput for &T {
     }
 }
 
-impl<T: ?Sized +InlineOutput> InlineOutput for &T {}
+impl<T: ?Sized + InlineOutput> InlineOutput for &T {}
 
-impl<T: ?Sized +ListHashes> ListHashes for &T {
+impl<T: ?Sized + ListHashes> ListHashes for &T {
     fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
         (**self).list_hashes(f);
     }
@@ -22,12 +22,12 @@ impl<T: ?Sized +ListHashes> ListHashes for &T {
     }
 }
 
-impl<T: ?Sized +Tagged> Tagged for &T {
+impl<T: ?Sized + Tagged> Tagged for &T {
     const TAGS: Tags = T::TAGS;
     const HASH: Hash = T::HASH;
 }
 
-impl<T: ?Sized +Topological> Topological for &T {
+impl<T: ?Sized + Topological> Topological for &T {
     fn traverse(&self, visitor: &mut impl PointVisitor) {
         (**self).traverse(visitor);
     }
