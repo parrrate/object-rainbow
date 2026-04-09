@@ -150,13 +150,17 @@ where
         Box::pin(trie.get(key)).await
     }
 
+    fn internal_state_check(&self) {
+        assert!(!self.is_empty());
+        assert!(self.value.is_some() || self.children.len() > 1);
+    }
+
     async fn from_f<O>(
         f: impl AsyncFnOnce(&mut Self) -> object_rainbow::Result<O>,
     ) -> object_rainbow::Result<(Self, O)> {
         let mut trie = Self::default();
         let o = f(&mut trie).await?;
-        assert!(!trie.is_empty());
-        assert!(trie.value.is_some() || trie.children.len() > 1);
+        trie.internal_state_check();
         Ok((trie, o))
     }
 
@@ -191,8 +195,7 @@ where
             }
             o
         };
-        assert!(!trie.is_empty());
-        assert!(trie.value.is_some() || trie.children.len() > 1);
+        trie.internal_state_check();
         Ok(o)
     }
 
