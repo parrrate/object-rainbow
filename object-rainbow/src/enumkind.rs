@@ -79,6 +79,7 @@ impl<T: ParseInline<I> + UsizeTag, I: ParseInput, const MAX: usize> ParseInline<
 pub trait EnumKind: Copy {
     /// Underlying [`Inline`]. Typically [`EnumTag`].
     type Tag;
+    /// Get the underlying [`Inline`].
     fn to_tag(self) -> Self::Tag;
     /// Convert from an [`EnumTag`] assuming the value is within bounds, such that otherwise we have
     /// caught their violation during parsing of that tag.
