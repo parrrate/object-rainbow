@@ -138,6 +138,15 @@ where
         Box::pin(trie.get(key)).await
     }
 
+    async fn from_f<O>(
+        f: impl AsyncFnOnce(&mut Self) -> object_rainbow::Result<O>,
+    ) -> object_rainbow::Result<(Self, O)> {
+        let mut new = Self::default();
+        let o = f(&mut new).await?;
+        assert!(!new.is_empty());
+        Ok((new, o))
+    }
+
     async fn prepare<O>(
         &mut self,
         key: &[u8],
@@ -146,17 +155,8 @@ where
         let Some((first, key)) = key.split_first() else {
             return f(self).await;
         };
-        let o;
-        let mut new;
-        macro_rules! new {
-            () => {
-                new = Trie::default();
-                o = f(&mut new).await?;
-                assert!(!new.is_empty());
-            };
-        }
         let Some(point) = self.c_get_mut(*first) else {
-            new!();
+            let (new, o) = Self::from_f(f).await?;
             self.c_insert(*first, (new, key.into()).point());
             return Ok(o);
         };
@@ -164,7 +164,7 @@ where
         if let Some(key) = key.strip_prefix(prefix.as_slice()) {
             return Box::pin(trie.prepare(key, f)).await;
         }
-        new!();
+        let (new, o) = Self::from_f(f).await?;
         if let Some(suffix) = prefix.strip_prefix(key) {
             let child = std::mem::replace(trie, new);
             let (first, suffix) = suffix.split_first().expect("must be at least 1");
