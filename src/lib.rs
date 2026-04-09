@@ -1268,6 +1268,10 @@ impl<T: Traversible + Clone> FetchBytes for LocalFetch<T> {
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
         Box::pin(ready(Ok(self.object.output())))
     }
+
+    fn fetch_data_local(&self) -> Option<Vec<u8>> {
+        Some(self.object.vec())
+    }
 }
 
 struct ByTopology {
