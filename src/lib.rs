@@ -1075,6 +1075,21 @@ impl<T, E> BoundPair for (T, E) {
 #[derive(Debug, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Clone, Copy)]
 pub struct WithExtra<E, T>(pub E, pub T);
 
+impl<
+    'a,
+    E: 'static + Send + Sync + Clone + ParseInline<Input<'a, X>>,
+    X: 'static + Send + Sync + Clone,
+    T: ParseSliceExtra<(E, X)>,
+> Parse<Input<'a, X>> for WithExtra<E, T>
+{
+    fn parse(mut input: Input<'a, X>) -> crate::Result<Self> {
+        let e = input.parse_inline::<E>()?;
+        let x = input.extra().clone();
+        let t = input.replace_extra(&(e.clone(), x)).parse()?;
+        Ok(Self(e, t))
+    }
+}
+
 #[test]
 fn options() {
     type T0 = ();
