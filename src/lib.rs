@@ -197,17 +197,21 @@ pub trait Fetch: Send + Sync + FetchBytes {
     }
 }
 
-pub struct RawPoint<T = Infallible> {
+#[derive(Clone)]
+struct RawPointInner {
     hash: Hash,
     origin: Arc<dyn Send + Sync + FetchBytes>,
+}
+
+pub struct RawPoint<T = Infallible> {
+    inner: RawPointInner,
     _object: PhantomData<fn() -> T>,
 }
 
 impl<T> Clone for RawPoint<T> {
     fn clone(&self) -> Self {
         Self {
-            hash: self.hash,
-            origin: self.origin.clone(),
+            inner: self.inner.clone(),
             _object: PhantomData,
         }
     }
@@ -221,8 +225,10 @@ impl<T> Point<T> {
             }
         }
         RawPoint {
-            hash: *self.hash.unwrap(),
-            origin: self.origin,
+            inner: RawPointInner {
+                hash: *self.hash.unwrap(),
+                origin: self.origin,
+            },
             _object: PhantomData,
         }
     }
@@ -231,16 +237,21 @@ impl<T> Point<T> {
 impl<T> RawPoint<T> {
     pub fn cast<U>(self) -> RawPoint<U> {
         RawPoint {
-            hash: self.hash,
-            origin: self.origin,
+            inner: self.inner,
             _object: PhantomData,
         }
     }
 }
 
-impl<T> FetchBytes for RawPoint<T> {
+impl FetchBytes for RawPointInner {
     fn fetch_bytes(&self) -> FailFuture<ByteNode> {
         self.origin.fetch_bytes()
+    }
+}
+
+impl<T> FetchBytes for RawPoint<T> {
+    fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+        self.inner.fetch_bytes()
     }
 }
 
@@ -249,9 +260,9 @@ impl<T: Object> Fetch for RawPoint<T> {
 
     fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)> {
         Box::pin(async {
-            let (data, resolve) = self.origin.fetch_bytes().await?;
+            let (data, resolve) = self.inner.origin.fetch_bytes().await?;
             let object = T::parse_slice(&data, &resolve)?;
-            if self.hash != object.full_hash() {
+            if self.inner.hash != object.full_hash() {
                 Err(Error::DataMismatch)
             } else {
                 Ok((object, resolve))
@@ -261,9 +272,9 @@ impl<T: Object> Fetch for RawPoint<T> {
 
     fn fetch(&self) -> FailFuture<Self::T> {
         Box::pin(async {
-            let (data, resolve) = self.origin.fetch_bytes().await?;
+            let (data, resolve) = self.inner.origin.fetch_bytes().await?;
             let object = T::parse_slice(&data, &resolve)?;
-            if self.hash != object.full_hash() {
+            if self.inner.hash != object.full_hash() {
                 Err(Error::DataMismatch)
             } else {
                 Ok(object)
