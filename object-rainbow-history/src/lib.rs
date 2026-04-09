@@ -207,6 +207,7 @@ impl<T> Equivalent<T> for Compat<T> {
     Copy,
     PartialEq,
     Eq,
+    Default,
 )]
 pub struct DiscardHeader<T>(pub T);
 
