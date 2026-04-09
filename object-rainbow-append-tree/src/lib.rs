@@ -30,6 +30,12 @@ assert_impl!(
     }
 );
 
+impl<T: PartialEq, N, M> PartialEq for Node<T, N, M> {
+    fn eq(&self, other: &Self) -> bool {
+        self.prev == other.prev && self.items == other.items
+    }
+}
+
 trait History: Sized + Send + Sync {
     type History: Send + Sync;
     type Block: Send + Sync;
