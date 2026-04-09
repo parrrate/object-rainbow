@@ -589,6 +589,10 @@ impl FetchBytes for ByAddressInner {
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
         self.resolve.resolve_data(self.address)
     }
+
+    fn fetch_bytes_local(&self) -> Result<Option<ByteNode>> {
+        self.resolve.try_resolve_local(self.address)
+    }
 }
 
 struct ByAddress<T, Extra> {
