@@ -633,3 +633,7 @@ impl<T: Size + ReflessInline> ReflessFixed for T {}
 impl<T: Size, const N: usize> Size for [T; N] {
     const SIZE: usize = T::SIZE * N;
 }
+
+impl<const N: usize> Size for [u8; N] {
+    const SIZE: usize = N;
+}
