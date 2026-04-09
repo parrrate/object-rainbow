@@ -572,21 +572,21 @@ impl<T> Size for Point<T> {
     type Size = typenum::generic_const_mappings::U<HASH_SIZE>;
 }
 
-impl<T: Object> Point<T> {
+impl<T: 'static + FullHash> Point<T>
+where
+    (): ExtraFor<T>,
+{
     pub fn from_address(address: Address, resolve: Arc<dyn Resolve>) -> Self {
         Self::from_address_extra(address, resolve, ())
     }
 }
 
-impl<T> Point<T> {
-    pub fn from_address_extra<Extra: 'static + Send + Sync + Clone>(
+impl<T: 'static + FullHash> Point<T> {
+    pub fn from_address_extra<Extra: 'static + Send + Sync + Clone + ExtraFor<T>>(
         address: Address,
         resolve: Arc<dyn Resolve>,
         extra: Extra,
-    ) -> Self
-    where
-        T: Object<Extra>,
-    {
+    ) -> Self {
         Self::from_fetch(
             address.hash,
             Arc::new(ByAddress::from_inner(
@@ -596,14 +596,11 @@ impl<T> Point<T> {
         )
     }
 
-    pub fn with_resolve<Extra: 'static + Send + Sync + Clone>(
+    pub fn with_resolve<Extra: 'static + Send + Sync + Clone + ExtraFor<T>>(
         &self,
         resolve: Arc<dyn Resolve>,
         extra: Extra,
-    ) -> Self
-    where
-        T: Object<Extra>,
-    {
+    ) -> Self {
         Self::from_address_extra(Address::from_hash(self.hash()), resolve, extra)
     }
 }
@@ -674,13 +671,13 @@ impl<T, Extra: Send + Sync> Singular for ByAddress<T, Extra> {
     }
 }
 
-impl<T: Object<Extra>, Extra: Send + Sync> Fetch for ByAddress<T, Extra> {
+impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for ByAddress<T, Extra> {
     type T = T;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
-            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
+            let object = self.extra.parse(&data, &resolve)?;
             if self.inner.address.hash != object.full_hash() {
                 Err(Error::FullHashMismatch)
             } else {
@@ -692,7 +689,7 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for ByAddress<T, Extra> {
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
-            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
+            let object = self.extra.parse(&data, &resolve)?;
             if self.inner.address.hash != object.full_hash() {
                 Err(Error::FullHashMismatch)
             } else {
@@ -705,7 +702,7 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for ByAddress<T, Extra> {
         let Some((data, resolve)) = self.fetch_bytes_local()? else {
             return Ok(None);
         };
-        let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
+        let object = self.extra.parse(&data, &resolve)?;
         if self.inner.address.hash != object.full_hash() {
             Err(Error::FullHashMismatch)
         } else {
