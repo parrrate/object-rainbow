@@ -1,6 +1,6 @@
 [package]
 name = "object-rainbow-json"
-version = "0.0.0-a.14"
+version = "0.0.0-a.15"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -9,7 +9,7 @@ authors.workspace = true
 description = "serde_json for object-rainbow"
 
 [dependencies]
-object-rainbow = { workspace = true }
+object-rainbow = { workspace = true, features = ["serde"] }
 object-rainbow-point = { workspace = true, features = ["point-serialize"] }
 
 futures-util = { version = "0.3.31" }
