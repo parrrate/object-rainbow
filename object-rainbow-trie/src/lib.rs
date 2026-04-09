@@ -597,6 +597,10 @@ impl<T: ReflessObject> TrieSet<T> {
         Ok(self.map.remove(value).await?.is_some())
     }
 
+    pub async fn append(&mut self, other: &mut Self) -> object_rainbow::Result<()> {
+        self.map.append(&mut other.map).await
+    }
+
     pub fn prefix_stream(
         &self,
         prefix: &[u8],
