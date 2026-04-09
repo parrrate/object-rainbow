@@ -7,8 +7,9 @@ use std::{
 use futures_util::{Stream, TryStream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    Fetch, InlineOutput, ListHashes, ObjectMarker, Parse, ParseSliceRefless, ReflessObject, Tagged,
-    ToOutput, Topological, Traversible, length_prefixed::LpBytes,
+    Fetch, Inline, InlineOutput, ListHashes, Object, ObjectMarker, Parse, ParseSliceRefless,
+    ReflessObject, Tagged, ToOutput, Topological, Traversible, assert_impl,
+    length_prefixed::LpBytes,
 };
 use object_rainbow_point::{IntoPoint, Point};
 
@@ -24,6 +25,15 @@ pub struct Trie<T> {
     #[topology(unchecked)]
     children: BTreeMap<u8, Point<(LpBytes, Self)>>,
 }
+
+assert_impl!(
+    impl<T, E> Object<E> for Trie<T>
+    where
+        E: 'static + Clone + Send + Sync,
+        Option<T>: Inline<E>,
+    {
+    }
+);
 
 impl<T> Default for Trie<T> {
     fn default() -> Self {
