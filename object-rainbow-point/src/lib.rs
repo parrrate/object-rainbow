@@ -658,6 +658,10 @@ impl<T: FullHash> Fetch for Point<T> {
         fetch.get_mut_finalize();
         self.hash = fetch.get().unwrap().full_hash().into();
     }
+
+    fn try_unwrap(self: Arc<Self>) -> Option<Self::T> {
+        Arc::try_unwrap(self).ok()?.fetch.try_unwrap()
+    }
 }
 
 /// This implementation is the main goal of [`Equivalent`]: we assume transmuting the pointer is
