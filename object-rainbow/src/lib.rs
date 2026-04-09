@@ -85,6 +85,8 @@ impl ToOutput for Address {
     }
 }
 
+impl InlineOutput for Address {}
+
 impl<I: PointInput> ParseInline<I> for Address {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         Ok(Self {
