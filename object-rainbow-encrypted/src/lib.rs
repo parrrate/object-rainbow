@@ -58,12 +58,12 @@ struct IterateResolution<'a, 'r, K, V> {
     visitor: &'a mut V,
 }
 
-struct Visited<K, T> {
-    decrypted: Point<T>,
+struct Visited<K, P> {
+    decrypted: P,
     encrypted: Point<Encrypted<K, Vec<u8>>>,
 }
 
-impl<K, T> FetchBytes for Visited<K, T> {
+impl<K, P> FetchBytes for Visited<K, P> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.encrypted.fetch_bytes()
     }
@@ -81,14 +81,14 @@ impl<K, T> FetchBytes for Visited<K, T> {
     }
 }
 
-impl<K, T> Singular for Visited<K, T> {
+impl<K, P: Send + Sync> Singular for Visited<K, P> {
     fn hash(&self) -> Hash {
         self.encrypted.hash()
     }
 }
 
-impl<K: Key, T: Traversible> Fetch for Visited<K, T> {
-    type T = Encrypted<K, T>;
+impl<K: Key, P: Fetch<T: Traversible>> Fetch for Visited<K, P> {
+    type T = Encrypted<K, P::T>;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
         Box::pin(async move {
