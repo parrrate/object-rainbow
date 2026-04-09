@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::*;
 
-impl<T: ToOutput> ToOutput for BTreeSet<T> {
+impl<T: InlineOutput> ToOutput for BTreeSet<T> {
     fn to_output(&self, output: &mut dyn Output) {
         self.iter_to_output(output);
     }
