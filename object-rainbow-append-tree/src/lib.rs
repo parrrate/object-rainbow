@@ -231,7 +231,7 @@ assert_impl!(
     }
 );
 
-#[derive(ToOutput, Tagged, ListHashes, Topological, Parse)]
+#[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 pub struct AppendTree<T> {
     len: Le<u64>,
     kind: TreeKind<T>,
