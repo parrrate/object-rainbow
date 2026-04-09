@@ -288,12 +288,7 @@ mod private {
     PartialEq,
     Eq,
 )]
-#[topology(recursive)]
-pub struct AmtSet(
-    #[tags(skip)]
-    #[parse(unchecked)]
-    Point<private::N32>,
-);
+pub struct AmtSet(Point<private::N32>);
 
 assert_impl!(
     impl<E> Inline<E> for AmtSet where E: 'static + Send + Sync + Clone {}
