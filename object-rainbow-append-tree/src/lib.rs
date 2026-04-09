@@ -524,7 +524,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> Default for AppendTree
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
-    use object_rainbow::numeric::Le;
+    use object_rainbow::{ParseSlice, numeric::Le};
     use smol_macros::test;
 
     use crate::AppendTree;
@@ -536,6 +536,7 @@ mod test {
             tree.push(Le(i))?;
             assert_eq!(tree.get(i).await?.unwrap().0, i);
         }
+        assert_eq!(tree.reparse()?, tree);
         Ok(())
     }
 }
