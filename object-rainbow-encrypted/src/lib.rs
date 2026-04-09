@@ -65,6 +65,20 @@ impl<K: Key> Resolve for RawResolve<K> {
             Ok(data)
         })
     }
+
+    fn try_resolve_local(
+        &self,
+        address: Address,
+        _: &Arc<dyn Resolve>,
+    ) -> object_rainbow::Result<Option<ByteNode>> {
+        let address = self.translate(address)?;
+        let Some((data, resolve)) = self.resolve.try_resolve_local(address, &self.resolve)? else {
+            return Ok(None);
+        };
+        let (InnerHeader { resolve, .. }, data) = side_parse(&self.key.0, &data, &resolve)?;
+        let resolve = Arc::new(resolve) as _;
+        Ok(Some((data, resolve)))
+    }
 }
 
 #[derive(Parse, ParseInline)]
