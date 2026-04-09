@@ -582,14 +582,24 @@ mod test {
     use crate::AppendTree;
 
     #[apply(test!)]
-    async fn test() -> object_rainbow::Result<()> {
+    async fn reparse() -> object_rainbow::Result<()> {
         let mut tree = AppendTree::<Le<u64>>::new();
         for i in 0..100_000u64 {
             tree.push(Le(i))?;
             let new = tree.reparse()?;
             assert_eq!(new, tree);
             tree = new;
+        }
+        Ok(())
+    }
+
+    #[apply(test!)]
+    async fn get() -> object_rainbow::Result<()> {
+        let mut tree = AppendTree::<Le<u64>>::new();
+        for i in 0..100_000u64 {
+            tree.push(Le(i))?;
             assert_eq!(tree.get(i).await?.unwrap().0, i);
+            assert_eq!(tree.get(i / 2).await?.unwrap().0, i / 2);
         }
         Ok(())
     }
