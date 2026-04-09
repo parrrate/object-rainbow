@@ -2375,11 +2375,14 @@ pub fn derive_for_mapped(args: TokenStream, input: TokenStream) -> TokenStream {
     let generics = input.generics.clone();
     let (_, ty_generics, _) = generics.split_for_impl();
     let mut derived = Vec::new();
-    for (path, field, extra) in [(
-        quote!(map_extra::MappedExtra),
-        quote!(1),
-        vec![(quote!(__M), quote!(#sup))],
-    )] {
+    for (path, field, extra) in [
+        (
+            quote!(map_extra::MappedExtra),
+            quote!(1),
+            vec![(quote!(__M), quote!(#sup))],
+        ),
+        (quote!(length_prefixed::Lp), quote!(0), vec![]),
+    ] {
         let mut generics = input.generics.clone();
         generics.params.push(parse_quote! {
             __T: #name #ty_generics
