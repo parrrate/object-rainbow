@@ -106,4 +106,55 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainTree<T> {
         };
         Ok(Self(node.fetch().await?.tree.last()))
     }
+
+    pub async fn follows(&self, other: &Self) -> object_rainbow::Result<bool> {
+        let Some(late) = &self.0 else {
+            return Ok(false);
+        };
+        let Some(early) = &other.0 else {
+            return Ok(true);
+        };
+        let follows = late
+            .fetch()
+            .await?
+            .tree
+            .get(early.fetch().await?.tree.len())
+            .await?
+            .is_some_and(|point| point == *early);
+        Ok(follows)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use macro_rules_attribute::apply;
+    use object_rainbow::length_prefixed::LpString;
+    use smol_macros::test;
+
+    use crate::ChainTree;
+
+    #[apply(test!)]
+    async fn test() -> object_rainbow::Result<()> {
+        let root = ChainTree::<LpString>::new();
+        assert!(!root.follows(&root).await?);
+        let mut a = root.clone();
+        a.push(LpString("a".into())).await?;
+        assert!(a.follows(&root).await?);
+        assert!(!a.follows(&a).await?);
+        assert!(!root.follows(&a).await?);
+        let mut b = root.clone();
+        b.push(LpString("b".into())).await?;
+        assert!(!a.follows(&b).await?);
+        assert!(!b.follows(&a).await?);
+        let mut ac = a.clone();
+        ac.push(LpString("c".into())).await?;
+        assert!(ac.follows(&root).await?);
+        assert!(ac.follows(&a).await?);
+        assert!(!ac.follows(&ac).await?);
+        assert!(!ac.follows(&b).await?);
+        assert!(!root.follows(&ac).await?);
+        assert!(!a.follows(&ac).await?);
+        assert!(!b.follows(&ac).await?);
+        Ok(())
+    }
 }
