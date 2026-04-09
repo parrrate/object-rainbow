@@ -166,29 +166,33 @@ where
         f: impl AsyncFnOnce(&mut Self) -> object_rainbow::Result<O>,
     ) -> object_rainbow::Result<O> {
         let (trie, prefix) = &mut *point.fetch_mut().await?;
-        if let Some(key) = key.strip_prefix(prefix.as_slice()) {
-            return Box::pin(trie.prepare(key, f)).await;
-        }
-        let (new, o) = Self::from_f(f).await?;
-        if let Some(suffix) = prefix.strip_prefix(key) {
-            let child = std::mem::replace(trie, new);
-            let (first, suffix) = suffix.split_first().expect("must be at least 1");
-            let mut overlay = Self::new();
-            overlay.c_insert(*first, (child, suffix.into()).point());
-            trie.append(&mut overlay).await?;
-            prefix.truncate(key.len());
+        let o = if let Some(key) = key.strip_prefix(prefix.as_slice()) {
+            Box::pin(trie.prepare(key, f)).await?
         } else {
-            let common = common_length(prefix, key);
-            let child = std::mem::take(trie);
-            let mut overlay = Self::new();
-            overlay.c_insert(
-                prefix[common],
-                (child, prefix[common + 1..].to_vec()).point(),
-            );
-            overlay.c_insert(key[common], (new, key[common + 1..].to_vec()).point());
-            trie.append(&mut overlay).await?;
-            prefix.truncate(common);
-        }
+            let (new, o) = Self::from_f(f).await?;
+            if let Some(suffix) = prefix.strip_prefix(key) {
+                let child = std::mem::replace(trie, new);
+                let (first, suffix) = suffix.split_first().expect("must be at least 1");
+                let mut overlay = Self::new();
+                overlay.c_insert(*first, (child, suffix.into()).point());
+                trie.append(&mut overlay).await?;
+                prefix.truncate(key.len());
+            } else {
+                let common = common_length(prefix, key);
+                let child = std::mem::take(trie);
+                let mut overlay = Self::new();
+                overlay.c_insert(
+                    prefix[common],
+                    (child, prefix[common + 1..].to_vec()).point(),
+                );
+                overlay.c_insert(key[common], (new, key[common + 1..].to_vec()).point());
+                trie.append(&mut overlay).await?;
+                prefix.truncate(common);
+            }
+            assert!(!trie.is_empty());
+            assert!(trie.value.is_some() || trie.children.len() > 1);
+            o
+        };
         Ok(o)
     }
 
