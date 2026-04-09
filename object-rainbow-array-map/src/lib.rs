@@ -122,3 +122,11 @@ impl<T> Extend<(u8, T)> for ArrayMap<T> {
         });
     }
 }
+
+impl<T> FromIterator<(u8, T)> for ArrayMap<T> {
+    fn from_iter<I: IntoIterator<Item = (u8, T)>>(iter: I) -> Self {
+        let mut map = Self::default();
+        map.extend(iter);
+        map
+    }
+}
