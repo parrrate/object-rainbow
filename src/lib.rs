@@ -1293,8 +1293,12 @@ impl<T: Traversible + Clone> FetchBytes for LocalFetch<T> {
         Box::pin(ready(Ok(self.object.output())))
     }
 
+    fn fetch_bytes_local(&self) -> Result<Option<ByteNode>> {
+        Ok(Some((self.object.output(), self.object.to_resolve())))
+    }
+
     fn fetch_data_local(&self) -> Option<Vec<u8>> {
-        Some(self.object.vec())
+        Some(self.object.output())
     }
 }
 
