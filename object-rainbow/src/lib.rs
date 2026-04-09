@@ -1062,6 +1062,10 @@ pub trait Parse<I: ParseInput>: Sized {
     fn parse(input: I) -> crate::Result<Self>;
 }
 
+/// This can be parsed from an input, after which we can correctly parse something else.
+///
+/// When parsed as the last object, makes sure there are no bytes left in the input (fails if there
+/// are).
 pub trait ParseInline<I: ParseInput>: Parse<I> {
     fn parse_inline(input: &mut I) -> crate::Result<Self>;
     fn parse_as_inline(mut input: I) -> crate::Result<Self> {
