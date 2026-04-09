@@ -487,24 +487,22 @@ impl<Extra> FetchBytes for ByAddressInner<Extra> {
 }
 
 struct ByAddress<T, Extra = ()> {
-    inner: ByAddressInner,
-    extra: Extra,
+    inner: ByAddressInner<Extra>,
     _object: PhantomData<fn() -> T>,
 }
 
-impl<T> FromInner for ByAddress<T> {
-    type Inner = ByAddressInner;
+impl<T, Extra: 'static + Clone> FromInner for ByAddress<T, Extra> {
+    type Inner = ByAddressInner<Extra>;
 
     fn from_inner(inner: Self::Inner) -> Self {
         Self {
             inner,
-            extra: (),
             _object: PhantomData,
         }
     }
 }
 
-impl<T, Extra> FetchBytes for ByAddress<T, Extra> {
+impl<T, Extra: 'static> FetchBytes for ByAddress<T, Extra> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.inner.fetch_bytes()
     }
@@ -518,13 +516,13 @@ impl<T, Extra> FetchBytes for ByAddress<T, Extra> {
     }
 }
 
-impl<T: Object<Extra>, Extra: Send + Sync> Fetch for ByAddress<T, Extra> {
+impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for ByAddress<T, Extra> {
     type T = T;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
-            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
+            let object = T::parse_slice_extra(&data, &resolve, &self.inner.extra)?;
             if self.inner.address.hash != object.full_hash() {
                 Err(Error::DataMismatch)
             } else {
@@ -536,7 +534,7 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for ByAddress<T, Extra> {
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
-            let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
+            let object = T::parse_slice_extra(&data, &resolve, &self.inner.extra)?;
             if self.inner.address.hash != object.full_hash() {
                 Err(Error::DataMismatch)
             } else {
