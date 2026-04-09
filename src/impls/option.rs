@@ -187,7 +187,7 @@ impl Equivalent<bool> for Option<()> {
 }
 
 #[test]
-fn equivalent() {
+fn equivalent_to_bool() {
     assert_eq!(
         false.output::<Vec<u8>>(),
         Option::from_equivalent(false).output::<Vec<u8>>(),
