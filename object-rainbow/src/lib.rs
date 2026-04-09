@@ -875,6 +875,33 @@ impl Output for Vec<u8> {
     }
 }
 
+struct MangleOutput<'a>(&'a mut dyn Output);
+
+impl<'a> MangleOutput<'a> {
+    fn new(output: &'a mut dyn Output) -> Self {
+        assert!(!output.is_mangling());
+        Self(output)
+    }
+}
+
+impl Output for MangleOutput<'_> {
+    fn write(&mut self, data: &[u8]) {
+        self.0.write(data);
+    }
+
+    fn is_mangling(&self) -> bool {
+        true
+    }
+}
+
+pub struct Mangled<T: ?Sized>(T);
+
+impl<T: ?Sized + ToOutput> ToOutput for Mangled<T> {
+    fn to_output(&self, output: &mut dyn Output) {
+        self.0.to_output(&mut MangleOutput::new(output));
+    }
+}
+
 #[derive(Default)]
 struct HashOutput {
     hasher: Sha256,
