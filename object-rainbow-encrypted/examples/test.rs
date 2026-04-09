@@ -8,7 +8,7 @@ use std::{
 use chacha20poly1305::{ChaCha20Poly1305, aead::Aead};
 use object_rainbow::{
     ByteNode, FailFuture, Fetch, Hash, Object, PointVisitor, Resolve, SingularFetch, Traversible,
-    error_fetch,
+    error_operation,
 };
 use object_rainbow_encrypted::{Key, encrypt_point};
 use object_rainbow_point::{IntoPoint, Point};
@@ -45,7 +45,7 @@ impl Key for Test {
         };
         cipher
             .decrypt(GenericArray::from_slice(&data[..12]), &data[12..])
-            .map_err(|_| error_fetch!("decryption failed"))
+            .map_err(|_| error_operation!("decryption failed"))
     }
 }
 
