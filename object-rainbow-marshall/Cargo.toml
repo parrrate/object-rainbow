@@ -1,6 +1,6 @@
 [package]
 name = "object-rainbow-marshall"
-version = "0.0.0-a.2"
+version = "0.0.0-a.3"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -12,3 +12,7 @@ description = "serialized format for object-rainbow"
 object-rainbow.workspace = true
 object-rainbow-fetchall.workspace = true
 object-rainbow-local-map.workspace = true
+
+[dev-dependencies]
+anyhow = "1.0.96"
+smol = "2.0.2"
