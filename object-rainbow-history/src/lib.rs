@@ -13,6 +13,8 @@ pub mod remap;
 pub mod skip;
 #[cfg(feature = "trie")]
 mod trie;
+#[cfg(feature = "unique-diffs")]
+pub mod unique_diffs;
 
 #[derive(
     ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Size, MaybeHasNiche,

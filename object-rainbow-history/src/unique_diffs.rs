@@ -3,7 +3,8 @@ use object_rainbow::{
     assert_impl,
 };
 use object_rainbow_hamt::HamtSet;
-use object_rainbow_history::{Forward, Sequential, hashed::HashedDiffs, skip::SkipDiffs};
+
+use crate::{Forward, Sequential, hashed::HashedDiffs, skip::SkipDiffs};
 
 #[derive(
     ToOutput,
