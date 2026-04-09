@@ -1,7 +1,7 @@
 use std::{
     collections::{BTreeMap, btree_map},
     marker::PhantomData,
-    ops::RangeBounds,
+    ops::{Deref, RangeBounds},
 };
 
 use bitvec::array::BitArray;
@@ -74,6 +74,14 @@ assert_impl!(
     {
     }
 );
+
+impl<T> Deref for KeyedArrayMap<T> {
+    type Target = ArrayMap<T>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 impl<T> ArrayMap<T> {
     pub fn get_mut(&mut self, key: u8) -> Option<&mut T> {
