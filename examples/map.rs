@@ -120,7 +120,7 @@ async fn iterate<T: Object>(point: Point<T>) -> anyhow::Result<Point<T>> {
         );
     }
     let resolver = Arc::new(MapResolver(Arc::new(fetched)));
-    Ok(point.with_resolve(resolver))
+    Ok(point.with_resolve(resolver, ()))
 }
 
 fn main() -> anyhow::Result<()> {

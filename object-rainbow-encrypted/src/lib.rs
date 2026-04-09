@@ -229,16 +229,24 @@ type Extracted<K, Extra> = Vec<
     >,
 >;
 
-struct ExtractResolution<'a, K, Extra>(&'a mut Extracted<K, Extra>, &'a K);
+struct ExtractResolution<'a, K, Extra> {
+    extracted: &'a mut Extracted<K, Extra>,
+    key: &'a K,
+    extra: &'a Extra,
+}
 
 impl<K: Key, Extra: 'static + Send + Sync + Clone> PointVisitor<Extra>
     for ExtractResolution<'_, K, Extra>
 {
     fn visit<T: Object<Extra>>(&mut self, point: &Point<T, Extra>) {
         let point = point.clone();
-        let key = self.1.clone();
-        self.0.push(Box::pin(async move {
-            let point = encrypt_point(key, point).await?.raw().cast();
+        let key = self.key.clone();
+        let extra = self.extra.clone();
+        self.extracted.push(Box::pin(async move {
+            let point = encrypt_point(key.clone(), point, &extra)
+                .await?
+                .raw(WithKey { key, extra })
+                .cast();
             Ok(point)
         }));
     }
@@ -247,6 +255,7 @@ impl<K: Key, Extra: 'static + Send + Sync + Clone> PointVisitor<Extra>
 pub async fn encrypt_point<K: Key, T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
     key: K,
     point: Point<T, Extra>,
+    extra: &Extra,
 ) -> object_rainbow::Result<Point<Encrypted<K, T, Extra>, WithKey<K, Extra>>> {
     if let Some((address, decrypt)) = point.extract_resolve::<Decrypt<K, Extra>>() {
         let point = decrypt
@@ -256,20 +265,22 @@ pub async fn encrypt_point<K: Key, T: Object<Extra>, Extra: 'static + Send + Syn
         return Ok(point.clone().cast().point());
     }
     let decrypted = point.fetch().await?;
-    let encrypted = encrypt(key.clone(), decrypted).await?;
-    let point = encrypted.point_extra(WithKey {
-        key,
-        extra: point.extra().clone(),
-    });
+    let encrypted = encrypt(key.clone(), decrypted, extra).await?;
+    let point = encrypted.point_extra();
     Ok(point)
 }
 
 pub async fn encrypt<K: Key, T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
     key: K,
     decrypted: T,
+    extra: &Extra,
 ) -> object_rainbow::Result<Encrypted<K, T, Extra>> {
     let mut futures = Vec::with_capacity(decrypted.point_count());
-    decrypted.accept_points(&mut ExtractResolution(&mut futures, &key));
+    decrypted.accept_points(&mut ExtractResolution {
+        extracted: &mut futures,
+        key: &key,
+        extra,
+    });
     let resolution = futures_util::future::try_join_all(futures).await?;
     let resolution = Arc::new(Lp(resolution));
     let decrypted = Unkeyed(Arc::new(decrypted));

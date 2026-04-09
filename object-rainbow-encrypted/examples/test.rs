@@ -8,10 +8,10 @@ use std::{
 
 use chacha20poly1305::{ChaCha20Poly1305, aead::Aead};
 use object_rainbow::{
-     ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Resolve, SimpleObject,
+    ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Resolve, SimpleObject,
     Singular, error_fetch, error_parse,
 };
-use object_rainbow_encrypted::{Key, encrypt_point};
+use object_rainbow_encrypted::{Key, WithKey, encrypt_point};
 use sha2::digest::generic_array::GenericArray;
 use smol::{Executor, channel::Sender};
 
@@ -131,6 +131,7 @@ impl Resolve for MapResolver {
 
 async fn iterate<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
     point: Point<T, Extra>,
+    extra: Extra,
 ) -> anyhow::Result<Point<T, Extra>> {
     let (send, recv) = smol::channel::unbounded::<Event>();
     let executor = Arc::new(Executor::new());
@@ -164,7 +165,7 @@ async fn iterate<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
         );
     }
     let resolver = Arc::new(MapResolver(Arc::new(fetched)));
-    Ok(point.with_resolve(resolver))
+    Ok(point.with_resolve(resolver, extra))
 }
 
 fn main() -> anyhow::Result<()> {
@@ -177,10 +178,10 @@ fn main() -> anyhow::Result<()> {
         )
             .point();
         let key = Test(std::array::from_fn(|i| i as _));
-        let point = encrypt_point(key, point).await?;
-        let point = iterate(point).await?;
+        let point = encrypt_point(key, point, &()).await?;
+        let point = iterate(point, WithKey { key, extra: () }).await?;
         let point = point.fetch().await?.into_inner().point();
-        let point = encrypt_point(key, point).await?;
+        let point = encrypt_point(key, point, &()).await?;
         let point = point.fetch().await?.into_inner().point();
         assert_eq!(
             point.fetch().await?.0.fetch().await?.fetch().await?.0,
