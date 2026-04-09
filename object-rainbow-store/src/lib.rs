@@ -132,54 +132,6 @@ pub trait RainbowStoreMut: RainbowStore {
     ) -> impl RainbowFuture<T = ()>;
     fn fetch_ref(&self, key: &str) -> impl RainbowFuture<T = OptionalHash>;
     fn ref_exists(&self, key: &str) -> impl RainbowFuture<T = bool>;
-    fn create<T: Object>(
-        &self,
-        point: Point<T>,
-    ) -> impl RainbowFuture<T = StoreRef<Self, impl 'static + Send + Sync + AsRef<str>, T, ()>>
-    {
-        async move {
-            let point = self.saved_point(&point, ()).await?;
-            let key = self.create_ref(point.hash()).await?;
-            Ok(self.store_ref_raw(key, point, ()))
-        }
-    }
-    fn update<T: Object, K: Send + Sync + AsRef<str>>(
-        &self,
-        key: K,
-        point: Point<T>,
-    ) -> impl RainbowFuture<T = StoreRef<Self, K, T, ()>> {
-        async move {
-            let point = self.saved_point(&point, ()).await?;
-            self.update_ref(key.as_ref(), None, point.hash()).await?;
-            Ok(self.store_ref_raw(key, point, ()))
-        }
-    }
-    fn load<T: Object, K: Send + Sync + AsRef<str>>(
-        &self,
-        key: K,
-    ) -> impl RainbowFuture<T = StoreRef<Self, K, T, ()>> {
-        async move {
-            let hash = self
-                .fetch_ref(key.as_ref())
-                .await?
-                .get()
-                .ok_or(object_rainbow::Error::HashNotFound)?;
-            let point = self.point(hash);
-            Ok(self.store_ref_raw(key, point, ()))
-        }
-    }
-    fn reference<T: Object, K: Send + Sync + AsRef<str>>(
-        &self,
-        key: K,
-        point: Point<T>,
-    ) -> impl RainbowFuture<T = StoreRef<Self, K, T, ()>> {
-        async move {
-            Ok(StoreRef {
-                old: self.fetch_ref(key.as_ref()).await?,
-                ..self.store_ref_raw(key, point, ())
-            })
-        }
-    }
     fn store_ref_raw<
         T: Object<Extra>,
         K: Send + Sync + AsRef<str>,
@@ -197,6 +149,70 @@ pub trait RainbowStoreMut: RainbowStore {
             point,
             extra,
         }
+    }
+}
+
+#[derive(Clone)]
+pub struct StoreMut<S, Extra = ()> {
+    store: S,
+    extra: Extra,
+}
+
+impl<S> StoreMut<S> {
+    pub const fn new(store: S) -> Self {
+        Self::new_extra(store, ())
+    }
+}
+
+impl<S, Extra> StoreMut<S, Extra> {
+    pub const fn new_extra(store: S, extra: Extra) -> Self {
+        Self { store, extra }
+    }
+}
+
+impl<S: RainbowStoreMut, Extra: 'static + Send + Sync + Clone> StoreMut<S, Extra> {
+    pub async fn create<T: Object<Extra>>(
+        &self,
+        point: Point<T>,
+    ) -> object_rainbow::Result<StoreRef<S, impl 'static + Send + Sync + AsRef<str>, T, Extra>>
+    {
+        let point = self.store.saved_point(&point, self.extra.clone()).await?;
+        let key = self.store.create_ref(point.hash()).await?;
+        Ok(self.store.store_ref_raw(key, point, self.extra.clone()))
+    }
+    pub async fn update<T: Object<Extra>, K: Send + Sync + AsRef<str>>(
+        &self,
+        key: K,
+        point: Point<T>,
+    ) -> object_rainbow::Result<StoreRef<S, K, T, Extra>> {
+        let point = self.store.saved_point(&point, self.extra.clone()).await?;
+        self.store
+            .update_ref(key.as_ref(), None, point.hash())
+            .await?;
+        Ok(self.store.store_ref_raw(key, point, self.extra.clone()))
+    }
+    pub async fn load<T: Object<Extra>, K: Send + Sync + AsRef<str>>(
+        &self,
+        key: K,
+    ) -> object_rainbow::Result<StoreRef<S, K, T, Extra>> {
+        let hash = self
+            .store
+            .fetch_ref(key.as_ref())
+            .await?
+            .get()
+            .ok_or(object_rainbow::Error::HashNotFound)?;
+        let point = self.store.point_extra(hash, self.extra.clone());
+        Ok(self.store.store_ref_raw(key, point, self.extra.clone()))
+    }
+    pub async fn reference<T: Object<Extra>, K: Send + Sync + AsRef<str>>(
+        &self,
+        key: K,
+        point: Point<T>,
+    ) -> object_rainbow::Result<StoreRef<S, K, T, Extra>> {
+        Ok(StoreRef {
+            old: self.store.fetch_ref(key.as_ref()).await?,
+            ..self.store.store_ref_raw(key, point, self.extra.clone())
+        })
     }
 }
 

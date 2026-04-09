@@ -1,12 +1,14 @@
 use object_rainbow::{Fetch, FullHash};
 use object_rainbow_point::IntoPoint;
-use object_rainbow_store::RainbowStoreMut;
+use object_rainbow_store::StoreMut;
 use object_rainbow_store_opendal::OpendalStore;
 use opendal::{Operator, services::Memory};
 
 fn main() -> anyhow::Result<()> {
     smol::block_on(async move {
-        let store = OpendalStore::from_operator(Operator::new(Memory::default())?.finish());
+        let store = StoreMut::new(OpendalStore::from_operator(
+            Operator::new(Memory::default())?.finish(),
+        ));
         let mut r = store
             .update(
                 "test",
