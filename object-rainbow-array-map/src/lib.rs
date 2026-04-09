@@ -6,8 +6,8 @@ use std::{
 
 use bitvec::array::BitArray;
 use object_rainbow::{
-    Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseAsInline, ParseInline, ParseInput,
-    Size, Tagged, ToOutput, Topological, assert_impl,
+    Equivalent, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseAsInline, ParseInline,
+    ParseInput, Size, Tagged, ToOutput, Topological, assert_impl,
 };
 
 type Bits = BitArray<[u8; 32]>;
@@ -197,5 +197,22 @@ impl FromIterator<u8> for ArraySet {
 impl<const N: usize> From<[u8; N]> for ArraySet {
     fn from(value: [u8; N]) -> Self {
         value.into_iter().collect()
+    }
+}
+
+impl Equivalent<ArrayMap<()>> for ArraySet {
+    fn into_equivalent(self) -> ArrayMap<()> {
+        ArrayMap {
+            bits: self.bits,
+            map: self
+                .bits
+                .iter_ones()
+                .map(|one| (u8::try_from(one).expect("overflow"), ()))
+                .collect(),
+        }
+    }
+
+    fn from_equivalent(ArrayMap { bits, .. }: ArrayMap<()>) -> Self {
+        Self { bits }
     }
 }
