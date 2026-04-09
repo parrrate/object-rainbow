@@ -41,7 +41,7 @@ impl EventContext<'_> {
         let _ = send.send(event).await;
     }
 
-    async fn resolve(self, point: Point<impl Traversible>) {
+    async fn resolve(self, point: impl Fetch<T: Traversible>) {
         match point.fetch().await {
             Ok(object) => self.send(object).await,
             Err(e) => tracing::error!("{e:?}"),
