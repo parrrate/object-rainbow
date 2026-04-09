@@ -1146,8 +1146,9 @@ impl<T, E> BoundPair for (T, E) {
     type E = E;
 }
 
+/// Parses `Extra`, then provides it to `T`'s parser.
 #[derive(Debug, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Clone, Copy)]
-pub struct InlineExtra<T, E = ()>(pub E, pub T);
+pub struct InlineExtra<T, Extra = ()>(pub Extra, pub T);
 
 impl<
     E: 'static + Send + Sync + Clone + ParseInline<I>,
