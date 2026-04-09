@@ -44,6 +44,12 @@ impl<T: Clone + Traversible> ChainNode<T> {
 
 pub struct ChainHandle<T>(Option<ChainNode<T>>);
 
+impl<T: Clone + Traversible> ChainHandle<T> {
+    pub fn into_tree(self) -> ChainTree<T> {
+        ChainTree(self.0.map(|node| node.point()))
+    }
+}
+
 #[derive(
     ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Size, MaybeHasNiche,
 )]
