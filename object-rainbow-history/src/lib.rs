@@ -280,6 +280,7 @@ impl<T: Forward<M::Inner>, M: MapDiff<Outer>, Outer: Send> Forward<Outer> for Ma
     Copy,
     PartialEq,
     Eq,
+    Default,
 )]
 pub struct Sequential<First, Second> {
     first: First,
