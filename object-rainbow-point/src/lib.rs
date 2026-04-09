@@ -1,3 +1,7 @@
+#![forbid(unsafe_code)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, doc(cfg_hide(doc)))]
+
 use std::{
     any::Any,
     marker::PhantomData,

@@ -1,6 +1,6 @@
 [package]
 name = "object-rainbow-history"
-version = "0.0.0-a.13"
+version = "0.0.0-a.14"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -29,3 +29,7 @@ macro_rules_attribute = "0.2.2"
 smol = "2.0.2"
 smol-macros = "0.1.1"
 ulid = { version = "1.2.1" }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

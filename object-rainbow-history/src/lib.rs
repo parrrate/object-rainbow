@@ -1,3 +1,7 @@
+#![forbid(unsafe_code)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, doc(cfg_hide(doc)))]
+
 use futures_util::TryStreamExt;
 use object_rainbow::{
     Equivalent, Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline,
