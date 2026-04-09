@@ -778,12 +778,6 @@ impl<'a, Extra: 'static + Clone> PointInput for Input<'a, Extra> {
         index
     }
 
-    fn parse_address(&mut self) -> crate::Result<Address> {
-        let hash = *self.parse_chunk()?;
-        let index = self.next_index();
-        Ok(Address { hash, index })
-    }
-
     fn resolve_arc_ref(&self) -> &Arc<dyn Resolve> {
         self.resolve
     }
@@ -1434,7 +1428,11 @@ pub trait PointInput: ParseInput {
     type Extra: 'static + Clone;
     type WithExtra<E: 'static + Clone>: PointInput<Extra = E, WithExtra<Self::Extra> = Self>;
     fn next_index(&mut self) -> usize;
-    fn parse_address(&mut self) -> crate::Result<Address>;
+    fn parse_address(&mut self) -> crate::Result<Address> {
+        let hash = *self.parse_chunk()?;
+        let index = self.next_index();
+        Ok(Address { hash, index })
+    }
     fn resolve_arc_ref(&self) -> &Arc<dyn Resolve>;
     fn resolve(&self) -> Arc<dyn Resolve> {
         self.resolve_arc_ref().clone()
