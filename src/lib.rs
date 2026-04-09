@@ -1613,6 +1613,10 @@ impl<T: ToOutput, F: Send + Sync + Map1<T>> Fetch for Map<T, F> {
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(self.fetch.fetch().map_ok(&self.map))
     }
+
+    fn fetch_local(&self) -> Option<Self::T> {
+        self.fetch.fetch_local().map(&self.map)
+    }
 }
 
 impl<T> MaybeHasNiche for Point<T> {
