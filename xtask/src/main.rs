@@ -166,7 +166,7 @@ impl Display for WhereFoldAdd {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "where tarr![")?;
         for c in LETTERS.iter().take(self.n) {
-            write!(f, "{c},")?;
+            write!(f, "{c}::Size,")?;
         }
         write!(f, "]: typenum::FoldAdd<Output: Unsigned>")?;
         Ok(())
@@ -181,7 +181,7 @@ impl Display for SizeFoldAdd {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "type Size = <tarr![")?;
         for c in LETTERS.iter().take(self.n) {
-            write!(f, "{c},")?;
+            write!(f, "{c}::Size,")?;
         }
         writeln!(f, "] as typenum::FoldAdd>::Output;")?;
         Ok(())
