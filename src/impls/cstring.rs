@@ -30,3 +30,4 @@ impl<I: ParseInput> ParseInline<I> for CString {
 }
 
 impl<E: 'static> Object<E> for CString {}
+impl<E: 'static> Inline<E> for CString {}
