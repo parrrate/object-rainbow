@@ -703,12 +703,8 @@ impl PointInput for Input<'_> {
         Ok(Address { hash, index })
     }
 
-    fn resolve(&self) -> Arc<dyn Resolve> {
-        self.resolve.clone()
-    }
-
-    fn resolve_ref(&self) -> &dyn Resolve {
-        self.resolve.as_ref()
+    fn resolve_arc_ref(&self) -> &Arc<dyn Resolve> {
+        self.resolve
     }
 }
 
@@ -1306,8 +1302,13 @@ pub trait ParseInput: Sized {
 
 pub trait PointInput: ParseInput {
     fn parse_address(&mut self) -> crate::Result<Address>;
-    fn resolve(&self) -> Arc<dyn Resolve>;
-    fn resolve_ref(&self) -> &dyn Resolve;
+    fn resolve_arc_ref(&self) -> &Arc<dyn Resolve>;
+    fn resolve(&self) -> Arc<dyn Resolve> {
+        self.resolve_arc_ref().clone()
+    }
+    fn resolve_ref(&self) -> &dyn Resolve {
+        self.resolve_arc_ref().as_ref()
+    }
 }
 
 impl<T: Sized + IntoIterator> RainbowIterator for T {}
