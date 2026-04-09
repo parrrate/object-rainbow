@@ -9,7 +9,7 @@ type Map<K, V> = BTreeMap<ByBytes<K>, V>;
 
 impl<K: ReflessObject + AsRef<[u8]>, V: 'static + Send + Sync + Clone> TrieMap<K, V>
 where
-    Option<V>: Traversible,
+    Option<V>: Traversible + InlineOutput,
 {
     fn to_map(&self) -> object_rainbow::Result<Map<K, V>> {
         let future = self
@@ -60,7 +60,7 @@ impl<K: AsRef<[u8]>> Ord for ByBytes<K> {
 impl<K: ReflessObject + AsRef<[u8]> + Serialize, V: 'static + Send + Sync + Clone + Serialize>
     Serialize for TrieMap<K, V>
 where
-    Option<V>: Traversible,
+    Option<V>: Traversible + InlineOutput,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -78,7 +78,7 @@ impl<
     V: 'static + Send + Sync + Clone + DeserializeOwned,
 > Deserialize<'de> for TrieMap<K, V>
 where
-    Option<V>: Traversible,
+    Option<V>: Traversible + InlineOutput,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

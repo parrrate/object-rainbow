@@ -49,12 +49,19 @@ fn bounds_to_output(mut generics: Generics, data: &Data) -> syn::Result<Generics
     let g = &bounds_g(&generics);
     match data {
         Data::Struct(data) => {
-            for f in data.fields.iter() {
+            let last_at = data.fields.len().checked_sub(1).unwrap_or_default();
+            for (i, f) in data.fields.iter().enumerate() {
+                let last = i == last_at;
                 let ty = &f.ty;
-                if type_contains_generics(GContext { g, always: false }, ty) {
+                let tr = if last {
+                    quote!(::object_rainbow::ToOutput)
+                } else {
+                    quote!(::object_rainbow::InlineOutput)
+                };
+                if !last || type_contains_generics(GContext { g, always: false }, ty) {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
-                            #ty: ::object_rainbow::ToOutput
+                            #ty: #tr
                         },
                     );
                 }
@@ -62,12 +69,19 @@ fn bounds_to_output(mut generics: Generics, data: &Data) -> syn::Result<Generics
         }
         Data::Enum(data) => {
             for v in data.variants.iter() {
-                for f in v.fields.iter() {
+                let last_at = v.fields.len().checked_sub(1).unwrap_or_default();
+                for (i, f) in v.fields.iter().enumerate() {
+                    let last = i == last_at;
                     let ty = &f.ty;
-                    if type_contains_generics(GContext { g, always: false }, ty) {
+                    let tr = if last {
+                        quote!(::object_rainbow::ToOutput)
+                    } else {
+                        quote!(::object_rainbow::InlineOutput)
+                    };
+                    if !last || type_contains_generics(GContext { g, always: false }, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
-                                #ty: ::object_rainbow::ToOutput
+                                #ty: #tr
                             },
                         );
                     }
@@ -342,8 +356,13 @@ pub fn derive_topological(input: TokenStream) -> TokenStream {
     let generics = input.generics.clone();
     let (_, ty_generics, _) = generics.split_for_impl();
     let mut errors = Vec::new();
-    let generics = match bounds_topological(input.generics, &input.data, &input.attrs, &mut errors)
-    {
+    let generics = match bounds_topological(
+        input.generics,
+        &input.data,
+        &input.attrs,
+        &mut errors,
+        &name,
+    ) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
@@ -389,6 +408,7 @@ fn bounds_topological(
     data: &Data,
     attrs: &[Attribute],
     errors: &mut Vec<Error>,
+    name: &Ident,
 ) -> syn::Result<Generics> {
     let mut recursive = false;
     for attr in attrs {
@@ -438,6 +458,14 @@ fn bounds_topological(
                 "`union`s are not supported",
             ));
         }
+    }
+    if recursive {
+        generics
+            .make_where_clause()
+            .predicates
+            .push(parse_quote_spanned! { name.span() =>
+                Self: ToOutput
+            });
     }
     Ok(generics)
 }
