@@ -897,6 +897,13 @@ pub trait ParseSlice: for<'a> Parse<Input<'a>> {
     fn parse_slice(data: &[u8], resolve: &Arc<dyn Resolve>) -> crate::Result<Self> {
         Self::parse_slice_extra(data, resolve, &())
     }
+
+    fn reparse(&self) -> crate::Result<Self>
+    where
+        Self: Traversible,
+    {
+        Self::parse_slice(&self.vec(), &self.to_resolve())
+    }
 }
 
 impl<T: for<'a> Parse<Input<'a>>> ParseSlice for T {}
