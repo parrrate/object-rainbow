@@ -1067,7 +1067,11 @@ impl<T: Object<Extra>, Extra> Drop for PointMut<'_, T, Extra> {
 
 impl<T: Object + Clone> Point<T> {
     pub fn from_object(object: T) -> Self {
-        Self::from_origin(object.full_hash(), Arc::new(LocalOrigin(object)), ())
+        Self::from_origin(
+            object.full_hash(),
+            Arc::new(LocalOrigin { object, extra: () }),
+            (),
+        )
     }
 
     fn yolo_mut(&mut self) -> bool {
@@ -1078,7 +1082,7 @@ impl<T: Object + Clone> Point<T> {
     pub async fn fetch_mut(&'_ mut self) -> crate::Result<PointMut<'_, T>> {
         if !self.yolo_mut() {
             let object = self.origin.fetch().await?;
-            self.origin = Arc::new(LocalOrigin(object));
+            self.origin = Arc::new(LocalOrigin { object, extra: () });
         }
         let origin = Arc::get_mut(&mut self.origin).unwrap();
         assert!(origin.get_mut().is_some());
@@ -1090,39 +1094,43 @@ impl<T: Object + Clone> Point<T> {
     }
 }
 
-struct LocalOrigin<T>(T);
+struct LocalOrigin<T, Extra> {
+    object: T,
+    #[expect(unused)]
+    extra: Extra,
+}
 
-impl<T> Deref for LocalOrigin<T> {
+impl<T, Extra> Deref for LocalOrigin<T, Extra> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.object
     }
 }
 
-impl<T> DerefMut for LocalOrigin<T> {
+impl<T, Extra> DerefMut for LocalOrigin<T, Extra> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+        &mut self.object
     }
 }
 
-impl<T: Object + Clone> Fetch for LocalOrigin<T> {
+impl<T: Object<Extra> + Clone, Extra: 'static + Send + Sync> Fetch for LocalOrigin<T, Extra> {
     type T = T;
-    type Extra = ();
+    type Extra = Extra;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
-        let extension = self.0.clone();
+        let extension = self.object.clone();
         Box::pin(ready(Ok((
-            self.0.clone(),
+            self.object.clone(),
             Arc::new(ByTopology {
-                topology: self.0.topology(),
+                topology: self.object.topology(),
                 extension: Box::new(extension),
             }) as _,
         ))))
     }
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        Box::pin(ready(Ok(self.0.clone())))
+        Box::pin(ready(Ok(self.object.clone())))
     }
 
     fn get(&self) -> Option<&Self::T> {
@@ -1134,39 +1142,39 @@ impl<T: Object + Clone> Fetch for LocalOrigin<T> {
     }
 }
 
-impl<T: Object + Clone> FetchBytes for LocalOrigin<T> {
+impl<T: Object<Extra> + Clone, Extra: 'static> FetchBytes for LocalOrigin<T, Extra> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        let extension = self.0.clone();
+        let extension = self.object.clone();
         Box::pin(ready(Ok((
-            self.0.output(),
+            self.object.output(),
             Arc::new(ByTopology {
-                topology: self.0.topology(),
+                topology: self.object.topology(),
                 extension: Box::new(extension),
             }) as _,
         ))))
     }
 
     fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
-        self.0.extension(typeid)
+        self.object.extension(typeid)
     }
 }
 
-trait AsExtension {
+trait AsExtension<Extra> {
     fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any>;
 }
 
-impl<T: Object> AsExtension for T {
+impl<T: Object<Extra>, Extra> AsExtension<Extra> for T {
     fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
         self.extension(typeid)
     }
 }
 
-struct ByTopology {
+struct ByTopology<Extra> {
     topology: TopoVec,
-    extension: Box<dyn Send + Sync + AsExtension>,
+    extension: Box<dyn Send + Sync + AsExtension<Extra>>,
 }
 
-impl ByTopology {
+impl<Extra> ByTopology<Extra> {
     fn try_resolve(&'_ self, address: Address) -> Result<FailFuture<'_, ByteNode>> {
         let point = self
             .topology
@@ -1180,7 +1188,7 @@ impl ByTopology {
     }
 }
 
-impl Resolve for ByTopology {
+impl<Extra> Resolve for ByTopology<Extra> {
     fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode> {
         self.try_resolve(address)
             .map_err(Err)
