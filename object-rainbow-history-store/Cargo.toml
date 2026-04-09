@@ -1,0 +1,13 @@
+[package]
+name = "object-rainbow-history-store"
+version = "0.0.0-a.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+object-rainbow.workspace = true
+object-rainbow-history.workspace = true
+object-rainbow-store.workspace = true
