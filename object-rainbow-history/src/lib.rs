@@ -108,6 +108,11 @@ impl<T: Clone + Traversible + InlineOutput + Default + Apply<D>, D: Clone + Trav
             .await
     }
 
+    pub async fn forward(&mut self, other: Self) -> object_rainbow::Result<()> {
+        self.can_forward(&other).await?;
+        self.forward(other).await
+    }
+
     pub async fn tree(&self) -> object_rainbow::Result<T> {
         Ok(self
             .0
