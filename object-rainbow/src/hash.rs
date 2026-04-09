@@ -67,6 +67,7 @@ impl Hash {
         Self(hash)
     }
 
+    /// Convert into raw bytes.
     pub fn into_bytes(self) -> [u8; HASH_SIZE] {
         self.0
     }
