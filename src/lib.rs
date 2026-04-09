@@ -299,11 +299,28 @@ impl<T, Extra: 'static + Send + Sync> Singular for RawPoint<T, Extra> {
     }
 }
 
+#[derive(ToOutput, Topological, ParseAsInline, ParseInline)]
+struct ObjectMarker<T: ?Sized> {
+    object: PhantomData<fn() -> T>,
+}
+
+impl<T: ?Sized> Default for ObjectMarker<T> {
+    fn default() -> Self {
+        Self {
+            object: Default::default(),
+        }
+    }
+}
+
+impl<T: ?Sized + Tagged> Tagged for ObjectMarker<T> {}
+impl<T: ?Sized + 'static + Tagged, Extra: 'static> Object<Extra> for ObjectMarker<T> {}
+impl<T: ?Sized + 'static + Tagged, Extra: 'static> Inline<Extra> for ObjectMarker<T> {}
+
 #[derive(ToOutput, ParseInline, ParseAsInline)]
 pub struct RawPoint<T = Infallible, Extra = ()> {
     inner: RawPointInner,
     extra: Extras<Extra>,
-    _object: PhantomData<fn() -> T>,
+    object: ObjectMarker<T>,
 }
 
 impl<T, Extra: 'static + Clone> FromInner for RawPoint<T, Extra> {
@@ -314,7 +331,7 @@ impl<T, Extra: 'static + Clone> FromInner for RawPoint<T, Extra> {
         RawPoint {
             inner,
             extra: Extras(extra),
-            _object: PhantomData,
+            object: Default::default(),
         }
     }
 }
@@ -324,7 +341,7 @@ impl<T, Extra: Clone> Clone for RawPoint<T, Extra> {
         Self {
             inner: self.inner.clone(),
             extra: self.extra.clone(),
-            _object: PhantomData,
+            object: Default::default(),
         }
     }
 }
