@@ -69,6 +69,25 @@ enum Stuff<T> {
     E(T),
 }
 
+#[derive(
+    Enum,
+    ToOutput,
+    Topological,
+    Tagged,
+    Object,
+    Inline,
+    ReflessObject,
+    ReflessInline,
+    Size,
+    Parse,
+    ParseInline,
+    MaybeHasNiche,
+)]
+enum Either<L, R> {
+    Left(L),
+    Right(R),
+}
+
 fn main() {
     println!("{}", hex::encode(DeriveExample::<(), ()>::HASH));
     println!("{}", DeriveExample::<Be<u8>, Le<u8>>::SIZE);
@@ -77,4 +96,5 @@ fn main() {
     println!("{}", Option::<Stuff<()>>::SIZE);
     println!("{}", Option::<Stuff<bool>>::SIZE);
     println!("{:?}", None::<Stuff<(bool, ())>>.output::<Vec<u8>>());
+    println!("{}", Option::<Either<bool, Option<Option<()>>>>::SIZE);
 }
