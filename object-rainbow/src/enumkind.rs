@@ -87,6 +87,7 @@ pub trait EnumKind: Copy {
     fn from_tag(tag: Self::Tag) -> Self;
 }
 
+/// `enum`.
 pub trait Enum {
     /// Discriminant uniquely identifying this `enum`'s variants.
     type Kind: EnumKind;
