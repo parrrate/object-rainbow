@@ -7,6 +7,7 @@ use crate::*;
 #[derive(
     Debug,
     ToOutput,
+    InlineOutput,
     Tagged,
     ListPoints,
     Topological,
