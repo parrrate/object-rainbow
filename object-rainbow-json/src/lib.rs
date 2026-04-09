@@ -19,11 +19,11 @@ mod distributed;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct Json<T>(pub T);
 
-struct Writer<'a> {
-    output: &'a mut dyn Output,
+struct Writer<'a, T: ?Sized> {
+    output: &'a mut T,
 }
 
-impl Write for Writer<'_> {
+impl<T: ?Sized + Output> Write for Writer<'_, T> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.output.write(buf);
         Ok(buf.len())
