@@ -151,6 +151,10 @@ impl<K, D> FetchBytes for RawFetch<K, D> {
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
         self.resolve.resolve_data(self.address)
     }
+
+    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
+        self.resolve.try_resolve_local(self.address, &self.resolve)
+    }
 }
 
 impl<K: Key, D: Fetch<T: Topological + Tagged>> Fetch for RawFetch<K, D> {
