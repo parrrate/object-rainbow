@@ -151,7 +151,7 @@ impl<T> AsAny for T {
     }
 }
 
-/// Something that resolve [`Address`]es to [`ByteNode`]s.
+/// Something that can resolve [`Address`]es to [`ByteNode`]s.
 pub trait Resolve: Send + Sync + AsAny {
     /// Resolve the address. For an [`Object`], this is what gets used as [`PointInput`].
     fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode>;
