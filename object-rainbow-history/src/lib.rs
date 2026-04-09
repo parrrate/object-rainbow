@@ -26,7 +26,7 @@ impl<T, D> History<T, D> {
     }
 }
 
-pub trait Diff<Tree> {
+pub trait Diff<Tree>: Send {
     fn forward(
         self,
         tree: Option<Tree>,
