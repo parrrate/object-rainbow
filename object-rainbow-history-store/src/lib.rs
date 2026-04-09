@@ -8,6 +8,12 @@ pub struct HistoryStore<T, S, Extra = ()> {
     _tree: PhantomData<T>,
 }
 
+impl<T, S> HistoryStore<T, S> {
+    pub fn new(key: &str, store: S) -> Self {
+        Self::new_extra(key, store, ())
+    }
+}
+
 impl<T, S, Extra> HistoryStore<T, S, Extra> {
     pub fn new_extra(key: &str, store: S, extra: Extra) -> Self {
         Self {
