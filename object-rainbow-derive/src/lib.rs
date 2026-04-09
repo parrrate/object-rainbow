@@ -189,15 +189,10 @@ pub fn derive_object(input: TokenStream) -> TokenStream {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let parse = gen_parse(&input.data);
     let tags = gen_tags(&input.data);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let output = quote! {
         impl #impl_generics ::object_rainbow::Object for #name #ty_generics #where_clause {
-            fn parse(mut input: ::object_rainbow::Input) -> ::object_rainbow::Result<Self> {
-                #parse
-            }
-
             const TAGS: ::object_rainbow::Tags = #tags;
         }
     };
@@ -319,14 +314,9 @@ pub fn derive_inline(input: TokenStream) -> TokenStream {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let parse_inline = gen_parse_inline(&input.data);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let output = quote! {
-        impl #impl_generics ::object_rainbow::Inline for #name #ty_generics #where_clause {
-            fn parse_inline(input: &mut ::object_rainbow::Input) -> ::object_rainbow::Result<Self> {
-                #parse_inline
-            }
-        }
+        impl #impl_generics ::object_rainbow::Inline for #name #ty_generics #where_clause {}
     };
     TokenStream::from(output)
 }
@@ -405,14 +395,9 @@ pub fn derive_refless_object(input: TokenStream) -> TokenStream {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let parse = gen_parse(&input.data);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let output = quote! {
-        impl #impl_generics ::object_rainbow::ReflessObject for #name #ty_generics #where_clause {
-            fn parse(mut input: ::object_rainbow::ReflessInput) -> ::object_rainbow::Result<Self> {
-                #parse
-            }
-        }
+        impl #impl_generics ::object_rainbow::ReflessObject for #name #ty_generics #where_clause {}
     };
     TokenStream::from(output)
 }
@@ -461,14 +446,9 @@ pub fn derive_refless_inline(input: TokenStream) -> TokenStream {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let parse_inline = gen_parse_inline(&input.data);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let output = quote! {
-        impl #impl_generics ::object_rainbow::ReflessInline for #name #ty_generics #where_clause {
-            fn parse_inline(input: &mut ::object_rainbow::ReflessInput) -> ::object_rainbow::Result<Self> {
-                #parse_inline
-            }
-        }
+        impl #impl_generics ::object_rainbow::ReflessInline for #name #ty_generics #where_clause {}
     };
     TokenStream::from(output)
 }

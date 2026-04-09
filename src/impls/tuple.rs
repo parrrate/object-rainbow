@@ -15,30 +15,14 @@ impl<A: Topological, B: Topological> Topological for (A, B) {
 }
 
 impl<A: Inline, B: Object> Object for (A, B) {
-    fn parse(mut input: Input) -> crate::Result<Self> {
-        Ok((input.parse_inline()?, input.parse()?))
-    }
-
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS]);
 }
 
-impl<A: Inline, B: Inline> Inline for (A, B) {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        Ok((input.parse_inline()?, input.parse_inline()?))
-    }
-}
+impl<A: Inline, B: Inline> Inline for (A, B) {}
 
-impl<A: ReflessInline, B: ReflessObject> ReflessObject for (A, B) {
-    fn parse(mut input: ReflessInput) -> crate::Result<Self> {
-        Ok((input.parse_inline()?, input.parse()?))
-    }
-}
+impl<A: ReflessInline, B: ReflessObject> ReflessObject for (A, B) {}
 
-impl<A: ReflessInline, B: ReflessInline> ReflessInline for (A, B) {
-    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
-        Ok((input.parse_inline()?, input.parse_inline()?))
-    }
-}
+impl<A: ReflessInline, B: ReflessInline> ReflessInline for (A, B) {}
 
 impl<A: Size, B: Size> Size for (A, B) {
     const SIZE: usize = A::SIZE + B::SIZE;
@@ -73,38 +57,14 @@ impl<A: Topological, B: Topological, C: Topological> Topological for (A, B, C) {
 }
 
 impl<A: Inline, B: Inline, C: Object> Object for (A, B, C) {
-    fn parse(mut input: Input) -> crate::Result<Self> {
-        Ok((input.parse_inline()?, input.parse_inline()?, input.parse()?))
-    }
-
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS]);
 }
 
-impl<A: Inline, B: Inline, C: Inline> Inline for (A, B, C) {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
-}
+impl<A: Inline, B: Inline, C: Inline> Inline for (A, B, C) {}
 
-impl<A: ReflessInline, B: ReflessInline, C: ReflessObject> ReflessObject for (A, B, C) {
-    fn parse(mut input: ReflessInput) -> crate::Result<Self> {
-        Ok((input.parse_inline()?, input.parse_inline()?, input.parse()?))
-    }
-}
+impl<A: ReflessInline, B: ReflessInline, C: ReflessObject> ReflessObject for (A, B, C) {}
 
-impl<A: ReflessInline, B: ReflessInline, C: ReflessInline> ReflessInline for (A, B, C) {
-    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
-}
+impl<A: ReflessInline, B: ReflessInline, C: ReflessInline> ReflessInline for (A, B, C) {}
 
 impl<A: Size, B: Size, C: Size> Size for (A, B, C) {
     const SIZE: usize = A::SIZE + B::SIZE + C::SIZE;
@@ -147,53 +107,19 @@ impl<A: Topological, B: Topological, C: Topological, D: Topological> Topological
 }
 
 impl<A: Inline, B: Inline, C: Inline, D: Object> Object for (A, B, C, D) {
-    fn parse(mut input: Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
-
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS]);
 }
 
-impl<A: Inline, B: Inline, C: Inline, D: Inline> Inline for (A, B, C, D) {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
-}
+impl<A: Inline, B: Inline, C: Inline, D: Inline> Inline for (A, B, C, D) {}
 
 impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessObject> ReflessObject
     for (A, B, C, D)
 {
-    fn parse(mut input: ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
 }
 
 impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessInline> ReflessInline
     for (A, B, C, D)
 {
-    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<A: Size, B: Size, C: Size, D: Size> Size for (A, B, C, D) {
@@ -249,57 +175,19 @@ impl<A: Topological, B: Topological, C: Topological, D: Topological, E: Topologi
 }
 
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Object> Object for (A, B, C, D, E) {
-    fn parse(mut input: Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
-
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS, &E::TAGS]);
 }
 
-impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline> Inline for (A, B, C, D, E) {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
-}
+impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline> Inline for (A, B, C, D, E) {}
 
 impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessInline, E: ReflessObject>
     ReflessObject for (A, B, C, D, E)
 {
-    fn parse(mut input: ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
 }
 
 impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessInline, E: ReflessInline>
     ReflessInline for (A, B, C, D, E)
 {
-    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size> Size for (A, B, C, D, E) {
@@ -375,17 +263,6 @@ impl<A: Topological, B: Topological, C: Topological, D: Topological, E: Topologi
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Object> Object
     for (A, B, C, D, E, F)
 {
-    fn parse(mut input: Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
-
     const TAGS: Tags = Tags(
         &[],
         &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS, &E::TAGS, &F::TAGS],
@@ -395,16 +272,6 @@ impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Object> Object
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline> Inline
     for (A, B, C, D, E, F)
 {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<
@@ -416,16 +283,6 @@ impl<
     F: ReflessObject,
 > ReflessObject for (A, B, C, D, E, F)
 {
-    fn parse(mut input: ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
 }
 
 impl<
@@ -437,16 +294,6 @@ impl<
     F: ReflessInline,
 > ReflessInline for (A, B, C, D, E, F)
 {
-    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size> Size for (A, B, C, D, E, F) {
@@ -535,18 +382,6 @@ impl<
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Object> Object
     for (A, B, C, D, E, F, G)
 {
-    fn parse(mut input: Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
-
     const TAGS: Tags = Tags(
         &[],
         &[
@@ -564,17 +399,6 @@ impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Object
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline> Inline
     for (A, B, C, D, E, F, G)
 {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<
@@ -587,17 +411,6 @@ impl<
     G: ReflessObject,
 > ReflessObject for (A, B, C, D, E, F, G)
 {
-    fn parse(mut input: ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
 }
 
 impl<
@@ -610,17 +423,6 @@ impl<
     G: ReflessInline,
 > ReflessInline for (A, B, C, D, E, F, G)
 {
-    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size> Size for (A, B, C, D, E, F, G) {
@@ -724,19 +526,6 @@ impl<
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline, H: Object> Object
     for (A, B, C, D, E, F, G, H)
 {
-    fn parse(mut input: Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
-
     const TAGS: Tags = Tags(
         &[],
         &[
@@ -755,18 +544,6 @@ impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline
 impl<A: Inline, B: Inline, C: Inline, D: Inline, E: Inline, F: Inline, G: Inline, H: Inline> Inline
     for (A, B, C, D, E, F, G, H)
 {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<
@@ -780,18 +557,6 @@ impl<
     H: ReflessObject,
 > ReflessObject for (A, B, C, D, E, F, G, H)
 {
-    fn parse(mut input: ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
 }
 
 impl<
@@ -805,18 +570,6 @@ impl<
     H: ReflessInline,
 > ReflessInline for (A, B, C, D, E, F, G, H)
 {
-    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size> Size
@@ -940,20 +693,6 @@ impl<
     I: Object,
 > Object for (A, B, C, D, E, F, G, H, I)
 {
-    fn parse(mut input: Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
-
     const TAGS: Tags = Tags(
         &[],
         &[
@@ -982,19 +721,6 @@ impl<
     I: Inline,
 > Inline for (A, B, C, D, E, F, G, H, I)
 {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<
@@ -1009,19 +735,6 @@ impl<
     I: ReflessObject,
 > ReflessObject for (A, B, C, D, E, F, G, H, I)
 {
-    fn parse(mut input: ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
 }
 
 impl<
@@ -1036,19 +749,6 @@ impl<
     I: ReflessInline,
 > ReflessInline for (A, B, C, D, E, F, G, H, I)
 {
-    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size, I: Size> Size
@@ -1181,21 +881,6 @@ impl<
     J: Object,
 > Object for (A, B, C, D, E, F, G, H, I, J)
 {
-    fn parse(mut input: Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
-
     const TAGS: Tags = Tags(
         &[],
         &[
@@ -1226,20 +911,6 @@ impl<
     J: Inline,
 > Inline for (A, B, C, D, E, F, G, H, I, J)
 {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<
@@ -1255,20 +926,6 @@ impl<
     J: ReflessObject,
 > ReflessObject for (A, B, C, D, E, F, G, H, I, J)
 {
-    fn parse(mut input: ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
 }
 
 impl<
@@ -1284,20 +941,6 @@ impl<
     J: ReflessInline,
 > ReflessInline for (A, B, C, D, E, F, G, H, I, J)
 {
-    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size, I: Size, J: Size> Size
@@ -1447,22 +1090,6 @@ impl<
     K: Object,
 > Object for (A, B, C, D, E, F, G, H, I, J, K)
 {
-    fn parse(mut input: Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
-
     const TAGS: Tags = Tags(
         &[],
         &[
@@ -1495,21 +1122,6 @@ impl<
     K: Inline,
 > Inline for (A, B, C, D, E, F, G, H, I, J, K)
 {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<
@@ -1526,21 +1138,6 @@ impl<
     K: ReflessObject,
 > ReflessObject for (A, B, C, D, E, F, G, H, I, J, K)
 {
-    fn parse(mut input: ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
 }
 
 impl<
@@ -1557,21 +1154,6 @@ impl<
     K: ReflessInline,
 > ReflessInline for (A, B, C, D, E, F, G, H, I, J, K)
 {
-    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<
@@ -1742,23 +1324,6 @@ impl<
     L: Object,
 > Object for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
-    fn parse(mut input: Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
-
     const TAGS: Tags = Tags(
         &[],
         &[
@@ -1793,22 +1358,6 @@ impl<
     L: Inline,
 > Inline for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
-    fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<
@@ -1826,22 +1375,6 @@ impl<
     L: ReflessObject,
 > ReflessObject for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
-    fn parse(mut input: ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse()?,
-        ))
-    }
 }
 
 impl<
@@ -1859,22 +1392,6 @@ impl<
     L: ReflessInline,
 > ReflessInline for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
-    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
-        Ok((
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-            input.parse_inline()?,
-        ))
-    }
 }
 
 impl<
