@@ -8,7 +8,7 @@ use futures_util::{Stream, TryStream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
     BoundPair, Fetch, InlineOutput, ListHashes, Object, ObjectMarker, Parse, ParseSliceRefless,
-    PointInput, PointVisitor, ReflessObject, Tagged, ToOutput, Topological, Traversible,
+    PointInput, ReflessObject, Tagged, ToOutput, Topological, Traversible,
     length_prefixed::LpBytes,
 };
 use object_rainbow_point::{IntoPoint, Point};
@@ -28,21 +28,6 @@ impl<T, E: Send + Sync> ConditionalParse<T> for (Children<T>, E) {
         Trie<T>: Object<Self::E>,
     {
         input.parse::<Children<T>>()
-    }
-}
-
-trait ConditionalTopology<T> {
-    fn traverse(&self, visitor: &mut impl PointVisitor)
-    where
-        Trie<T>: Traversible;
-}
-
-impl<T> ConditionalTopology<T> for Children<T> {
-    fn traverse(&self, visitor: &mut impl PointVisitor)
-    where
-        Trie<T>: Traversible,
-    {
-        Topological::traverse(self, visitor);
     }
 }
 
@@ -67,7 +52,7 @@ pub struct Trie<T> {
     value: Option<T>,
     #[tags(skip)]
     #[parse(bound = "ConditionalParse<T>", with = "parse")]
-    #[topology(bound = "ConditionalTopology<T>", with = "traverse")]
+    #[topology(mutual)]
     children: Children<T>,
 }
 
