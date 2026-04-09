@@ -165,15 +165,6 @@ impl<T: Clone + Traversible + InlineOutput + Default + Apply<D>, D: Clone + Trav
 )]
 pub struct Compat<T>(pub T);
 
-assert_impl!(
-    impl<T, E> Inline<E> for Compat<T>
-    where
-        T: Inline<E>,
-        E: 'static + Send + Sync + Clone,
-    {
-    }
-);
-
 impl<T: Apply<D>, D: Send> Apply<Vec<D>> for Compat<T> {
     type Output = Vec<T::Output>;
 
