@@ -147,9 +147,9 @@ impl<I: ParseInput> ParseInline<I> for LpString {
     }
 }
 
-impl Topological for LpString {}
 impl Tagged for LpString {}
-impl Object for LpString {}
-impl Inline for LpString {}
+impl<E: 'static> Topological<E> for LpString {}
+impl<E: 'static> Object<E> for LpString {}
+impl<E: 'static> Inline<E> for LpString {}
 impl ReflessObject for LpString {}
 impl ReflessInline for LpString {}
