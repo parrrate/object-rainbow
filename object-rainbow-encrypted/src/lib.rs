@@ -3,7 +3,7 @@ use std::{ops::Deref, sync::Arc};
 use object_rainbow::{
     Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, FullHash, Hash, ListHashes, Node,
     Object, Parse, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular, SingularFetch,
-    Tagged, ToOutput, Topological, Traversible, length_prefixed::Lp,
+    Tagged, ToOutput, Topological, Traversible, length_prefixed::Lp, map_extra::MappedExtra,
 };
 use object_rainbow_point::{ExtractResolve, IntoPoint, Point};
 
@@ -11,6 +11,18 @@ pub trait Key: 'static + Sized + Send + Sync + Clone {
     type Error: Into<anyhow::Error>;
     fn encrypt(&self, data: &[u8]) -> Vec<u8>;
     fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>, Self::Error>;
+}
+
+impl<T: Key, M: 'static + Send + Sync + Clone> Key for MappedExtra<T, M> {
+    type Error = T::Error;
+
+    fn encrypt(&self, data: &[u8]) -> Vec<u8> {
+        self.1.encrypt(data)
+    }
+
+    fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>, Self::Error> {
+        self.1.decrypt(data)
+    }
 }
 
 type Resolution<K> = Arc<Lp<Vec<Point<Encrypted<K, Vec<u8>>>>>>;
