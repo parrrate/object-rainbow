@@ -5,9 +5,10 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, Hash, Object, ObjectHashes, OptionalHash, Point, PointVisitor, Resolve, Singular,
+    Address, Hash, Object, ObjectHashes, OptionalHash, PointVisitor, Resolve, Singular,
     SingularFetch, Topological, Traversible,
 };
+use object_rainbow_point::Point;
 
 pub trait RainbowFuture: Send + Future<Output = object_rainbow::Result<Self::T>> {
     type T;

@@ -1,10 +1,11 @@
 use std::{ops::Deref, sync::Arc};
 
 use object_rainbow::{
-    Address, ByteNode, Error, ExtractResolve, FailFuture, Fetch, FetchBytes, FullHash, Hash,
-    ListHashes, Node, Object, Parse, ParseSliceExtra, Point, PointInput, PointVisitor, Resolve,
-    Singular, SingularFetch, Tagged, ToOutput, Topological, Traversible, length_prefixed::Lp,
+    Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, FullHash, Hash, ListHashes, Node,
+    Object, Parse, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular, SingularFetch,
+    Tagged, ToOutput, Topological, Traversible, length_prefixed::Lp,
 };
+use object_rainbow_point::{ExtractResolve, IntoPoint, Point};
 
 #[derive(Clone)]
 pub struct WithKey<K, Extra> {

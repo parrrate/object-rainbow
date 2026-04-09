@@ -1,6 +1,6 @@
 [package]
 name = "object-rainbow-trie"
-version = "0.0.0-a.5"
+version = "0.0.0-a.6"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -10,6 +10,7 @@ description = "distributed Trie"
 
 [dependencies]
 object-rainbow.workspace = true
+object-rainbow-point.workspace = true
 
 futures-util = { version = "0.3.31", default-features = false }
 genawaiter-try-stream = "0.1.0"

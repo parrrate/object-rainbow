@@ -1,6 +1,6 @@
 [package]
 name = "object-rainbow-encrypted"
-version = "0.0.0-a.7"
+version = "0.0.0-a.8"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -10,6 +10,7 @@ description = "encryption for object-rainbow"
 
 [dependencies]
 object-rainbow.workspace = true
+object-rainbow-point.workspace = true
 
 futures-util = { version = "0.3.31" }
 

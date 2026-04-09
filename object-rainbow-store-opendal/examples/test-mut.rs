@@ -1,4 +1,5 @@
-use object_rainbow::{Fetch, FullHash, Traversible};
+use object_rainbow::{Fetch, FullHash};
+use object_rainbow_point::IntoPoint;
 use object_rainbow_store::RainbowStoreMut;
 use object_rainbow_store_opendal::OpendalStore;
 use opendal::{Operator, services::Memory};
