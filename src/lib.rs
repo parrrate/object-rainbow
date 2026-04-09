@@ -360,13 +360,13 @@ impl<T, Extra: Clone> Clone for RawPoint<T, Extra> {
 impl<T> Point<T> {
     pub fn raw<Extra: 'static + Clone>(self, extra: Extra) -> RawPoint<T, Extra> {
         {
-            if let Some(raw) = self.origin.inner_cast(&extra) {
+            if let Some(raw) = self.fetch.inner_cast(&extra) {
                 return raw;
             }
         }
         RawPointInner {
             hash: self.hash.unwrap(),
-            fetch: self.origin,
+            fetch: self.fetch,
         }
         .cast(extra)
     }
@@ -439,7 +439,7 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for RawPoint<T, Extra> {
 impl<T> Point<T> {
     pub fn extract_resolve<R: Any>(&self) -> Option<(&Address, &R)> {
         let ByAddressInner { address, resolve } =
-            self.origin.as_inner()?.downcast_ref::<ByAddressInner>()?;
+            self.fetch.as_inner()?.downcast_ref::<ByAddressInner>()?;
         let resolve = resolve.as_ref().any_ref().downcast_ref::<R>()?;
         Some((address, resolve))
     }
@@ -449,7 +449,7 @@ impl<T> Point<T> {
 #[must_use]
 pub struct Point<T> {
     hash: OptionalHash,
-    origin: Arc<dyn Fetch<T = T>>,
+    fetch: Arc<dyn Fetch<T = T>>,
 }
 
 impl<T> PartialOrd for Point<T> {
@@ -476,7 +476,7 @@ impl<T> Clone for Point<T> {
     fn clone(&self) -> Self {
         Self {
             hash: self.hash,
-            origin: self.origin.clone(),
+            fetch: self.fetch.clone(),
         }
     }
 }
@@ -485,7 +485,7 @@ impl<T> Point<T> {
     pub fn from_fetch(hash: Hash, origin: Arc<dyn Fetch<T = T>>) -> Self {
         Self {
             hash: hash.into(),
-            origin,
+            fetch: origin,
         }
     }
 
@@ -495,7 +495,7 @@ impl<T> Point<T> {
     ) -> Point<U> {
         Point {
             hash: self.hash,
-            origin: f(self.origin),
+            fetch: f(self.fetch),
         }
     }
 }
@@ -1043,11 +1043,11 @@ impl PointVisitor for TopoVec {
 
 impl<T> FetchBytes for Point<T> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        self.origin.fetch_bytes()
+        self.fetch.fetch_bytes()
     }
 
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        self.origin.fetch_data()
+        self.fetch.fetch_data()
     }
 }
 
@@ -1147,7 +1147,7 @@ impl<'a, T: FullHash> PointMut<'a, T> {
 
 impl<T> Point<T> {
     pub fn get(&self) -> Option<&T> {
-        self.origin.get()
+        self.fetch.get()
     }
 }
 
@@ -1157,21 +1157,21 @@ impl<T: Traversible + Clone> Point<T> {
     }
 
     fn yolo_mut(&mut self) -> bool {
-        self.origin.get().is_some()
-            && Arc::get_mut(&mut self.origin).is_some_and(|origin| origin.get_mut().is_some())
+        self.fetch.get().is_some()
+            && Arc::get_mut(&mut self.fetch).is_some_and(|origin| origin.get_mut().is_some())
     }
 
     async fn prepare_yolo_origin(&mut self) -> crate::Result<()> {
         if !self.yolo_mut() {
-            let object = self.origin.fetch().await?;
-            self.origin = Arc::new(LocalOrigin { object });
+            let object = self.fetch.fetch().await?;
+            self.fetch = Arc::new(LocalOrigin { object });
         }
         Ok(())
     }
 
     pub async fn fetch_mut(&'_ mut self) -> crate::Result<PointMut<'_, T>> {
         self.prepare_yolo_origin().await?;
-        let origin = Arc::get_mut(&mut self.origin).unwrap();
+        let origin = Arc::get_mut(&mut self.fetch).unwrap();
         assert!(origin.get_mut().is_some());
         self.hash.clear();
         Ok(PointMut {
@@ -1182,7 +1182,7 @@ impl<T: Traversible + Clone> Point<T> {
 
     pub async fn fetch_ref(&mut self) -> crate::Result<&T> {
         self.prepare_yolo_origin().await?;
-        Ok(self.origin.get().unwrap())
+        Ok(self.fetch.get().unwrap())
     }
 }
 
@@ -1286,24 +1286,24 @@ impl<T: FullHash> Fetch for Point<T> {
     type T = T;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
-        self.origin.fetch_full()
+        self.fetch.fetch_full()
     }
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        self.origin.fetch()
+        self.fetch.fetch()
     }
 
     fn get(&self) -> Option<&Self::T> {
-        self.origin.get()
+        self.fetch.get()
     }
 
     fn get_mut(&mut self) -> Option<&mut Self::T> {
         self.hash.clear();
-        Arc::get_mut(&mut self.origin)?.get_mut()
+        Arc::get_mut(&mut self.fetch)?.get_mut()
     }
 
     fn get_mut_finalize(&mut self) {
-        let origin = Arc::get_mut(&mut self.origin).unwrap();
+        let origin = Arc::get_mut(&mut self.fetch).unwrap();
         origin.get_mut_finalize();
         self.hash = origin.get().unwrap().full_hash().into();
     }
