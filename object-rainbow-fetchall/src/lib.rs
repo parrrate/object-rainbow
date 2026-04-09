@@ -68,7 +68,7 @@ impl<'r> Context<'r> {
                 .await
                 .ok();
             let Ok(r) = wait.await else {
-                return Err(object_rainbow::error_fetch!("dependency cancelled"));
+                return Err(object_rainbow::Error::Interrupted);
             };
             r?;
         }
@@ -86,7 +86,7 @@ impl<'r> Context<'r> {
                 .await
                 .ok();
             let Ok(r) = wait.await else {
-                return Err(object_rainbow::error_fetch!("save cancelled"));
+                return Err(object_rainbow::Error::Interrupted);
             };
             r?;
         }
