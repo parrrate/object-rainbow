@@ -1,4 +1,4 @@
-use crate::ToOutput;
+use crate::{ToOutput, Topological};
 
 impl ToOutput for u8 {
     fn to_output(&self, output: &mut dyn crate::Output) {
@@ -12,3 +12,5 @@ impl ToOutput for u8 {
         output.write(slice);
     }
 }
+
+impl Topological for u8 {}
