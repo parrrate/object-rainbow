@@ -7,6 +7,7 @@ mod bytes;
 mod option;
 mod phantom;
 mod refs;
+mod slice;
 mod str;
 mod tuple;
 mod tuple1;
