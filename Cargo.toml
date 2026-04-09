@@ -16,6 +16,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
+description = "distributed object model"
 
 [dependencies]
 object-rainbow-derive = { version = "0.0.0-a.0", path = "object-rainbow-derive" }
