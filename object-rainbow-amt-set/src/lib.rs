@@ -1,51 +1,31 @@
-#![recursion_limit = "512"]
+#![recursion_limit = "256"]
 
-use std::ops::{Add, Sub};
-
-use generic_array::{ArrayLength, GenericArray, sequence::Split};
 use object_rainbow::{
     Enum, Fetch, Hash, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged,
     ToOutput, Topological, Traversible,
 };
 use object_rainbow_array_map::{ArrayMap, ArraySet};
 use object_rainbow_point::{IntoPoint, Point};
-use typenum::{
-    Add1, B1, U1, U2, U3, U4, U5, U6, U7, U8, U9, U10, U11, U12, U13, U14, U15, U16, U17, U18, U19,
-    U20, U21, U22, U23, U24, U25, U26, U27, U28, U29, U30, U31, U32,
-};
 
-trait Tree {
-    type N: Send + Sync + ArrayLength;
-    fn insert(
-        &mut self,
-        key: GenericArray<u8, Self::N>,
-    ) -> impl Future<Output = object_rainbow::Result<bool>>;
-    fn from_pair(a: GenericArray<u8, Self::N>, b: GenericArray<u8, Self::N>) -> Self;
-    fn contains(
-        &self,
-        key: GenericArray<u8, Self::N>,
-    ) -> impl Future<Output = object_rainbow::Result<bool>>;
+trait Tree<K> {
+    fn insert(&mut self, key: K) -> impl Future<Output = object_rainbow::Result<bool>>;
+    fn from_pair(a: K, b: K) -> Self;
+    fn contains(&self, key: K) -> impl Future<Output = object_rainbow::Result<bool>>;
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 struct DeepestLeaf(ArraySet);
 
-impl Tree for DeepestLeaf {
-    type N = U1;
-
-    async fn insert(&mut self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<bool> {
-        let [key] = <[u8; 1]>::from(key);
+impl Tree<u8> for DeepestLeaf {
+    async fn insert(&mut self, key: u8) -> object_rainbow::Result<bool> {
         Ok(self.0.insert(key))
     }
 
-    fn from_pair(a: GenericArray<u8, Self::N>, b: GenericArray<u8, Self::N>) -> Self {
-        let [a] = <[u8; 1]>::from(a);
-        let [b] = <[u8; 1]>::from(b);
+    fn from_pair(a: u8, b: u8) -> Self {
         Self([a, b].into())
     }
 
-    async fn contains(&self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<bool> {
-        let [key] = <[u8; 1]>::from(key);
+    async fn contains(&self, key: u8) -> object_rainbow::Result<bool> {
         Ok(self.0.contains(key))
     }
 }
@@ -53,15 +33,13 @@ impl Tree for DeepestLeaf {
 #[derive(
     Enum, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Clone,
 )]
-enum SubTree<T, N: ArrayLength> {
-    Leaf(GenericArray<u8, N>),
+enum SubTree<T, K> {
+    Leaf(K),
     SubTree(Point<T>),
 }
 
-impl<T: Tree + Clone + Traversible> Tree for SubTree<T, T::N> {
-    type N = T::N;
-
-    async fn insert(&mut self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<bool> {
+impl<T: Tree<K> + Clone + Traversible, K: PartialEq + Clone> Tree<K> for SubTree<T, K> {
+    async fn insert(&mut self, key: K) -> object_rainbow::Result<bool> {
         match self {
             SubTree::Leaf(existing) => Ok(if *existing != key {
                 *self = Self::from_pair(existing.clone(), key);
@@ -73,11 +51,11 @@ impl<T: Tree + Clone + Traversible> Tree for SubTree<T, T::N> {
         }
     }
 
-    fn from_pair(a: GenericArray<u8, Self::N>, b: GenericArray<u8, Self::N>) -> Self {
+    fn from_pair(a: K, b: K) -> Self {
         Self::SubTree(T::from_pair(a, b).point())
     }
 
-    async fn contains(&self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<bool> {
+    async fn contains(&self, key: K) -> object_rainbow::Result<bool> {
         match self {
             SubTree::Leaf(existing) => Ok(*existing == key),
             SubTree::SubTree(sub) => sub.fetch().await?.contains(key).await,
@@ -86,25 +64,16 @@ impl<T: Tree + Clone + Traversible> Tree for SubTree<T, T::N> {
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
-struct SetNode<T, N: ArrayLength>(ArrayMap<SubTree<T, N>>);
+struct SetNode<T, K>(ArrayMap<SubTree<T, K>>);
 
-impl<T, N: ArrayLength> Default for SetNode<T, N> {
+impl<T, K> Default for SetNode<T, K> {
     fn default() -> Self {
         Self(Default::default())
     }
 }
 
-impl<
-    T: Tree<N: Add<B1, Output: Send + Sync + ArrayLength + Sub<U1, Output = T::N>>>
-        + Clone
-        + Traversible,
-> Tree for SetNode<T, T::N>
-{
-    type N = Add1<T::N>;
-
-    async fn insert(&mut self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<bool> {
-        let (key, rest) = Split::<u8, U1>::split(key);
-        let [key] = <[u8; 1]>::from(key);
+impl<T: Tree<K> + Clone + Traversible, K: PartialEq + Clone> Tree<(u8, K)> for SetNode<T, K> {
+    async fn insert(&mut self, (key, rest): (u8, K)) -> object_rainbow::Result<bool> {
         if let Some(sub) = self.0.get_mut(key) {
             sub.insert(rest).await
         } else {
@@ -113,11 +82,7 @@ impl<
         }
     }
 
-    fn from_pair(a: GenericArray<u8, Self::N>, b: GenericArray<u8, Self::N>) -> Self {
-        let (a, rest_a) = Split::<u8, U1>::split(a);
-        let (b, rest_b) = Split::<u8, U1>::split(b);
-        let [a] = <[u8; 1]>::from(a);
-        let [b] = <[u8; 1]>::from(b);
+    fn from_pair((a, rest_a): (u8, K), (b, rest_b): (u8, K)) -> Self {
         if a == b {
             Self([(a, SubTree::from_pair(rest_a, rest_b))].into())
         } else {
@@ -125,9 +90,7 @@ impl<
         }
     }
 
-    async fn contains(&self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<bool> {
-        let (key, rest) = Split::<u8, U1>::split(key);
-        let [key] = <[u8; 1]>::from(key);
+    async fn contains(&self, (key, rest): (u8, K)) -> object_rainbow::Result<bool> {
         if let Some(sub) = self.0.get(key) {
             sub.contains(rest).await
         } else {
@@ -139,67 +102,64 @@ impl<
 mod private {
     use super::*;
     type N1 = DeepestLeaf;
+    type K1 = u8;
 
     macro_rules! next_node {
-        ($prev:ident, $ps:ident, $next:ident, $size:ident) => {
+        ($prev:ident, $next:ident, $size:ident, $pk:ident, $k:ident) => {
             #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone, Default)]
-            pub struct $next(SetNode<$prev, $ps>);
+            pub struct $next(SetNode<$prev, $pk>);
+            pub type $k = (u8, $pk);
 
-            impl Tree for $next {
-                type N = $size;
-
+            impl Tree<$k> for $next {
                 fn insert(
                     &mut self,
-                    key: GenericArray<u8, Self::N>,
+                    key: $k,
                 ) -> impl Future<Output = object_rainbow::Result<bool>> {
                     self.0.insert(key)
                 }
 
-                fn from_pair(a: GenericArray<u8, Self::N>, b: GenericArray<u8, Self::N>) -> Self {
+                fn from_pair(a: $k, b: $k) -> Self {
                     Self(Tree::from_pair(a, b))
                 }
 
-                fn contains(
-                    &self,
-                    key: GenericArray<u8, Self::N>,
-                ) -> impl Future<Output = object_rainbow::Result<bool>> {
+                fn contains(&self, key: $k) -> impl Future<Output = object_rainbow::Result<bool>> {
                     self.0.contains(key)
                 }
             }
         };
     }
 
-    next_node!(N1, U1, N2, U2);
-    next_node!(N2, U2, N3, U3);
-    next_node!(N3, U3, N4, U4);
-    next_node!(N4, U4, N5, U5);
-    next_node!(N5, U5, N6, U6);
-    next_node!(N6, U6, N7, U7);
-    next_node!(N7, U7, N8, U8);
-    next_node!(N8, U8, N9, U9);
-    next_node!(N9, U9, N10, U10);
-    next_node!(N10, U10, N11, U11);
-    next_node!(N11, U11, N12, U12);
-    next_node!(N12, U12, N13, U13);
-    next_node!(N13, U13, N14, U14);
-    next_node!(N14, U14, N15, U15);
-    next_node!(N15, U15, N16, U16);
-    next_node!(N16, U16, N17, U17);
-    next_node!(N17, U17, N18, U18);
-    next_node!(N18, U18, N19, U19);
-    next_node!(N19, U19, N20, U20);
-    next_node!(N20, U20, N21, U21);
-    next_node!(N21, U21, N22, U22);
-    next_node!(N22, U22, N23, U23);
-    next_node!(N23, U23, N24, U24);
-    next_node!(N24, U24, N25, U25);
-    next_node!(N25, U25, N26, U26);
-    next_node!(N26, U26, N27, U27);
-    next_node!(N27, U27, N28, U28);
-    next_node!(N28, U28, N29, U29);
-    next_node!(N29, U29, N30, U30);
-    next_node!(N30, U30, N31, U31);
-    next_node!(N31, U31, N32, U32);
+    next_node!(N1, N2, U2, K1, K2);
+    next_node!(N2, N3, U3, K2, K3);
+    next_node!(N3, N4, U4, K3, K4);
+    next_node!(N4, N5, U5, K4, K5);
+    next_node!(N5, N6, U6, K5, K6);
+    next_node!(N6, N7, U7, K6, K7);
+    next_node!(N7, N8, U8, K7, K8);
+    next_node!(N8, N9, U9, K8, K9);
+    next_node!(N9, N10, U10, K9, K10);
+    next_node!(N10, N11, U11, K10, K11);
+    next_node!(N11, N12, U12, K11, K12);
+    next_node!(N12, N13, U13, K12, K13);
+    next_node!(N13, N14, U14, K13, K14);
+    next_node!(N14, N15, U15, K14, K15);
+    next_node!(N15, N16, U16, K15, K16);
+    next_node!(N16, N17, U17, K16, K17);
+    next_node!(N17, N18, U18, K17, K18);
+    next_node!(N18, N19, U19, K18, K19);
+    next_node!(N19, N20, U20, K19, K20);
+    next_node!(N20, N21, U21, K20, K21);
+    next_node!(N21, N22, U22, K21, K22);
+    next_node!(N22, N23, U23, K22, K23);
+    next_node!(N23, N24, U24, K23, K24);
+    next_node!(N24, N25, U25, K24, K25);
+    next_node!(N25, N26, U26, K25, K26);
+    next_node!(N26, N27, U27, K26, K27);
+    next_node!(N27, N28, U28, K27, K28);
+    next_node!(N28, N29, U29, K28, K29);
+    next_node!(N29, N30, U30, K29, K30);
+    next_node!(N30, N31, U31, K30, K31);
+    next_node!(N31, N32, U32, K31, K32);
 }
 
 #[derive(
@@ -217,25 +177,55 @@ mod private {
 )]
 pub struct AmtSet(Point<private::N32>);
 
+fn hash_key(hash: Hash) -> private::K32 {
+    let [
+        x0,
+        x1,
+        x2,
+        x3,
+        x4,
+        x5,
+        x6,
+        x7,
+        x8,
+        x9,
+        x10,
+        x11,
+        x12,
+        x13,
+        x14,
+        x15,
+        x16,
+        x17,
+        x18,
+        x19,
+        x20,
+        x21,
+        x22,
+        x23,
+        x24,
+        x25,
+        x26,
+        x27,
+        x28,
+        x29,
+        x30,
+        x31,
+    ] = hash.into_bytes();
+    (x0,(x1,(x2,(x3,(x4,(x5,(x6,(x7,(x8,(x9,(x10,(x11,(x12,(x13,(x14,(x15,(x16,(x17,(x18,(x19,(x20,(x21,(x22,(x23,(x24,(x25,(x26,(x27,(x28,(x29,(x30,(x31))))))))))))))))))))))))))))))))
+}
+
 impl AmtSet {
     pub fn new() -> Self {
         Self::default()
     }
 
     pub async fn insert(&mut self, hash: Hash) -> object_rainbow::Result<bool> {
-        self.0
-            .fetch_mut()
-            .await?
-            .insert(hash.into_bytes().into())
-            .await
+        self.0.fetch_mut().await?.insert(hash_key(hash)).await
     }
 
     pub async fn contains(&self, hash: Hash) -> object_rainbow::Result<bool> {
-        self.0
-            .fetch()
-            .await?
-            .contains(hash.into_bytes().into())
-            .await
+        self.0.fetch().await?.contains(hash_key(hash)).await
     }
 }
 

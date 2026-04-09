@@ -13,9 +13,6 @@ object-rainbow.workspace = true
 object-rainbow-array-map.workspace = true
 object-rainbow-point.workspace = true
 
-generic-array = { version = "1.2.0" }
-typenum = { version = "1.18.0", features = ["const-generics"] }
-
 [dev-dependencies]
 macro_rules_attribute = "0.2.2"
 smol = "2.0.2"
