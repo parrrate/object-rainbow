@@ -1351,7 +1351,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-unique-diffs"
-version = "0.0.0-a.4"
+version = "0.0.0-a.5"
 dependencies = [
  "object-rainbow",
  "object-rainbow-amt-set",
