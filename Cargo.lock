@@ -1268,6 +1268,7 @@ dependencies = [
  "futures-util",
  "hex",
  "object-rainbow",
+ "object-rainbow-fetchall",
  "object-rainbow-point",
  "sha2",
  "smol",
