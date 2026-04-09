@@ -289,6 +289,12 @@ mod private {
 )]
 pub struct AmtMap<V>(Point<private::N32<V>>);
 
+impl<V: Traversible + InlineOutput + Clone> Default for AmtMap<V> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
 #[derive(
     ToOutput,
     InlineOutput,
