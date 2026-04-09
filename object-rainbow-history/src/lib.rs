@@ -1,9 +1,10 @@
 use futures_util::TryStreamExt;
 use object_rainbow::{
-    InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
+    Fetch, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
     Topological, Traversible,
 };
 use object_rainbow_chain_tree::ChainTree;
+use object_rainbow_point::Point;
 
 #[derive(
     ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Size, MaybeHasNiche,
@@ -79,5 +80,11 @@ impl<D: Diff<T>, T: Send> Diff<T> for Vec<D> {
             }
             tree.ok_or_else(|| object_rainbow::error_fetch!("empty diff"))
         }
+    }
+}
+
+impl<D: Diff<T> + Traversible, T: Send> Diff<T> for Point<D> {
+    fn forward(self, tree: Option<T>) -> impl Send + Future<Output = object_rainbow::Result<T>> {
+        async move { self.fetch().await?.forward(tree).await }
     }
 }
