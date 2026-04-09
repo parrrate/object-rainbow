@@ -97,18 +97,17 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
             Ok(())
         }
     }
+    fn resolve(&self) -> Arc<dyn Resolve> {
+        Arc::new(StoreResolve {
+            store: self.clone(),
+        })
+    }
     fn point_extra<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
         &self,
         hash: Hash,
         extra: Extra,
     ) -> Point<T, Extra> {
-        Point::from_address_extra(
-            Address::from_hash(hash),
-            Arc::new(StoreResolve {
-                store: self.clone(),
-            }),
-            extra,
-        )
+        Point::from_address_extra(Address::from_hash(hash), self.resolve(), extra)
     }
     fn point<T: Object>(&self, hash: Hash) -> Point<T> {
         self.point_extra(hash, ())
