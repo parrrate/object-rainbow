@@ -17,7 +17,7 @@ pub use anyhow::anyhow;
 use futures_util::TryFutureExt;
 use generic_array::{ArrayLength, GenericArray};
 pub use object_rainbow_derive::{
-    Enum, InlineOutput, ListPoints, MaybeHasNiche, Parse, ParseAsInline, ParseInline, Size, Tagged,
+    Enum, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseAsInline, ParseInline, Size, Tagged,
     ToOutput, Topological,
 };
 use sha2::{Digest, Sha256};
@@ -294,7 +294,7 @@ impl<T, Extra: Send + Sync> Singular for RawPoint<T, Extra> {
     }
 }
 
-#[derive(ToOutput, InlineOutput, ListPoints, Topological, Parse, ParseInline)]
+#[derive(ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline)]
 pub struct ObjectMarker<T: ?Sized> {
     object: PhantomData<fn() -> T>,
 }
@@ -341,7 +341,7 @@ impl<I: PointInput> ParseInline<I> for Extras<I::Extra> {
 }
 
 impl<Extra> Tagged for Extras<Extra> {}
-impl<Extra> ListPoints for Extras<Extra> {}
+impl<Extra> ListHashes for Extras<Extra> {}
 impl<Extra> Topological for Extras<Extra> {}
 
 #[derive(ToOutput, InlineOutput, Tagged, Parse, ParseInline)]
@@ -351,8 +351,8 @@ pub struct RawPoint<T = Infallible, Extra = ()> {
     object: ObjectMarker<T>,
 }
 
-impl ListPoints for RawPointInner {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
+impl ListHashes for RawPointInner {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
         f(self.hash)
     }
 
@@ -361,9 +361,9 @@ impl ListPoints for RawPointInner {
     }
 }
 
-impl<T, Extra> ListPoints for RawPoint<T, Extra> {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.inner.list_points(f);
+impl<T, Extra> ListHashes for RawPoint<T, Extra> {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.inner.list_hashes(f);
     }
 
     fn topology_hash(&self) -> Hash {
@@ -943,25 +943,25 @@ pub trait InlineOutput: ToOutput {
     }
 }
 
-pub trait ListPoints {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
+pub trait ListHashes {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
         let _ = f;
     }
 
     fn topology_hash(&self) -> Hash {
         let mut hasher = Sha256::new();
-        self.list_points(&mut |hash| hasher.update(hash));
+        self.list_hashes(&mut |hash| hasher.update(hash));
         Hash::from_sha256(hasher.finalize().into())
     }
 
     fn point_count(&self) -> usize {
         let mut count = 0;
-        self.list_points(&mut |_| count += 1);
+        self.list_hashes(&mut |_| count += 1);
         count
     }
 }
 
-pub trait Topological: ListPoints {
+pub trait Topological: ListHashes {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         let _ = visitor;
     }
@@ -1028,7 +1028,7 @@ pub struct ObjectHashes {
     pub data: Hash,
 }
 
-pub trait FullHash: ToOutput + ListPoints + Tagged {
+pub trait FullHash: ToOutput + ListHashes + Tagged {
     fn hashes(&self) -> ObjectHashes {
         ObjectHashes {
             tags: Self::HASH,
@@ -1042,7 +1042,7 @@ pub trait FullHash: ToOutput + ListPoints + Tagged {
     }
 }
 
-impl<T: ?Sized + ToOutput + ListPoints + Tagged> FullHash for T {}
+impl<T: ?Sized + ToOutput + ListHashes + Tagged> FullHash for T {}
 
 pub trait Traversible: 'static + Sized + Send + Sync + FullHash + Topological {
     fn to_resolve(&self) -> Arc<dyn Resolve> {
@@ -1097,8 +1097,8 @@ impl<T: Object<Extra> + InlineOutput + for<'a> ParseInline<Input<'a, Extra>>, Ex
 {
 }
 
-impl<T> ListPoints for Point<T> {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
+impl<T> ListHashes for Point<T> {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
         f(self.hash());
     }
 
@@ -1544,11 +1544,11 @@ trait RainbowIterator: Sized + IntoIterator {
         self.into_iter().for_each(|item| item.to_output(output));
     }
 
-    fn iter_list_points(self, f: &mut impl FnMut(Hash))
+    fn iter_list_hashes(self, f: &mut impl FnMut(Hash))
     where
-        Self::Item: ListPoints,
+        Self::Item: ListHashes,
     {
-        self.into_iter().for_each(|item| item.list_points(f));
+        self.into_iter().for_each(|item| item.list_hashes(f));
     }
 
     fn iter_accept_points(self, visitor: &mut impl PointVisitor)

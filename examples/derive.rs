@@ -6,7 +6,7 @@ use object_rainbow::{
 };
 
 #[derive(
-    ToOutput, InlineOutput, ListPoints, Topological, Tagged, Size, Parse, ParseInline, MaybeHasNiche,
+    ToOutput, InlineOutput, ListHashes, Topological, Tagged, Size, Parse, ParseInline, MaybeHasNiche,
 )]
 #[tags("example")]
 pub struct DeriveExample<A, B> {
@@ -19,7 +19,7 @@ pub struct DeriveExample<A, B> {
     Enum,
     ToOutput,
     InlineOutput,
-    ListPoints,
+    ListHashes,
     Topological,
     Tagged,
     Size,
@@ -38,7 +38,7 @@ enum Test<U, V, Y> {
     Enum,
     ToOutput,
     InlineOutput,
-    ListPoints,
+    ListHashes,
     Topological,
     Tagged,
     Size,
@@ -59,7 +59,7 @@ enum Stuff<T> {
     Enum,
     ToOutput,
     InlineOutput,
-    ListPoints,
+    ListHashes,
     Topological,
     Tagged,
     Size,
@@ -77,7 +77,7 @@ enum Either<L, R> {
     Enum,
     ToOutput,
     InlineOutput,
-    ListPoints,
+    ListHashes,
     Topological,
     Tagged,
     Size,

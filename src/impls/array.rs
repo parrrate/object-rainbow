@@ -12,9 +12,9 @@ impl<T: InlineOutput, const N: usize> ToOutput for [T; N] {
 
 impl<T: InlineOutput, const N: usize> InlineOutput for [T; N] {}
 
-impl<T: ListPoints, const N: usize> ListPoints for [T; N] {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        self.iter_list_points(f);
+impl<T: ListHashes, const N: usize> ListHashes for [T; N] {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.iter_list_hashes(f);
     }
 }
 

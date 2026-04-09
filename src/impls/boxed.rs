@@ -20,9 +20,9 @@ impl<T: ParseInline<I>, I: ParseInput> ParseInline<I> for Box<T> {
     }
 }
 
-impl<T: ?Sized + ListPoints> ListPoints for Box<T> {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        (**self).list_points(f);
+impl<T: ?Sized + ListHashes> ListHashes for Box<T> {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        (**self).list_hashes(f);
     }
 
     fn topology_hash(&self) -> Hash {

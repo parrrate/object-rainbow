@@ -8,9 +8,9 @@ impl<T: ToOutput> ToOutput for &T {
 
 impl<T: InlineOutput> InlineOutput for &T {}
 
-impl<T: ListPoints> ListPoints for &T {
-    fn list_points(&self, f: &mut impl FnMut(Hash)) {
-        (**self).list_points(f);
+impl<T: ListHashes> ListHashes for &T {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        (**self).list_hashes(f);
     }
 
     fn topology_hash(&self) -> Hash {

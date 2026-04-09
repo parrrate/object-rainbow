@@ -2,7 +2,7 @@ use std::{collections::BTreeMap, io::Write};
 
 use futures_util::future::try_join_all;
 use object_rainbow::{
-    Enum, Fetch, InlineOutput, ListPoints, MaybeHasNiche, NicheForUnsized, NoNiche, Output, Parse,
+    Enum, Fetch, InlineOutput, ListHashes, MaybeHasNiche, NicheForUnsized, NoNiche, Output, Parse,
     ParseInline, ParseInput, Point, Size, SomeNiche, Tagged, ToOutput, Topological, Traversible,
     ZeroNiche, length_prefixed::LpString, numeric::Le,
 };
@@ -41,7 +41,7 @@ impl<T: DeserializeOwned, I: ParseInput> Parse<I> for Json<T> {
     }
 }
 
-impl<T> ListPoints for Json<T> {}
+impl<T> ListHashes for Json<T> {}
 impl<T> Topological for Json<T> {}
 impl<T> Tagged for Json<T> {}
 
@@ -59,7 +59,7 @@ impl MaybeHasNiche for Json<()> {
     Enum,
     ToOutput,
     InlineOutput,
-    ListPoints,
+    ListHashes,
     Topological,
     Parse,
     ParseInline,

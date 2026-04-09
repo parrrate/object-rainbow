@@ -295,9 +295,9 @@ fn per_n(n: usize) -> String {
             members: vec![],
         },
         Impl {
-            header: "ListPoints".bound().last("ListPoints").header(n),
+            header: "ListHashes".bound().last("ListHashes").header(n),
             members: vec![Box::new(
-                "list_points".method("f", "&mut impl FnMut(Hash)").out(n),
+                "list_hashes".method("f", "&mut impl FnMut(Hash)").out(n),
             )],
         },
         Impl {

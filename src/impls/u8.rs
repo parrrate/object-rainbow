@@ -43,5 +43,5 @@ impl MaybeHasNiche for u8 {
 }
 
 impl Tagged for u8 {}
-impl ListPoints for u8 {}
+impl ListHashes for u8 {}
 impl Topological for u8 {}

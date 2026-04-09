@@ -13,5 +13,5 @@ impl<I: ParseInput> Parse<I> for String {
 }
 
 impl Tagged for String {}
-impl ListPoints for String {}
+impl ListHashes for String {}
 impl Topological for String {}
