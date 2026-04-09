@@ -687,6 +687,7 @@ impl<T: Object> Fetch for Point<T> {
     }
 
     fn get_mut(&mut self) -> Option<&mut Self::T> {
+        self.hash.clear();
         Arc::get_mut(&mut self.origin)?.get_mut()
     }
 
