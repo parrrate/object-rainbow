@@ -562,8 +562,10 @@ mod test {
     async fn test() -> object_rainbow::Result<()> {
         let mut tree = AppendTree::<Le<u64>>::new();
         for i in 0..100_000u64 {
-            assert_eq!(tree.reparse()?, tree);
             tree.push(Le(i))?;
+            let new = tree.reparse()?;
+            assert_eq!(new, tree);
+            tree = new;
             assert_eq!(tree.get(i).await?.unwrap().0, i);
         }
         Ok(())
