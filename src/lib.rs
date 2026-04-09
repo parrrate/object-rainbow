@@ -380,7 +380,7 @@ impl<T, Extra: 'static + Clone> RawPoint<T, Extra> {
 
 impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> RawPoint<T, Extra> {
     pub fn point(self) -> Point<T> {
-        Point::from_origin(self.inner.hash, Arc::new(self))
+        Point::from_fetch(self.inner.hash, Arc::new(self))
     }
 }
 
@@ -482,7 +482,7 @@ impl<T> Clone for Point<T> {
 }
 
 impl<T> Point<T> {
-    pub fn from_origin(hash: Hash, origin: Arc<dyn Fetch<T = T>>) -> Self {
+    pub fn from_fetch(hash: Hash, origin: Arc<dyn Fetch<T = T>>) -> Self {
         Self {
             hash: hash.into(),
             origin,
@@ -520,7 +520,7 @@ impl<T> Point<T> {
     where
         T: Object<Extra>,
     {
-        Self::from_origin(
+        Self::from_fetch(
             address.hash,
             Arc::new(ByAddress::from_inner(
                 ByAddressInner { address, resolve },
@@ -1153,7 +1153,7 @@ impl<T> Point<T> {
 
 impl<T: Traversible + Clone> Point<T> {
     pub fn from_object(object: T) -> Self {
-        Self::from_origin(object.full_hash(), Arc::new(LocalOrigin { object }))
+        Self::from_fetch(object.full_hash(), Arc::new(LocalOrigin { object }))
     }
 
     fn yolo_mut(&mut self) -> bool {

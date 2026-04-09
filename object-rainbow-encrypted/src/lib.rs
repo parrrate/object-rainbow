@@ -131,7 +131,7 @@ impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, '_, K, 
     fn visit<T: Traversible>(&mut self, decrypted: &Point<T>) {
         let decrypted = decrypted.clone();
         let encrypted = self.resolution.next().expect("length mismatch").clone();
-        let point = Point::from_origin(
+        let point = Point::from_fetch(
             encrypted.hash(),
             Arc::new(Visited {
                 decrypted,
@@ -344,7 +344,7 @@ impl<K: Key> PointVisitor for ExtractResolution<'_, K> {
         let key = self.key.clone();
         self.extracted.push(Box::pin(async move {
             let encrypted = encrypt_point(key.clone(), decrypted).await?;
-            let encrypted = Point::from_origin(
+            let encrypted = Point::from_fetch(
                 encrypted.hash(),
                 Arc::new(Untyped {
                     key: WithKey { key, extra: () },
@@ -366,7 +366,7 @@ pub async fn encrypt_point<K: Key, T: Traversible>(
             .get(address.index)
             .ok_or(Error::AddressOutOfBounds)?
             .clone();
-        let point = Point::from_origin(
+        let point = Point::from_fetch(
             encrypted.hash(),
             Arc::new(Visited {
                 decrypted,
