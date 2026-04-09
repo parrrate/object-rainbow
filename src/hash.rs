@@ -132,7 +132,7 @@ impl OptionalHash {
         *self == Self::NONE
     }
 
-    pub(crate) fn unwrap(&self) -> Hash {
+    pub fn unwrap(&self) -> Hash {
         self.get().unwrap()
     }
 
