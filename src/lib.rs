@@ -575,6 +575,13 @@ pub trait Traversible: 'static + Sized + Send + Sync + FullHash + Topological {
     fn to_resolve(&self) -> Arc<dyn Resolve> {
         let topology = self.topology();
         let topology_hash = topology.data_hash();
+        for singular in &topology {
+            if let Some(resolve) = singular.as_resolve()
+                && resolve.topology_hash() == Some(topology_hash)
+            {
+                return resolve.clone();
+            }
+        }
         Arc::new(ByTopology {
             topology,
             topology_hash,
