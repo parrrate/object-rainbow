@@ -12,9 +12,9 @@ use std::{
 use futures_util::{TryFutureExt, future::ready};
 use object_rainbow::{
     Address, ByteNode, DefaultHash, Equivalent, ExtraFor, FailFuture, Fetch, FetchBytes, FullHash,
-    Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, ObjectMarker, OptionalHash, Output, Parse,
+    Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, OptionalHash, Output, Parse,
     ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular, Size, Tagged, Tags,
-    ToOutput, Topological, Traversible,
+    ToOutput, Topological, Traversible, object_marker::ObjectMarker,
 };
 
 #[cfg(feature = "serde")]

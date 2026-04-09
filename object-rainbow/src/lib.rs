@@ -49,6 +49,7 @@ pub mod length_prefixed;
 pub mod map_extra;
 mod niche;
 pub mod numeric;
+pub mod object_marker;
 pub mod parse_extra;
 pub mod partial_byte_tag;
 pub mod tuple_extra;
@@ -259,38 +260,6 @@ pub trait Fetch: Send + Sync + FetchBytes {
     {
         Arc::new(self)
     }
-}
-
-#[derive(ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline)]
-pub struct ObjectMarker<T: ?Sized> {
-    object: PhantomData<fn() -> T>,
-}
-
-impl<T: ?Sized> Clone for ObjectMarker<T> {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
-
-impl<T: ?Sized> Copy for ObjectMarker<T> {}
-
-impl<T: ?Sized> Default for ObjectMarker<T> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl<T: ?Sized> ObjectMarker<T> {
-    pub const fn new() -> Self {
-        Self {
-            object: PhantomData,
-        }
-    }
-}
-
-impl<T: ?Sized + Tagged> Tagged for ObjectMarker<T> {
-    const TAGS: Tags = T::TAGS;
-    const HASH: Hash = T::HASH;
 }
 
 pub trait PointVisitor {
