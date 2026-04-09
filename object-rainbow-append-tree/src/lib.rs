@@ -412,6 +412,8 @@ impl<T: Send + Sync + InlineOutput> ToOutput for AppendTree<T> {
     }
 }
 
+impl<T: Send + Sync + InlineOutput> InlineOutput for AppendTree<T> {}
+
 const C1: u64 = 256;
 const C2: u64 = 256 * C1;
 const C3: u64 = 256 * C2;
