@@ -4,6 +4,8 @@ impl<T: ?Sized> ToOutput for PhantomData<T> {
     fn to_output(&self, _: &mut dyn Output) {}
 }
 
+impl<T: ?Sized> InlineOutput for PhantomData<T> {}
+
 impl<T: ?Sized, I: ParseInput> Parse<I> for PhantomData<T> {
     fn parse(input: I) -> crate::Result<Self> {
         ParseInline::parse_as_inline(input)
