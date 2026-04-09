@@ -207,26 +207,25 @@ impl<T: Clone + Traversible> ChainTree<T> {
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
-    use object_rainbow::length_prefixed::LpString;
     use smol_macros::test;
 
     use crate::ChainTree;
 
     #[apply(test!)]
     async fn test() -> object_rainbow::Result<()> {
-        let root = ChainTree::<LpString>::new();
+        let root = ChainTree::<char>::new();
         assert!(!root.follows(&root).await?);
         let mut a = root.clone();
-        a.push(LpString("a".into())).await?;
+        a.push('a').await?;
         assert!(a.follows(&root).await?);
         assert!(!a.follows(&a).await?);
         assert!(!root.follows(&a).await?);
         let mut b = root.clone();
-        b.push(LpString("b".into())).await?;
+        b.push('b').await?;
         assert!(!a.follows(&b).await?);
         assert!(!b.follows(&a).await?);
         let mut ac = a.clone();
-        ac.push(LpString("c".into())).await?;
+        ac.push('c').await?;
         assert!(ac.follows(&root).await?);
         assert!(ac.follows(&a).await?);
         assert!(!ac.follows(&ac).await?);
