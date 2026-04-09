@@ -432,7 +432,7 @@ where
     }
 
     pub async fn remove(&mut self, key: &K) -> object_rainbow::Result<Option<V>> {
-        self.trie.remove(key.as_ref()).await
+        self.trie.remove(&key.vec()).await
     }
 
     pub fn prefix_stream(
