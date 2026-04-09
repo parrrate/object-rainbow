@@ -40,4 +40,8 @@ impl<T> ArrayMap<T> {
     pub fn get_mut(&mut self, key: u8) -> Option<&mut T> {
         self.map.get_mut(&key)
     }
+
+    pub fn get(&self, key: u8) -> Option<&T> {
+        self.map.get(&key)
+    }
 }
