@@ -1678,5 +1678,5 @@ fn options() {
     );
     assert_eq!(Option::<Point<()>>::SIZE, HASH_SIZE);
     assert_eq!(Option::<Option<Point<()>>>::SIZE, HASH_SIZE);
-    assert_eq!(Option::<Option<Option<Point<()>>>>::SIZE, HASH_SIZE + 1);
+    assert_eq!(Option::<Option<Option<Point<()>>>>::SIZE, HASH_SIZE);
 }

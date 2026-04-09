@@ -1,3 +1,7 @@
+use std::ops::Add;
+
+use typenum::{Add1, B0, B1, ToInt, U0};
+
 use crate::*;
 
 #[derive(
@@ -21,9 +25,22 @@ use crate::*;
 )]
 pub struct Hash([u8; HASH_SIZE]);
 
+pub struct HashNiche<N>(N);
+
+impl<N: ToInt<u8> + Add<B1>> Niche for HashNiche<N> {
+    type NeedsTag = B0;
+    type N = <Hash as Size>::Size;
+    fn niche() -> GenericArray<u8, Self::N> {
+        let mut niche = GenericArray::default();
+        let last_byte = niche.len() - 1;
+        niche[last_byte] = N::to_int();
+        niche
+    }
+    type Next = SomeNiche<HashNiche<Add1<N>>>;
+}
+
 impl MaybeHasNiche for Hash {
-    type MnArray =
-        SomeNiche<ZeroNiche<<Self as Size>::Size, SomeNiche<OneNiche<<Self as Size>::Size>>>>;
+    type MnArray = SomeNiche<HashNiche<U0>>;
 }
 
 impl<I: ParseInput> ParseInline<I> for Hash {
@@ -130,4 +147,37 @@ impl PartialEq<OptionalHash> for Hash {
     fn eq(&self, hash: &OptionalHash) -> bool {
         self.0 == hash.0
     }
+}
+
+#[test]
+fn none_is_zeros() {
+    assert_eq!(
+        None::<Hash>.to_array().into_array(),
+        [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0,
+        ]
+    );
+}
+
+#[test]
+fn none_none_is_one() {
+    assert_eq!(
+        None::<Option<Hash>>.to_array().into_array(),
+        [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 1,
+        ]
+    );
+}
+
+#[test]
+fn none_none_none_is_two() {
+    assert_eq!(
+        None::<Option<Option<Hash>>>.to_array().into_array(),
+        [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 2,
+        ]
+    );
 }
