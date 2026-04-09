@@ -1,8 +1,9 @@
-use std::io::Write;
+use std::{collections::BTreeMap, io::Write};
 
 use object_rainbow::{
-    MaybeHasNiche, Object, Output, Parse, ParseInput, ReflessObject, Size, SomeNiche, Tagged,
-    ToOutput, Topological, ZeroNiche,
+    Enum, Inline, MaybeHasNiche, Object, Output, Parse, ParseAsInline, ParseInline, ParseInput,
+    Point, ReflessObject, Size, SomeNiche, Tagged, ToOutput, Topological, ZeroNiche,
+    length_prefixed::LpString, numeric::Le,
 };
 use serde::{Serialize, de::DeserializeOwned};
 
@@ -51,3 +52,19 @@ impl Size for Json<()> {
 impl MaybeHasNiche for Json<()> {
     type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
 }
+
+#[derive(Enum, ToOutput, Topological, ParseAsInline, ParseInline, Size, MaybeHasNiche)]
+pub enum Distributed {
+    Null,
+    Bool(bool),
+    I64(Le<i64>),
+    U64(Le<u64>),
+    F64(Le<f64>),
+    String(Point<String>),
+    Array(Point<Vec<Self>>),
+    Object(Point<BTreeMap<LpString, Self>>),
+}
+
+impl Tagged for Distributed {}
+impl Object for Distributed {}
+impl Inline for Distributed {}
