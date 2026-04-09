@@ -332,6 +332,10 @@ impl<A, B> Parallel<A, B> {
     pub fn a(&self) -> &A {
         &self.a
     }
+
+    pub fn b(&self) -> &B {
+        &self.b
+    }
 }
 
 impl<Diff: Send + Clone, A: Forward<Diff>, B: Forward<Diff>> Forward<Diff> for Parallel<A, B> {
