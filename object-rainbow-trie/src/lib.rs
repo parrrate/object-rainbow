@@ -461,7 +461,7 @@ where
     ) -> object_rainbow::Result<Self> {
         Ok(Self {
             key: Default::default(),
-            trie: Trie::from_stream(stream).await?,
+            trie: Trie::from_stream(stream.map_ok(|(key, value)| (key.vec(), value))).await?,
         })
     }
 }
