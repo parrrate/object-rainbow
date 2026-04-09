@@ -1631,18 +1631,18 @@ impl<T, Extra> MaybeHasNiche for Point<T, Extra> {
 
 #[test]
 fn options() {
-    type T0 = bool;
+    type T0 = ();
     type T1 = Option<T0>;
     type T2 = Option<T1>;
     type T3 = Option<T2>;
     type T4 = Option<T3>;
     type T5 = Option<T4>;
-    assert_eq!(T0::SIZE, 1);
+    assert_eq!(T0::SIZE, 0);
     assert_eq!(T1::SIZE, 1);
-    assert_eq!(T2::SIZE, 2);
-    assert_eq!(T3::SIZE, 2);
-    assert_eq!(T4::SIZE, 3);
-    assert_eq!(T5::SIZE, 3);
+    assert_eq!(T2::SIZE, 1);
+    assert_eq!(T3::SIZE, 1);
+    assert_eq!(T4::SIZE, 1);
+    assert_eq!(T5::SIZE, 1);
     assert_eq!(false.output::<Vec<u8>>(), [0]);
     assert_eq!(true.output::<Vec<u8>>(), [1]);
     assert_eq!(Some(false).output::<Vec<u8>>(), [0]);

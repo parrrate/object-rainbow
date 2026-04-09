@@ -1,7 +1,7 @@
 use std::ops::Add;
 
 use generic_array::{ArrayLength, GenericArray};
-use typenum::{B0, B1, Bit, ToInt, U2};
+use typenum::{B0, B1, Bit, IsGreater, IsLess, ToInt, U1, U2, U255, U256};
 
 use crate::*;
 
@@ -47,7 +47,35 @@ impl<
 
 pub struct OptionNiche<N, K>(N, K);
 
-impl<N: ArrayLength, K: ToInt<u8>> Niche for OptionNiche<N, K> {
+pub trait NextNiche {
+    type NextNiche<N: ArrayLength>;
+}
+
+pub trait WrapNext {
+    type Wrap<N: ArrayLength, J>;
+}
+
+impl WrapNext for B1 {
+    type Wrap<N: ArrayLength, J> = SomeNiche<OptionNiche<N, J>>;
+}
+
+impl WrapNext for B0 {
+    type Wrap<N: ArrayLength, J> = NoNiche<ZeroNoNiche<N>>;
+}
+
+impl<
+    K: IsGreater<U1, Output = B1>
+        + IsLess<U256, Output = B1>
+        + Add<B1, Output = J>
+        + IsLess<U255, Output = B>,
+    J,
+    B: WrapNext,
+> NextNiche for K
+{
+    type NextNiche<N: ArrayLength> = B::Wrap<N, J>;
+}
+
+impl<N: ArrayLength, K: ToInt<u8> + NextNiche> Niche for OptionNiche<N, K> {
     type NeedsTag = B0;
     type N = N;
     fn niche() -> GenericArray<u8, Self::N> {
@@ -55,7 +83,7 @@ impl<N: ArrayLength, K: ToInt<u8>> Niche for OptionNiche<N, K> {
         niche[0] = K::INT;
         niche
     }
-    type Next = NoNiche<ZeroNoNiche<N>>;
+    type Next = K::NextNiche<N>;
 }
 
 pub trait OptionNicheWrapper: Bit {
