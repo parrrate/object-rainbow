@@ -225,6 +225,27 @@ impl<T, U: Equivalent<T>> Equivalent<Option<T>> for Option<U> {
     }
 }
 
+assert_impl!(
+    impl<T, I> Inline<I> for Option<T> where
+        T: Inline<I> + MaybeHasNiche<MnArray: MaybeNiche + Niche<NeedsTag = B0>>
+    {
+    }
+);
+
+assert_impl!(
+    impl<T, I> Inline<I> for Option<T> where
+        T: Inline<I> + MaybeHasNiche<MnArray: MaybeNiche + Niche<NeedsTag = B1>>
+    {
+    }
+);
+
+assert_impl!(
+    impl<T, I> Object<I> for Option<T> where
+        T: Object<I> + MaybeHasNiche<MnArray: MaybeNiche + Niche<NeedsTag = B1>>
+    {
+    }
+);
+
 #[test]
 fn equivalent_to_bool() {
     assert_eq!(false.vec(), Option::from_equivalent(false).vec());
