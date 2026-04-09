@@ -284,6 +284,18 @@ impl<K: Key, D: Fetch<T: Topological + Tagged>> Fetch for InnerFetch<K, D> {
             Ok(Encrypted { inner })
         })
     }
+
+    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
+        let Some((encrypted, resolve)) = self.encrypted.fetch_bytes_local()? else {
+            return Ok(None);
+        };
+        let (header, _) = side_parse(&self.key, &encrypted, &resolve)?;
+        let Some((decrypted, _)) = self.decrypted.try_fetch_local()? else {
+            return Ok(None);
+        };
+        let inner = header.with(decrypted)?;
+        Ok(Some((Encrypted { inner }, resolve)))
+    }
 }
 
 impl<K: Send + Sync, D: Send + Sync> Singular for InnerFetch<K, D> {
