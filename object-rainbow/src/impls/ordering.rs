@@ -11,3 +11,4 @@ impl ToOutput for Ordering {
 impl InlineOutput for Ordering {}
 impl Tagged for Ordering {}
 impl ListHashes for Ordering {}
+impl Topological for Ordering {}
