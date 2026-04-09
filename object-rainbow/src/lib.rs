@@ -928,17 +928,17 @@ impl Output for Vec<u8> {
     }
 }
 
-struct MangleOutput<'a>(&'a mut dyn Output);
+struct MangleOutput<'a, T: ?Sized>(&'a mut T);
 
-impl<'a> MangleOutput<'a> {
-    fn new(output: &'a mut dyn Output) -> Self {
+impl<'a, T: Output> MangleOutput<'a, T> {
+    fn new(output: &'a mut T) -> Self {
         assert!(output.is_real());
         assert!(!output.is_mangling());
         Self(output)
     }
 }
 
-impl Output for MangleOutput<'_> {
+impl<T: ?Sized + Output> Output for MangleOutput<'_, T> {
     fn write(&mut self, data: &[u8]) {
         self.0.write(data);
     }
