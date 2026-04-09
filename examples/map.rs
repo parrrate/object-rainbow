@@ -5,7 +5,6 @@ use std::{
     sync::Arc,
 };
 
-use anyhow::anyhow;
 use object_rainbow::{
     Address, FailFuture, Hash, Object, Origin, Ref, RefVisitor, Refless, ResolvedBytes, Resolver,
     Singular,
@@ -80,7 +79,7 @@ impl Resolver for MapResolver {
     fn resolve(&self, address: object_rainbow::Address) -> FailFuture<ResolvedBytes> {
         Box::pin(ready(match self.0.get(&address.hash) {
             Some(data) => Ok((data.clone(), Arc::new(self.clone()) as _)),
-            None => Err(anyhow!("").into()),
+            None => Err(object_rainbow::error!("hash not found")),
         }))
     }
 }
