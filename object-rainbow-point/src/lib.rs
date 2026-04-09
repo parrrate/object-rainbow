@@ -273,6 +273,10 @@ impl FetchBytes for RawPointInner {
     fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
         self.fetch.as_resolve()
     }
+
+    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
+        Arc::try_unwrap(self).ok()?.fetch.try_unwrap_resolve()
+    }
 }
 
 #[derive(ToOutput, InlineOutput, Tagged, Parse, ParseInline)]
