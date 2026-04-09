@@ -259,7 +259,7 @@ impl Singular for RawPointInner {
     }
 }
 
-impl<T, Extra: 'static + Send + Sync> Singular for RawPoint<T, Extra> {
+impl<T, Extra: Send + Sync> Singular for RawPoint<T, Extra> {
     fn hash(&self) -> Hash {
         self.inner.hash()
     }
@@ -396,7 +396,7 @@ impl FetchBytes for RawPointInner {
     }
 }
 
-impl<T, Extra: 'static> FetchBytes for RawPoint<T, Extra> {
+impl<T, Extra> FetchBytes for RawPoint<T, Extra> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.inner.fetch_bytes()
     }
@@ -410,7 +410,7 @@ impl<T, Extra: 'static> FetchBytes for RawPoint<T, Extra> {
     }
 }
 
-impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for RawPoint<T, Extra> {
+impl<T: Object<Extra>, Extra: Send + Sync> Fetch for RawPoint<T, Extra> {
     type T = T;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
@@ -565,7 +565,7 @@ struct ByAddress<T, Extra> {
     _object: PhantomData<fn() -> T>,
 }
 
-impl<T, Extra: 'static + Clone> ByAddress<T, Extra> {
+impl<T, Extra> ByAddress<T, Extra> {
     fn from_inner(inner: ByAddressInner, extra: Extra) -> Self {
         Self {
             inner,
@@ -575,7 +575,7 @@ impl<T, Extra: 'static + Clone> ByAddress<T, Extra> {
     }
 }
 
-impl<T, Extra: 'static> FetchBytes for ByAddress<T, Extra> {
+impl<T, Extra> FetchBytes for ByAddress<T, Extra> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.inner.fetch_bytes()
     }
@@ -589,7 +589,7 @@ impl<T, Extra: 'static> FetchBytes for ByAddress<T, Extra> {
     }
 }
 
-impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for ByAddress<T, Extra> {
+impl<T: Object<Extra>, Extra: Send + Sync> Fetch for ByAddress<T, Extra> {
     type T = T;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
@@ -1550,7 +1550,7 @@ impl<T, U, F: Fn(T) -> U> Map1<T> for F {
     type U = U;
 }
 
-impl<T, F: 'static + Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
+impl<T, F: Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
     type T = F::U;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
@@ -1583,7 +1583,7 @@ impl<T: ToOutput, F> FetchBytes for Map<T, F> {
     }
 }
 
-impl<T: ToOutput, F: 'static + Send + Sync + Map1<T>> Fetch for Map<T, F> {
+impl<T: ToOutput, F: Send + Sync + Map1<T>> Fetch for Map<T, F> {
     type T = F::U;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {

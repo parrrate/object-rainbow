@@ -21,7 +21,7 @@ where
     type MnArray = NoNiche<ZeroNoNiche<typenum::generic_const_mappings::U<N>>>;
 }
 
-impl<const N: usize, Extra: 'static> Object<Extra> for [u8; N] {}
-impl<const N: usize, Extra: 'static> Inline<Extra> for [u8; N] {}
+impl<const N: usize, Extra> Object<Extra> for [u8; N] {}
+impl<const N: usize, Extra> Inline<Extra> for [u8; N] {}
 impl<const N: usize> ReflessObject for [u8; N] {}
 impl<const N: usize> ReflessInline for [u8; N] {}

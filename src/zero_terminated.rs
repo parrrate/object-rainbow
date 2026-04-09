@@ -59,7 +59,7 @@ impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Zt<T> {
     }
 }
 
-impl<T: Object<Extra>, Extra: 'static> Object<Extra> for Zt<T> {}
-impl<T: Object<Extra>, Extra: 'static> Inline<Extra> for Zt<T> {}
+impl<T: Object<Extra>, Extra> Object<Extra> for Zt<T> {}
+impl<T: Object<Extra>, Extra> Inline<Extra> for Zt<T> {}
 impl<T: ReflessObject> ReflessObject for Zt<T> {}
 impl<T: ReflessObject> ReflessInline for Zt<T> {}

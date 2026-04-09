@@ -28,8 +28,8 @@ impl<T: Tagged> Tagged for (T,) {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: Object<E>, E: 'static> Object<E> for (T,) {}
-impl<T: Inline<E>, E: 'static> Inline<E> for (T,) {}
+impl<T: Object<E>, E> Object<E> for (T,) {}
+impl<T: Inline<E>, E> Inline<E> for (T,) {}
 impl<T: ReflessObject> ReflessObject for (T,) {}
 impl<T: ReflessInline> ReflessInline for (T,) {}
 
