@@ -109,9 +109,9 @@ impl<'ex> Event<'ex> {
 }
 
 #[derive(Debug, Clone)]
-struct MapResolver(Arc<BTreeMap<Hash, Vec<u8>>>);
+struct MapResolve(Arc<BTreeMap<Hash, Vec<u8>>>);
 
-impl Resolve for MapResolver {
+impl Resolve for MapResolve {
     fn resolve(&'_ self, address: object_rainbow::Address) -> FailFuture<'_, ByteNode> {
         Box::pin(ready(match self.0.get(&address.hash) {
             Some(data) => Ok((data.clone(), Arc::new(self.clone()) as _)),
@@ -161,8 +161,8 @@ async fn iterate<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
             },
         );
     }
-    let resolver = Arc::new(MapResolver(Arc::new(fetched)));
-    Ok(point.with_resolve(resolver, extra))
+    let resolve = Arc::new(MapResolve(Arc::new(fetched)));
+    Ok(point.with_resolve(resolve, extra))
 }
 
 fn main() -> anyhow::Result<()> {
