@@ -1314,6 +1314,10 @@ impl<T: for<'a> Parse<Input<'a, Extra>>, Extra: Clone> ExtraFor<T> for Extra {
     }
 }
 
+impl<T> ToOutput for dyn ExtraFor<T> {
+    fn to_output(&self, _: &mut dyn Output) {}
+}
+
 #[doc(hidden)]
 pub trait BoundPair: Sized {
     type T;
