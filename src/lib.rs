@@ -333,7 +333,7 @@ impl<T, Extra: 'static + Send + Sync> Singular for RawPoint<T, Extra> {
     }
 }
 
-#[derive(ToOutput, Topological, ParseAsInline, ParseInline)]
+#[derive(ToOutput, Topological, Parse, ParseInline)]
 struct ObjectMarker<T: ?Sized> {
     object: PhantomData<fn() -> T>,
 }
@@ -350,7 +350,7 @@ impl<T: ?Sized + Tagged> Tagged for ObjectMarker<T> {}
 impl<T: ?Sized + 'static + Tagged, Extra: 'static> Object<Extra> for ObjectMarker<T> {}
 impl<T: ?Sized + 'static + Tagged, Extra: 'static> Inline<Extra> for ObjectMarker<T> {}
 
-#[derive(ToOutput, Tagged, ParseInline, ParseAsInline)]
+#[derive(ToOutput, Tagged, Parse, ParseInline)]
 pub struct RawPoint<T = Infallible, Extra = ()> {
     inner: RawPointInner,
     extra: Extras<Extra>,
