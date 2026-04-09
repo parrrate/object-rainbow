@@ -232,9 +232,9 @@ async fn main() -> object_rainbow::Result<()> {
             .contains(&MessageByChannel {
                 channel,
                 message,
-                user
+                user,
             })
-            .await?
+            .await?,
     );
     assert!(
         history
@@ -247,9 +247,9 @@ async fn main() -> object_rainbow::Result<()> {
             .contains(&MessageByUser {
                 user,
                 channel,
-                message
+                message,
             })
-            .await?
+            .await?,
     );
     let messages_by_channel = history
         .tree()
@@ -276,8 +276,8 @@ async fn main() -> object_rainbow::Result<()> {
         BTreeSet::from([MessageByChannel {
             channel,
             message,
-            user
-        }])
+            user,
+        }]),
     );
     history.commit((message, None)).await?;
     assert!(
@@ -291,9 +291,9 @@ async fn main() -> object_rainbow::Result<()> {
             .contains(&MessageByChannel {
                 channel,
                 message,
-                user
+                user,
             })
-            .await?
+            .await?,
     );
     assert!(
         !history
@@ -306,9 +306,9 @@ async fn main() -> object_rainbow::Result<()> {
             .contains(&MessageByUser {
                 user,
                 channel,
-                message
+                message,
             })
-            .await?
+            .await?,
     );
     Ok(())
 }
