@@ -402,3 +402,16 @@ impl<A, B> Equivalent<Sequential<A, B>> for Parallel<A, B> {
         object.into_equivalent()
     }
 }
+
+pub struct Discard;
+
+impl<D: Send> Forward<D> for Discard {
+    type Output = ();
+
+    fn forward(
+        &mut self,
+        _: D,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        async move { Ok(()) }
+    }
+}
