@@ -359,13 +359,13 @@ impl<T: Send + Sync + InlineOutput> ToOutput for AppendTree<T> {
     }
 }
 
-const C1: u64 = 0x1_00;
-const C2: u64 = 0x1_00 * C1;
-const C3: u64 = 0x1_00 * C2;
-const C4: u64 = 0x1_00 * C3;
-const C5: u64 = 0x1_00 * C4;
-const C6: u64 = 0x1_00 * C5;
-const C7: u64 = 0x1_00 * C6;
+const C1: u64 = 256;
+const C2: u64 = 256 * C1;
+const C3: u64 = 256 * C2;
+const C4: u64 = 256 * C3;
+const C5: u64 = 256 * C4;
+const C6: u64 = 256 * C5;
+const C7: u64 = 256 * C6;
 const C8: u64 = u64::MAX;
 const C2_MIN: u64 = C1 + 1;
 const C3_MIN: u64 = C2 + 1;
