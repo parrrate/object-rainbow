@@ -33,8 +33,9 @@ impl<T: ToOutput + TaggedOption> ToOutput for Option<T> {
             None => {
                 if T::TAGGED_OPTION {
                     output.write(&[1]);
+                } else {
+                    output.write(T::none_data().as_ref());
                 }
-                output.write(T::none_data().as_ref());
             }
         }
     }
