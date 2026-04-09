@@ -171,6 +171,13 @@ impl<S, Extra> StoreMut<S, Extra> {
 }
 
 impl<S: RainbowStoreMut, Extra: 'static + Send + Sync + Clone> StoreMut<S, Extra> {
+    pub async fn exists<K: Send + Sync + AsRef<str>>(
+        &self,
+        key: K,
+    ) -> object_rainbow::Result<bool> {
+        self.store.ref_exists(key.as_ref()).await
+    }
+
     pub async fn create<T: Object<Extra>>(
         &self,
         point: Point<T>,
