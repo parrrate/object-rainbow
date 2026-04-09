@@ -27,6 +27,10 @@ assert_impl!(
 );
 
 impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainNode<T> {
+    pub fn value(&self) -> &T {
+        &self.value
+    }
+
     pub fn prev(&self) -> ChainTree<T> {
         ChainTree(self.tree.last().cloned())
     }
