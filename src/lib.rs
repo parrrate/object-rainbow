@@ -936,6 +936,9 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
     fn parse_vec(input: I) -> crate::Result<Vec<Self>> {
         input.parse_collect()
     }
+    fn parse_vec_n(input: &mut I, n: usize) -> crate::Result<Vec<Self>> {
+        (0..n).map(|_| input.parse_inline()).collect()
+    }
 }
 
 /// Implemented if both types have the exact same layout.
