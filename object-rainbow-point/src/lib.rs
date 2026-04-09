@@ -11,8 +11,8 @@ use std::{
 
 use futures_util::{TryFutureExt, future::ready};
 use object_rainbow::{
-    Address, ByteNode, Equivalent, ExtraFor, FailFuture, Fetch, FetchBytes, FullHash, Hash,
-    InlineOutput, ListHashes, MaybeHasNiche, Node, ObjectMarker, OptionalHash, Output, Parse,
+    Address, ByteNode, DefaultHash, Equivalent, ExtraFor, FailFuture, Fetch, FetchBytes, FullHash,
+    Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, ObjectMarker, OptionalHash, Output, Parse,
     ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular, Size, Tagged, Tags,
     ToOutput, Topological, Traversible,
 };
@@ -751,9 +751,9 @@ impl<T> MaybeHasNiche for Point<T> {
     type MnArray = <Hash as MaybeHasNiche>::MnArray;
 }
 
-impl<T: FullHash + Default> Point<T> {
+impl<T: DefaultHash> Point<T> {
     pub fn is_default(&self) -> bool {
-        self.hash() == T::default().full_hash()
+        self.hash() == T::default_hash()
     }
 }
 
