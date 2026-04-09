@@ -165,6 +165,7 @@ impl OptionalHash {
         self.get().unwrap()
     }
 
+    /// Set to [`Self::NONE`].
     pub fn clear(&mut self) {
         *self = Self::NONE;
     }
