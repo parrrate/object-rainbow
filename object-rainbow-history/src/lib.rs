@@ -168,6 +168,7 @@ impl<T: Forward<D>, D: Send + Traversible> Forward<Point<D>> for Compat<T> {
     Size,
     MaybeHasNiche,
     Clone,
+    Copy,
 )]
 pub struct DiscardHeader<T>(pub T);
 
