@@ -1,5 +1,4 @@
 use std::{
-    collections::BTreeMap,
     ops::{Bound, RangeBounds},
     pin::pin,
 };
@@ -11,6 +10,7 @@ use object_rainbow::{
     ReflessObject, Tagged, ToOutput, Topological, Traversible, assert_impl,
     length_prefixed::LpBytes,
 };
+use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
 
 #[cfg(feature = "serde")]
@@ -25,7 +25,7 @@ pub struct Trie<T> {
     #[tags(skip)]
     #[parse(unchecked)]
     #[topology(unchecked)]
-    children: BTreeMap<u8, TriePoint<Self>>,
+    children: ArrayMap<TriePoint<Self>>,
 }
 
 assert_impl!(
@@ -65,11 +65,11 @@ trait TrieChildren<Tr = Self>: Sized {
 
 impl<T> TrieChildren for Trie<T> {
     fn c_get_mut(&mut self, key: u8) -> Option<&mut TriePoint<Self>> {
-        self.children.get_mut(&key)
+        self.children.get_mut(key)
     }
 
     fn c_get(&self, key: u8) -> Option<&TriePoint<Self>> {
-        self.children.get(&key)
+        self.children.get(key)
     }
 
     fn c_insert(&mut self, key: u8, point: TriePoint<Self>) {
@@ -85,7 +85,7 @@ impl<T> TrieChildren for Trie<T> {
     }
 
     fn c_remove(&mut self, key: u8) {
-        self.children.remove(&key);
+        self.children.remove(key);
     }
 
     fn c_range<'a>(
@@ -96,9 +96,7 @@ impl<T> TrieChildren for Trie<T> {
     where
         Self: 'a,
     {
-        self.children
-            .range(min_inclusive..=max_inclusive)
-            .map(|(&k, v)| (k, v))
+        self.children.range(min_inclusive..=max_inclusive)
     }
 
     fn c_pop_first(&mut self) -> Option<(u8, TriePoint<Self>)> {
