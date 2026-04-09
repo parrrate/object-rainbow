@@ -4,6 +4,9 @@ use typenum::{Add1, B0, B1, ToInt, U0, U1};
 
 use crate::*;
 
+#[cfg(feature = "hex")]
+mod hex;
+
 #[derive(
     Debug,
     ToOutput,
