@@ -26,8 +26,8 @@ impl<T: ToOutput + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<Nee
     }
 }
 
-impl<T: Topological> Topological for Option<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+impl<T: Topological<E>, E: 'static> Topological<E> for Option<T> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<E>) {
         self.iter_accept_points(visitor);
     }
 }
@@ -111,13 +111,21 @@ impl<
     }
 }
 
-impl<T: Inline + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag = B>, B: Bit>
-    Object for Option<T>
+impl<
+    T: Inline<E> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
+    N: Niche<NeedsTag = B>,
+    B: Bit,
+    E: 'static,
+> Object<E> for Option<T>
 {
 }
 
-impl<T: Inline + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag = B>, B: Bit>
-    Inline for Option<T>
+impl<
+    T: Inline<E> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
+    N: Niche<NeedsTag = B>,
+    B: Bit,
+    E: 'static,
+> Inline<E> for Option<T>
 {
 }
 
