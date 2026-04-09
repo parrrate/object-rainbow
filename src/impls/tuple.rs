@@ -9,8 +9,8 @@ impl<A: ToOutput, B: ToOutput> ToOutput for (A, B) {
     }
 }
 
-impl<A: Topological, B: Topological> Topological for (A, B) {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+impl<Extra: 'static, A: Topological<Extra>, B: Topological<Extra>> Topological<Extra> for (A, B) {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
         self.0.accept_points(visitor);
         self.1.accept_points(visitor);
     }
@@ -65,8 +65,10 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput> ToOutput for (A, B, C) {
     }
 }
 
-impl<A: Topological, B: Topological, C: Topological> Topological for (A, B, C) {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+impl<Extra: 'static, A: Topological<Extra>, B: Topological<Extra>, C: Topological<Extra>>
+    Topological<Extra> for (A, B, C)
+{
+    fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
         self.0.accept_points(visitor);
         self.1.accept_points(visitor);
         self.2.accept_points(visitor);
@@ -129,8 +131,15 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput> ToOutput for (A, B, C, 
     }
 }
 
-impl<A: Topological, B: Topological, C: Topological, D: Topological> Topological for (A, B, C, D) {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+impl<
+    Extra: 'static,
+    A: Topological<Extra>,
+    B: Topological<Extra>,
+    C: Topological<Extra>,
+    D: Topological<Extra>,
+> Topological<Extra> for (A, B, C, D)
+{
+    fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
         self.0.accept_points(visitor);
         self.1.accept_points(visitor);
         self.2.accept_points(visitor);
@@ -210,10 +219,16 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput> ToOutput f
     }
 }
 
-impl<A: Topological, B: Topological, C: Topological, D: Topological, E: Topological> Topological
-    for (A, B, C, D, E)
+impl<
+    Extra: 'static,
+    A: Topological<Extra>,
+    B: Topological<Extra>,
+    C: Topological<Extra>,
+    D: Topological<Extra>,
+    E: Topological<Extra>,
+> Topological<Extra> for (A, B, C, D, E)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
         self.0.accept_points(visitor);
         self.1.accept_points(visitor);
         self.2.accept_points(visitor);
@@ -311,10 +326,17 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutpu
     }
 }
 
-impl<A: Topological, B: Topological, C: Topological, D: Topological, E: Topological, F: Topological>
-    Topological for (A, B, C, D, E, F)
+impl<
+    Extra: 'static,
+    A: Topological<Extra>,
+    B: Topological<Extra>,
+    C: Topological<Extra>,
+    D: Topological<Extra>,
+    E: Topological<Extra>,
+    F: Topological<Extra>,
+> Topological<Extra> for (A, B, C, D, E, F)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
         self.0.accept_points(visitor);
         self.1.accept_points(visitor);
         self.2.accept_points(visitor);
@@ -464,16 +486,17 @@ impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutpu
 }
 
 impl<
-    A: Topological,
-    B: Topological,
-    C: Topological,
-    D: Topological,
-    E: Topological,
-    F: Topological,
-    G: Topological,
-> Topological for (A, B, C, D, E, F, G)
+    Extra: 'static,
+    A: Topological<Extra>,
+    B: Topological<Extra>,
+    C: Topological<Extra>,
+    D: Topological<Extra>,
+    E: Topological<Extra>,
+    F: Topological<Extra>,
+    G: Topological<Extra>,
+> Topological<Extra> for (A, B, C, D, E, F, G)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
         self.0.accept_points(visitor);
         self.1.accept_points(visitor);
         self.2.accept_points(visitor);
@@ -664,17 +687,18 @@ impl<
 }
 
 impl<
-    A: Topological,
-    B: Topological,
-    C: Topological,
-    D: Topological,
-    E: Topological,
-    F: Topological,
-    G: Topological,
-    H: Topological,
-> Topological for (A, B, C, D, E, F, G, H)
+    Extra: 'static,
+    A: Topological<Extra>,
+    B: Topological<Extra>,
+    C: Topological<Extra>,
+    D: Topological<Extra>,
+    E: Topological<Extra>,
+    F: Topological<Extra>,
+    G: Topological<Extra>,
+    H: Topological<Extra>,
+> Topological<Extra> for (A, B, C, D, E, F, G, H)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
         self.0.accept_points(visitor);
         self.1.accept_points(visitor);
         self.2.accept_points(visitor);
@@ -882,18 +906,19 @@ impl<
 }
 
 impl<
-    A: Topological,
-    B: Topological,
-    C: Topological,
-    D: Topological,
-    E: Topological,
-    F: Topological,
-    G: Topological,
-    H: Topological,
-    I: Topological,
-> Topological for (A, B, C, D, E, F, G, H, I)
+    Extra: 'static,
+    A: Topological<Extra>,
+    B: Topological<Extra>,
+    C: Topological<Extra>,
+    D: Topological<Extra>,
+    E: Topological<Extra>,
+    F: Topological<Extra>,
+    G: Topological<Extra>,
+    H: Topological<Extra>,
+    I: Topological<Extra>,
+> Topological<Extra> for (A, B, C, D, E, F, G, H, I)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
         self.0.accept_points(visitor);
         self.1.accept_points(visitor);
         self.2.accept_points(visitor);
@@ -1143,19 +1168,20 @@ impl<
 }
 
 impl<
-    A: Topological,
-    B: Topological,
-    C: Topological,
-    D: Topological,
-    E: Topological,
-    F: Topological,
-    G: Topological,
-    H: Topological,
-    I: Topological,
-    J: Topological,
-> Topological for (A, B, C, D, E, F, G, H, I, J)
+    Extra: 'static,
+    A: Topological<Extra>,
+    B: Topological<Extra>,
+    C: Topological<Extra>,
+    D: Topological<Extra>,
+    E: Topological<Extra>,
+    F: Topological<Extra>,
+    G: Topological<Extra>,
+    H: Topological<Extra>,
+    I: Topological<Extra>,
+    J: Topological<Extra>,
+> Topological<Extra> for (A, B, C, D, E, F, G, H, I, J)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
         self.0.accept_points(visitor);
         self.1.accept_points(visitor);
         self.2.accept_points(visitor);
@@ -1431,20 +1457,21 @@ impl<
 }
 
 impl<
-    A: Topological,
-    B: Topological,
-    C: Topological,
-    D: Topological,
-    E: Topological,
-    F: Topological,
-    G: Topological,
-    H: Topological,
-    I: Topological,
-    J: Topological,
-    K: Topological,
-> Topological for (A, B, C, D, E, F, G, H, I, J, K)
+    Extra: 'static,
+    A: Topological<Extra>,
+    B: Topological<Extra>,
+    C: Topological<Extra>,
+    D: Topological<Extra>,
+    E: Topological<Extra>,
+    F: Topological<Extra>,
+    G: Topological<Extra>,
+    H: Topological<Extra>,
+    I: Topological<Extra>,
+    J: Topological<Extra>,
+    K: Topological<Extra>,
+> Topological<Extra> for (A, B, C, D, E, F, G, H, I, J, K)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
         self.0.accept_points(visitor);
         self.1.accept_points(visitor);
         self.2.accept_points(visitor);
@@ -1750,21 +1777,22 @@ impl<
 }
 
 impl<
-    A: Topological,
-    B: Topological,
-    C: Topological,
-    D: Topological,
-    E: Topological,
-    F: Topological,
-    G: Topological,
-    H: Topological,
-    I: Topological,
-    J: Topological,
-    K: Topological,
-    L: Topological,
-> Topological for (A, B, C, D, E, F, G, H, I, J, K, L)
+    Extra: 'static,
+    A: Topological<Extra>,
+    B: Topological<Extra>,
+    C: Topological<Extra>,
+    D: Topological<Extra>,
+    E: Topological<Extra>,
+    F: Topological<Extra>,
+    G: Topological<Extra>,
+    H: Topological<Extra>,
+    I: Topological<Extra>,
+    J: Topological<Extra>,
+    K: Topological<Extra>,
+    L: Topological<Extra>,
+> Topological<Extra> for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
         self.0.accept_points(visitor);
         self.1.accept_points(visitor);
         self.2.accept_points(visitor);

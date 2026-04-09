@@ -306,10 +306,14 @@ fn per_n(n: usize) -> String {
             )],
         },
         Impl {
-            header: "Topological".bound().last("Topological").header(n),
+            header: "Topological<Extra>"
+                .bound()
+                .last("Topological<Extra>")
+                .header(n)
+                .prefix("Extra: 'static,"),
             members: vec![Box::new(
                 "accept_points"
-                    .method("visitor", "&mut impl PointVisitor")
+                    .method("visitor", "&mut impl PointVisitor<Extra>")
                     .out(n),
             )],
         },
