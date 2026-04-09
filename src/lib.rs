@@ -1042,6 +1042,12 @@ pub trait PointInput: ParseInput {
     fn with_extra<E: 'static + Clone>(self, extra: E) -> Self::WithExtra<E> {
         self.replace_extra(extra).1
     }
+    fn parse_extra<E: 'static + Clone, T: Parse<Self::WithExtra<E>>>(
+        self,
+        extra: E,
+    ) -> crate::Result<T> {
+        self.with_extra(extra).parse()
+    }
     fn parse_inline_extra<E: 'static + Clone, T: ParseInline<Self::WithExtra<E>>>(
         &mut self,
         extra: E,
@@ -1141,7 +1147,7 @@ impl<
     fn parse(mut input: Input<'a, X>) -> crate::Result<Self> {
         let e = input.parse_inline::<E>()?;
         let x = input.extra().clone();
-        let t = input.with_extra((e.clone(), x)).parse()?;
+        let t = input.parse_extra((e.clone(), x))?;
         Ok(Self(e, t))
     }
 }
