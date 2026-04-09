@@ -1249,6 +1249,7 @@ name = "object-rainbow-derive"
 version = "0.0.0-a.14"
 dependencies = [
  "darling",
+ "object-rainbow",
  "proc-macro2",
  "quote",
  "syn 2.0.117",
