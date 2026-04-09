@@ -434,6 +434,7 @@ impl<T, Extra: 'static> Point<T, Extra> {
 }
 
 #[derive(ParseAsInline)]
+#[must_use]
 pub struct Point<T, Extra = ()> {
     hash: OptionalHash,
     origin: Arc<dyn Fetch<T = T, Extra = Extra>>,

@@ -29,8 +29,7 @@ impl<'a, 'x, S: RainbowStore, Extra: 'static + Send + Sync + Clone> PointVisitor
         let point = point.clone();
         let store = self.store;
         self.futures.push(Box::pin(async move {
-            store.save_point(&point).await?;
-            Ok(())
+            store.save_point(&point).await.map(|_| ())
         }));
     }
 }
@@ -139,6 +138,7 @@ pub trait RainbowStoreMut: RainbowStore {
     ) -> impl RainbowFuture<T = StoreRef<Self, impl 'static + Send + Sync + AsRef<str>, T, ()>>
     {
         async move {
+            let point = self.save_point(&point).await?;
             let key = self.create_ref(*point.hash()).await?;
             Ok(self.store_ref_raw(key, point))
         }
@@ -149,7 +149,7 @@ pub trait RainbowStoreMut: RainbowStore {
         point: Point<T>,
     ) -> impl RainbowFuture<T = StoreRef<Self, K, T, ()>> {
         async move {
-            self.save_point(&point).await?;
+            let point = self.save_point(&point).await?;
             self.update_ref(key.as_ref(), *point.hash()).await?;
             Ok(self.store_ref_raw(key, point))
         }
