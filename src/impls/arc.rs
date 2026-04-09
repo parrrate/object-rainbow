@@ -6,6 +6,8 @@ impl<T: ?Sized + ToOutput> ToOutput for Arc<T> {
     }
 }
 
+impl<T: ?Sized + InlineOutput> InlineOutput for Arc<T> {}
+
 impl<T: Parse<I>, I: ParseInput> Parse<I> for Arc<T> {
     fn parse(input: I) -> crate::Result<Self> {
         T::parse(input).map(Self::new)
