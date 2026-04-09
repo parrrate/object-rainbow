@@ -96,6 +96,15 @@ pub struct Address {
     pub hash: Hash,
 }
 
+impl Address {
+    pub fn from_hash(hash: Hash) -> Self {
+        Self {
+            index: usize::MAX,
+            hash,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 struct OptionalHash(Hash);
 
