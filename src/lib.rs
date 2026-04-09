@@ -106,11 +106,12 @@ pub enum Error {
 }
 
 impl Error {
-/// Construct [`Error::Parse`] from another error.
+    /// Construct [`Error::Parse`] from another error.
     pub fn parse(e: impl Into<anyhow::Error>) -> Self {
         Self::Parse(e.into())
     }
 
+    /// Construct [`Error::Fetch`] from another error.
     pub fn fetch(e: impl Into<anyhow::Error>) -> Self {
         Self::Fetch(e.into())
     }
