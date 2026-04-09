@@ -1,8 +1,8 @@
 use futures_util::Stream;
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{
-    Fetch, Inline, InlineOutput, ListHashes, Object, Parse, ParseInline, Tagged, ToOutput,
-    Topological, Traversible, assert_impl,
+    Fetch, Inline, InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological,
+    Traversible, assert_impl,
 };
 use object_rainbow_append_tree::AppendTree;
 use object_rainbow_point::{IntoPoint, Point};
@@ -18,7 +18,7 @@ pub struct ChainNode<T> {
 }
 
 assert_impl!(
-    impl<T, E> Object<E> for ChainNode<T>
+    impl<T, E> Inline<E> for ChainNode<T>
     where
         E: 'static + Send + Sync + Clone,
         T: Inline<E>,
