@@ -1252,6 +1252,12 @@ impl<'a, T: FullHash> PointMut<'a, T> {
     }
 }
 
+impl<T> Point<T> {
+    pub fn get(&self) -> Option<&T> {
+        self.origin.get()
+    }
+}
+
 impl<T: Traversible + Clone> Point<T> {
     pub fn from_object(object: T) -> Self {
         Self::from_origin(object.full_hash(), Arc::new(LocalOrigin { object }))
