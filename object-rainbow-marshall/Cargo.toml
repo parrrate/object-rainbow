@@ -9,4 +9,5 @@ authors.workspace = true
 
 [dependencies]
 object-rainbow.workspace = true
+object-rainbow-fetchall.workspace = true
 object-rainbow-local-map.workspace = true

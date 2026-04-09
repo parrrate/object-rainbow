@@ -1135,6 +1135,7 @@ name = "object-rainbow-marshall"
 version = "0.0.0-a.0"
 dependencies = [
  "object-rainbow",
+ "object-rainbow-fetchall",
  "object-rainbow-local-map",
 ]
 
