@@ -470,6 +470,28 @@ impl<'d, Extra: 'static + Clone> PointInput for Input<'d, Extra> {
             extra: Cow::Owned(extra),
         }
     }
+
+    fn parse_inline_extra<E: 'static + Clone, T: ParseInline<Self::WithExtra<E>>>(
+        &mut self,
+        extra: E,
+    ) -> crate::Result<T> {
+        let Self {
+            refless,
+            resolve,
+            index,
+            ..
+        } = self;
+        let data = refless.data.take();
+        let mut input = Input {
+            refless: ReflessInput { data },
+            resolve,
+            index,
+            extra: Cow::Owned(extra),
+        };
+        let value = input.parse_inline()?;
+        refless.data = input.refless.data.take();
+        Ok(value)
+    }
 }
 
 pub trait ToOutput {
@@ -1020,6 +1042,10 @@ pub trait PointInput: ParseInput {
     fn with_extra<E: 'static + Clone>(self, extra: E) -> Self::WithExtra<E> {
         self.replace_extra(extra).1
     }
+    fn parse_inline_extra<E: 'static + Clone, T: ParseInline<Self::WithExtra<E>>>(
+        &mut self,
+        extra: E,
+    ) -> crate::Result<T>;
 }
 
 impl<T: Sized + IntoIterator> RainbowIterator for T {}
