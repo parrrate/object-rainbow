@@ -1,4 +1,7 @@
-use object_rainbow::*;
+use object_rainbow::{
+    numeric::{Be, Le},
+    *,
+};
 
 #[derive(
     ToOutput,
@@ -21,6 +24,7 @@ pub struct DeriveExample<A, B> {
 
 fn main() {
     println!("{}", hex::encode(DeriveExample::<(), ()>::HASH));
+    println!("{}", DeriveExample::<Be<u8>, Le<u8>>::SIZE);
 }
 
 #[derive(Enum, ToOutput, Topological, Parse, ParseInline)]

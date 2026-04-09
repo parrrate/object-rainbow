@@ -582,7 +582,7 @@ impl<T> Fetch for Point<T> {
 }
 
 pub trait Size {
-    const SIZE: usize;
+    const SIZE: usize = <Self::Size as Unsigned>::USIZE;
     type Size: Unsigned;
 }
 
