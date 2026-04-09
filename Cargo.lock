@@ -1051,6 +1051,7 @@ dependencies = [
 name = "object-rainbow-json"
 version = "0.0.0-a.0+ci.0"
 dependencies = [
+ "futures-util",
  "object-rainbow",
  "serde",
  "serde_json",

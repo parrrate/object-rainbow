@@ -1,5 +1,6 @@
 use std::{collections::BTreeMap, io::Write};
 
+use futures_util::future::try_join_all;
 use object_rainbow::{
     Enum, Fetch, Inline, MaybeHasNiche, Object, Output, Parse, ParseAsInline, ParseInline,
     ParseInput, Point, ReflessObject, SimpleObject, Size, SomeNiche, Tagged, ToOutput, Topological,
@@ -78,20 +79,26 @@ impl Distributed {
             Distributed::U64(x) => x.0.into(),
             Distributed::F64(x) => x.0.into(),
             Distributed::String(ref point) => point.fetch().await?.into(),
-            Distributed::Array(ref point) => {
-                let mut vec = Vec::new();
-                for x in point.fetch().await? {
-                    vec.push(Box::pin(x.to_value()).await?);
-                }
-                vec.into()
-            }
-            Distributed::Object(ref point) => {
-                let mut map = serde_json::Map::new();
-                for (k, v) in point.fetch().await? {
-                    map.insert(k.0, Box::pin(v.to_value()).await?);
-                }
-                map.into()
-            }
+            Distributed::Array(ref point) => try_join_all(
+                point
+                    .fetch()
+                    .await?
+                    .into_iter()
+                    .map(async |x| x.to_value().await),
+            )
+            .await?
+            .into(),
+            Distributed::Object(ref point) => try_join_all(
+                point
+                    .fetch()
+                    .await?
+                    .into_iter()
+                    .map(async |(k, x)| Ok((k.0, x.to_value().await?))),
+            )
+            .await?
+            .into_iter()
+            .collect::<serde_json::Map<_, _>>()
+            .into(),
         })
     }
 }
