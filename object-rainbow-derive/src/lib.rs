@@ -1960,6 +1960,52 @@ fn attr_str(attr: &Attribute) -> Option<String> {
     Some(attr.path().get_ident()?.to_string())
 }
 
+/// ```rust
+/// use object_rainbow::{Enum, MaybeHasNiche, ToOutput};
+///
+/// #[derive(Enum, ToOutput, MaybeHasNiche)]
+/// enum WithDefault {
+///     A(u8),
+///     B(bool),
+/// }
+///
+/// assert_eq!(None::<WithDefault>.vec(), [0, 0]);
+/// assert_eq!(Some(WithDefault::A(32)).vec(), [1, 32]);
+/// assert_eq!(Some(WithDefault::B(true)).vec(), [2, 1]);
+///
+/// #[derive(Enum, ToOutput, MaybeHasNiche)]
+/// #[enumtag("bool")]
+/// enum WithBool {
+///     A(u8),
+///     B(bool),
+/// }
+///
+/// assert_eq!(Some(WithBool::A(32)).vec(), [0, 32]);
+/// assert_eq!(Some(WithBool::B(true)).vec(), [1, 1]);
+/// assert_eq!(None::<WithBool>.vec(), [2, 0]);
+///
+/// #[derive(Enum, ToOutput, MaybeHasNiche)]
+/// #[enumtag("u8")]
+/// enum WithU8 {
+///     A(u8),
+///     B(bool),
+/// }
+///
+/// assert_eq!(Some(WithU8::A(32)).vec(), [0, 32]);
+/// assert_eq!(Some(WithU8::B(true)).vec(), [1, 1]);
+/// assert_eq!(None::<WithU8>.vec(), [1, 2]);
+///
+/// #[derive(Enum, ToOutput, MaybeHasNiche)]
+/// #[enumtag("u8")]
+/// enum WithoutNiche {
+///     A(u8),
+///     B(u8),
+/// }
+///
+/// assert_eq!(Some(WithoutNiche::A(32)).vec(), [0, 0, 32]);
+/// assert_eq!(Some(WithoutNiche::B(1)).vec(), [0, 1, 1]);
+/// assert_eq!(None::<WithoutNiche>.vec(), [1]);
+/// ```
 #[proc_macro_derive(Enum, attributes(enumtag))]
 pub fn derive_enum(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
