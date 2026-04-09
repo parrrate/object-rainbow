@@ -1122,7 +1122,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.40"
+version = "0.0.0-a.41"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1142,7 +1142,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-amt-set"
-version = "0.0.0-a.3"
+version = "0.0.0-a.4"
 dependencies = [
  "macro_rules_attribute",
  "object-rainbow",
@@ -1167,7 +1167,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-array-map"
-version = "0.0.0-a.4"
+version = "0.0.0-a.5"
 dependencies = [
  "bitvec",
  "object-rainbow",
@@ -1229,7 +1229,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.10"
+version = "0.0.0-a.11"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1244,7 +1244,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history-store"
-version = "0.0.0-a.0"
+version = "0.0.0-a.1"
 dependencies = [
  "anyhow",
  "object-rainbow",
@@ -1328,7 +1328,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-trie"
-version = "0.0.0-a.9"
+version = "0.0.0-a.10"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
@@ -1343,7 +1343,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-unique-diffs"
-version = "0.0.0-a.3"
+version = "0.0.0-a.4"
 dependencies = [
  "object-rainbow",
  "object-rainbow-amt-set",
