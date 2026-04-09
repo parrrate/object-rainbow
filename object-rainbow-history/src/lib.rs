@@ -14,6 +14,12 @@ impl<T, D> History<T, D> {
     pub const ROOT: Self = Self(ChainTree::EMPTY);
 }
 
+impl<T, D> Default for History<T, D> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
 pub trait Diff<Tree> {
     fn forward(
         self,
