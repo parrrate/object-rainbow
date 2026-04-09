@@ -129,8 +129,8 @@ pub trait RainbowStoreMut: RainbowStore {
         let _ = hash;
         async { Err::<String, _>(object_rainbow::error_fetch!("not supported")) }
     }
-    fn update_ref(&self, key: &str, hash: Hash) -> impl RainbowFuture<T = ()>;
-    fn fetch_ref(&self, key: &str) -> impl RainbowFuture<T = Option<Hash>>;
+    fn update_ref(&self, key: &str, old: Option<Hash>, hash: Hash) -> impl RainbowFuture<T = ()>;
+    fn fetch_ref(&self, key: &str) -> impl RainbowFuture<T = Hash>;
     fn ref_exists(&self, key: &str) -> impl RainbowFuture<T = bool>;
     fn create<T: Object>(
         &self,
@@ -150,7 +150,7 @@ pub trait RainbowStoreMut: RainbowStore {
     ) -> impl RainbowFuture<T = StoreRef<Self, K, T, ()>> {
         async move {
             let point = self.save_point(&point).await?;
-            self.update_ref(key.as_ref(), *point.hash()).await?;
+            self.update_ref(key.as_ref(), None, *point.hash()).await?;
             Ok(self.store_ref_raw(key, point))
         }
     }
@@ -159,11 +159,11 @@ pub trait RainbowStoreMut: RainbowStore {
         key: K,
     ) -> impl RainbowFuture<T = StoreRef<Self, K, T, ()>> {
         async move {
-            let point = self.point(
-                self.fetch_ref(key.as_ref())
-                    .await?
-                    .ok_or_else(|| object_rainbow::error_fetch!("key not found"))?,
-            );
+            let hash = self.fetch_ref(key.as_ref()).await?;
+            if hash == Hash::default() {
+                return Err(object_rainbow::error_fetch!("key not found"));
+            }
+            let point = self.point(hash);
             Ok(self.store_ref_raw(key, point))
         }
     }
@@ -174,7 +174,7 @@ pub trait RainbowStoreMut: RainbowStore {
     ) -> impl RainbowFuture<T = StoreRef<Self, K, T, ()>> {
         async move {
             Ok(StoreRef {
-                old: self.fetch_ref(key.as_ref()).await?.unwrap_or_default(),
+                old: self.fetch_ref(key.as_ref()).await?,
                 ..self.store_ref_raw(key, point)
             })
         }
@@ -242,7 +242,7 @@ impl<
         if self.is_modified() {
             self.save_point().await?;
             self.store
-                .update_ref(self.key.as_ref(), *self.point.hash())
+                .update_ref(self.key.as_ref(), Some(self.old), *self.point.hash())
                 .await?;
             self.old = *self.point.hash();
         }
