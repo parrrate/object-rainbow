@@ -50,7 +50,9 @@ pub enum Error {
     #[error("address index out of bounds")]
     AddressOutOfBounds,
     #[error("hash resolution mismatch")]
-    HashMismatch,
+    ResolutionMismatch,
+    #[error("data hash mismatch")]
+    DataMismatch,
     #[error("discriminant overflow")]
     DiscriminantOverflow,
 }
@@ -169,7 +171,11 @@ impl<T: Object> Fetch for ByAddress<T> {
         Box::pin(async {
             let (data, resolve) = self.resolve.resolve(self.address).await?;
             let object = T::parse_slice(&data, &resolve)?;
-            Ok(object)
+            if self.address.hash != object.full_hash() {
+                Err(Error::DataMismatch)
+            } else {
+                Ok(object)
+            }
         })
     }
 }
@@ -658,7 +664,7 @@ impl ByTopology {
             .get(address.index)
             .ok_or(Error::AddressOutOfBounds)?;
         if *point.hash() != address.hash {
-            Err(Error::HashMismatch)
+            Err(Error::ResolutionMismatch)
         } else {
             Ok(point.fetch_bytes())
         }
