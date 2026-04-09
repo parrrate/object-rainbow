@@ -10,7 +10,7 @@ use object_rainbow::{
     SingularFetch, Size, Tagged, ToOutput, Topological, Traversible, assert_impl,
     derive_for_wrapped,
 };
-use object_rainbow_point::Point;
+use object_rainbow_point::{Extras, Point};
 
 pub trait RainbowFuture: Send + Future<Output = object_rainbow::Result<Self::T>> {
     type T;
@@ -311,6 +311,13 @@ impl<
     }
 }
 
+#[derive(Parse, ParseInline)]
+struct StoredInner<S, E> {
+    hash: Hash,
+    extra: Extras<E>,
+    store: S,
+}
+
 #[derive(
     ToOutput, InlineOutput, Tagged, Size, MaybeHasNiche, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
 )]
@@ -331,18 +338,26 @@ impl<S: Topological, T> Topological for Stored<S, T> {
     }
 }
 
+impl<S: RainbowStore, T: 'static + FullHash> Stored<S, T> {
+    fn new<E: 'static + Send + Sync + Clone + ExtraFor<T>>(
+        hash: Hash,
+        extra: Extras<E>,
+        store: S,
+    ) -> Self {
+        let point = store.point_extra(hash, extra.0);
+        Self { point, store }
+    }
+}
+
 impl<
     S: RainbowStore + Parse<I>,
     T: 'static + FullHash + Parse<I>,
     I: PointInput<Extra: Send + Sync + ExtraFor<T>>,
 > Parse<I> for Stored<S, T>
 {
-    fn parse(mut input: I) -> object_rainbow::Result<Self> {
-        let hash = input.parse_inline()?;
-        let extra = input.extra().clone();
-        let store = input.parse::<S>()?;
-        let point = store.point_extra(hash, extra);
-        Ok(Self { point, store })
+    fn parse(input: I) -> object_rainbow::Result<Self> {
+        let StoredInner { hash, extra, store } = input.parse()?;
+        Ok(Self::new(hash, extra, store))
     }
 }
 
@@ -353,11 +368,8 @@ impl<
 > ParseInline<I> for Stored<S, T>
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let hash = input.parse_inline()?;
-        let extra = input.extra().clone();
-        let store = input.parse_inline::<S>()?;
-        let point = store.point_extra(hash, extra);
-        Ok(Self { point, store })
+        let StoredInner { hash, extra, store } = input.parse_inline()?;
+        Ok(Self::new(hash, extra, store))
     }
 }
 
