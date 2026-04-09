@@ -294,11 +294,10 @@ impl<T: Send + Sync> Singular for Marshalled<T> {
 
 impl<T: Object<Extra>, Extra: 'static + Clone> Object<Extra> for Marshalled<T> {}
 
-impl<T: Traversible + Clone> Marshalled<T> {
+impl<T: Traversible> Marshalled<T> {
     pub async fn new(object: T) -> object_rainbow::Result<Self> {
-        let point = object.clone().point();
-        let map = fetchall(&point).await?;
-        let root = marshall(&map, point.hash());
+        let map = fetchall(&object).await?;
+        let root = marshall(&map, object.full_hash());
         Ok(Self { root, object })
     }
 }
