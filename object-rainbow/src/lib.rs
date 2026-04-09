@@ -195,6 +195,10 @@ pub trait Resolve: Send + Sync + AsAny {
     }
 }
 
+impl ToOutput for dyn Resolve {
+    fn to_output(&self, _: &mut dyn Output) {}
+}
+
 impl<I: PointInput> Parse<I> for Arc<dyn Resolve> {
     fn parse(input: I) -> crate::Result<Self> {
         Self::parse_as_inline(input)
