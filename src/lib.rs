@@ -172,6 +172,9 @@ pub trait Resolve: Send + Sync + AsAny {
         let _ = typeid;
         Err(Error::UnknownExtension)
     }
+    fn topology_hash(&self) -> Option<Hash> {
+        None
+    }
 }
 
 pub trait FetchBytes: AsAny {
