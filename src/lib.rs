@@ -167,7 +167,7 @@ impl DerefMut for Input<'_> {
     }
 }
 
-impl<'a> ReflessInput<'a> {
+impl ParseInput for ReflessInput<'_> {
     fn empty(self) -> crate::Result<()> {
         if self.data.is_empty() {
             Ok(())
@@ -183,29 +183,9 @@ impl<'a> ReflessInput<'a> {
             Some(self)
         }
     }
+}
 
-    fn _consume(self, f: impl FnMut(&mut Self) -> crate::Result<()>) -> crate::Result<()> {
-        self.collect(f)
-    }
-
-    fn collect_parse<T: ReflessInline, B: FromIterator<T>>(self) -> crate::Result<B> {
-        self.collect(|input| input.parse_inline())
-    }
-
-    fn collect<T, B: FromIterator<T>>(self, f: impl FnMut(&mut Self) -> T) -> B {
-        self.iter(f).collect()
-    }
-
-    fn iter<T>(self, mut f: impl FnMut(&mut Self) -> T) -> impl Iterator<Item = T> {
-        let mut state = Some(self);
-        std::iter::from_fn(move || {
-            let mut input = state.take()?.non_empty()?;
-            let item = f(&mut input);
-            state = Some(input);
-            Some(item)
-        })
-    }
-
+impl<'a> ReflessInput<'a> {
     pub fn parse_chunk<const N: usize>(&mut self) -> crate::Result<&'a [u8; N]> {
         match self.data.split_first_chunk() {
             Some((chunk, data)) => {
@@ -243,9 +223,13 @@ impl<'a> ReflessInput<'a> {
     pub fn parse<T: ReflessObject>(self) -> crate::Result<T> {
         T::parse(self)
     }
+
+    fn collect_parse<T: ReflessInline, B: FromIterator<T>>(self) -> crate::Result<B> {
+        self.collect(|input| input.parse_inline())
+    }
 }
 
-impl Input<'_> {
+impl ParseInput for Input<'_> {
     fn empty(self) -> crate::Result<()> {
         self.refless.empty()
     }
@@ -254,29 +238,9 @@ impl Input<'_> {
         self.refless = self.refless.non_empty()?;
         Some(self)
     }
+}
 
-    fn _consume(self, f: impl FnMut(&mut Self) -> crate::Result<()>) -> crate::Result<()> {
-        self.collect(f)
-    }
-
-    fn collect_parse<T: Inline, B: FromIterator<T>>(self) -> crate::Result<B> {
-        self.collect(|input| input.parse_inline())
-    }
-
-    fn collect<T, B: FromIterator<T>>(self, f: impl FnMut(&mut Self) -> T) -> B {
-        self.iter(f).collect()
-    }
-
-    fn iter<T>(self, mut f: impl FnMut(&mut Self) -> T) -> impl Iterator<Item = T> {
-        let mut state = Some(self);
-        std::iter::from_fn(move || {
-            let mut input = state.take()?.non_empty()?;
-            let item = f(&mut input);
-            state = Some(input);
-            Some(item)
-        })
-    }
-
+impl Input<'_> {
     fn parse_address(&mut self) -> crate::Result<Address> {
         let hash = *self.parse_chunk()?;
         let index = *self.index;
@@ -295,6 +259,10 @@ impl Input<'_> {
 
     fn parse<T: Object>(self) -> crate::Result<T> {
         T::parse(self)
+    }
+
+    fn collect_parse<T: Inline, B: FromIterator<T>>(self) -> crate::Result<B> {
+        self.collect(|input| input.parse_inline())
     }
 }
 
@@ -394,9 +362,21 @@ impl<T: Object> Topological for Point<T> {
     }
 }
 
+impl<T: Object> Parse<Input<'_>> for Point<T> {
+    fn parse(input: Input) -> crate::Result<Self> {
+        ParseInline::parse_as_inline(input)
+    }
+}
+
+impl<T: Object> ParseInline<Input<'_>> for Point<T> {
+    fn parse_inline(input: &mut Input<'_>) -> crate::Result<Self> {
+        input.parse_point()
+    }
+}
+
 impl<T: Object> Object for Point<T> {
     fn parse(input: Input) -> crate::Result<Self> {
-        Self::parse_as_inline(input)
+        Inline::parse_as_inline(input)
     }
 }
 
@@ -501,6 +481,12 @@ impl<T> Topological for Refless<T> {
     fn accept_points(&self, _: &mut impl PointVisitor) {}
 }
 
+impl<'a, T: Parse<ReflessInput<'a>>> Parse<Input<'a>> for Refless<T> {
+    fn parse(input: Input<'a>) -> crate::Result<Self> {
+        T::parse(input.refless).map(Self)
+    }
+}
+
 impl<T: ReflessObject> Object for Refless<T> {
     fn parse(input: Input) -> crate::Result<Self> {
         T::parse(input.refless).map(Self)
@@ -519,6 +505,18 @@ impl ToOutput for () {
 
 impl Topological for () {
     fn accept_points(&self, _: &mut impl PointVisitor) {}
+}
+
+impl<I: ParseInput> Parse<I> for () {
+    fn parse(input: I) -> crate::Result<Self> {
+        ParseInline::parse_as_inline(input)
+    }
+}
+
+impl<I: ParseInput> ParseInline<I> for () {
+    fn parse_inline(_: &mut I) -> crate::Result<Self> {
+        Ok(())
+    }
 }
 
 impl Object for () {
@@ -694,9 +692,21 @@ impl<const N: usize> ToOutput for [u8; N] {
     }
 }
 
+impl<const N: usize> Parse<ReflessInput<'_>> for [u8; N] {
+    fn parse(input: ReflessInput<'_>) -> crate::Result<Self> {
+        ParseInline::parse_as_inline(input)
+    }
+}
+
+impl<const N: usize> ParseInline<ReflessInput<'_>> for [u8; N] {
+    fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
+        input.parse_chunk().copied()
+    }
+}
+
 impl<const N: usize> ReflessObject for [u8; N] {
     fn parse(input: ReflessInput) -> crate::Result<Self> {
-        Self::parse_as_inline(input)
+        ReflessInline::parse_as_inline(input)
     }
 }
 
@@ -709,6 +719,18 @@ impl<const N: usize> ReflessInline for [u8; N] {
 impl<T: ToOutput> ToOutput for Arc<T> {
     fn to_output(&self, output: &mut dyn Output) {
         (**self).to_output(output);
+    }
+}
+
+impl<T: Parse<I>, I: ParseInput> Parse<I> for Arc<T> {
+    fn parse(input: I) -> crate::Result<Self> {
+        T::parse(input).map(Self::new)
+    }
+}
+
+impl<T: ParseInline<I>, I: ParseInput> ParseInline<I> for Arc<T> {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        T::parse_inline(input).map(Self::new)
     }
 }
 
@@ -740,19 +762,19 @@ impl<T: Object> Object for Arc<T> {
 
 impl<T: Inline> Inline for Arc<T> {
     fn parse_inline(input: &mut Input) -> crate::Result<Self> {
-        T::parse_inline(input).map(Arc::new)
+        T::parse_inline(input).map(Self::new)
     }
 }
 
 impl<T: ReflessObject> ReflessObject for Arc<T> {
     fn parse(input: ReflessInput) -> crate::Result<Self> {
-        T::parse(input).map(Arc::new)
+        T::parse(input).map(Self::new)
     }
 }
 
 impl<T: ReflessInline> ReflessInline for Arc<T> {
     fn parse_inline(input: &mut ReflessInput) -> crate::Result<Self> {
-        T::parse_inline(input).map(Arc::new)
+        T::parse_inline(input).map(Self::new)
     }
 }
 
@@ -763,6 +785,12 @@ impl<T: Size> Size for Arc<T> {
 impl ToOutput for Vec<u8> {
     fn to_output(&self, output: &mut dyn Output) {
         output.write(self);
+    }
+}
+
+impl Parse<ReflessInput<'_>> for Vec<u8> {
+    fn parse(input: ReflessInput) -> crate::Result<Self> {
+        Ok(input.parse_all()?.into())
     }
 }
 
@@ -812,4 +840,52 @@ trait RainbowIterator: Sized + IntoIterator {
     }
 }
 
+pub trait ParseInput: Sized {
+    fn empty(self) -> crate::Result<()>;
+    fn non_empty(self) -> Option<Self>;
+
+    fn consume(self, f: impl FnMut(&mut Self) -> crate::Result<()>) -> crate::Result<()> {
+        self.collect(f)
+    }
+
+    fn collect_parse<T: ParseInline<Self>, B: FromIterator<T>>(self) -> crate::Result<B> {
+        self.collect(|input| input.parse_inline())
+    }
+
+    fn collect<T, B: FromIterator<T>>(self, f: impl FnMut(&mut Self) -> T) -> B {
+        self.iter(f).collect()
+    }
+
+    fn iter<T>(self, mut f: impl FnMut(&mut Self) -> T) -> impl Iterator<Item = T> {
+        let mut state = Some(self);
+        std::iter::from_fn(move || {
+            let mut input = state.take()?.non_empty()?;
+            let item = f(&mut input);
+            state = Some(input);
+            Some(item)
+        })
+    }
+
+    fn parse_inline<T: ParseInline<Self>>(&mut self) -> crate::Result<T> {
+        T::parse_inline(self)
+    }
+
+    fn parse<T: Parse<Self>>(self) -> crate::Result<T> {
+        T::parse(self)
+    }
+}
+
 impl<T: Sized + IntoIterator> RainbowIterator for T {}
+
+pub trait Parse<I: ParseInput>: Sized {
+    fn parse(input: I) -> crate::Result<Self>;
+}
+
+pub trait ParseInline<I: ParseInput>: Parse<I> {
+    fn parse_inline(input: &mut I) -> crate::Result<Self>;
+    fn parse_as_inline(mut input: I) -> crate::Result<Self> {
+        let object = Self::parse_inline(&mut input)?;
+        input.empty()?;
+        Ok(object)
+    }
+}

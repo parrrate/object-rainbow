@@ -44,6 +44,18 @@ impl<A: Size, B: Size> Size for (A, B) {
     const SIZE: usize = A::SIZE + B::SIZE;
 }
 
+impl<II: ParseInput, A: ParseInline<II>, B: Parse<II>> Parse<II> for (A, B) {
+    fn parse(mut input: II) -> crate::Result<Self> {
+        Ok((input.parse_inline()?, input.parse()?))
+    }
+}
+
+impl<II: ParseInput, A: ParseInline<II>, B: ParseInline<II>> ParseInline<II> for (A, B) {
+    fn parse_inline(input: &mut II) -> crate::Result<Self> {
+        Ok((input.parse_inline()?, input.parse_inline()?))
+    }
+}
+
 impl<A: ToOutput, B: ToOutput, C: ToOutput> ToOutput for (A, B, C) {
     fn to_output(&self, output: &mut dyn Output) {
         self.0.to_output(output);
@@ -96,6 +108,24 @@ impl<A: ReflessInline, B: ReflessInline, C: ReflessInline> ReflessInline for (A,
 
 impl<A: Size, B: Size, C: Size> Size for (A, B, C) {
     const SIZE: usize = A::SIZE + B::SIZE + C::SIZE;
+}
+
+impl<II: ParseInput, A: ParseInline<II>, B: ParseInline<II>, C: Parse<II>> Parse<II> for (A, B, C) {
+    fn parse(mut input: II) -> crate::Result<Self> {
+        Ok((input.parse_inline()?, input.parse_inline()?, input.parse()?))
+    }
+}
+
+impl<II: ParseInput, A: ParseInline<II>, B: ParseInline<II>, C: ParseInline<II>> ParseInline<II>
+    for (A, B, C)
+{
+    fn parse_inline(input: &mut II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+        ))
+    }
 }
 
 impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput> ToOutput for (A, B, C, D) {
@@ -168,6 +198,32 @@ impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessInline> Ref
 
 impl<A: Size, B: Size, C: Size, D: Size> Size for (A, B, C, D) {
     const SIZE: usize = A::SIZE + B::SIZE + C::SIZE + D::SIZE;
+}
+
+impl<II: ParseInput, A: ParseInline<II>, B: ParseInline<II>, C: ParseInline<II>, D: Parse<II>>
+    Parse<II> for (A, B, C, D)
+{
+    fn parse(mut input: II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse()?,
+        ))
+    }
+}
+
+impl<II: ParseInput, A: ParseInline<II>, B: ParseInline<II>, C: ParseInline<II>, D: ParseInline<II>>
+    ParseInline<II> for (A, B, C, D)
+{
+    fn parse_inline(input: &mut II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+        ))
+    }
 }
 
 impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput> ToOutput for (A, B, C, D, E) {
@@ -248,6 +304,46 @@ impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessInline, E: 
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size> Size for (A, B, C, D, E) {
     const SIZE: usize = A::SIZE + B::SIZE + C::SIZE + D::SIZE + E::SIZE;
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: Parse<II>,
+> Parse<II> for (A, B, C, D, E)
+{
+    fn parse(mut input: II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse()?,
+        ))
+    }
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: ParseInline<II>,
+> ParseInline<II> for (A, B, C, D, E)
+{
+    fn parse_inline(input: &mut II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+        ))
+    }
 }
 
 impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutput> ToOutput
@@ -355,6 +451,50 @@ impl<
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size> Size for (A, B, C, D, E, F) {
     const SIZE: usize = A::SIZE + B::SIZE + C::SIZE + D::SIZE + E::SIZE + F::SIZE;
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: ParseInline<II>,
+    F: Parse<II>,
+> Parse<II> for (A, B, C, D, E, F)
+{
+    fn parse(mut input: II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse()?,
+        ))
+    }
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: ParseInline<II>,
+    F: ParseInline<II>,
+> ParseInline<II> for (A, B, C, D, E, F)
+{
+    fn parse_inline(input: &mut II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+        ))
+    }
 }
 
 impl<A: ToOutput, B: ToOutput, C: ToOutput, D: ToOutput, E: ToOutput, F: ToOutput, G: ToOutput>
@@ -485,6 +625,54 @@ impl<
 
 impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size> Size for (A, B, C, D, E, F, G) {
     const SIZE: usize = A::SIZE + B::SIZE + C::SIZE + D::SIZE + E::SIZE + F::SIZE + G::SIZE;
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: ParseInline<II>,
+    F: ParseInline<II>,
+    G: Parse<II>,
+> Parse<II> for (A, B, C, D, E, F, G)
+{
+    fn parse(mut input: II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse()?,
+        ))
+    }
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: ParseInline<II>,
+    F: ParseInline<II>,
+    G: ParseInline<II>,
+> ParseInline<II> for (A, B, C, D, E, F, G)
+{
+    fn parse_inline(input: &mut II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+        ))
+    }
 }
 
 impl<
@@ -636,6 +824,58 @@ impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size> Siz
 {
     const SIZE: usize =
         A::SIZE + B::SIZE + C::SIZE + D::SIZE + E::SIZE + F::SIZE + G::SIZE + H::SIZE;
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: ParseInline<II>,
+    F: ParseInline<II>,
+    G: ParseInline<II>,
+    H: Parse<II>,
+> Parse<II> for (A, B, C, D, E, F, G, H)
+{
+    fn parse(mut input: II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse()?,
+        ))
+    }
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: ParseInline<II>,
+    F: ParseInline<II>,
+    G: ParseInline<II>,
+    H: ParseInline<II>,
+> ParseInline<II> for (A, B, C, D, E, F, G, H)
+{
+    fn parse_inline(input: &mut II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+        ))
+    }
 }
 
 impl<
@@ -816,6 +1056,62 @@ impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size, I: 
 {
     const SIZE: usize =
         A::SIZE + B::SIZE + C::SIZE + D::SIZE + E::SIZE + F::SIZE + G::SIZE + H::SIZE + I::SIZE;
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: ParseInline<II>,
+    F: ParseInline<II>,
+    G: ParseInline<II>,
+    H: ParseInline<II>,
+    I: Parse<II>,
+> Parse<II> for (A, B, C, D, E, F, G, H, I)
+{
+    fn parse(mut input: II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse()?,
+        ))
+    }
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: ParseInline<II>,
+    F: ParseInline<II>,
+    G: ParseInline<II>,
+    H: ParseInline<II>,
+    I: ParseInline<II>,
+> ParseInline<II> for (A, B, C, D, E, F, G, H, I)
+{
+    fn parse_inline(input: &mut II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+        ))
+    }
 }
 
 impl<
@@ -1017,6 +1313,66 @@ impl<A: Size, B: Size, C: Size, D: Size, E: Size, F: Size, G: Size, H: Size, I: 
         + H::SIZE
         + I::SIZE
         + J::SIZE;
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: ParseInline<II>,
+    F: ParseInline<II>,
+    G: ParseInline<II>,
+    H: ParseInline<II>,
+    I: ParseInline<II>,
+    J: Parse<II>,
+> Parse<II> for (A, B, C, D, E, F, G, H, I, J)
+{
+    fn parse(mut input: II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse()?,
+        ))
+    }
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: ParseInline<II>,
+    F: ParseInline<II>,
+    G: ParseInline<II>,
+    H: ParseInline<II>,
+    I: ParseInline<II>,
+    J: ParseInline<II>,
+> ParseInline<II> for (A, B, C, D, E, F, G, H, I, J)
+{
+    fn parse_inline(input: &mut II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+        ))
+    }
 }
 
 impl<
@@ -1243,6 +1599,70 @@ impl<
         + I::SIZE
         + J::SIZE
         + K::SIZE;
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: ParseInline<II>,
+    F: ParseInline<II>,
+    G: ParseInline<II>,
+    H: ParseInline<II>,
+    I: ParseInline<II>,
+    J: ParseInline<II>,
+    K: Parse<II>,
+> Parse<II> for (A, B, C, D, E, F, G, H, I, J, K)
+{
+    fn parse(mut input: II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse()?,
+        ))
+    }
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: ParseInline<II>,
+    F: ParseInline<II>,
+    G: ParseInline<II>,
+    H: ParseInline<II>,
+    I: ParseInline<II>,
+    J: ParseInline<II>,
+    K: ParseInline<II>,
+> ParseInline<II> for (A, B, C, D, E, F, G, H, I, J, K)
+{
+    fn parse_inline(input: &mut II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+        ))
+    }
 }
 
 impl<
@@ -1484,4 +1904,72 @@ impl<
         + J::SIZE
         + K::SIZE
         + L::SIZE;
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: ParseInline<II>,
+    F: ParseInline<II>,
+    G: ParseInline<II>,
+    H: ParseInline<II>,
+    I: ParseInline<II>,
+    J: ParseInline<II>,
+    K: ParseInline<II>,
+    L: Parse<II>,
+> Parse<II> for (A, B, C, D, E, F, G, H, I, J, K, L)
+{
+    fn parse(mut input: II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse()?,
+        ))
+    }
+}
+
+impl<
+    II: ParseInput,
+    A: ParseInline<II>,
+    B: ParseInline<II>,
+    C: ParseInline<II>,
+    D: ParseInline<II>,
+    E: ParseInline<II>,
+    F: ParseInline<II>,
+    G: ParseInline<II>,
+    H: ParseInline<II>,
+    I: ParseInline<II>,
+    J: ParseInline<II>,
+    K: ParseInline<II>,
+    L: ParseInline<II>,
+> ParseInline<II> for (A, B, C, D, E, F, G, H, I, J, K, L)
+{
+    fn parse_inline(input: &mut II) -> crate::Result<Self> {
+        Ok((
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+            input.parse_inline()?,
+        ))
+    }
 }
