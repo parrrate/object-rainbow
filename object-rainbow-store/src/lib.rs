@@ -225,8 +225,12 @@ impl<
     Extra: 'static + Send + Sync + Clone,
 > StoreRef<S, K, T, Extra>
 {
+    pub fn is_modified(&self) -> bool {
+        *self.point.hash() != self.old
+    }
+
     pub async fn save(&mut self) -> object_rainbow::Result<()> {
-        if *self.point.hash() != self.old {
+        if self.is_modified() {
             self.store.save_point(&self.point).await?;
             self.store
                 .update_ref(self.key.as_ref(), *self.point.hash())
