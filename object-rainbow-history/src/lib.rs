@@ -202,7 +202,7 @@ impl<T: Forward<D>, D: Send, H: Send> Forward<(H, D)> for DiscardHeader<T> {
     }
 }
 
-pub trait MapDiff<Outer: Send> {
+pub trait MapDiff<Outer: Send>: Send + Sync {
     type Inner: Send;
     fn map(&self, outer: Outer)
     -> impl Send + Future<Output = object_rainbow::Result<Self::Inner>>;
