@@ -1326,6 +1326,11 @@ impl<T: Tagged> Tagged for dyn ExtraFor<T> {
     const HASH: Hash = T::HASH;
 }
 
+impl<T> Size for dyn ExtraFor<T> {
+    type Size = typenum::U0;
+    const SIZE: usize = 0;
+}
+
 #[doc(hidden)]
 pub trait BoundPair: Sized {
     type T;
