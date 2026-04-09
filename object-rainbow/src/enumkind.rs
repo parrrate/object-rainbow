@@ -94,6 +94,7 @@ pub trait Enum {
 
 /// [`Enum`]-specific [`Parse`].
 pub trait EnumParse<I: ParseInput>: Enum + Parse<I> {
+    /// Given an already-parsed [`EnumKind`], parse the rest of a [`Parse`] [`Enum`].
     fn enum_parse(kind: Self::Kind, input: I) -> crate::Result<Self>;
     /// For implementing [`Parse::parse`].
     fn parse_as_enum(mut input: I) -> crate::Result<Self>
