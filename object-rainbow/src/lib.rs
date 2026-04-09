@@ -1334,6 +1334,18 @@ impl<T> Size for dyn ExtraFor<T> {
 impl<T> ListHashes for dyn ExtraFor<T> {}
 impl<T> Topological for dyn ExtraFor<T> {}
 
+impl<T, I: PointInput<Extra: ExtraFor<T>>> Parse<I> for Arc<dyn ExtraFor<T>> {
+    fn parse(input: I) -> crate::Result<Self> {
+        Self::parse_as_inline(input)
+    }
+}
+
+impl<T, I: PointInput<Extra: ExtraFor<T>>> ParseInline<I> for Arc<dyn ExtraFor<T>> {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        Ok(Arc::new(input.extra().clone()))
+    }
+}
+
 #[doc(hidden)]
 pub trait BoundPair: Sized {
     type T;
