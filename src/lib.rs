@@ -1138,13 +1138,14 @@ impl<T, E> BoundPair for (T, E) {
 pub struct WithExtra<E, T>(pub E, pub T);
 
 impl<
-    'a,
-    E: 'static + Send + Sync + Clone + ParseInline<Input<'a, X>>,
+    E: 'static + Send + Sync + Clone + ParseInline<I>,
     X: 'static + Send + Sync + Clone,
-    T: for<'x> Parse<Input<'x, (E, X)>>,
-> Parse<Input<'a, X>> for WithExtra<E, T>
+    T: Parse<J>,
+    I: PointInput<Extra = X, WithExtra<(E, X)> = J>,
+    J: ParseInput,
+> Parse<I> for WithExtra<E, T>
 {
-    fn parse(mut input: Input<'a, X>) -> crate::Result<Self> {
+    fn parse(mut input: I) -> crate::Result<Self> {
         let e = input.parse_inline::<E>()?;
         let x = input.extra().clone();
         let t = input.parse_extra((e.clone(), x))?;
