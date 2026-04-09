@@ -3,7 +3,6 @@ use std::sync::Arc;
 use imbl::{HashMap, OrdSet};
 use object_rainbow::{
     Address, ByteNode, DiffHashes, FailFuture, Hash, ObjectHashes, Resolve, ToOutput,
-    hashed::Hashed,
 };
 
 struct EntryInner {
@@ -40,11 +39,12 @@ impl LocalMap {
         }
         let mut map = self.map.clone();
         let expected = ObjectHashes {
-            diff: Hashed(DiffHashes {
+            diff: DiffHashes {
                 tags: tags_hash,
                 topology: topology.data_hash(),
                 mangle: mangle_hash,
-            }),
+            }
+            .data_hash(),
             data: data.data_hash(),
         }
         .data_hash();
