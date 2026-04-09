@@ -318,7 +318,7 @@ impl<T: ?Sized + Tagged> Tagged for ObjectMarker<T> {}
 impl<T: ?Sized + 'static + Tagged, Extra: 'static> Object<Extra> for ObjectMarker<T> {}
 impl<T: ?Sized + 'static + Tagged, Extra: 'static> Inline<Extra> for ObjectMarker<T> {}
 
-#[derive(ToOutput, ParseInline, ParseAsInline)]
+#[derive(ToOutput, Tagged, ParseInline, ParseAsInline)]
 pub struct RawPoint<T = Infallible, Extra = ()> {
     inner: RawPointInner,
     extra: Extras<Extra>,
