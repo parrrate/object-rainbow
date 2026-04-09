@@ -172,16 +172,20 @@ where
         if let Some(suffix) = prefix.strip_prefix(key) {
             let child = std::mem::replace(trie, new);
             let (first, suffix) = suffix.split_first().expect("must be at least 1");
-            trie.c_insert(*first, (child, suffix.into()).point());
+            let mut overlay = Self::new();
+            overlay.c_insert(*first, (child, suffix.into()).point());
+            trie.append(&mut overlay).await?;
             prefix.truncate(key.len());
         } else {
             let common = common_length(prefix, key);
             let child = std::mem::take(trie);
-            trie.c_insert(
+            let mut overlay = Self::new();
+            overlay.c_insert(
                 prefix[common],
                 (child, prefix[common + 1..].to_vec()).point(),
             );
-            trie.c_insert(key[common], (new, key[common + 1..].to_vec()).point());
+            overlay.c_insert(key[common], (new, key[common + 1..].to_vec()).point());
+            trie.append(&mut overlay).await?;
             prefix.truncate(common);
         }
         Ok(o)
@@ -248,22 +252,29 @@ where
             self.value = Some(value);
         }
         {
-            let mut futures = futures_util::stream::FuturesUnordered::new();
+            // let mut futures = futures_util::stream::FuturesUnordered::new();
             for (key, point) in self.c_iter_mut() {
                 if let Some(other) = other.c_remove(key) {
-                    futures.push(async move {
+                    Box::pin(async {
                         let (mut other, key) = other.fetch().await?;
                         Self::prepare_point(point, &key, async |trie| trie.append(&mut other).await)
                             .await
-                    });
+                    })
+                    .await?;
+                    // futures.push(async move {
+                    //     let (mut other, key) = other.fetch().await?;
+                    //     Self::prepare_point(point, &key, async |trie| trie.append(&mut other).await)
+                    //         .await
+                    // });
                 }
             }
-            while futures.try_next().await?.is_some() {}
+            // while futures.try_next().await?.is_some() {}
         }
         while let Some((key, point)) = other.c_pop_first() {
             assert!(!self.c_contains(key));
             self.c_insert(key, point);
         }
+        assert!(other.c_empty());
         Ok(())
     }
 
@@ -738,6 +749,27 @@ mod test {
         trie.insert(b"apricot", 2).await?;
         assert_eq!(trie.get(b"apple").await?, Some(1));
         assert_eq!(trie.get(b"apricot").await?, Some(2));
+        Ok(())
+    }
+
+    #[apply(test!)]
+    async fn append() -> object_rainbow::Result<()> {
+        let mut enormita = Trie::<u8>::new();
+        enormita.insert(b"Magia Baiser", 1).await?;
+        enormita.insert(b"Leopard", 2).await?;
+        enormita.insert(b"Nero Alice", 3).await?;
+        let mut rd = Trie::<u8>::new();
+        rd.insert(b"Lord Enorme", 4).await?;
+        rd.insert(b"Loco Musica", 5).await?;
+        rd.insert(b"Leberblume", 6).await?;
+        enormita.append(&mut rd).await?;
+        assert_eq!(enormita.get(b"Magia Baiser").await?.unwrap(), 1);
+        assert_eq!(enormita.get(b"Leopard").await?.unwrap(), 2);
+        assert_eq!(enormita.get(b"Nero Alice").await?.unwrap(), 3);
+        assert_eq!(enormita.get(b"Lord Enorme").await?.unwrap(), 4);
+        assert_eq!(enormita.get(b"Loco Musica").await?.unwrap(), 5);
+        assert_eq!(enormita.get(b"Leberblume").await?.unwrap(), 6);
+        assert!(rd.is_empty());
         Ok(())
     }
 }
