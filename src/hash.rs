@@ -95,6 +95,16 @@ impl MaybeHasNiche for OptionalHash {
     type MnArray = SomeNiche<HashNiche<U1>>;
 }
 
+impl Equivalent<Option<Hash>> for OptionalHash {
+    fn into_equivalent(self) -> Option<Hash> {
+        self.get()
+    }
+
+    fn from_equivalent(object: Option<Hash>) -> Self {
+        object.map(Self::from).unwrap_or_default()
+    }
+}
+
 impl From<[u8; HASH_SIZE]> for OptionalHash {
     fn from(hash: [u8; HASH_SIZE]) -> Self {
         Self(hash)
