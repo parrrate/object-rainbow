@@ -57,7 +57,7 @@ pub const HASH_SIZE: usize = sha2_const::Sha256::DIGEST_SIZE;
 ///
 /// This was introduced:
 /// - to avoid using a [`Hash`]-only map
-/// - to differentiate between separate [`Point`]s within a context
+/// - to differentiate between separate [`Hash`]es within a context
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, ParseAsInline)]
 pub struct Address {
     /// Monotonically incremented index. This is not present at all in the actual format.
