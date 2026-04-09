@@ -155,6 +155,7 @@ impl<I: PointInput> ParseInline<I> for Address {
     }
 }
 
+/// Fallible future type yielding either `T` or [`Error`].
 pub type FailFuture<'a, T> = Pin<Box<dyn 'a + Send + Future<Output = Result<T>>>>;
 
 pub type ByteNode = (Vec<u8>, Arc<dyn Resolve>);
