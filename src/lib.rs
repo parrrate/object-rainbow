@@ -31,6 +31,7 @@ pub use self::niche::{
 pub use self::niche::{MaybeNiche, MnArray, NicheFoldOrArray, NicheOr};
 
 pub mod enumkind;
+pub mod hashed;
 mod impls;
 pub mod length_prefixed;
 mod niche;
