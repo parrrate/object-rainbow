@@ -55,6 +55,7 @@ impl<N: ArrayLength> Niche for OptionNiche<N> {
         niche[0] = 2;
         niche
     }
+    type Next = ZeroNiche<N>;
 }
 
 pub trait OptionNicheWrapper: Bit {

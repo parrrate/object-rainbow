@@ -22,6 +22,7 @@ pub trait Niche {
     type NeedsTag: Bit;
     type N: ArrayLength;
     fn niche() -> GenericArray<u8, Self::N>;
+    type Next: Niche<N = Self::N>;
 }
 
 pub trait MaybeNiche {
@@ -42,6 +43,7 @@ impl<V: Niche<NeedsTag = B1>> Niche for NoNiche<V> {
     fn niche() -> GenericArray<u8, Self::N> {
         V::niche()
     }
+    type Next = Self;
 }
 
 impl<V: Niche<NeedsTag = B1>> MaybeNiche for NoNiche<V> {
@@ -64,6 +66,7 @@ impl<A: Niche<N: Add<B::N, Output: ArrayLength>>, B: Niche> Niche for NoNiche2<A
     fn niche() -> GenericArray<u8, Self::N> {
         Concat::concat(A::niche(), B::niche())
     }
+    type Next = Self;
 }
 
 impl<A: MaybeNiche<N: Add<B::N, Output: Unsigned>>, B: MaybeNiche> MaybeNiche for NoNiche2<A, B> {
@@ -90,10 +93,10 @@ impl<V: Niche<N = N>, N: ArrayLength + Add<T::N, Output: ArrayLength>, T: Niche>
 {
     type NeedsTag = T::NeedsTag;
     type N = Sum<N, T::N>;
-
     fn niche() -> GenericArray<u8, Self::N> {
         Concat::concat(V::niche(), T::niche())
     }
+    type Next = AndNiche<V, T::Next>;
 }
 
 impl<V: MaybeNiche<N = N>, N: Unsigned, T: MaybeNiche> MaybeNiche for AndNiche<V, T>
@@ -128,10 +131,10 @@ impl<T: Niche<N: Add<N, Output: ArrayLength>>, V: Niche<N = N>, N: ArrayLength> 
 {
     type NeedsTag = T::NeedsTag;
     type N = Sum<T::N, N>;
-
     fn niche() -> GenericArray<u8, Self::N> {
         Concat::concat(T::niche(), V::niche())
     }
+    type Next = NicheAnd<T::Next, V>;
 }
 
 impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, V: MaybeNiche<N = N>, N: Unsigned> MaybeNiche
@@ -164,6 +167,7 @@ impl<T: Niche<NeedsTag = B0>> Niche for SomeNiche<T> {
     fn niche() -> GenericArray<u8, Self::N> {
         T::niche()
     }
+    type Next = T::Next;
 }
 
 impl<T: Niche<NeedsTag = B0>> MaybeNiche for SomeNiche<T> {
@@ -206,6 +210,7 @@ impl<N: ArrayLength> Niche for ZeroNoNiche<N> {
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::default()
     }
+    type Next = Self;
 }
 
 pub struct ZeroNiche<N>(N);
@@ -216,6 +221,7 @@ impl<N: ArrayLength> Niche for ZeroNiche<N> {
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::default()
     }
+    type Next = ZeroNoNiche<N>;
 }
 
 pub struct OneNiche<N>(N);
@@ -226,6 +232,7 @@ impl<N: ArrayLength> Niche for OneNiche<N> {
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::default().map(|()| 0xff)
     }
+    type Next = ZeroNoNiche<N>;
 }
 
 pub trait NicheOr: MaybeNiche {
@@ -317,6 +324,7 @@ impl<
             V::niche()
         }
     }
+    type Next = ZeroNoNiche<N>;
 }
 
 pub trait NicheAuto: Bit {
@@ -343,4 +351,5 @@ impl<const X: usize> Niche for HackNiche<X> {
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::default()
     }
+    type Next = Self;
 }
