@@ -116,6 +116,10 @@ impl<T> Trie<T> {
     }
 }
 
+fn common_length(a: &[u8], b: &[u8]) -> usize {
+    a.iter().zip(b).take_while(|(a, b)| a == b).count()
+}
+
 impl<T: 'static + Send + Sync + Clone> Trie<T>
 where
     Option<T>: Traversible + InlineOutput,
@@ -152,7 +156,7 @@ where
             trie.c_insert(*first, (child, suffix.into()).point());
             prefix.truncate(key.len());
         } else {
-            let common = prefix.iter().zip(key).take_while(|(a, b)| a == b).count();
+            let common = common_length(prefix, key);
             let child = std::mem::take(trie);
             trie.c_insert(
                 prefix[common],
