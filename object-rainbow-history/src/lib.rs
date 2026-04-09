@@ -30,18 +30,22 @@ impl<T, D> History<T, D> {
 }
 
 pub trait Diff<Tree: Send>: Send {
-    fn forward(
-        self,
-        tree: Option<Tree>,
-    ) -> impl Send + Future<Output = object_rainbow::Result<Tree>>;
+    fn forward(self, tree: Tree) -> impl Send + Future<Output = object_rainbow::Result<Tree>>;
 }
 
-impl<T: Send + Clone, D: Clone + Diff<T>> History<T, D>
+impl<T: Send + Clone + Default, D: Clone + Diff<T>> History<T, D>
 where
     (T, D): Traversible,
 {
     pub async fn commit(&mut self, diff: D) -> object_rainbow::Result<()> {
-        let tree = self.0.prev().await?.last().await?.map(|(tree, _)| tree);
+        let tree = self
+            .0
+            .prev()
+            .await?
+            .last()
+            .await?
+            .map(|(tree, _)| tree)
+            .unwrap_or_default();
         let tree = diff.clone().forward(tree).await?;
         self.0.push((tree, diff)).await?;
         Ok(())
@@ -56,7 +60,12 @@ where
             .diff(&self.0)
             .and_then(async |node| {
                 let diff = node.value().1.clone();
-                let tree = node.prev().last().await?.map(|(tree, _)| tree);
+                let tree = node
+                    .prev()
+                    .last()
+                    .await?
+                    .map(|(tree, _)| tree)
+                    .unwrap_or_default();
                 let tree = diff.clone().forward(tree).await?;
                 if tree == node.value().0 {
                     Ok(())
@@ -72,21 +81,18 @@ where
 }
 
 impl<D: Diff<T>, T: Send> Diff<T> for Vec<D> {
-    fn forward(
-        self,
-        mut tree: Option<T>,
-    ) -> impl Send + Future<Output = object_rainbow::Result<T>> {
+    fn forward(self, mut tree: T) -> impl Send + Future<Output = object_rainbow::Result<T>> {
         async move {
             for diff in self {
-                tree = Some(diff.forward(tree).await?);
+                tree = diff.forward(tree).await?;
             }
-            tree.ok_or_else(|| object_rainbow::error_fetch!("empty diff"))
+            Ok(tree)
         }
     }
 }
 
 impl<D: Diff<T> + Traversible, T: Send> Diff<T> for Point<D> {
-    fn forward(self, tree: Option<T>) -> impl Send + Future<Output = object_rainbow::Result<T>> {
+    fn forward(self, tree: T) -> impl Send + Future<Output = object_rainbow::Result<T>> {
         async move { self.fetch().await?.forward(tree).await }
     }
 }
@@ -98,10 +104,10 @@ impl<
 {
     fn forward(
         self,
-        tree: Option<Point<BTreeMap<K, V>>>,
+        tree: Point<BTreeMap<K, V>>,
     ) -> impl Send + Future<Output = object_rainbow::Result<Point<BTreeMap<K, V>>>> {
         async move {
-            let mut tree = tree.unwrap_or_default().fetch().await?;
+            let mut tree = tree.fetch().await?;
             tree.insert(self.0, self.1);
             Ok(tree.point())
         }
@@ -111,10 +117,10 @@ impl<
 impl<T: Send + Clone + Traversible + InlineOutput + Ord> Diff<Point<BTreeSet<T>>> for (T,) {
     fn forward(
         self,
-        tree: Option<Point<BTreeSet<T>>>,
+        tree: Point<BTreeSet<T>>,
     ) -> impl Send + Future<Output = object_rainbow::Result<Point<BTreeSet<T>>>> {
         async move {
-            let mut tree = tree.unwrap_or_default().fetch().await?;
+            let mut tree = tree.fetch().await?;
             tree.insert(self.0);
             Ok(tree.point())
         }
