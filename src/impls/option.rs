@@ -64,7 +64,7 @@ pub trait OptionNicheWrapper: Bit {
 
 impl OptionNicheWrapper for B0 {
     type Wrap<Mn: Niche<NeedsTag = Self, N: Add<Self, Output: ArrayLength>>> =
-        NoNiche<ZeroNoNiche<<<Mn as Niche>::N as Add<Self>>::Output>>;
+        NoNiche<ZeroNoNiche<Mn::N>>;
 }
 
 impl OptionNicheWrapper for B1 {
