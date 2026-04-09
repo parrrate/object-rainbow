@@ -266,7 +266,7 @@ pub async fn encrypt<K: Key, T: Object<Extra>, Extra: 'static + Send + Sync + Cl
     key: K,
     decrypted: T,
 ) -> object_rainbow::Result<Encrypted<K, T, Extra>> {
-    let mut futures = Vec::new();
+    let mut futures = Vec::with_capacity(decrypted.point_count());
     decrypted.accept_points(&mut ExtractResolution(&mut futures, &key));
     let resolution = futures_util::future::try_join_all(futures).await?;
     let resolution = Arc::new(Lp(resolution));

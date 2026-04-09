@@ -70,7 +70,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
         &self,
         object: &impl Topological<Extra>,
     ) -> impl RainbowFuture<T = ()> {
-        let mut futures = Vec::new();
+        let mut futures = Vec::with_capacity(object.point_count());
         object.accept_points(&mut StoreVisitor {
             store: self,
             futures: &mut futures,
