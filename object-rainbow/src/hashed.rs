@@ -15,8 +15,13 @@ impl<T> Deref for Hashed<T> {
 }
 
 impl<T: ToOutput> ToOutput for Hashed<T> {
-    fn to_output(&self, output: &mut dyn object_rainbow::Output) {
-        self.0.data_hash().to_output(output);
+    fn to_output(&self, output: &mut dyn Output) {
+        if output.is_mangling() {
+            self.0.to_output(output);
+        }
+        if output.is_real() {
+            self.0.data_hash().to_output(output);
+        }
     }
 }
 
