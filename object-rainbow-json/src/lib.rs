@@ -2,8 +2,8 @@ use std::{collections::BTreeMap, io::Write};
 
 use object_rainbow::{
     Enum, Fetch, Inline, MaybeHasNiche, Object, Output, Parse, ParseAsInline, ParseInline,
-    ParseInput, Point, ReflessObject, Size, SomeNiche, Tagged, ToOutput, Topological, ZeroNiche,
-    length_prefixed::LpString, numeric::Le,
+    ParseInput, Point, ReflessObject, SimpleObject, Size, SomeNiche, Tagged, ToOutput, Topological,
+    ZeroNiche, length_prefixed::LpString, numeric::Le,
 };
 use serde::{Serialize, de::DeserializeOwned};
 
@@ -92,6 +92,48 @@ impl Distributed {
                 }
                 map.into()
             }
+        })
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
+pub enum DistributedParseError {
+    #[error("invalid number")]
+    InvalidNumber,
+}
+
+impl TryFrom<serde_json::Value> for Distributed {
+    type Error = DistributedParseError;
+
+    fn try_from(value: serde_json::Value) -> Result<Self, Self::Error> {
+        Ok(match value {
+            serde_json::Value::Null => Self::Null,
+            serde_json::Value::Bool(x) => Self::Bool(x),
+            serde_json::Value::Number(x) => {
+                if let Some(x) = x.as_u64() {
+                    Self::U64(x.into())
+                } else if let Some(x) = x.as_i64() {
+                    Self::I64(x.into())
+                } else if let Some(x) = x.as_f64() {
+                    Self::F64(x.into())
+                } else {
+                    return Err(DistributedParseError::InvalidNumber);
+                }
+            }
+            serde_json::Value::String(x) => Self::String(x.point()),
+            serde_json::Value::Array(vec) => Self::Array(
+                vec.into_iter()
+                    .map(Self::try_from)
+                    .collect::<Result<Vec<_>, _>>()?
+                    .point(),
+            ),
+            serde_json::Value::Object(map) => Self::Object(
+                map.into_iter()
+                    .map(|(k, v)| Ok((LpString(k), Self::try_from(v)?)))
+                    .collect::<Result<BTreeMap<_, _>, _>>()?
+                    .point(),
+            ),
         })
     }
 }
