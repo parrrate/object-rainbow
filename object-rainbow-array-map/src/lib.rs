@@ -70,7 +70,7 @@ assert_impl!(
     impl<T, E> Inline<E> for KeyedArrayMap<T>
     where
         T: Inline<(u8, E)>,
-        E: Clone,
+        E: 'static + Clone,
     {
     }
 );
