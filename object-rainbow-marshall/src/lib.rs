@@ -232,6 +232,7 @@ impl<I: ParseInput> Parse<I> for MarshalledRoot {
 impl<E> Object<E> for MarshalledRoot {}
 impl ReflessObject for MarshalledRoot {}
 
+#[derive(Tagged)]
 pub struct Marshalled<T> {
     root: MarshalledRoot,
     value: T,
