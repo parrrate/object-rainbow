@@ -19,6 +19,17 @@ struct Node<T, N, M> {
     items: Vec<T>,
 }
 
+impl<T: std::fmt::Debug, N, M> std::fmt::Debug for Node<T, N, M> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Node")
+            .field("_capacity", &self._capacity)
+            .field("_marker", &self._marker)
+            .field("prev", &self.prev)
+            .field("items", &self.items)
+            .finish()
+    }
+}
+
 assert_impl!(
     impl<E, T, N, M> Object<E> for Node<T, N, M>
     where
