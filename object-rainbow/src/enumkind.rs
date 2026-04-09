@@ -96,6 +96,7 @@ pub trait EnumParse<I: ParseInput>: Enum + Parse<I> {
     }
 }
 
+/// [`Enum`]-specific [`ParseInline`].
 pub trait EnumParseInline<I: ParseInput>: Enum + ParseInline<I> {
     fn enum_parse_inline(kind: Self::Kind, input: &mut I) -> crate::Result<Self>;
     fn parse_as_inline_enum(input: &mut I) -> crate::Result<Self>
