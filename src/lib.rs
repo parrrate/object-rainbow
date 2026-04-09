@@ -909,7 +909,7 @@ impl PointVisitor for TopoVec {
     }
 }
 
-impl<T> FetchBytes for Point<T> {
+impl<T, Extra> FetchBytes for Point<T, Extra> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.origin.fetch_bytes()
     }
