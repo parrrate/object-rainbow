@@ -354,15 +354,15 @@ where
 
 #[derive(ToOutput, Tagged, ListPoints, Topological, Parse)]
 pub struct TrieMap<K, V> {
-    trie: Trie<V>,
     key: ObjectMarker<K>,
+    trie: Trie<V>,
 }
 
 impl<K, V: Clone> Clone for TrieMap<K, V> {
     fn clone(&self) -> Self {
         Self {
-            trie: self.trie.clone(),
             key: self.key,
+            trie: self.trie.clone(),
         }
     }
 }
@@ -370,8 +370,8 @@ impl<K, V: Clone> Clone for TrieMap<K, V> {
 impl<K, V> Default for TrieMap<K, V> {
     fn default() -> Self {
         Self {
-            trie: Default::default(),
             key: Default::default(),
+            trie: Default::default(),
         }
     }
 }
@@ -421,8 +421,8 @@ where
         stream: impl TryStream<Ok = (K, V), Error = object_rainbow::Error>,
     ) -> object_rainbow::Result<Self> {
         Ok(Self {
-            trie: Trie::from_stream(stream).await?,
             key: Default::default(),
+            trie: Trie::from_stream(stream).await?,
         })
     }
 }
