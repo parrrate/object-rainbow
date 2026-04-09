@@ -312,6 +312,10 @@ impl<T: Send + Sync + Clone + ToOutput> Fetch for Marshalled<T> {
     fn fetch_local(&self) -> Option<Self::T> {
         Some(self.object.clone())
     }
+
+    fn try_unwrap(self: Arc<Self>) -> Option<Self::T> {
+        Arc::try_unwrap(self).ok().map(|Self { object, .. }| object)
+    }
 }
 
 impl<T: Send + Sync + ToOutput> Singular for Marshalled<T> {
