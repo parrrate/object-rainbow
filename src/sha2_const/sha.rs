@@ -1,3 +1,7 @@
+//! Original: <https://docs.rs/sha2-const/0.1.2/src/sha2_const/sha.rs.html>
+//!
+//! Original license: MIT OR Apache-2.0, copyright Saleem Rashid
+
 use core::mem;
 
 use super::{
