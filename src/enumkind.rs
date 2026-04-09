@@ -9,6 +9,21 @@ pub trait UsizeTag: Sized {
 #[derive(ToOutput, Topological, Tagged, ParseAsInline, Size, MaybeHasNiche)]
 pub struct EnumTag<T, const MAX: usize>(T);
 
+impl<T: UsizeTag, const MAX: usize> UsizeTag for EnumTag<T, MAX> {
+    fn from_usize(n: usize) -> Self {
+        assert!(n < MAX);
+        Self(T::from_usize(n))
+    }
+
+    fn to_usize(&self) -> usize {
+        self.0.to_usize()
+    }
+
+    fn try_to_usize(&self) -> Option<usize> {
+        self.0.try_to_usize()
+    }
+}
+
 impl<T: Deref<Target: UsizeTag> + From<T::Target>, const MAX: usize> EnumTag<T, MAX> {
     pub fn to_usize(&self) -> usize {
         self.0.to_usize()
