@@ -1092,6 +1092,7 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
         }
         Ok(scratch.map(Option::unwrap))
     }
+    /// Parse a [`GenericArray`] of `Self`. Customisable for optimisations.
     fn parse_generic_array<N: ArrayLength>(input: &mut I) -> crate::Result<GenericArray<Self, N>> {
         let mut scratch = GenericArray::default();
         for item in scratch.iter_mut() {
