@@ -346,6 +346,10 @@ where
     pub async fn insert(&mut self, key: &K, value: V) -> object_rainbow::Result<Option<V>> {
         self.trie.insert(key.as_ref(), value).await
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.trie.is_empty()
+    }
 }
 
 #[cfg(test)]
