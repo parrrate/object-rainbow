@@ -425,6 +425,10 @@ impl<T, Extra> FetchBytes for RawPoint<T, Extra> {
         self.inner.fetch_data()
     }
 
+    fn fetch_bytes_local(&self) -> Result<Option<ByteNode>> {
+        self.inner.fetch_bytes_local()
+    }
+
     fn fetch_data_local(&self) -> Option<Vec<u8>> {
         self.inner.fetch_data_local()
     }
