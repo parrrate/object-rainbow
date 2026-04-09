@@ -7,8 +7,8 @@ use std::{
 use futures_util::{Stream, TryStream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    Fetch, Inline, ListPoints, ObjectMarker, Parse, ParseSliceRefless, Point, ReflessObject,
-    Tagged, ToOutput, Topological, Traversible, length_prefixed::LpBytes,
+    Fetch, ListPoints, ObjectMarker, Parse, ParseSliceRefless, Point, ReflessObject, Tagged,
+    ToOutput, Topological, Traversible, length_prefixed::LpBytes,
 };
 
 #[cfg(feature = "serde")]
@@ -33,7 +33,7 @@ impl<T> Default for Trie<T> {
 
 impl<T: 'static + Send + Sync + Clone> Trie<T>
 where
-    Option<T>: Inline,
+    Option<T>: Traversible,
 {
     pub async fn get(&self, key: &[u8]) -> object_rainbow::Result<Option<T>> {
         let Some((first, key)) = key.split_first() else {
@@ -350,7 +350,7 @@ impl<K, V> Default for TrieMap<K, V> {
 
 impl<K: ReflessObject + AsRef<[u8]>, V: 'static + Send + Sync + Clone> TrieMap<K, V>
 where
-    Option<V>: Inline,
+    Option<V>: Traversible,
 {
     pub async fn get(&self, key: &K) -> object_rainbow::Result<Option<V>> {
         self.trie.get(key.as_ref()).await
