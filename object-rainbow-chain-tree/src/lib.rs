@@ -34,6 +34,10 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainNode<T> {
     pub fn prev(&self) -> ChainTree<T> {
         ChainTree(self.tree.last().cloned())
     }
+
+    pub fn into_tree(self) -> ChainTree<T> {
+        ChainTree(Some(self.point()))
+    }
 }
 
 #[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline)]
@@ -85,7 +89,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainTree<T> {
         } else {
             Default::default()
         };
-        self.0 = Some(ChainNode { value, tree }.point());
+        *self = ChainNode { value, tree }.into_tree();
         Ok(())
     }
 
