@@ -438,6 +438,24 @@ impl<'d, Extra: 'static + Clone> PointInput for Input<'d, Extra> {
         }
     }
 
+    fn replace_extra<E: 'static + Clone>(self, e: E) -> (Extra, Self::WithExtra<E>) {
+        let Self {
+            refless,
+            resolve,
+            index,
+            extra,
+        } = self;
+        (
+            extra.into_owned(),
+            Input {
+                refless,
+                resolve,
+                index,
+                extra: Cow::Owned(e),
+            },
+        )
+    }
+
     fn with_extra<E: 'static + Clone>(self, extra: E) -> Self::WithExtra<E> {
         let Self {
             refless,
@@ -998,7 +1016,10 @@ pub trait PointInput: ParseInput {
         self,
         f: impl FnOnce(&Self::Extra) -> &E,
     ) -> Self::WithExtra<E>;
-    fn with_extra<E: 'static + Clone>(self, extra: E) -> Self::WithExtra<E>;
+    fn replace_extra<E: 'static + Clone>(self, extra: E) -> (Self::Extra, Self::WithExtra<E>);
+    fn with_extra<E: 'static + Clone>(self, extra: E) -> Self::WithExtra<E> {
+        self.replace_extra(extra).1
+    }
 }
 
 impl<T: Sized + IntoIterator> RainbowIterator for T {}
