@@ -193,7 +193,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
                     self.items
                         .get(index)
                         .cloned()
-                        .ok_or_else(|| object_rainbow::error_fetch!("out of bounds"))
+                        .ok_or_else(|| object_rainbow::error_operation!("out of bounds"))
                 }),
         )
     }
@@ -296,7 +296,7 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
                     usize::try_from(index / T::CAPACITY)
                         .map_err(|_| object_rainbow::Error::UnsupportedLength)?,
                 )
-                .ok_or_else(|| object_rainbow::error_fetch!("out of bounds"))?
+                .ok_or_else(|| object_rainbow::error_operation!("out of bounds"))?
                 .fetch()
                 .await?
                 .get(index % T::CAPACITY)
