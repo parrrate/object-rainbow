@@ -240,6 +240,7 @@ impl RawPointInner {
     pub fn cast<T>(self) -> RawPoint<T> {
         RawPoint {
             inner: self,
+            extra: (),
             _object: PhantomData,
         }
     }
@@ -277,8 +278,9 @@ impl<T> Singular for RawPoint<T> {
 }
 
 #[derive(ToOutput, ParseInline, ParseAsInline)]
-pub struct RawPoint<T = Infallible> {
+pub struct RawPoint<T = Infallible, Extra = ()> {
     inner: RawPointInner,
+    extra: Extra,
     _object: PhantomData<fn() -> T>,
 }
 
@@ -290,10 +292,11 @@ impl<T> FromInner for RawPoint<T> {
     }
 }
 
-impl<T> Clone for RawPoint<T> {
+impl<T, Extra: Clone> Clone for RawPoint<T, Extra> {
     fn clone(&self) -> Self {
         Self {
             inner: self.inner.clone(),
+            extra: self.extra.clone(),
             _object: PhantomData,
         }
     }
