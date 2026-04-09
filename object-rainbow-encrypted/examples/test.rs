@@ -113,9 +113,13 @@ impl<'ex> Event<'ex> {
 struct MapResolve(Arc<BTreeMap<Hash, Vec<u8>>>);
 
 impl Resolve for MapResolve {
-    fn resolve(&'_ self, address: object_rainbow::Address) -> FailFuture<'_, ByteNode> {
+    fn resolve<'a>(
+        &'a self,
+        address: object_rainbow::Address,
+        this: &'a Arc<dyn Resolve>,
+    ) -> FailFuture<'a, ByteNode> {
         Box::pin(ready(match self.0.get(&address.hash) {
-            Some(data) => Ok((data.clone(), Arc::new(self.clone()) as _)),
+            Some(data) => Ok((data.clone(), this.clone())),
             None => Err(object_rainbow::Error::HashNotFound),
         }))
     }

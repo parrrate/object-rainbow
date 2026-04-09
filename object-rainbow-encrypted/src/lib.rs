@@ -311,7 +311,7 @@ impl<K: Key> Decrypt<K> {
 }
 
 impl<K: Key> Resolve for Decrypt<K> {
-    fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode> {
+    fn resolve(&'_ self, address: Address, _: &Arc<dyn Resolve>) -> FailFuture<'_, ByteNode> {
         Box::pin(async move {
             let (data, resolution) = self.resolve_bytes(address).await?;
             Ok((data, Arc::new(Decrypt { resolution }) as _))

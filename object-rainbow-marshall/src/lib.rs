@@ -110,7 +110,7 @@ impl FetchBytes for MarshalledInner {
 }
 
 impl Resolve for MarshalledInner {
-    fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode> {
+    fn resolve(&'_ self, address: Address, _: &Arc<dyn Resolve>) -> FailFuture<'_, ByteNode> {
         Box::pin(async move { self.resolve_node(address) })
     }
 
