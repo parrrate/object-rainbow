@@ -325,6 +325,18 @@ pub struct RawPoint<T = Infallible, Extra = ()> {
     object: ObjectMarker<T>,
 }
 
+impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Topological<Extra>
+    for RawPoint<T, Extra>
+{
+    fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
+        visitor.visit(&self.clone().point());
+    }
+
+    fn point_count(&self) -> usize {
+        1
+    }
+}
+
 impl<T, Extra: 'static + Clone> FromInner for RawPoint<T, Extra> {
     type Inner = RawPointInner;
     type Extra = Extra;
