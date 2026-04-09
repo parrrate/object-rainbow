@@ -3,7 +3,7 @@ use std::{future::ready, marker::PhantomData};
 use object_rainbow::{
     Address, Enum, ExtraFor, Fetch, FullHash, Inline, InlineOutput, ListHashes, Object, Output,
     Parse, ParseAsInline, ParseInline, ParseInput, PointInput, Tagged, ToOutput, Topological,
-    Traversible, assert_impl, numeric::Le,
+    Traversible, assert_impl, numeric::Be,
 };
 use object_rainbow_point::{IntoPoint, Point};
 use typenum::{U256, Unsigned};
@@ -391,7 +391,7 @@ enum TreeKind<T> {
 
 #[derive(Tagged, ListHashes, Topological, Clone, ParseAsInline, PartialEq, Eq, Debug)]
 pub struct AppendTree<T> {
-    len: Le<u64>,
+    len: Be<u64>,
     kind: TreeKind<T>,
 }
 
@@ -441,7 +441,7 @@ where
     N8<T>: ParseWithLen<I, History = H8<T>>,
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let len = input.parse_inline::<Le<u64>>()?;
+        let len = input.parse_inline::<Be<u64>>()?;
         let kind = match len.0 {
             0..=C1 => TreeKind::N1(N1::<T>::parse_with_len(input, len.0)?),
             C2_MIN..=C2 => TreeKind::N2(N2::<T>::parse_with_len(input, len.0)?),
@@ -468,7 +468,7 @@ assert_impl!(
 impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
     pub const fn new() -> Self {
         Self {
-            len: Le::<u64>::new(0u64),
+            len: Be::<u64>::new(0u64),
             kind: TreeKind::N1((Node::new(None, Vec::new()), ())),
         }
     }
