@@ -101,7 +101,7 @@ impl LocalMap {
         Arc::new(self.clone())
     }
 
-    async fn resolve_bytes(&self, address: Address) -> object_rainbow::Result<Vec<u8>> {
+    fn resolve_bytes(&self, address: Address) -> object_rainbow::Result<Vec<u8>> {
         self.get(address.hash)
             .map(|(_, data)| data.to_owned())
             .ok_or(object_rainbow::Error::HashNotFound)
@@ -119,12 +119,17 @@ impl LocalMap {
 impl Resolve for LocalMap {
     fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode> {
         Box::pin(async move {
-            let data = self.resolve_bytes(address).await?;
+            let data = self.resolve_bytes(address)?;
             Ok((data, self.to_resolve()))
         })
     }
 
     fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>> {
-        Box::pin(self.resolve_bytes(address))
+        Box::pin(async move { self.resolve_bytes(address) })
+    }
+
+    fn try_resolve_local(&self, address: Address) -> object_rainbow::Result<Option<ByteNode>> {
+        let data = self.resolve_bytes(address)?;
+        Ok(Some((data, self.to_resolve())))
     }
 }
