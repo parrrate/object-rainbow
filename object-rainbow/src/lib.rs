@@ -195,6 +195,18 @@ pub trait Resolve: Send + Sync + AsAny {
     }
 }
 
+impl<I: PointInput> Parse<I> for Arc<dyn Resolve> {
+    fn parse(input: I) -> crate::Result<Self> {
+        Self::parse_as_inline(input)
+    }
+}
+
+impl<I: PointInput> ParseInline<I> for Arc<dyn Resolve> {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        Ok(input.resolve())
+    }
+}
+
 pub trait FetchBytes: AsAny {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode>;
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>>;
