@@ -381,7 +381,7 @@ where
     }
 }
 
-#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse)]
+#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline)]
 pub struct TrieMap<K, V> {
     key: ObjectMarker<K>,
     trie: Trie<V>,
