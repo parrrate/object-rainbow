@@ -16,6 +16,7 @@ use std::{
     sync::Arc,
 };
 
+
 pub use anyhow::anyhow;
 use generic_array::{ArrayLength, GenericArray, functional::FunctionalSequence};
 pub use object_rainbow_derive::{
@@ -48,7 +49,6 @@ pub mod length_prefixed;
 mod niche;
 pub mod numeric;
 pub mod partial_byte_tag;
-mod sha2_const;
 pub mod zero_terminated;
 
 /// SHA-256 hash size in bytes.
