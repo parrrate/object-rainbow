@@ -29,7 +29,6 @@ where
     type MnArray = NoNiche<ZeroNoNiche<typenum::generic_const_mappings::U<N>>>;
 }
 
-impl<const N: usize> Tagged for [u8; N] {}
 impl<const N: usize> Object for [u8; N] {}
 impl<const N: usize> Inline for [u8; N] {}
 impl<const N: usize> ReflessObject for [u8; N] {}
@@ -47,6 +46,5 @@ impl Parse<ReflessInput<'_>> for Vec<u8> {
     }
 }
 
-impl Tagged for Vec<u8> {}
 impl Object for Vec<u8> {}
 impl ReflessObject for Vec<u8> {}
