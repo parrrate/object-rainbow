@@ -51,6 +51,7 @@ impl<T: UsizeTag, const MAX: usize> UsizeTag for EnumTag<T, MAX> {
 }
 
 impl<T: UsizeTag, const MAX: usize> EnumTag<T, MAX> {
+    /// Inherent alias of [`UsizeTag::to_usize`].
     pub fn to_usize(&self) -> usize {
         self.0.to_usize()
     }
