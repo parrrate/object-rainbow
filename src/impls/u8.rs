@@ -40,9 +40,9 @@ impl MaybeHasNiche for u8 {
     type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
 }
 
-impl Topological for u8 {}
 impl Tagged for u8 {}
-impl Object for u8 {}
-impl Inline for u8 {}
+impl<E: 'static> Topological<E> for u8 {}
+impl<E: 'static> Object<E> for u8 {}
+impl<E: 'static> Inline<E> for u8 {}
 impl ReflessObject for u8 {}
 impl ReflessInline for u8 {}
