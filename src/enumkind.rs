@@ -24,16 +24,18 @@ where
     }
 }
 
-impl<T: ParseInline<I> + Deref<Target: PartialOrd<usize>>, I: ParseInput, const MAX: usize>
+impl<T: ParseInline<I> + Deref<Target: Copy + TryInto<usize>>, I: ParseInput, const MAX: usize>
     ParseInline<I> for EnumTag<T, MAX>
 {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        let n = T::parse_inline(input)?;
-        if *n >= MAX {
-            Err(Error::DiscriminantOverflow)
-        } else {
-            Ok(Self(n))
+        let n_raw = T::parse_inline(input)?;
+        let n: Option<usize> = (*n_raw).try_into().ok();
+        if let Some(n) = n {
+            if n < MAX {
+                return Ok(Self(n_raw));
+            }
         }
+        Err(Error::DiscriminantOverflow)
     }
 }
 
