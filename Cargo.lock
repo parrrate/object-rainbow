@@ -1142,7 +1142,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-amt-set"
-version = "0.0.0-a.1"
+version = "0.0.0-a.2"
 dependencies = [
  "macro_rules_attribute",
  "object-rainbow",
@@ -1228,7 +1228,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.2"
+version = "0.0.0-a.3"
 dependencies = [
  "futures-util",
  "object-rainbow",
@@ -1319,6 +1319,15 @@ dependencies = [
  "serde",
  "smol",
  "smol-macros",
+]
+
+[[package]]
+name = "object-rainbow-unique-diffs"
+version = "0.0.0-a.0"
+dependencies = [
+ "object-rainbow",
+ "object-rainbow-amt-set",
+ "object-rainbow-history",
 ]
 
 [[package]]
