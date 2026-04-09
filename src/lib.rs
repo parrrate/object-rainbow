@@ -379,7 +379,7 @@ impl<T: 'static + Traversible, Extra: 'static + Send + Sync + Clone + ExtraFor<T
     for RawPoint<T, Extra>
 {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        visitor.visit(&self.clone().into_point());
+        visitor.visit(self);
     }
 }
 
