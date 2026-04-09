@@ -820,8 +820,8 @@ impl<T: Object> Topological for Point<T> {
     }
 }
 
-impl<T: Object> ParseInline<Input<'_>> for Point<T> {
-    fn parse_inline(input: &mut Input<'_>) -> crate::Result<Self> {
+impl<T: Object, I: PointInput> ParseInline<I> for Point<T> {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
         input.parse_point()
     }
 }
