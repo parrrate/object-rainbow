@@ -39,8 +39,6 @@ impl<T: Clone + Traversible + InlineOutput + Default, D: Clone + Traversible + D
     pub async fn commit(&mut self, diff: D) -> object_rainbow::Result<()> {
         let tree = self
             .0
-            .prev()
-            .await?
             .last()
             .await?
             .map(|(tree, _)| tree)
