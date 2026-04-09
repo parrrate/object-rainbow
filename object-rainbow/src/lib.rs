@@ -673,6 +673,15 @@ impl Tags {
     }
 }
 
+#[test]
+fn const_hash() {
+    assert_ne!(Tags(&["a", "b"], &[]).hash(), Tags(&["a"], &[]).hash());
+    assert_eq!(
+        Tags(&["a", "b"], &[]).hash(),
+        Tags(&["a"], &[&Tags(&["b"], &[])]).hash(),
+    );
+}
+
 pub trait Inline<Extra = ()>:
     Object<Extra> + InlineOutput + for<'a> ParseInline<Input<'a, Extra>>
 {
