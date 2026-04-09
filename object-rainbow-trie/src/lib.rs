@@ -7,21 +7,68 @@ use std::{
 use futures_util::{Stream, TryStream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    Fetch, InlineOutput, ListHashes, ObjectMarker, Parse, ParseSliceRefless, ReflessObject, Tagged,
-    ToOutput, Topological, Traversible, length_prefixed::LpBytes,
+    BoundPair, Fetch, InlineOutput, ListHashes, Object, ObjectMarker, Parse, ParseSliceRefless,
+    PointInput, PointVisitor, ReflessObject, Tagged, ToOutput, Topological, Traversible,
+    length_prefixed::LpBytes,
 };
 use object_rainbow_point::{IntoPoint, Point};
 
 #[cfg(feature = "serde")]
 mod serde;
 
+trait ConditionalParse<T>: BoundPair {
+    fn parse(input: impl PointInput<Extra = Self::E>) -> object_rainbow::Result<Self::T>
+    where
+        Trie<T>: Object<Self::E>;
+}
+
+impl<T, E: Send + Sync> ConditionalParse<T> for (Children<T>, E) {
+    fn parse(input: impl PointInput<Extra = Self::E>) -> object_rainbow::Result<Self::T>
+    where
+        Trie<T>: Object<Self::E>,
+    {
+        input.parse::<Children<T>>()
+    }
+}
+
+trait ConditionalTopology<T> {
+    fn traverse(&self, visitor: &mut impl PointVisitor)
+    where
+        Trie<T>: Traversible;
+}
+
+impl<T> ConditionalTopology<T> for Children<T> {
+    fn traverse(&self, visitor: &mut impl PointVisitor)
+    where
+        Trie<T>: Traversible,
+    {
+        Topological::traverse(self, visitor);
+    }
+}
+
+#[derive(ToOutput, Tagged, ListHashes, Topological, Parse)]
+struct Children<T>(BTreeMap<u8, Point<(LpBytes, Trie<T>)>>);
+
+impl<T> Clone for Children<T> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
+impl<T> Default for Children<T> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 #[topology(recursive)]
 pub struct Trie<T> {
     value: Option<T>,
     #[tags(skip)]
-    #[parse(unchecked)]
-    children: BTreeMap<u8, Point<(LpBytes, Self)>>,
+    #[parse(bound = "ConditionalParse<T>", with = "parse")]
+    #[topology(bound = "ConditionalTopology<T>", with = "traverse")]
+    children: Children<T>,
 }
 
 impl<T> Default for Trie<T> {
@@ -50,27 +97,27 @@ trait TrieChildren: Sized {
 
 impl<T> TrieChildren for Trie<T> {
     fn c_get_mut(&mut self, key: u8) -> Option<&mut Point<(LpBytes, Self)>> {
-        self.children.get_mut(&key)
+        self.children.0.get_mut(&key)
     }
 
     fn c_get(&self, key: u8) -> Option<&Point<(LpBytes, Self)>> {
-        self.children.get(&key)
+        self.children.0.get(&key)
     }
 
     fn c_insert(&mut self, key: u8, point: Point<(LpBytes, Self)>) {
-        self.children.insert(key, point);
+        self.children.0.insert(key, point);
     }
 
     fn c_empty(&self) -> bool {
-        self.children.is_empty()
+        self.children.0.is_empty()
     }
 
     fn c_len(&self) -> usize {
-        self.children.len()
+        self.children.0.len()
     }
 
     fn c_remove(&mut self, key: u8) {
-        self.children.remove(&key);
+        self.children.0.remove(&key);
     }
 
     fn c_range(
@@ -78,11 +125,11 @@ impl<T> TrieChildren for Trie<T> {
         min_inclusive: u8,
         max_inclusive: u8,
     ) -> impl Iterator<Item = (&u8, &Point<(LpBytes, Self)>)> {
-        self.children.range(min_inclusive..=max_inclusive)
+        self.children.0.range(min_inclusive..=max_inclusive)
     }
 
     fn c_pop_first(&mut self) -> Option<(u8, Point<(LpBytes, Self)>)> {
-        self.children.pop_first()
+        self.children.0.pop_first()
     }
 }
 
