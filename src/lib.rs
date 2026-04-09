@@ -1555,11 +1555,21 @@ impl<Extra: 'static> Topological<Extra> for Extras<Extra> {}
 impl<Extra: 'static + Send + Sync + Clone> Object<Extra> for Extras<Extra> {}
 impl<Extra: 'static + Send + Sync + Clone> Inline<Extra> for Extras<Extra> {}
 
+/// Implemented if both types have the exact same layout.
+/// This implies having the same [`MaybeHasNiche::MnArray`].
+///
+/// This is represented as two-way conversion for two reasons:
+/// - to highlight that the conversion is actual equivalence
+/// - to increase flexibility (mostly to go around the orphan rule)
 pub trait Equivalent<T>: Sized {
+    /// Inverse of [`Equivalent::from_equivalent`].
     fn into_equivalent(self) -> T;
+    /// Inverse of [`Equivalent::into_equivalent`].
     fn from_equivalent(object: T) -> Self;
 }
 
+/// This implementation is the main goal of [`Equivalent`]: we assume transmuting the pointer is
+/// safe.
 impl<U: 'static + Equivalent<T>, T: 'static, Extra: 'static> Equivalent<Point<T, Extra>>
     for Point<U, Extra>
 {
