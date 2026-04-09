@@ -615,6 +615,10 @@ impl<T> FetchBytes for Point<T> {
     fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
         self.fetch.as_resolve()
     }
+
+    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
+        Arc::try_unwrap(self).ok()?.fetch.try_unwrap_resolve()
+    }
 }
 
 impl<T> Singular for Point<T> {
