@@ -20,6 +20,10 @@ pub struct LocalMap {
 }
 
 impl LocalMap {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     pub fn insert(
         &mut self,
         hash: Hash,
