@@ -25,7 +25,7 @@ impl ReflessInline for () {}
 
 impl Size for () {
     const SIZE: usize = 0;
-    type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
+    type Size = typenum::U0;
 }
 
 impl MaybeHasNiche for () {
