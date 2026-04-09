@@ -14,7 +14,7 @@ struct Entry {
     referenced_by: OrdSet<Hash>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct LocalMap {
     map: HashMap<Hash, Entry>,
 }
