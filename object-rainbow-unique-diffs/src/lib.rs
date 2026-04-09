@@ -6,7 +6,16 @@ use object_rainbow_amt_set::AmtSet;
 use object_rainbow_history::Forward;
 
 #[derive(
-    ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Clone, PartialEq,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Clone,
+    PartialEq,
+    Eq,
 )]
 pub struct UniqueDiffs<T> {
     diffs: AmtSet,
