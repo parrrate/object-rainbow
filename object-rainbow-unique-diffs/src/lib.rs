@@ -2,7 +2,7 @@ use object_rainbow::{
     FullHash, Inline, InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological,
     assert_impl,
 };
-use object_rainbow_amt_set::AmtSet;
+use object_rainbow_hamt::HamtSet;
 use object_rainbow_history::Forward;
 
 #[derive(
@@ -19,7 +19,7 @@ use object_rainbow_history::Forward;
     Default,
 )]
 pub struct UniqueDiffs<T> {
-    diffs: AmtSet,
+    diffs: HamtSet,
     tree: T,
 }
 

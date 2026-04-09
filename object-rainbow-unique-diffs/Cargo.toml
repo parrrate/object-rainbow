@@ -1,6 +1,6 @@
 [package]
 name = "object-rainbow-unique-diffs"
-version = "0.0.0-a.5"
+version = "0.0.0-a.6"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -10,5 +10,5 @@ description = "object-rainbow-history deduplication"
 
 [dependencies]
 object-rainbow.workspace = true
-object-rainbow-amt-set.workspace = true
+object-rainbow-hamt.workspace = true
 object-rainbow-history.workspace = true

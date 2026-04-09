@@ -1141,17 +1141,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "object-rainbow-amt-set"
-version = "0.0.0-a.7"
-dependencies = [
- "macro_rules_attribute",
- "object-rainbow",
- "object-rainbow-hamt",
- "smol",
- "smol-macros",
-]
-
-[[package]]
 name = "object-rainbow-append-tree"
 version = "0.0.0-a.9"
 dependencies = [
@@ -1351,10 +1340,10 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-unique-diffs"
-version = "0.0.0-a.5"
+version = "0.0.0-a.6"
 dependencies = [
  "object-rainbow",
- "object-rainbow-amt-set",
+ "object-rainbow-hamt",
  "object-rainbow-history",
 ]
 
