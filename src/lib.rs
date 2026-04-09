@@ -700,7 +700,7 @@ impl ParseInput for ReflessInput<'_> {
     }
 
     fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
-        let input = ReflessInput {
+        let input = Self {
             data: Some(self.parse_n(n)?),
         };
         T::parse(input)
@@ -760,7 +760,7 @@ impl<Extra> ParseInput for Input<'_, Extra> {
     }
 
     fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
-        let input = Input {
+        let input = Self {
             refless: ReflessInput {
                 data: Some(self.parse_n(n)?),
             },
