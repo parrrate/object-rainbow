@@ -5,7 +5,7 @@
 extern crate self as object_rainbow;
 
 use std::{
-    any::{Any, TypeId},
+    any::Any,
     borrow::Cow,
     cell::Cell,
     convert::Infallible,
@@ -184,17 +184,6 @@ pub trait Resolve: Send + Sync + AsAny {
         let _ = address;
         let _ = this;
         Ok(None)
-    }
-    /// Get a dynamic extension for a specific [`Address`].
-    fn resolve_extension(&self, address: Address, typeid: TypeId) -> crate::Result<&dyn Any> {
-        let _ = address;
-        let _ = typeid;
-        Err(Error::UnknownExtension)
-    }
-    /// Get a dynamic extension.
-    fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
-        let _ = typeid;
-        Err(Error::UnknownExtension)
     }
     fn topology_hash(&self) -> Option<Hash> {
         None
@@ -1234,12 +1223,6 @@ pub trait PointInput: ParseInput {
     }
     fn resolve_ref(&self) -> &dyn Resolve {
         self.resolve_arc_ref().as_ref()
-    }
-    fn extension<T: Any>(&self) -> crate::Result<&T> {
-        self.resolve_ref()
-            .extension(TypeId::of::<T>())?
-            .downcast_ref()
-            .ok_or(Error::ExtensionType)
     }
     /// Get [`Self::Extra`].
     fn extra(&self) -> &Self::Extra;

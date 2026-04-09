@@ -82,12 +82,6 @@ pub enum Error {
     /// Not UTF-8.
     #[error(transparent)]
     Utf8(#[from] std::string::FromUtf8Error),
-    /// [`Resolve::extension`] (or related things) were unable to resolve the extension.
-    #[error("unknown extension")]
-    UnknownExtension,
-    /// Extension type didn't match what we asked for. This might be turned into panic later.
-    #[error("wrong extension type")]
-    ExtensionType,
     /// This functionality hasn't been implemented yet or won't ever be supported.
     #[error("not implemented")]
     Unimplemented,
@@ -143,8 +137,6 @@ impl Error {
             Error::OutOfBounds => ErrorKind::InvalidData,
             Error::UnsupportedLength => ErrorKind::FileTooLarge,
             Error::Utf8(_) => ErrorKind::InvalidData,
-            Error::UnknownExtension => ErrorKind::Other,
-            Error::ExtensionType => ErrorKind::Other,
             Error::Unimplemented => ErrorKind::Unsupported,
             Error::HashNotFound => ErrorKind::NotFound,
             Error::Interrupted => ErrorKind::Interrupted,
