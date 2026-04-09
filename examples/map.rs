@@ -125,7 +125,7 @@ fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt().init();
     tracing::info!("starting");
     smol::block_on(async move {
-        let point = iterate((
+        let mut point = iterate((
             Point::from_object(Refless((*b"alisa", *b"feistel"))),
             Point::from_object(Refless([1, 2, 3, 4])),
         ))
@@ -133,6 +133,13 @@ fn main() -> anyhow::Result<()> {
         assert_eq!(point.fetch().await?.0.fetch().await?.0.0, *b"alisa");
         assert_eq!(point.fetch().await?.0.fetch().await?.0.1, *b"feistel");
         assert_eq!(point.fetch().await?.1.fetch().await?.0, [1, 2, 3, 4]);
+        println!("{}", hex::encode(point.full_hash()));
+        point.get_mut().await?.1.get_mut().await?.0[3] = 5;
+        assert_eq!(point.fetch().await?.1.fetch().await?.0, [1, 2, 3, 5]);
+        println!("{}", hex::encode(point.full_hash()));
+        point.get_mut().await?.1.get_mut().await?.0[3] = 4;
+        assert_eq!(point.fetch().await?.1.fetch().await?.0, [1, 2, 3, 4]);
+        println!("{}", hex::encode(point.full_hash()));
         Ok(())
     })
 }
