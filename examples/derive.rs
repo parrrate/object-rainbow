@@ -91,7 +91,7 @@ enum Either<L, R> {
 #[derive(Enum, ToOutput, Topological, Tagged, Size, Parse, ParseInline, MaybeHasNiche)]
 #[enumtag("Le<u8>")]
 enum Abc {
-    NoNiche(bool),
+    NoNiche(Le<u8>),
     Niche(bool),
 }
 
