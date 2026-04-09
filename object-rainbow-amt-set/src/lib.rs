@@ -227,6 +227,7 @@ mod private {
 #[derive(
     ToOutput,
     InlineOutput,
+    Tagged,
     ListHashes,
     Topological,
     ParseAsInline,
@@ -237,9 +238,7 @@ mod private {
     PartialEq,
     Eq,
 )]
-pub struct AmtSet(Point<private::N32>);
-
-impl Tagged for AmtSet {}
+pub struct AmtSet(#[tags(skip)] Point<private::N32>);
 
 impl<I: PointInput<Extra: Send + Sync>> ParseInline<I> for AmtSet {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
