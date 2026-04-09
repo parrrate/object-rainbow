@@ -1,11 +1,12 @@
 use std::{ops::Deref, sync::Arc};
 
 use object_rainbow::{
-    Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, FullHash, Hash, ListHashes, Node,
-    Object, Parse, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular, SingularFetch,
-    Tagged, ToOutput, Topological, Traversible, derive_for_wrapped, length_prefixed::Lp,
+    Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node, Object, Parse,
+    ParseInline, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular, SingularFetch,
+    Tagged, ToOutput, TopoVec, Topological, Traversible, derive_for_wrapped, length_prefixed::Lp,
+    map_extra::MappedExtra, tuple_extra::Extra0,
 };
-use object_rainbow_point::{ExtractResolve, IntoPoint, Point};
+use object_rainbow_point::{ExtractResolve, Extras, IntoPoint, Point};
 
 #[derive_for_wrapped]
 pub trait Key: 'static + Sized + Send + Sync + Clone + PartialEq + Eq {
@@ -14,65 +15,215 @@ pub trait Key: 'static + Sized + Send + Sync + Clone + PartialEq + Eq {
     fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>, Self::Error>;
 }
 
-type UntypedResolution<K> = Arc<Lp<Vec<Point<Encrypted<K, Vec<u8>>>>>>;
+#[derive(ToOutput, Parse, ParseInline, Clone)]
+struct RawResolve<K> {
+    key: Extras<K>,
+    resolve: Arc<dyn Resolve>,
+    addresses: Arc<Lp<Vec<Address>>>,
+}
+
+impl<K> RawResolve<K> {
+    fn translate(&self, address: Address) -> object_rainbow::Result<Address> {
+        self.addresses
+            .get(address.index)
+            .copied()
+            .ok_or(Error::AddressOutOfBounds)
+    }
+}
+
+fn side_parse<K: Key>(
+    key: &K,
+    data: &[u8],
+    resolve: &Arc<dyn Resolve>,
+) -> object_rainbow::Result<(InnerHeader<K>, Vec<u8>)> {
+    let data = key
+        .decrypt(data)
+        .map_err(object_rainbow::Error::consistency)?;
+    <(InnerHeader<K>, Vec<u8>) as ParseSliceExtra<K>>::parse_slice_extra(&data, resolve, key)
+}
+
+impl<K: Key> Resolve for RawResolve<K> {
+    fn resolve<'a>(
+        &'a self,
+        address: Address,
+        _: &'a Arc<dyn Resolve>,
+    ) -> FailFuture<'a, ByteNode> {
+        Box::pin(async move {
+            let address = self.translate(address)?;
+            let (data, resolve) = self.resolve.resolve(address, &self.resolve).await?;
+            let (InnerHeader { resolve, .. }, data) = side_parse(&self.key.0, &data, &resolve)?;
+            let resolve = Arc::new(resolve) as _;
+            Ok((data, resolve))
+        })
+    }
+
+    fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>> {
+        Box::pin(async move {
+            let address = self.translate(address)?;
+            let (data, resolve) = self.resolve.resolve(address, &self.resolve).await?;
+            let (_, data) = side_parse(&self.key.0, &data, &resolve)?;
+            Ok(data)
+        })
+    }
+}
+
+#[derive(Parse, ParseInline)]
+struct InnerHeader<K> {
+    tags: Hash,
+    resolve: RawResolve<K>,
+}
+
+impl<K: Key> InnerHeader<K> {
+    fn with<T: Topological>(self, decrypted: T) -> object_rainbow::Result<Inner<K, T>> {
+        let mut topology = TopoVec::new();
+        let mut v = RawVisit {
+            at: 0,
+            resolve: &self.resolve,
+            visitor: &mut topology,
+        };
+        decrypted.traverse(&mut v);
+        v.done()?;
+        let topology = Arc::new(Lp(topology));
+        let decrypted = Arc::new(decrypted);
+        Ok(Inner {
+            tags: self.tags,
+            key: self.resolve.key,
+            topology,
+            decrypted,
+        })
+    }
+}
 
 #[derive(ToOutput)]
-struct EncryptedInner<K, T> {
+struct Inner<K, T> {
     tags: Hash,
-    resolution: UntypedResolution<K>,
+    key: Extras<K>,
+    topology: Arc<Lp<TopoVec>>,
     decrypted: Arc<T>,
+}
+
+struct RawVisit<'a, K, V> {
+    at: usize,
+    resolve: &'a RawResolve<K>,
+    visitor: &'a mut V,
+}
+
+impl<'a, K, V> RawVisit<'a, K, V> {
+    fn done(self) -> object_rainbow::Result<()> {
+        if self.at != self.resolve.addresses.len() {
+            Err(Error::AddressOutOfBounds)
+        } else {
+            Ok(())
+        }
+    }
+}
+
+#[derive(Clone)]
+struct RawFetch<K, D> {
+    key: K,
+    resolve: Arc<dyn Resolve>,
+    address: Address,
+    decrypted: D,
+}
+
+impl<K, D> FetchBytes for RawFetch<K, D> {
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
+        self.resolve.resolve(self.address, &self.resolve)
+    }
+
+    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
+        self.resolve.resolve_data(self.address)
+    }
+}
+
+impl<K: Key, D: Fetch<T: Topological>> Fetch for RawFetch<K, D> {
+    type T = Encrypted<K, D::T>;
+
+    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
+        Box::pin(async move {
+            let (encrypted, resolve) = self.resolve.resolve(self.address, &self.resolve).await?;
+            let (header, _) = side_parse(&self.key, &encrypted, &resolve)?;
+            let decrypted = self.decrypted.fetch().await?;
+            let inner = header.with(decrypted)?;
+            Ok((Encrypted { inner }, resolve))
+        })
+    }
+
+    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
+        Box::pin(async move {
+            let (encrypted, resolve) = self.resolve.resolve(self.address, &self.resolve).await?;
+            let (header, _) = side_parse(&self.key, &encrypted, &resolve)?;
+            let decrypted = self.decrypted.fetch().await?;
+            let inner = header.with(decrypted)?;
+            Ok(Encrypted { inner })
+        })
+    }
+}
+
+impl<K: Send + Sync, D: Send + Sync> Singular for RawFetch<K, D> {
+    fn hash(&self) -> Hash {
+        self.address.hash
+    }
+}
+
+impl<'a, K: Key, V: PointVisitor> PointVisitor for RawVisit<'a, K, V> {
+    fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone)) {
+        let at = self.at;
+        self.at += 1;
+        if let Some(address) = self.resolve.addresses.get(at).copied() {
+            let key = self.resolve.key.0.clone();
+            let resolve = self.resolve.resolve.clone();
+            let decrypted = point.clone();
+            self.visitor.visit(&RawFetch {
+                key,
+                resolve,
+                address,
+                decrypted,
+            });
+        }
+    }
 }
 
 impl<
     K: Key,
     T: Object<Extra>,
     Extra: 'static + Send + Sync + Clone,
-    I: PointInput<Extra: EncryptedExtra<K, Extra = Extra>>,
-> Parse<I> for EncryptedInner<K, T>
+    I: PointInput<Extra = (K, Extra)>,
+> Parse<I> for Inner<K, T>
 {
     fn parse(mut input: I) -> object_rainbow::Result<Self> {
-        let tags = input.parse_inline()?;
-        let resolution: UntypedResolution<K> = input.parse_inline()?;
-        let (_, extra) = input.extra().parts();
-        let resolve = Decrypt {
-            resolution: resolution.clone(),
-        };
-        let decrypted = Arc::new(T::parse_slice_extra(
+        let header = input
+            .parse_inline::<MappedExtra<InnerHeader<K>, Extra0>>()?
+            .1;
+        let extra = input.extra().1.clone();
+        let decrypted = T::parse_slice_extra(
             &input.parse_all()?,
-            &(Arc::new(resolve) as _),
+            &(Arc::new(header.resolve.clone()) as _),
             &extra,
-        )?);
-        Ok(Self {
-            tags,
-            resolution,
-            decrypted,
-        })
+        )?;
+        header.with(decrypted)
     }
 }
 
-impl<K, T> Clone for EncryptedInner<K, T> {
+impl<K: Clone, T> Clone for Inner<K, T> {
     fn clone(&self) -> Self {
         Self {
             tags: self.tags,
-            resolution: self.resolution.clone(),
+            key: self.key.clone(),
+            topology: self.topology.clone(),
             decrypted: self.decrypted.clone(),
         }
     }
 }
 
-type ResolutionIter<'a, K> = std::slice::Iter<'a, Point<Encrypted<K, Vec<u8>>>>;
-
-struct IterateResolution<'a, 'r, K, V> {
-    resolution: &'r mut ResolutionIter<'a, K>,
-    visitor: &'a mut V,
+#[derive(Clone)]
+struct InnerFetch<K, D> {
+    key: K,
+    encrypted: Arc<dyn Singular>,
+    decrypted: D,
 }
 
-struct Visited<K, P> {
-    decrypted: P,
-    encrypted: Point<Encrypted<K, Vec<u8>>>,
-}
-
-impl<K, P> FetchBytes for Visited<K, P> {
+impl<K, D> FetchBytes for InnerFetch<K, D> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.encrypted.fetch_bytes()
     }
@@ -80,141 +231,52 @@ impl<K, P> FetchBytes for Visited<K, P> {
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
         self.encrypted.fetch_data()
     }
-
-    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
-        self.encrypted.fetch_bytes_local()
-    }
-
-    fn fetch_data_local(&self) -> Option<Vec<u8>> {
-        self.encrypted.fetch_data_local()
-    }
 }
 
-impl<K, P: Send + Sync> Singular for Visited<K, P> {
-    fn hash(&self) -> Hash {
-        self.encrypted.hash()
-    }
-}
-
-impl<K: Key, P: Fetch<T: Traversible>> Fetch for Visited<K, P> {
-    type T = Encrypted<K, P::T>;
+impl<K: Key, D: Fetch<T: Topological>> Fetch for InnerFetch<K, D> {
+    type T = Encrypted<K, D::T>;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
         Box::pin(async move {
-            let (
-                Encrypted {
-                    key,
-                    inner:
-                        EncryptedInner {
-                            tags,
-                            resolution,
-                            decrypted: _,
-                        },
-                },
-                resolve,
-            ) = self.encrypted.fetch_full().await?;
+            let (encrypted, resolve) = self.encrypted.fetch_bytes().await?;
+            let (header, _) = side_parse(&self.key, &encrypted, &resolve)?;
             let decrypted = self.decrypted.fetch().await?;
-            let decrypted = Arc::new(decrypted);
-            Ok((
-                Encrypted {
-                    key,
-                    inner: EncryptedInner {
-                        tags,
-                        resolution,
-                        decrypted,
-                    },
-                },
-                resolve,
-            ))
+            let inner = header.with(decrypted)?;
+            Ok((Encrypted { inner }, resolve))
         })
     }
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async move {
-            let Encrypted {
-                key,
-                inner:
-                    EncryptedInner {
-                        tags,
-                        resolution,
-                        decrypted: _,
-                    },
-            } = self.encrypted.fetch().await?;
+            let (encrypted, resolve) = self.encrypted.fetch_bytes().await?;
+            let (header, _) = side_parse(&self.key, &encrypted, &resolve)?;
             let decrypted = self.decrypted.fetch().await?;
-            let decrypted = Arc::new(decrypted);
-            Ok(Encrypted {
-                key,
-                inner: EncryptedInner {
-                    tags,
-                    resolution,
-                    decrypted,
-                },
-            })
+            let inner = header.with(decrypted)?;
+            Ok(Encrypted { inner })
         })
     }
+}
 
-    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
-        let Some((
-            Encrypted {
-                key,
-                inner:
-                    EncryptedInner {
-                        tags,
-                        resolution,
-                        decrypted: _,
-                    },
-            },
-            resolve,
-        )) = self.encrypted.try_fetch_local()?
-        else {
-            return Ok(None);
-        };
-        let Some((decrypted, _)) = self.decrypted.try_fetch_local()? else {
-            return Ok(None);
-        };
-        let decrypted = Arc::new(decrypted);
-        Ok(Some((
-            Encrypted {
-                key,
-                inner: EncryptedInner {
-                    tags,
-                    resolution,
-                    decrypted,
-                },
-            },
-            resolve,
-        )))
+impl<K: Send + Sync, D: Send + Sync> Singular for InnerFetch<K, D> {
+    fn hash(&self) -> Hash {
+        self.encrypted.hash()
     }
+}
 
-    fn fetch_local(&self) -> Option<Self::T> {
-        let Encrypted {
-            key,
-            inner:
-                EncryptedInner {
-                    tags,
-                    resolution,
-                    decrypted: _,
-                },
-        } = self.encrypted.fetch_local()?;
-        let decrypted = Arc::new(self.decrypted.fetch_local()?);
-        Some(Encrypted {
-            key,
-            inner: EncryptedInner {
-                tags,
-                resolution,
-                decrypted,
-            },
-        })
-    }
+struct IterateResolution<'a, 'r, K, V> {
+    key: &'a K,
+    topology: &'r mut std::slice::Iter<'a, Arc<dyn Singular>>,
+    visitor: &'a mut V,
 }
 
 impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, '_, K, V> {
     fn visit<T: Traversible>(&mut self, decrypted: &(impl 'static + SingularFetch<T = T> + Clone)) {
         let decrypted = decrypted.clone();
-        let encrypted = self.resolution.next().expect("length mismatch").clone();
+        let encrypted = self.topology.next().expect("length mismatch").clone();
         let point = Point::from_fetch(
             encrypted.hash(),
-            Visited {
+            InnerFetch {
+                key: self.key.clone(),
                 decrypted,
                 encrypted,
             }
@@ -224,34 +286,38 @@ impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, '_, K, 
     }
 }
 
-impl<K, T> ListHashes for EncryptedInner<K, T> {
+impl<K, T> ListHashes for Inner<K, T> {
     fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
-        self.resolution.list_hashes(f);
+        self.topology.list_hashes(f);
     }
 
     fn topology_hash(&self) -> Hash {
-        self.resolution.0.data_hash()
+        self.topology.0.data_hash()
     }
 
     fn point_count(&self) -> usize {
-        self.resolution.len()
+        self.topology.len()
     }
 }
 
-impl<K: Key, T: Topological> Topological for EncryptedInner<K, T> {
+impl<K: Key, T: Topological> Topological for Inner<K, T> {
     fn traverse(&self, visitor: &mut impl PointVisitor) {
-        let resolution = &mut self.resolution.iter();
+        let topology = &mut self.topology.iter();
         self.decrypted.traverse(&mut IterateResolution {
-            resolution,
+            key: &self.key.0,
+            topology,
             visitor,
         });
-        assert!(resolution.next().is_none());
+        assert!(topology.next().is_none());
+    }
+
+    fn topology(&self) -> TopoVec {
+        self.topology.0.clone()
     }
 }
 
 pub struct Encrypted<K, T> {
-    key: K,
-    inner: EncryptedInner<K, T>,
+    inner: Inner<K, T>,
 }
 
 impl<K, T: Clone> Encrypted<K, T> {
@@ -271,7 +337,6 @@ impl<K, T> Deref for Encrypted<K, T> {
 impl<K: Clone, T> Clone for Encrypted<K, T> {
     fn clone(&self) -> Self {
         Self {
-            key: self.key.clone(),
             inner: self.inner.clone(),
         }
     }
@@ -302,6 +367,7 @@ impl<K: Key, T: ToOutput> ToOutput for Encrypted<K, T> {
         if output.is_mangling() {
             output.write(
                 &self
+                    .inner
                     .key
                     .encrypt(b"this encrypted constant is followed by an unencrypted inner hash"),
             );
@@ -309,83 +375,8 @@ impl<K: Key, T: ToOutput> ToOutput for Encrypted<K, T> {
         }
         if output.is_real() {
             let source = self.inner.vec();
-            output.write(&self.key.encrypt(&source));
+            output.write(&self.inner.key.encrypt(&source));
         }
-    }
-}
-
-#[derive(Clone)]
-struct Decrypt<K> {
-    resolution: UntypedResolution<K>,
-}
-
-impl<K: Key> Decrypt<K> {
-    async fn resolve_bytes(
-        &self,
-        address: Address,
-    ) -> object_rainbow::Result<(Vec<u8>, UntypedResolution<K>)> {
-        let Encrypted {
-            key: _,
-            inner:
-                EncryptedInner {
-                    tags: _,
-                    resolution,
-                    decrypted,
-                },
-        } = self
-            .resolution
-            .get(address.index)
-            .ok_or(Error::AddressOutOfBounds)?
-            .clone()
-            .fetch()
-            .await?;
-        let data = Arc::unwrap_or_clone(decrypted);
-        Ok((data, resolution))
-    }
-}
-
-impl<K: Key> Resolve for Decrypt<K> {
-    fn resolve(&'_ self, address: Address, _: &Arc<dyn Resolve>) -> FailFuture<'_, ByteNode> {
-        Box::pin(async move {
-            let (data, resolution) = self.resolve_bytes(address).await?;
-            Ok((data, Arc::new(Decrypt { resolution }) as _))
-        })
-    }
-
-    fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>> {
-        Box::pin(async move {
-            let (data, _) = self.resolve_bytes(address).await?;
-            Ok(data)
-        })
-    }
-
-    fn try_resolve_local(
-        &self,
-        address: Address,
-        _: &Arc<dyn Resolve>,
-    ) -> object_rainbow::Result<Option<ByteNode>> {
-        let Some((
-            Encrypted {
-                key: _,
-                inner:
-                    EncryptedInner {
-                        tags: _,
-                        resolution,
-                        decrypted,
-                    },
-            },
-            _,
-        )) = self
-            .resolution
-            .get(address.index)
-            .ok_or(Error::AddressOutOfBounds)?
-            .clone()
-            .try_fetch_local()?
-        else {
-            return Ok(None);
-        };
-        let data = Arc::unwrap_or_clone(decrypted);
-        Ok(Some((data, Arc::new(Decrypt { resolution }) as _)))
     }
 }
 
@@ -426,103 +417,19 @@ impl<
             .0
             .decrypt(&input.parse_all()?)
             .map_err(object_rainbow::Error::consistency)?;
-        let inner = EncryptedInner::<K, T>::parse_slice_extra(&source, &resolve, &with_key)?;
-        Ok(Self {
-            key: with_key.0,
-            inner,
-        })
+        let inner = Inner::<K, T>::parse_slice_extra(&source, &resolve, &with_key)?;
+        Ok(Self { inner })
     }
 }
 
 impl<K, T> Tagged for Encrypted<K, T> {}
 
-type Extracted<K> = Vec<
-    std::pin::Pin<
-        Box<dyn Future<Output = Result<Point<Encrypted<K, Vec<u8>>>, Error>> + Send + 'static>,
-    >,
->;
+type Extracted =
+    Vec<std::pin::Pin<Box<dyn Future<Output = Result<Arc<dyn Singular>, Error>> + Send + 'static>>>;
 
 struct ExtractResolution<'a, K> {
-    extracted: &'a mut Extracted<K>,
+    extracted: &'a mut Extracted,
     key: &'a K,
-}
-
-struct Untyped<K, T> {
-    key: K,
-    encrypted: Point<Encrypted<K, T>>,
-}
-
-impl<K, T> FetchBytes for Untyped<K, T> {
-    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        self.encrypted.fetch_bytes()
-    }
-
-    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        self.encrypted.fetch_data()
-    }
-
-    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
-        self.encrypted.fetch_bytes_local()
-    }
-
-    fn fetch_data_local(&self) -> Option<Vec<u8>> {
-        self.encrypted.fetch_data_local()
-    }
-}
-
-impl<K: Send + Sync, T> Singular for Untyped<K, T> {
-    fn hash(&self) -> Hash {
-        self.encrypted.hash()
-    }
-}
-
-impl<K: Key, T: FullHash> Fetch for Untyped<K, T> {
-    type T = Encrypted<K, Vec<u8>>;
-
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        Box::pin(async move {
-            let (data, resolve) = self.fetch_bytes().await?;
-            let encrypted = Self::T::parse_slice_extra(&data, &resolve, &self.key)?;
-            Ok((encrypted, resolve))
-        })
-    }
-
-    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        Box::pin(async move {
-            let (data, resolve) = self.fetch_bytes().await?;
-            let encrypted = Self::T::parse_slice_extra(&data, &resolve, &self.key)?;
-            Ok(encrypted)
-        })
-    }
-
-    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
-        let Some((data, resolve)) = self.fetch_bytes_local()? else {
-            return Ok(None);
-        };
-        let encrypted = Self::T::parse_slice_extra(&data, &resolve, &self.key)?;
-        Ok(Some((encrypted, resolve)))
-    }
-
-    fn fetch_local(&self) -> Option<Self::T> {
-        let Encrypted {
-            key,
-            inner:
-                EncryptedInner {
-                    tags,
-                    resolution,
-                    decrypted,
-                },
-        } = self.encrypted.fetch_local()?;
-        let decrypted = Arc::new(decrypted.vec());
-        Some(Encrypted {
-            key,
-            inner: EncryptedInner {
-                tags,
-                resolution,
-                decrypted,
-            },
-        })
-    }
 }
 
 impl<K: Key> PointVisitor for ExtractResolution<'_, K> {
@@ -530,12 +437,7 @@ impl<K: Key> PointVisitor for ExtractResolution<'_, K> {
         let decrypted = decrypted.clone();
         let key = self.key.clone();
         self.extracted.push(Box::pin(async move {
-            let encrypted = encrypt_point(key.clone(), decrypted).await?;
-            let encrypted = Point::from_fetch(
-                encrypted.hash(),
-                Untyped { key, encrypted }.into_dyn_fetch(),
-            );
-            Ok(encrypted)
+            Ok(Arc::new(encrypt_point(key.clone(), decrypted).await?) as _)
         }));
     }
 }
@@ -544,17 +446,17 @@ pub async fn encrypt_point<K: Key, T: Traversible>(
     key: K,
     decrypted: impl 'static + SingularFetch<T = T>,
 ) -> object_rainbow::Result<Point<Encrypted<K, T>>> {
-    if let Some((address, decrypt)) = decrypted.extract_resolve::<Decrypt<K>>() {
-        let encrypted = decrypt
-            .resolution
-            .get(address.index)
-            .ok_or(Error::AddressOutOfBounds)?
-            .clone();
+    if let Some((address, resolve)) = decrypted.extract_resolve::<RawResolve<K>>()
+        && resolve.key.0 == key
+    {
+        let address = resolve.translate(*address)?;
         let point = Point::from_fetch(
-            encrypted.hash(),
-            Visited {
+            address.hash,
+            RawFetch {
+                key,
+                resolve: resolve.resolve.clone(),
+                address,
                 decrypted,
-                encrypted,
             }
             .into_dyn_fetch(),
         );
@@ -575,13 +477,14 @@ pub async fn encrypt<K: Key, T: Traversible>(
         extracted: &mut futures,
         key: &key,
     });
-    let resolution = futures_util::future::try_join_all(futures).await?;
-    let resolution = Arc::new(Lp(resolution));
+    let topology = futures_util::future::try_join_all(futures).await?;
+    let topology = Arc::new(Lp(topology));
     let decrypted = Arc::new(decrypted);
-    let inner = EncryptedInner {
+    let inner = Inner {
         tags: T::HASH,
-        resolution,
+        key: Extras(key),
+        topology,
         decrypted,
     };
-    Ok(Encrypted { key, inner })
+    Ok(Encrypted { inner })
 }
