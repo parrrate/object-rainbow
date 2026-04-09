@@ -10,28 +10,10 @@ type Os<T> = <T as HasOtherSign>::OtherSign;
 
 #[derive(ParseAsInline, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Ae<T>(pub T);
-#[derive(ParseAsInline, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Le<T>(pub T);
 #[derive(ParseAsInline, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Be<T>(pub T);
-#[derive(ParseAsInline, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Nz<T: NonZeroable>(pub T::Nz);
-
-pub trait NonZeroable {
-    type Nz: Send + Sync;
-    fn to_nz(&self) -> Option<Self::Nz>;
-    fn from_nz(nz: &Self::Nz) -> Self;
-}
-
-impl<T> From<T> for Ae<T> {
-    fn from(n: T) -> Self {
-        Self(n)
-    }
-}
 
 impl<T> From<T> for Be<T> {
     fn from(n: T) -> Self {
@@ -42,14 +24,6 @@ impl<T> From<T> for Be<T> {
 impl<T> From<T> for Le<T> {
     fn from(n: T) -> Self {
         Self(n)
-    }
-}
-
-impl<T> Deref for Ae<T> {
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
     }
 }
 
@@ -126,101 +100,95 @@ macro_rules! ae {
         }
 
         impl AsLe for $n {
-            type Le = Ae<$n>;
+            type Le = Self;
             fn construct(self) -> Self::Le {
-                Ae(self)
+                self
             }
         }
 
         impl AsLe for NonZero<$n> {
-            type Le = Nz<Ae<$n>>;
+            type Le = Self;
             fn construct(self) -> Self::Le {
-                Nz(self)
+                self
             }
         }
 
         impl AsBe for $n {
-            type Be = Ae<$n>;
+            type Be = Self;
             fn construct(self) -> Self::Be {
-                Ae(self)
+                self
             }
         }
 
         impl AsBe for NonZero<$n> {
-            type Be = Nz<Ae<$n>>;
+            type Be = Self;
             fn construct(self) -> Self::Be {
-                Nz(self)
+                self
             }
         }
 
-        impl From<NonZero<$n>> for Nz<Ae<$n>> {
-            fn from(nz: NonZero<$n>) -> Self {
-                Self(nz)
+        impl ToOutput for NonZero<$n> {
+            fn to_output(&self, output: &mut dyn crate::Output) {
+                self.get().to_output(output);
             }
         }
 
-        impl NonZeroable for Ae<$n> {
-            type Nz = NonZero<$n>;
-            fn to_nz(&self) -> Option<Self::Nz> {
-                NonZero::new(self.0)
-            }
-            fn from_nz(nz: &Self::Nz) -> Self {
-                Self(nz.get())
+        impl<I: ParseInput> Parse<I> for NonZero<$n> {
+            fn parse(input: I) -> crate::Result<Self> {
+                ParseInline::parse_as_inline(input)
             }
         }
 
-        impl ToOutput for Ae<$n> {
-            fn to_output(&self, output: &mut dyn Output) {
-                output.write(&self.0.to_le_bytes());
-            }
-        }
-
-        impl InlineOutput for Ae<$n> {}
-
-        impl<I: ParseInput> ParseInline<I> for Ae<$n> {
+        impl<I: ParseInput> ParseInline<I> for NonZero<$n> {
             fn parse_inline(input: &mut I) -> crate::Result<Self> {
-                Ok(Self(<$n>::from_le_bytes(*input.parse_chunk()?)))
+                NonZero::new(input.parse_inline::<$n>()?).ok_or(Error::Zero)
             }
         }
 
-        impl Size for Ae<$n> {
-            const SIZE: usize = std::mem::size_of::<$n>();
-            type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
+        impl Size for NonZero<$n> {
+            const SIZE: usize = <$n as Size>::SIZE;
+            type Size = <$n as Size>::Size;
         }
 
-        impl MaybeHasNiche for Ae<$n> {
+        impl MaybeHasNiche for $n {
             type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
         }
 
-        impl ListHashes for Ae<$n> {}
-        impl Topological for Ae<$n> {}
-        impl Tagged for Ae<$n> {}
-        impl Tagged for Ae<NonZero<$n>> {}
+        impl MaybeHasNiche for NonZero<$n> {
+            type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
+        }
 
-        impl Equivalent<Ae<$n>> for Option<Ae<NonZero<$n>>> {
-            fn into_equivalent(self) -> Ae<$n> {
-                Ae(self.map(|object| object.0.get()).unwrap_or_default())
+        impl Tagged for $n {}
+        impl Tagged for NonZero<$n> {}
+        impl ListHashes for $n {}
+        impl ListHashes for NonZero<$n> {}
+        impl Topological for $n {}
+        impl Topological for NonZero<$n> {}
+
+        impl Equivalent<$n> for Option<NonZero<$n>> {
+            fn into_equivalent(self) -> $n {
+                self.map(NonZero::get).unwrap_or_default()
             }
-            fn from_equivalent(object: Ae<$n>) -> Self {
-                NonZero::new(object.0).map(Ae)
+            fn from_equivalent(object: $n) -> Self {
+                NonZero::new(object)
             }
         }
 
-        impl Equivalent<Ae<Os<$n>>> for Ae<$n> {
-            fn into_equivalent(self) -> Ae<Os<$n>> {
-                Ae(self.0 as _)
+        impl Equivalent<Os<$n>> for $n {
+            fn into_equivalent(self) -> Os<$n> {
+                self as _
             }
-            fn from_equivalent(object: Ae<Os<$n>>) -> Self {
-                Ae(object.0 as _)
+            fn from_equivalent(object: Os<$n>) -> Self {
+                object as _
             }
         }
 
-        impl Equivalent<Ae<NonZero<Os<$n>>>> for Ae<NonZero<$n>> {
-            fn into_equivalent(self) -> Ae<NonZero<Os<$n>>> {
-                Ae(NonZero::new(self.0.get() as _).unwrap())
+        impl Equivalent<NonZero<Os<$n>>> for NonZero<$n> {
+            fn into_equivalent(self) -> NonZero<Os<$n>> {
+                NonZero::new(self.get() as _).unwrap()
             }
-            fn from_equivalent(object: Ae<NonZero<Os<$n>>>) -> Self {
-                Ae(NonZero::new(object.0.get() as _).unwrap())
+            fn from_equivalent(object: NonZero<Os<$n>>) -> Self {
+                NonZero::new(object.get() as _).unwrap()
             }
         }
     };
@@ -269,9 +237,9 @@ macro_rules! lebe {
         }
 
         impl AsLe for NonZero<$n> {
-            type Le = Nz<Le<$n>>;
+            type Le = Le<NonZero<$n>>;
             fn construct(self) -> Self::Le {
-                Nz(self)
+                Le(self)
             }
         }
 
@@ -283,41 +251,9 @@ macro_rules! lebe {
         }
 
         impl AsBe for NonZero<$n> {
-            type Be = Nz<Be<$n>>;
+            type Be = Be<NonZero<$n>>;
             fn construct(self) -> Self::Be {
-                Nz(self)
-            }
-        }
-
-        impl NonZeroable for Le<$n> {
-            type Nz = NonZero<$n>;
-            fn to_nz(&self) -> Option<Self::Nz> {
-                NonZero::new(self.0)
-            }
-            fn from_nz(nz: &Self::Nz) -> Self {
-                Self(nz.get())
-            }
-        }
-
-        impl NonZeroable for Be<$n> {
-            type Nz = NonZero<$n>;
-            fn to_nz(&self) -> Option<Self::Nz> {
-                NonZero::new(self.0)
-            }
-            fn from_nz(nz: &Self::Nz) -> Self {
-                Self(nz.get())
-            }
-        }
-
-        impl From<NonZero<$n>> for Nz<Le<$n>> {
-            fn from(nz: NonZero<$n>) -> Self {
-                Self(nz)
-            }
-        }
-
-        impl From<NonZero<$n>> for Nz<Be<$n>> {
-            fn from(nz: NonZero<$n>) -> Self {
-                Self(nz)
+                Be(self)
             }
         }
 
@@ -333,6 +269,18 @@ macro_rules! lebe {
             }
         }
 
+        impl ToOutput for Le<NonZero<$n>> {
+            fn to_output(&self, output: &mut dyn Output) {
+                output.write(&self.0.get().to_le_bytes());
+            }
+        }
+
+        impl ToOutput for Be<NonZero<$n>> {
+            fn to_output(&self, output: &mut dyn Output) {
+                output.write(&self.0.get().to_be_bytes());
+            }
+        }
+
         impl InlineOutput for Le<$n> {}
         impl InlineOutput for Be<$n> {}
 
@@ -345,6 +293,22 @@ macro_rules! lebe {
         impl<I: ParseInput> ParseInline<I> for Be<$n> {
             fn parse_inline(input: &mut I) -> crate::Result<Self> {
                 Ok(Self(<$n>::from_be_bytes(*input.parse_chunk()?)))
+            }
+        }
+
+        impl<I: ParseInput> ParseInline<I> for Le<NonZero<$n>> {
+            fn parse_inline(input: &mut I) -> crate::Result<Self> {
+                NonZero::new(input.parse_inline::<Le<$n>>()?.0)
+                    .ok_or(Error::Zero)
+                    .map(Le)
+            }
+        }
+
+        impl<I: ParseInput> ParseInline<I> for Be<NonZero<$n>> {
+            fn parse_inline(input: &mut I) -> crate::Result<Self> {
+                NonZero::new(input.parse_inline::<Be<$n>>()?.0)
+                    .ok_or(Error::Zero)
+                    .map(Be)
             }
         }
 
@@ -366,12 +330,36 @@ macro_rules! lebe {
             type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
         }
 
-        impl ListHashes for Le<$n> {}
-        impl ListHashes for Be<$n> {}
-        impl Topological for Le<$n> {}
-        impl Topological for Be<$n> {}
+        impl MaybeHasNiche for Le<NonZero<$n>> {
+            type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
+        }
+
+        impl MaybeHasNiche for Be<NonZero<$n>> {
+            type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
+        }
+
         impl Tagged for Le<$n> {}
+        impl Tagged for Le<NonZero<$n>> {}
         impl Tagged for Be<$n> {}
+        impl Tagged for Be<NonZero<$n>> {}
+        impl ListHashes for Le<$n> {}
+        impl ListHashes for Le<NonZero<$n>> {}
+        impl ListHashes for Be<$n> {}
+        impl ListHashes for Be<NonZero<$n>> {}
+        impl Topological for Le<$n> {}
+        impl Topological for Le<NonZero<$n>> {}
+        impl Topological for Be<$n> {}
+        impl Topological for Be<NonZero<$n>> {}
+
+        impl Size for Le<NonZero<$n>> {
+            const SIZE: usize = <Le<$n> as Size>::SIZE;
+            type Size = <Le<$n> as Size>::Size;
+        }
+
+        impl Size for Be<NonZero<$n>> {
+            const SIZE: usize = <Be<$n> as Size>::SIZE;
+            type Size = <Be<$n> as Size>::Size;
+        }
 
         impl Equivalent<Le<$n>> for Option<Le<NonZero<$n>>> {
             fn into_equivalent(self) -> Le<$n> {
@@ -523,60 +511,12 @@ lebe!(i128);
 float!(f32);
 float!(f64);
 
-impl<T: NonZeroable> Deref for Nz<T> {
-    type Target = T::Nz;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl<T: NonZeroable + ToOutput> ToOutput for Nz<T> {
-    fn to_output(&self, output: &mut dyn Output) {
-        T::from_nz(&self.0).to_output(output);
-    }
-}
-
-impl<T: NonZeroable + InlineOutput> InlineOutput for Nz<T> {}
-
-impl<T: NonZeroable + ParseInline<I>, I: ParseInput> ParseInline<I> for Nz<T> {
-    fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        Ok(Self(T::parse_inline(input)?.to_nz().ok_or(Error::Zero)?))
-    }
-}
-
-impl<T: NonZeroable + Size> Size for Nz<T> {
-    type Size = T::Size;
-}
-
-impl<T: NonZeroable + Size> MaybeHasNiche for Nz<T> {
-    type MnArray = SomeNiche<ZeroNiche<T::Size>>;
-}
-
-impl<T: NonZeroable> ListHashes for Nz<T> {}
-impl<T: NonZeroable> Topological for Nz<T> {}
-impl<T: NonZeroable> Tagged for Nz<T> {}
-
 #[test]
 fn nonzero() {
-    assert_eq!(Option::<Ae<u8>>::SIZE, 2);
-    assert_eq!(Option::<Nz<Ae<u8>>>::SIZE, 1);
-    assert_eq!(Option::<Le<u16>>::SIZE, 3);
-    assert_eq!(Option::<Nz<Le<u16>>>::SIZE, 2);
-}
-
-impl<T: UsizeTag> UsizeTag for Ae<T> {
-    fn from_usize(n: usize) -> Self {
-        Self(UsizeTag::from_usize(n))
-    }
-
-    fn to_usize(&self) -> usize {
-        self.0.to_usize()
-    }
-
-    fn try_to_usize(&self) -> Option<usize> {
-        self.0.try_to_usize()
-    }
+    assert_eq!(Option::<super::Le<u8>>::SIZE, 2);
+    assert_eq!(Option::<super::Le<NonZero<u8>>>::SIZE, 1);
+    assert_eq!(Option::<super::Le<u16>>::SIZE, 3);
+    assert_eq!(Option::<super::Le<NonZero<u16>>>::SIZE, 2);
 }
 
 impl<T: UsizeTag> UsizeTag for Le<T> {
@@ -594,20 +534,6 @@ impl<T: UsizeTag> UsizeTag for Le<T> {
 }
 
 impl<T: UsizeTag> UsizeTag for Be<T> {
-    fn from_usize(n: usize) -> Self {
-        Self(UsizeTag::from_usize(n))
-    }
-
-    fn to_usize(&self) -> usize {
-        self.0.to_usize()
-    }
-
-    fn try_to_usize(&self) -> Option<usize> {
-        self.0.try_to_usize()
-    }
-}
-
-impl<T: NonZeroable<Nz: UsizeTag>> UsizeTag for Nz<T> {
     fn from_usize(n: usize) -> Self {
         Self(UsizeTag::from_usize(n))
     }
