@@ -2,8 +2,8 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use futures_util::TryStreamExt;
 use object_rainbow::{
-    Fetch, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
-    Topological, Traversible,
+    Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline, Size,
+    Tagged, ToOutput, Topological, Traversible, assert_impl,
 };
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
@@ -12,6 +12,16 @@ use object_rainbow_point::Point;
     ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Size, MaybeHasNiche,
 )]
 pub struct History<T, D>(ChainTree<(T, D)>);
+
+assert_impl!(
+    impl<T, D, E> Inline<E> for History<T, D>
+    where
+        E: 'static + Send + Sync + Clone,
+        T: Inline<E>,
+        D: Object<E>,
+    {
+    }
+);
 
 impl<T, D> Clone for History<T, D> {
     fn clone(&self) -> Self {
