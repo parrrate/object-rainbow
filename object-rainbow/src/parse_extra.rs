@@ -11,6 +11,8 @@ impl<T: ToOutput> ToOutput for ParseExtra<T> {
     }
 }
 
+impl<T: ToOutput> InlineOutput for ParseExtra<T> {}
+
 impl<
     T: ParseSliceExtra<B>,
     I: PointInput<Extra = (A, B)>,
