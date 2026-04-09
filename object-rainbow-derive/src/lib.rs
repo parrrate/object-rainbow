@@ -492,7 +492,7 @@ fn bounds_topological(
             .make_where_clause()
             .predicates
             .push(parse_quote_spanned! { name.span() =>
-                Self: ToOutput
+                Self: ::object_rainbow::ToOutput
             });
     }
     Ok(generics)
