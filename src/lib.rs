@@ -953,6 +953,18 @@ pub trait Equivalent<T>: Sized {
 
 pub trait ExtraFor<T> {
     fn parse(&self, data: &[u8], resolve: &Arc<dyn Resolve>) -> Result<T>;
+
+    fn parse_checked(&self, hash: Hash, data: &[u8], resolve: &Arc<dyn Resolve>) -> Result<T>
+    where
+        T: FullHash,
+    {
+        let object = self.parse(data, resolve)?;
+        if object.full_hash() != hash {
+            Err(Error::FullHashMismatch)
+        } else {
+            Ok(object)
+        }
+    }
 }
 
 impl<T: for<'a> Parse<Input<'a, Extra>>, Extra> ExtraFor<T> for Extra {

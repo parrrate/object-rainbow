@@ -7,7 +7,7 @@ use std::{
 
 use futures_util::{TryFutureExt, future::ready};
 use object_rainbow::{
-    Address, ByteNode, Equivalent, Error, ExtraFor, FailFuture, Fetch, FetchBytes, FullHash, Hash,
+    Address, ByteNode, Equivalent, ExtraFor, FailFuture, Fetch, FetchBytes, FullHash, Hash,
     InlineOutput, ListHashes, MaybeHasNiche, Node, ObjectMarker, OptionalHash, Output, Parse,
     ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular, Size, Tagged, Tags,
     ToOutput, Topological, Traversible,
@@ -117,24 +117,18 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for ByAddress<T, Extra
     fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
-            let object = self.extra.parse(&data, &resolve)?;
-            if self.inner.address.hash != object.full_hash() {
-                Err(Error::FullHashMismatch)
-            } else {
-                Ok((object, resolve))
-            }
+            let object = self
+                .extra
+                .parse_checked(self.inner.address.hash, &data, &resolve)?;
+            Ok((object, resolve))
         })
     }
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
-            let object = self.extra.parse(&data, &resolve)?;
-            if self.inner.address.hash != object.full_hash() {
-                Err(Error::FullHashMismatch)
-            } else {
-                Ok(object)
-            }
+            self.extra
+                .parse_checked(self.inner.address.hash, &data, &resolve)
         })
     }
 
@@ -142,12 +136,10 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for ByAddress<T, Extra
         let Some((data, resolve)) = self.fetch_bytes_local()? else {
             return Ok(None);
         };
-        let object = self.extra.parse(&data, &resolve)?;
-        if self.inner.address.hash != object.full_hash() {
-            Err(Error::FullHashMismatch)
-        } else {
-            Ok(Some((object, resolve)))
-        }
+        let object = self
+            .extra
+            .parse_checked(self.inner.address.hash, &data, &resolve)?;
+        Ok(Some((object, resolve)))
     }
 }
 
@@ -354,24 +346,18 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra>
     fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
         Box::pin(async {
             let (data, resolve) = self.inner.fetch.fetch_bytes().await?;
-            let object = self.extra.0.parse(&data, &resolve)?;
-            if self.inner.hash != object.full_hash() {
-                Err(Error::FullHashMismatch)
-            } else {
-                Ok((object, resolve))
-            }
+            let object = self
+                .extra
+                .0
+                .parse_checked(self.inner.hash, &data, &resolve)?;
+            Ok((object, resolve))
         })
     }
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
             let (data, resolve) = self.inner.fetch.fetch_bytes().await?;
-            let object = self.extra.0.parse(&data, &resolve)?;
-            if self.inner.hash != object.full_hash() {
-                Err(Error::FullHashMismatch)
-            } else {
-                Ok(object)
-            }
+            self.extra.0.parse_checked(self.inner.hash, &data, &resolve)
         })
     }
 
@@ -379,12 +365,11 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra>
         let Some((data, resolve)) = self.inner.fetch.fetch_bytes_local()? else {
             return Ok(None);
         };
-        let object = self.extra.0.parse(&data, &resolve)?;
-        if self.inner.hash != object.full_hash() {
-            Err(Error::FullHashMismatch)
-        } else {
-            Ok(Some((object, resolve)))
-        }
+        let object = self
+            .extra
+            .0
+            .parse_checked(self.inner.hash, &data, &resolve)?;
+        Ok(Some((object, resolve)))
     }
 }
 
