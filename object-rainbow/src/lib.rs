@@ -1331,6 +1331,8 @@ impl<T> Size for dyn ExtraFor<T> {
     const SIZE: usize = 0;
 }
 
+impl<T> ListHashes for dyn ExtraFor<T> {}
+
 #[doc(hidden)]
 pub trait BoundPair: Sized {
     type T;
