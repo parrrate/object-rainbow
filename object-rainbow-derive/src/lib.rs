@@ -2375,13 +2375,12 @@ pub fn derive_for_wrapped(args: TokenStream, input: TokenStream) -> TokenStream 
     let generics = input.generics.clone();
     let (_, ty_generics, _) = generics.split_for_impl();
     let mut derived = Vec::new();
-    for (path, field, extra) in [
+    for (path, extra) in [
         (
             quote!(map_extra::MappedExtra),
-            quote!(1),
             vec![(quote!(__M), quote!(#sup))],
         ),
-        (quote!(length_prefixed::Lp), quote!(0), vec![]),
+        (quote!(length_prefixed::Lp), vec![]),
     ] {
         let mut generics = input.generics.clone();
         generics.params.push(parse_quote! {
@@ -2426,7 +2425,7 @@ pub fn derive_for_wrapped(args: TokenStream, input: TokenStream) -> TokenStream 
                                 let reference = receiver.reference.as_ref().map(|(and, _)| and);
                                 let mutability = receiver.mutability.as_ref();
                                 let ident = &receiver.self_token;
-                                quote!(#reference #mutability #ident.#field)
+                                quote!(#reference #mutability *#ident)
                             }
                             FnArg::Typed(pat_type) => {
                                 let ident = Ident::new(&format!("arg{n}"), pat_type.span());
