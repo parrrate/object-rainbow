@@ -713,12 +713,16 @@ impl Tags {
         }
     }
 
+    const fn min(&self, strict_min: Option<&str>) -> Option<&'static str> {
+        let mut min = None;
+        self.min_out(strict_min, &mut min);
+        min
+    }
+
     const fn const_hash(&self, mut hasher: sha2_const::Sha256) -> sha2_const::Sha256 {
         let mut last = None;
         let mut i = 0;
-        while let () = self.min_out(last.take(), &mut last)
-            && let Some(next) = last
-        {
+        while let Some(next) = self.min(last) {
             i += 1;
             if i > 1000 {
                 panic!("{}", next);
