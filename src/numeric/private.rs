@@ -21,6 +21,12 @@ impl<T> Le<T> {
     }
 }
 
+impl<T> Be<T> {
+    pub const fn new(value: T) -> Self {
+        Self(value)
+    }
+}
+
 impl<T> From<T> for Be<T> {
     fn from(n: T) -> Self {
         Self(n)
