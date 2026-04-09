@@ -430,3 +430,33 @@ impl<D: Send> Apply<D> for Return {
         futures_util::future::ready(Ok(diff))
     }
 }
+
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Size,
+    MaybeHasNiche,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Default,
+)]
+pub struct Swap;
+
+impl<A: Send, B: Send> Apply<(A, B)> for Swap {
+    type Output = (B, A);
+
+    fn apply(
+        &mut self,
+        (a, b): (A, B),
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        futures_util::future::ready(Ok((b, a)))
+    }
+}
