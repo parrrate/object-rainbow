@@ -496,6 +496,12 @@ impl<T> Default for TrieSet<T> {
     }
 }
 
+impl<T: ReflessObject> TrieSet<T> {
+    pub async fn contains(&self, value: &T) -> object_rainbow::Result<bool> {
+        Ok(self.map.get(value).await?.is_some())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
