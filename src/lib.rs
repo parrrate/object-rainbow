@@ -211,18 +211,37 @@ trait FetchBytesExt: FetchBytes {
 
 impl<T: ?Sized + FetchBytes> FetchBytesExt for T {}
 
-#[derive(Clone)]
+#[derive(Clone, ParseAsInline)]
 pub struct RawPointInner {
     hash: Hash,
     origin: Arc<dyn Send + Sync + FetchBytes>,
 }
 
 impl RawPointInner {
-    fn cast<T>(self) -> RawPoint<T> {
+    pub fn cast<T>(self) -> RawPoint<T> {
         RawPoint {
             inner: self,
             _object: PhantomData,
         }
+    }
+
+    pub fn from_address(address: Address, resolve: Arc<dyn Resolve>) -> Self {
+        Self {
+            hash: address.hash,
+            origin: Arc::new(ByAddressInner { address, resolve }),
+        }
+    }
+}
+
+impl ToOutput for RawPointInner {
+    fn to_output(&self, output: &mut dyn Output) {
+        output.write(&self.hash);
+    }
+}
+
+impl ParseInline<Input<'_>> for RawPointInner {
+    fn parse_inline(input: &mut Input<'_>) -> crate::Result<Self> {
+        input.parse_raw_point_inner()
     }
 }
 
@@ -630,6 +649,11 @@ impl Input<'_> {
     fn parse_point<T: Object>(&mut self) -> crate::Result<Point<T>> {
         let address = self.parse_address()?;
         Ok(Point::from_address(address, self.resolve.clone()))
+    }
+
+    fn parse_raw_point_inner(&mut self) -> crate::Result<RawPointInner> {
+        let address = self.parse_address()?;
+        Ok(RawPointInner::from_address(address, self.resolve.clone()))
     }
 }
 
