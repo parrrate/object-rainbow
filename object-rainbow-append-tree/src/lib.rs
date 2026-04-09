@@ -210,7 +210,7 @@ assert_impl!(
     impl<T> ListNode for N8<T> where T: Send + Sync + Clone + Traversible + InlineOutput {}
 );
 
-#[derive(Enum, ToOutput, Tagged, ListHashes, Topological, Parse)]
+#[derive(Enum, ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 enum TreeKind<T> {
     N1(N1<T>),
     N2(N2<T>),
