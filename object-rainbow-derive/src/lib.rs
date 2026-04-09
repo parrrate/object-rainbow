@@ -978,15 +978,17 @@ pub fn derive_size(input: TokenStream) -> TokenStream {
     let name = input.ident;
     let size_arr = gen_size_arr(&input.data);
     let size = gen_size(&input.data);
-    let generics = match bounds_size(input.generics.clone(), &input.data, &size_arr) {
+    let (generics, is_enum) = match bounds_size(input.generics.clone(), &input.data, &size_arr) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
     let (_, ty_generics, where_clause) = generics.split_for_impl();
     let mut generics = input.generics;
-    generics.params.push(parse_quote!(
-        __Output: ::object_rainbow::typenum::Unsigned
-    ));
+    if is_enum {
+        generics.params.push(parse_quote!(
+            __Output: ::object_rainbow::typenum::Unsigned
+        ));
+    }
     let (impl_generics, _, _) = generics.split_for_impl();
     let target = parse_for(&name, &input.attrs);
     let output = quote! {
@@ -1008,9 +1010,9 @@ fn bounds_size(
     mut generics: Generics,
     data: &Data,
     size_arr: &proc_macro2::TokenStream,
-) -> syn::Result<Generics> {
+) -> syn::Result<(Generics, bool)> {
     let g = &bounds_g(&generics);
-    match data {
+    let is_enum = match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
                 let ty = &f.ty;
@@ -1022,6 +1024,12 @@ fn bounds_size(
                     );
                 }
             }
+            generics.make_where_clause().predicates.push(parse_quote!(
+                #size_arr: ::object_rainbow::typenum::FoldAdd<
+                    Output: ::object_rainbow::typenum::Unsigned
+                >
+            ));
+            false
         }
         Data::Enum(data) => {
             for v in data.variants.iter() {
@@ -1042,6 +1050,10 @@ fn bounds_size(
                     #arr: ::object_rainbow::typenum::FoldAdd<Output = __Output>
                 ));
             }
+            generics.make_where_clause().predicates.push(parse_quote!(
+                #size_arr: ::object_rainbow::typenum::FoldAdd<Output = __Output>
+            ));
+            true
         }
         Data::Union(data) => {
             return Err(Error::new_spanned(
@@ -1049,11 +1061,8 @@ fn bounds_size(
                 "`union`s are not supported",
             ));
         }
-    }
-    generics.make_where_clause().predicates.push(parse_quote!(
-        #size_arr: ::object_rainbow::typenum::FoldAdd<Output = __Output>
-    ));
-    Ok(generics)
+    };
+    Ok((generics, is_enum))
 }
 
 fn fields_size_arr(fields: &syn::Fields, as_enum: bool) -> proc_macro2::TokenStream {

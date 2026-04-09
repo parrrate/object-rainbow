@@ -12,7 +12,6 @@ use object_rainbow::{
     ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular, Size, Tagged, Tags,
     ToOutput, Topological, Traversible,
 };
-use typenum::U32;
 
 #[cfg(feature = "serde")]
 mod point_deserialize;
@@ -516,7 +515,7 @@ impl<T> Clone for Point<T> {
 
 impl<T> Size for Point<T> {
     const SIZE: usize = Hash::SIZE;
-    type Size = U32;
+    type Size = <Hash as Size>::Size;
 }
 
 impl<T: 'static + FullHash> Point<T>
