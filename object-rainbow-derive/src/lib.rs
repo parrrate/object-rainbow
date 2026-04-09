@@ -839,6 +839,25 @@ fn gen_traverse(data: &Data, ty_generics: &TypeGenerics<'_>) -> proc_macro2::Tok
     }
 }
 
+/// ```rust
+/// use object_rainbow::Tagged;
+///
+/// #[derive(Tagged)]
+/// struct Three<A, B, C> {
+///     a: A,
+///     #[tags(skip)]
+///     b: B,
+///     c: C,
+/// }
+///
+/// object_rainbow::assert_impl!(
+///     impl<A, B, C> Tagged for Three<A, B, C>
+///     where
+///         A: Tagged,
+///         C: Tagged,
+///     {}
+/// );
+/// ```
 #[proc_macro_derive(Tagged, attributes(tags))]
 pub fn derive_tagged(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
