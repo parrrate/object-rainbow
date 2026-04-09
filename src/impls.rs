@@ -11,5 +11,6 @@ mod slice;
 mod str;
 mod tuple;
 mod tuple1;
+mod u8;
 mod unit;
 mod vec;
