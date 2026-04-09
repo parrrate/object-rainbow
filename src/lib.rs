@@ -466,40 +466,6 @@ impl<T: ReflessObject> Object for Refless<T> {}
 
 impl<T: ReflessInline> Inline for Refless<T> {}
 
-impl ToOutput for () {
-    fn to_output(&self, _: &mut dyn Output) {}
-}
-
-impl Topological for () {
-    fn accept_points(&self, _: &mut impl PointVisitor) {}
-}
-
-impl<I: ParseInput> Parse<I> for () {
-    fn parse(input: I) -> crate::Result<Self> {
-        ParseInline::parse_as_inline(input)
-    }
-}
-
-impl<I: ParseInput> ParseInline<I> for () {
-    fn parse_inline(_: &mut I) -> crate::Result<Self> {
-        Ok(())
-    }
-}
-
-impl Tagged for () {}
-
-impl Object for () {}
-
-impl Inline for () {}
-
-impl ReflessObject for () {}
-
-impl ReflessInline for () {}
-
-impl Size for () {
-    const SIZE: usize = 0;
-}
-
 pub trait Output {
     fn write(&mut self, data: &[u8]);
 }
