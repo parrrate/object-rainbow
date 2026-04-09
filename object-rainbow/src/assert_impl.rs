@@ -14,6 +14,20 @@ macro_rules! unpack_where {
     };
 }
 
+/// ```rust
+/// object_rainbow::assert_impl!(
+///     impl<T> Send for std::sync::Arc<T>
+///     where
+///         T: Send + Sync,
+///     {}
+/// );
+/// object_rainbow::assert_impl!(
+///     impl<T> Sync for std::sync::Arc<T>
+///     where
+///         T: Send + Sync,
+///     {}
+/// );
+/// ```
 #[macro_export]
 macro_rules! assert_impl {
     (impl $(<$($a:ident),*>)? $tr:ident$(<$($tra:ident),*>)? for $ty:ty where $($w:tt)*) => {
