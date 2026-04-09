@@ -213,6 +213,20 @@ type Tree = Sequential<TrieMap<MessageId, Message>, Parallel<MessagesByChannels,
 type Diff = (MessageId, Option<Message>);
 type History = object_rainbow_history::History<Tree, Diff>;
 
+trait Table {
+    fn messages_by_channels(
+        &self,
+    ) -> impl Send + Future<Output = object_rainbow::Result<TrieSet<MessageByChannel>>>;
+}
+
+impl Table for History {
+    fn messages_by_channels(
+        &self,
+    ) -> impl Send + Future<Output = object_rainbow::Result<TrieSet<MessageByChannel>>> {
+        async move { Ok(self.tree().await?.second().a().tree().0.clone()) }
+    }
+}
+
 #[apply(main!)]
 async fn main() -> object_rainbow::Result<()> {
     let mut history = History::new();
@@ -224,12 +238,8 @@ async fn main() -> object_rainbow::Result<()> {
         .await?;
     assert!(
         history
-            .tree()
+            .messages_by_channels()
             .await?
-            .second()
-            .a()
-            .tree()
-            .0
             .contains(&MessageByChannel {
                 channel,
                 message,
@@ -253,12 +263,8 @@ async fn main() -> object_rainbow::Result<()> {
             .await?,
     );
     let messages_by_channel = history
-        .tree()
+        .messages_by_channels()
         .await?
-        .second()
-        .a()
-        .tree()
-        .0
         .range_stream(
             &MessageByChannel {
                 channel,
@@ -283,12 +289,8 @@ async fn main() -> object_rainbow::Result<()> {
     history.commit((message, None)).await?;
     assert!(
         !history
-            .tree()
+            .messages_by_channels()
             .await?
-            .second()
-            .a()
-            .tree()
-            .0
             .contains(&MessageByChannel {
                 channel,
                 message,
