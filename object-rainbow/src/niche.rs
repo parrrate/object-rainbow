@@ -31,13 +31,14 @@ pub struct SomeNiche<T>(T);
 
 pub trait Niche {
     type NeedsTag: Bit;
+    /// Length in bytes.
     type N: ArrayLength;
     fn niche() -> GenericArray<u8, Self::N>;
     type Next;
 }
 
 pub trait MaybeNiche {
-    /// Lengths in bytes.
+    /// Length in bytes.
     type N: Unsigned;
 }
 
