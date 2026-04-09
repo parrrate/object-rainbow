@@ -11,7 +11,7 @@ use object_rainbow::{
     Address, ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Refless, Resolve,
     Singular, ToOutputExt, error_fetch, error_parse,
 };
-use object_rainbow_encrypted::{Key, encrypt_point};
+use object_rainbow_encrypted::{Key, WithKey, encrypt_point};
 use sha2::digest::generic_array::GenericArray;
 use smol::{Executor, channel::Sender};
 
@@ -180,7 +180,10 @@ fn main() -> anyhow::Result<()> {
         ));
         let key = Test(std::array::from_fn(|i| i as _));
         let point = encrypt_point(key, point).await?;
-        let point = iterate(point, key).await.fetch().await?;
+        let point = iterate(point, WithKey { key, extra: () })
+            .await
+            .fetch()
+            .await?;
         let point = Point::from_object(point.fetch().await?.into_inner());
         let point = encrypt_point(key, point).await?;
         let point = Point::from_object(point.fetch().await?.into_inner());
