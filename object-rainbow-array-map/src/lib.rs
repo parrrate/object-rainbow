@@ -176,3 +176,11 @@ impl Extend<u8> for ArraySet {
         });
     }
 }
+
+impl FromIterator<u8> for ArraySet {
+    fn from_iter<T: IntoIterator<Item = u8>>(iter: T) -> Self {
+        let mut set = Self::default();
+        set.extend(iter);
+        set
+    }
+}
