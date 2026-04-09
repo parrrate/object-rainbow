@@ -9,3 +9,4 @@ impl ToOutput for CStr {
 }
 
 impl Topological for CStr {}
+impl Tagged for CStr {}
