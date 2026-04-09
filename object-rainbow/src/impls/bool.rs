@@ -1,7 +1,7 @@
 use std::ops::Add;
 
 use generic_array::GenericArray;
-use typenum::{B0, B1, IsGreater, IsLess, ToInt, U1, U2, U255, U256};
+use typenum::{B0, B1, IsLess, ToInt, U1, U2, U255, U256};
 
 use crate::*;
 
@@ -35,14 +35,8 @@ impl WrapNext for B0 {
     type Wrap<J> = NoNiche<ZeroNoNiche<U1>>;
 }
 
-impl<
-    K: IsGreater<U1, Output = B1>
-        + IsLess<U256, Output = B1>
-        + Add<B1, Output = J>
-        + IsLess<U255, Output = B>,
-    J,
-    B: WrapNext,
-> NextNiche for K
+impl<K: IsLess<U256, Output = B1> + Add<B1, Output = J> + IsLess<U255, Output = B>, J, B: WrapNext>
+    NextNiche for K
 {
     type NextNiche = B::Wrap<J>;
 }
