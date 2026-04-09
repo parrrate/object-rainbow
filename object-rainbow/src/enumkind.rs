@@ -7,6 +7,7 @@ pub trait UsizeTag: Sized {
     ///
     /// Panics on out-of-bounds.
     fn from_usize(n: usize) -> Self;
+    /// Convert a trusted value to [`usize`].
     fn to_usize(&self) -> usize;
     fn try_to_usize(&self) -> Option<usize>;
 }
