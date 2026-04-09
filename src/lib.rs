@@ -46,6 +46,7 @@ mod point_deserialize;
 #[cfg(feature = "point-serialize")]
 mod point_serialize;
 mod sha2_const;
+pub mod zero_terminated;
 
 /// SHA-256 hash size in bytes.
 pub const HASH_SIZE: usize = sha2_const::Sha256::DIGEST_SIZE;
