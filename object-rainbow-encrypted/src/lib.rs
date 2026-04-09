@@ -1,4 +1,4 @@
-use std::{convert::Infallible, ops::Deref, sync::Arc};
+use std::{ops::Deref, sync::Arc};
 
 use object_rainbow::{
     Address, ByteNode, Error, FailFuture, Fetch, Hash, Input, Object, Parse, ParseInput,
@@ -17,8 +17,7 @@ pub trait Key: 'static + Sized + Send + Sync + Clone {
     fn decrypt(&self, data: &[u8]) -> object_rainbow::Result<Vec<u8>>;
 }
 
-type Resolution<K, Extra> =
-    Arc<Lp<Vec<RawPoint<Encrypted<K, Infallible, Extra>, WithKey<K, Extra>>>>>;
+type Resolution<K, Extra> = Arc<Lp<Vec<RawPoint<Encrypted<K, Vec<u8>, Extra>, WithKey<K, Extra>>>>>;
 
 #[derive(ToOutput, Clone)]
 struct Unkeyed<T>(T);
@@ -49,7 +48,7 @@ impl<K, T, Extra> Clone for EncryptedInner<K, T, Extra> {
 }
 
 type ResolutionIter<'a, K, Extra> =
-    std::slice::Iter<'a, RawPoint<Encrypted<K, Infallible, Extra>, WithKey<K, Extra>>>;
+    std::slice::Iter<'a, RawPoint<Encrypted<K, Vec<u8>, Extra>, WithKey<K, Extra>>>;
 
 struct IterateResolution<'a, K, V, Extra> {
     resolution: ResolutionIter<'a, K, Extra>,
@@ -157,7 +156,6 @@ impl<K: Key, Extra: 'static + Send + Sync + Clone> Resolve for Decrypt<K, Extra>
                 .get(address.index)
                 .ok_or(Error::AddressOutOfBounds)?
                 .clone()
-                .cast::<Encrypted<K, Vec<u8>, Extra>>()
                 .fetch()
                 .await?;
             Ok((
@@ -214,7 +212,7 @@ type Extracted<K, Extra> = Vec<
         Box<
             dyn Future<
                     Output = Result<
-                        RawPoint<Encrypted<K, Infallible, Extra>, WithKey<K, Extra>>,
+                        RawPoint<Encrypted<K, Vec<u8>, Extra>, WithKey<K, Extra>>,
                         Error,
                     >,
                 > + Send
