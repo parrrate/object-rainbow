@@ -48,4 +48,8 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainTree<T> {
         self.0 = Some(ChainNode { value, tree }.point());
         Ok(())
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_none()
+    }
 }
