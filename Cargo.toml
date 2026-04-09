@@ -32,7 +32,7 @@ repository = "https://github.com/parrrate/object-rainbow"
 authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 
 [workspace.dependencies]
-object-rainbow = { version = "0.0.0-a.46", path = "object-rainbow" }
+object-rainbow = { version = "0.0.0-a.47", path = "object-rainbow" }
 object-rainbow-append-tree = { version = "0.0.0-a.10", path = "object-rainbow-append-tree" }
 object-rainbow-array-map = { version = "0.0.0-a.5", path = "object-rainbow-array-map" }
 object-rainbow-chain-tree = { version = "0.0.0-a.9", path = "object-rainbow-chain-tree" }
