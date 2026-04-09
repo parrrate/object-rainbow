@@ -1,8 +1,8 @@
 use futures_util::Stream;
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{
-    Fetch, Inline, InlineOutput, ListHashes, Object, Parse, ParseInline, Size, Tagged, ToOutput,
-    Topological, Traversible, assert_impl,
+    Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline, Size,
+    Tagged, ToOutput, Topological, Traversible, assert_impl,
 };
 use object_rainbow_append_tree::AppendTree;
 use object_rainbow_point::{IntoPoint, Point};
@@ -40,7 +40,9 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainNode<T> {
     }
 }
 
-#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Size)]
+#[derive(
+    ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Size, MaybeHasNiche,
+)]
 pub struct ChainTree<T>(Option<Point<ChainNode<T>>>);
 
 assert_impl!(
