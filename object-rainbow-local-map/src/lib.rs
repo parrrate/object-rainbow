@@ -7,6 +7,7 @@ struct Entry {
     data: Vec<u8>,
 }
 
+#[derive(Clone)]
 pub struct LocalMap {
     map: HashMap<Hash, Entry>,
 }
