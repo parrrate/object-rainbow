@@ -51,6 +51,7 @@ mod niche;
 pub mod numeric;
 pub mod partial_byte_tag;
 pub mod tuple_extra;
+pub mod without_header;
 pub mod zero_terminated;
 
 /// SHA-256 hash size in bytes.
