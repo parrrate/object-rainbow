@@ -923,6 +923,13 @@ pub trait ParseSliceExtra<Extra>: for<'a> Parse<Input<'a, Extra>> {
         let object = Self::parse(input)?;
         Ok(object)
     }
+
+    fn reparse_extra(&self, extra: &Extra) -> crate::Result<Self>
+    where
+        Self: Traversible,
+    {
+        Self::parse_slice_extra(&self.vec(), &self.to_resolve(), extra)
+    }
 }
 
 impl<T: for<'a> Parse<Input<'a, Extra>>, Extra> ParseSliceExtra<Extra> for T {}
