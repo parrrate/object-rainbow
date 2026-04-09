@@ -1232,6 +1232,7 @@ dependencies = [
  "macro_rules_attribute",
  "object-rainbow",
  "object-rainbow-chain-tree",
+ "object-rainbow-hamt",
  "object-rainbow-point",
  "object-rainbow-trie",
  "smol",
