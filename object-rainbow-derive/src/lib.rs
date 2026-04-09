@@ -1083,9 +1083,9 @@ fn fields_size_arr(fields: &syn::Fields, as_enum: bool) -> proc_macro2::TokenStr
         quote! { <#ty as ::object_rainbow::Size>::Size }
     });
     if as_enum {
-        quote! { tarr![#kind_size, #(#size_arr),*] }
+        quote! { tarr![#kind_size, ::object_rainbow::typenum::consts::U0, #(#size_arr),*] }
     } else {
-        quote! { tarr![#(#size_arr),*] }
+        quote! { tarr![::object_rainbow::typenum::consts::U0, #(#size_arr),*] }
     }
 }
 
