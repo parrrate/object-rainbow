@@ -55,7 +55,7 @@ impl<N: ArrayLength> Niche for OptionNiche<N> {
         niche[0] = 2;
         niche
     }
-    type Next = ZeroNoNiche<N>;
+    type Next = NoNiche<ZeroNoNiche<N>>;
 }
 
 pub trait OptionNicheWrapper: Bit {
@@ -63,7 +63,7 @@ pub trait OptionNicheWrapper: Bit {
 }
 
 impl OptionNicheWrapper for B0 {
-    type Wrap<Mn: Niche<NeedsTag = Self, N: Add<Self, Output: ArrayLength>>> = AutoNiche<Mn::Next>;
+    type Wrap<Mn: Niche<NeedsTag = Self, N: Add<Self, Output: ArrayLength>>> = Mn::Next;
 }
 
 impl OptionNicheWrapper for B1 {
