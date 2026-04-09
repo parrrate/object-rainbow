@@ -557,14 +557,14 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for ByAddress<T, Extr
     }
 }
 
-pub trait PointVisitor {
-    fn visit<T: Object>(&mut self, point: &Point<T>);
+pub trait PointVisitor<Extra = ()> {
+    fn visit<T: Object<Extra>>(&mut self, point: &Point<T, Extra>);
 }
 
 struct HashVisitor<F>(F);
 
-impl<F: FnMut(Hash)> PointVisitor for HashVisitor<F> {
-    fn visit<T: Object>(&mut self, point: &Point<T>) {
+impl<F: FnMut(Hash), Extra> PointVisitor<Extra> for HashVisitor<F> {
+    fn visit<T: Object<Extra>>(&mut self, point: &Point<T, Extra>) {
         self.0(*point.hash());
     }
 }
@@ -770,8 +770,8 @@ pub trait ToOutputExt: ToOutput {
 
 impl<T: ?Sized + ToOutput> ToOutputExt for T {}
 
-pub trait Topological {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+pub trait Topological<Extra: 'static = ()> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
         let _ = visitor;
     }
 
@@ -866,8 +866,8 @@ impl Tags {
 
 pub trait Inline<Extra = ()>: Object<Extra> + for<'a> ParseInline<Input<'a, Extra>> {}
 
-impl<T: Object> Topological for Point<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+impl<T: Object<Extra>, Extra: 'static> Topological<Extra> for Point<T, Extra> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
         visitor.visit(self);
     }
 }
@@ -907,8 +907,8 @@ pub trait Singular: Send + Sync + FetchBytes {
 
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
-impl PointVisitor for TopoVec {
-    fn visit<T: Object>(&mut self, point: &Point<T>) {
+impl<Extra: 'static> PointVisitor<Extra> for TopoVec {
+    fn visit<T: Object<Extra>>(&mut self, point: &Point<T, Extra>) {
         self.push(Arc::new(point.clone()));
     }
 }
