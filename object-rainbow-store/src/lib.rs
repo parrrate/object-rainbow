@@ -167,7 +167,7 @@ pub trait RainbowStoreMut: RainbowStore {
                 .fetch_ref(key.as_ref())
                 .await?
                 .get()
-                .ok_or_else(|| object_rainbow::error_fetch!("key not found"))?;
+                .ok_or(object_rainbow::Error::HashNotFound)?;
             let point = self.point(hash);
             Ok(self.store_ref_raw(key, point, ()))
         }
