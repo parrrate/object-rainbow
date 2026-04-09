@@ -712,7 +712,7 @@ impl Input<'_> {
 
     fn parse_raw_point_inner(&mut self) -> crate::Result<RawPointInner> {
         let address = self.parse_address()?;
-        Ok(RawPointInner::from_address(address, self.resolve.clone()))
+        Ok(RawPointInner::from_address(address, self.resolve()))
     }
 
     pub fn extension<T: Any>(&self) -> crate::Result<&T> {
