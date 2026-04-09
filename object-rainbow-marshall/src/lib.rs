@@ -16,13 +16,13 @@ use object_rainbow::{Address, ByteNode, FailFuture, FetchBytes, Hash, Resolve, S
 use object_rainbow_local_map::LocalMap;
 
 #[derive(Clone)]
-struct Marshalled {
+struct MarshalledInner {
     data: Arc<Vec<u8>>,
     root: Hash,
     at: usize,
 }
 
-impl Marshalled {
+impl MarshalledInner {
     fn read_usize(&self, at: usize) -> object_rainbow::Result<usize> {
         u64::from_le_bytes(
             self.data
@@ -76,7 +76,7 @@ impl Marshalled {
     }
 
     fn resolve_node(&self, address: Address) -> object_rainbow::Result<ByteNode> {
-        let referenced = Marshalled {
+        let referenced = MarshalledInner {
             data: self.data.clone(),
             root: address.hash,
             at: self.reference_at(address.index)?,
@@ -89,7 +89,7 @@ impl Marshalled {
     }
 }
 
-impl FetchBytes for Marshalled {
+impl FetchBytes for MarshalledInner {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         Box::pin(async move { Ok((self.data_vec()?, self.to_resolve())) })
     }
@@ -99,7 +99,7 @@ impl FetchBytes for Marshalled {
     }
 }
 
-impl Resolve for Marshalled {
+impl Resolve for MarshalledInner {
     fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode> {
         Box::pin(async move { self.resolve_node(address) })
     }
@@ -116,7 +116,7 @@ impl Resolve for Marshalled {
     }
 }
 
-impl Singular for Marshalled {
+impl Singular for MarshalledInner {
     fn hash(&self) -> Hash {
         self.root
     }
@@ -145,7 +145,7 @@ impl ToBytes for usize {
 }
 
 pub struct MarshalledRoot {
-    marshalled: Marshalled,
+    marshalled: MarshalledInner,
 }
 
 impl FetchBytes for MarshalledRoot {
@@ -202,6 +202,6 @@ pub fn marshall(map: &LocalMap, root: Hash) -> MarshalledRoot {
     }
     assert_eq!(*locations.get(&root).unwrap(), 0);
     let data = Arc::new(data);
-    let marshalled = Marshalled { data, root, at: 0 };
+    let marshalled = MarshalledInner { data, root, at: 0 };
     MarshalledRoot { marshalled }
 }
