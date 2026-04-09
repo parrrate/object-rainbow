@@ -482,14 +482,14 @@ impl<T> Clone for Point<T> {
 }
 
 impl<T> Point<T> {
-    pub fn from_fetch(hash: Hash, origin: Arc<dyn Fetch<T = T>>) -> Self {
+    pub fn from_fetch(hash: Hash, fetch: Arc<dyn Fetch<T = T>>) -> Self {
         Self {
             hash: hash.into(),
-            fetch: origin,
+            fetch,
         }
     }
 
-    fn map_origin<U>(
+    fn map_fetch<U>(
         self,
         f: impl FnOnce(Arc<dyn Fetch<T = T>>) -> Arc<dyn Fetch<T = U>>,
     ) -> Point<U> {
@@ -1500,7 +1500,7 @@ pub trait Equivalent<T>: Sized {
 /// safe.
 impl<U: 'static + Equivalent<T>, T: 'static> Equivalent<Point<T>> for Point<U> {
     fn into_equivalent(self) -> Point<T> {
-        self.map_origin(|origin| {
+        self.map_fetch(|origin| {
             Arc::new(MapEquivalent {
                 origin,
                 map: U::into_equivalent,
@@ -1509,7 +1509,7 @@ impl<U: 'static + Equivalent<T>, T: 'static> Equivalent<Point<T>> for Point<U> {
     }
 
     fn from_equivalent(point: Point<T>) -> Self {
-        point.map_origin(|origin| {
+        point.map_fetch(|origin| {
             Arc::new(MapEquivalent {
                 origin,
                 map: U::from_equivalent,
@@ -1555,7 +1555,7 @@ impl<T, F: Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
 
 impl<T: 'static + ToOutput> Point<T> {
     pub fn map<U>(self, map: impl 'static + Send + Sync + Fn(T) -> U) -> Point<U> {
-        self.map_origin(|origin| Arc::new(Map { origin, map }))
+        self.map_fetch(|origin| Arc::new(Map { origin, map }))
     }
 }
 
