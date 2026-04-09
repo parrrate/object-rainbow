@@ -37,6 +37,8 @@ assert_impl!(
 );
 
 impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainTree<T> {
+    const EMPTY: Self = Self(None);
+
     pub async fn push(&mut self, value: T) -> object_rainbow::Result<()> {
         let tree = if let Some(node) = self.0.take() {
             let mut tree = node.fetch().await?.tree;
