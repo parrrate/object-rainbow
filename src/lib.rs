@@ -246,11 +246,11 @@ impl<Extra> RawPointInner<Extra> {
     }
 }
 
-impl RawPointInner {
-    pub fn from_address(address: Address, resolve: Arc<dyn Resolve>) -> Self {
+impl<Extra> RawPointInner<Extra> {
+    pub fn from_address(address: Address, resolve: Arc<dyn Resolve>, extra: Extra) -> Self {
         Self {
             hash: address.hash,
-            extra: (),
+            extra,
             origin: Arc::new(ByAddressInner { address, resolve }),
         }
     }
@@ -1314,7 +1314,7 @@ pub trait PointInput: ParseInput {
     }
     fn parse_raw_point_inner(&mut self) -> crate::Result<RawPointInner> {
         let address = self.parse_address()?;
-        Ok(RawPointInner::from_address(address, self.resolve()))
+        Ok(RawPointInner::from_address(address, self.resolve(), ()))
     }
     fn extension<T: Any>(&self) -> crate::Result<&T> {
         self.resolve_ref()
