@@ -80,3 +80,13 @@ impl<E: 'static> Object<E> for bool {}
 impl<E: 'static> Inline<E> for bool {}
 impl ReflessObject for bool {}
 impl ReflessInline for bool {}
+
+#[test]
+fn none_is_2() {
+    assert_eq!(None::<bool>.output::<Vec<u8>>(), [2]);
+}
+
+#[test]
+fn none_none_is_2() {
+    assert_eq!(None::<Option<bool>>.output::<Vec<u8>>(), [3]);
+}
