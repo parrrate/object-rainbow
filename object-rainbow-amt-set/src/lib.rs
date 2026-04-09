@@ -99,16 +99,47 @@ impl<T: Tree<K> + Clone + Traversible, K: PartialEq + Clone> Tree<(u8, K)> for S
     }
 }
 
+type K1 = u8;
+type K2 = (u8, K1);
+type K3 = (u8, K2);
+type K4 = (u8, K3);
+type K5 = (u8, K4);
+type K6 = (u8, K5);
+type K7 = (u8, K6);
+type K8 = (u8, K7);
+type K9 = (u8, K8);
+type K10 = (u8, K9);
+type K11 = (u8, K10);
+type K12 = (u8, K11);
+type K13 = (u8, K12);
+type K14 = (u8, K13);
+type K15 = (u8, K14);
+type K16 = (u8, K15);
+type K17 = (u8, K16);
+type K18 = (u8, K17);
+type K19 = (u8, K18);
+type K20 = (u8, K19);
+type K21 = (u8, K20);
+type K22 = (u8, K21);
+type K23 = (u8, K22);
+type K24 = (u8, K23);
+type K25 = (u8, K24);
+type K26 = (u8, K25);
+type K27 = (u8, K26);
+type K28 = (u8, K27);
+type K29 = (u8, K28);
+type K30 = (u8, K29);
+type K31 = (u8, K30);
+type K32 = (u8, K31);
+
 mod private {
     use super::*;
     type N1 = DeepestLeaf;
-    type K1 = u8;
 
     macro_rules! next_node {
         ($prev:ident, $next:ident, $size:ident, $pk:ident, $k:ident) => {
             #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone, Default)]
             pub struct $next(SetNode<$prev, $pk>);
-            pub type $k = (u8, $pk);
 
             impl Tree<$k> for $next {
                 fn insert(
@@ -177,7 +208,7 @@ mod private {
 )]
 pub struct AmtSet(Point<private::N32>);
 
-fn hash_key(hash: Hash) -> private::K32 {
+fn hash_key(hash: Hash) -> K32 {
     let [
         x0,
         x1,
