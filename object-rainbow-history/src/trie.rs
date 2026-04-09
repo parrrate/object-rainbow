@@ -23,6 +23,20 @@ where
     }
 }
 
+impl<K: ReflessObject, V: 'static + Send + Sync + Clone> Forward<(V, K)> for TrieMap<K, V>
+where
+    Option<V>: Traversible + InlineOutput,
+{
+    type Output = Option<V>;
+
+    fn forward(
+        &mut self,
+        (value, key): (V, K),
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        async move { self.insert(&key, value).await }
+    }
+}
+
 /// `true` represents removal, `false` represents insertion to keep layout equivalence.
 impl<T: ReflessObject> Forward<(bool, T)> for TrieSet<T> {
     type Output = bool;
