@@ -10,7 +10,7 @@ impl<const N: usize, I: ParseInput> Parse<I> for [u8; N] {
 
 impl<const N: usize, I: ParseInput> ParseInline<I> for [u8; N] {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        input.parse_chunk().copied()
+        input.parse_array()
     }
 }
 
