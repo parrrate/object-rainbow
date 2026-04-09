@@ -480,6 +480,14 @@ assert_impl!(
     }
 );
 
+impl<T> Clone for TrieSet<T> {
+    fn clone(&self) -> Self {
+        Self {
+            map: self.map.clone(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
