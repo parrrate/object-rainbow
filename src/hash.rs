@@ -1,4 +1,4 @@
-use std::ops::Add;
+use std::{fmt::Display, ops::Add};
 
 use typenum::{Add1, B0, B1, ToInt, U0, U1};
 
@@ -25,6 +25,15 @@ mod hex;
     Size,
 )]
 pub struct Hash([u8; HASH_SIZE]);
+
+impl Display for Hash {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for x in self.0 {
+            write!(f, "{x:X}")?;
+        }
+        Ok(())
+    }
+}
 
 pub struct HashNiche<N>(N);
 
