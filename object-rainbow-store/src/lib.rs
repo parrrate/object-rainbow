@@ -5,8 +5,9 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, ExtraFor, FullHash, Hash, Object, ObjectHashes, OptionalHash, PointVisitor, Resolve,
-    Singular, SingularFetch, Topological, Traversible,
+    Address, ExtraFor, FullHash, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object,
+    ObjectHashes, OptionalHash, Parse, ParseInline, PointInput, PointVisitor, Resolve, Singular,
+    SingularFetch, Size, Tagged, ToOutput, Topological, Traversible, assert_impl,
 };
 use object_rainbow_point::Point;
 
@@ -307,3 +308,73 @@ impl<
         Ok(())
     }
 }
+
+#[derive(
+    ToOutput, InlineOutput, Tagged, Size, MaybeHasNiche, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
+)]
+pub struct Stored<S, T> {
+    point: Point<T>,
+    store: S,
+}
+
+impl<S: ListHashes, T> ListHashes for Stored<S, T> {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.store.list_hashes(f);
+    }
+}
+
+impl<S: Topological, T> Topological for Stored<S, T> {
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.store.traverse(visitor);
+    }
+}
+
+impl<
+    S: RainbowStore + Parse<I>,
+    T: 'static + FullHash + Parse<I>,
+    I: PointInput<Extra: Send + Sync + ExtraFor<T>>,
+> Parse<I> for Stored<S, T>
+{
+    fn parse(mut input: I) -> object_rainbow::Result<Self> {
+        let hash = input.parse_inline::<Hash>()?;
+        let extra = input.extra().clone();
+        let store = input.parse::<S>()?;
+        let point = store.point_extra::<T, I::Extra>(hash, extra);
+        Ok(Self { point, store })
+    }
+}
+
+impl<
+    S: RainbowStore + ParseInline<I>,
+    T: 'static + FullHash + Parse<I>,
+    I: PointInput<Extra: Send + Sync + ExtraFor<T>>,
+> ParseInline<I> for Stored<S, T>
+{
+    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
+        let hash = input.parse_inline::<Hash>()?;
+        let extra = input.extra().clone();
+        let store = input.parse_inline::<S>()?;
+        let point = store.point_extra::<T, I::Extra>(hash, extra);
+        Ok(Self { point, store })
+    }
+}
+
+assert_impl!(
+    impl<S, T, E> Object<E> for Stored<S, T>
+    where
+        S: RainbowStore + Object<E>,
+        T: Object<E>,
+        E: 'static + Send + Sync + Clone,
+    {
+    }
+);
+
+assert_impl!(
+    impl<S, T, E> Inline<E> for Stored<S, T>
+    where
+        S: RainbowStore + Inline<E>,
+        T: Object<E>,
+        E: 'static + Send + Sync + Clone,
+    {
+    }
+);
