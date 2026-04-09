@@ -934,6 +934,9 @@ pub trait ToOutput {
     }
 }
 
+/// Marker trait indicating that [`ToOutput`] result cannot be extended.
+pub trait InlineOutput: ToOutput {}
+
 pub trait ListPoints {
     fn list_points(&self, f: &mut impl FnMut(Hash)) {
         let _ = f;
