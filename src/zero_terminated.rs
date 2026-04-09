@@ -49,6 +49,8 @@ impl<T: ToOutput> ToOutput for Zt<T> {
     }
 }
 
+impl<T: ToOutput> InlineOutput for Zt<T> {}
+
 impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Zt<T> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         let data = input.parse_until_zero()?;
