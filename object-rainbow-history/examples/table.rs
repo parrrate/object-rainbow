@@ -210,7 +210,7 @@ type MessagesByChannels =
     MappedDiff<Compat<TrieSet<MessageByChannel>>, MappedToSet<MessageToChannel>>;
 type MessagesByUsers = MappedDiff<Compat<TrieSet<MessageByUser>>, MappedToSet<MessageToUser>>;
 type Tree = Sequential<TrieMap<MessageId, Message>, Parallel<MessagesByChannels, MessagesByUsers>>;
-type Diff = (MessageId, Option<Message>);
+type Diff = (Option<Message>, MessageId);
 type History = object_rainbow_history::History<Tree, Diff>;
 
 trait Table {
@@ -249,14 +249,14 @@ impl Table for History {
         message: MessageId,
         contents: Message,
     ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
-        self.commit((message, Some(contents)))
+        self.commit((Some(contents), message))
     }
 
     fn delete(
         &mut self,
         message: MessageId,
     ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
-        self.commit((message, None))
+        self.commit((None, message))
     }
 }
 

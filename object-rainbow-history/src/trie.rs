@@ -3,7 +3,7 @@ use object_rainbow_trie::{TrieMap, TrieSet};
 
 use crate::Forward;
 
-impl<K: ReflessObject, V: 'static + Send + Sync + Clone> Forward<(K, Option<V>)> for TrieMap<K, V>
+impl<K: ReflessObject, V: 'static + Send + Sync + Clone> Forward<(Option<V>, K)> for TrieMap<K, V>
 where
     Option<V>: Traversible + InlineOutput,
 {
@@ -11,7 +11,7 @@ where
 
     fn forward(
         &mut self,
-        (key, value): (K, Option<V>),
+        (value, key): (Option<V>, K),
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
         async move {
             if let Some(value) = value {
@@ -24,12 +24,12 @@ where
 }
 
 /// `true` represents removal, `false` represents insertion to keep layout equivalence.
-impl<T: ReflessObject> Forward<(T, bool)> for TrieSet<T> {
+impl<T: ReflessObject> Forward<(bool, T)> for TrieSet<T> {
     type Output = bool;
 
     fn forward(
         &mut self,
-        (value, remove): (T, bool),
+        (remove, value): (bool, T),
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
         async move {
             Ok(if remove {
