@@ -49,6 +49,7 @@ pub mod length_prefixed;
 pub mod map_extra;
 mod niche;
 pub mod numeric;
+pub mod parse_extra;
 pub mod partial_byte_tag;
 pub mod tuple_extra;
 pub mod without_header;
