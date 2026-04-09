@@ -5,7 +5,7 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, Hash, Object, ObjectHashes, OptionalHash, PointVisitor, Resolve, Singular,
+    Address, ExtraFor, Hash, Object, ObjectHashes, OptionalHash, PointVisitor, Resolve, Singular,
     SingularFetch, Topological, Traversible,
 };
 use object_rainbow_point::Point;
@@ -58,7 +58,7 @@ impl<S: 'static + Send + RainbowStore> Resolve for StoreResolve<S> {
 }
 
 pub trait RainbowStore: 'static + Send + Sync + Clone {
-    fn saved_point<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
+    fn saved_point<T: 'static + Traversible, Extra: 'static + Send + Sync + Clone + ExtraFor<T>>(
         &self,
         point: &Point<T>,
         extra: Extra,
