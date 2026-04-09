@@ -10,7 +10,7 @@ authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 
 [package]
 name = "object-rainbow"
-version = "0.0.0-a.0"
+version = "0.0.0-a.1"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -20,7 +20,7 @@ description = "distributed object model"
 documentation = "https://docs.rs/object-rainbow"
 
 [dependencies]
-object-rainbow-derive = { version = "0.0.0-a.1", path = "object-rainbow-derive" }
+object-rainbow-derive = { version = "0.0.0-a.2", path = "object-rainbow-derive" }
 
 anyhow = "1.0.96"
 sha2 = "0.10.8"
