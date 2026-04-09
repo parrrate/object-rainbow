@@ -12,6 +12,17 @@ pub trait MaybeHasNiche {
     type MnArray;
 }
 
+pub struct NicheForUnsized;
+
+impl Niche for NicheForUnsized {
+    type NeedsTag = B1;
+    type N = U0;
+    fn niche() -> GenericArray<u8, Self::N> {
+        Default::default()
+    }
+    type Next = Self;
+}
+
 pub struct NoNiche<V>(V);
 pub struct NoNiche2<A, B>(A, B);
 pub struct AndNiche<V, T>(V, T);
