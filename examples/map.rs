@@ -6,7 +6,7 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, ByteNode, FailFuture, Fetch, FullHash, Hash, Object, Point, PointVisitor, Resolve,
+    ByteNode, FailFuture, Fetch, FullHash, Hash, Object, Point, PointVisitor, Resolve,
     SimpleObject, Singular, error_parse,
 };
 use smol::{Executor, channel::Sender};
@@ -88,15 +88,14 @@ impl Resolve for MapResolver {
     }
 }
 
-async fn iterate<T: Object>(object: T) -> Point<T> {
+async fn iterate<T: Object>(point: Point<T>) -> anyhow::Result<Point<T>> {
     let (send, recv) = smol::channel::unbounded::<Event>();
     let executor = Arc::new(Executor::new());
-    let hash = object.full_hash();
     EventContext {
         executor: executor.clone(),
         send,
     }
-    .send(object)
+    .send(point.fetch().await?)
     .await;
     let fetched = executor
         .run(async {
@@ -120,16 +119,16 @@ async fn iterate<T: Object>(object: T) -> Point<T> {
             },
         );
     }
-    let address = Address::from_hash(hash);
     let resolver = Arc::new(MapResolver(Arc::new(fetched)));
-    Point::from_address(address, resolver)
+    Ok(point.with_resolve(resolver))
 }
 
 fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt().init();
     tracing::info!("starting");
     smol::block_on(async move {
-        let mut point = iterate(((*b"alisa", *b"feistel").point(), [1, 2, 3, 4].point())).await;
+        let mut point =
+            iterate(((*b"alisa", *b"feistel").point(), [1, 2, 3, 4].point()).point()).await?;
         assert_eq!(point.fetch().await?.0.fetch().await?.0, *b"alisa");
         assert_eq!(point.fetch().await?.0.fetch().await?.1, *b"feistel");
         assert_eq!(point.fetch().await?.1.fetch().await?, [1, 2, 3, 4]);
