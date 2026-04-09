@@ -3,11 +3,11 @@ use std::{ops::Deref, sync::Arc};
 use object_rainbow::{
     Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, FullHash, Hash, ListHashes, Node,
     Object, Parse, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular, SingularFetch,
-    Tagged, ToOutput, Topological, Traversible, derive_for_mapped, length_prefixed::Lp,
+    Tagged, ToOutput, Topological, Traversible, derive_for_wrapped, length_prefixed::Lp,
 };
 use object_rainbow_point::{ExtractResolve, IntoPoint, Point};
 
-#[derive_for_mapped]
+#[derive_for_wrapped]
 pub trait Key: 'static + Sized + Send + Sync + Clone {
     type Error: Into<anyhow::Error>;
     fn encrypt(&self, data: &[u8]) -> Vec<u8>;

@@ -20,7 +20,7 @@ pub use anyhow::anyhow;
 use generic_array::{ArrayLength, GenericArray, functional::FunctionalSequence};
 pub use object_rainbow_derive::{
     Enum, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseAsInline, ParseInline, Size, Tagged,
-    ToOutput, Topological, derive_for_mapped,
+    ToOutput, Topological, derive_for_wrapped,
 };
 use sha2::{Digest, Sha256};
 #[doc(hidden)]

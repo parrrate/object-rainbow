@@ -8,7 +8,7 @@ use object_rainbow::{
     Address, ExtraFor, FullHash, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object,
     ObjectHashes, OptionalHash, Parse, ParseInline, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Size, Tagged, ToOutput, Topological, Traversible, assert_impl,
-    derive_for_mapped,
+    derive_for_wrapped,
 };
 use object_rainbow_point::Point;
 
@@ -59,7 +59,7 @@ impl<S: 'static + Send + RainbowStore> Resolve for StoreResolve<S> {
     }
 }
 
-#[derive_for_mapped]
+#[derive_for_wrapped]
 pub trait RainbowStore: 'static + Send + Sync + Clone {
     fn saved_point<T: 'static + Traversible, Extra: 'static + Send + Sync + Clone + ExtraFor<T>>(
         &self,

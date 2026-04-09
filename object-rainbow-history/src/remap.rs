@@ -1,11 +1,11 @@
 use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
-    Topological, derive_for_mapped,
+    Topological, derive_for_wrapped,
 };
 
 use crate::Apply;
 
-#[derive_for_mapped]
+#[derive_for_wrapped]
 pub trait MapToSet<K: Send, V: Send>: Send + Sync {
     type T: Send;
     fn map(&self, key: K, value: V)

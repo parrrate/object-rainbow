@@ -5,7 +5,7 @@
 use futures_util::TryStreamExt;
 use object_rainbow::{
     Equivalent, Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline,
-    Size, Tagged, ToOutput, Topological, Traversible, assert_impl, derive_for_mapped,
+    Size, Tagged, ToOutput, Topological, Traversible, assert_impl, derive_for_wrapped,
 };
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
@@ -57,7 +57,7 @@ impl<T, D> History<T, D> {
     }
 }
 
-#[derive_for_mapped]
+#[derive_for_wrapped]
 pub trait Apply<Diff: Send>: Send {
     type Output: Send;
     /// Must stay isomorphic under [`Equivalent`] conversions.
