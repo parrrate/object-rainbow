@@ -366,7 +366,7 @@ pub fn derive_topological(input: TokenStream) -> TokenStream {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let accept_points = gen_accept_points(&input.data);
+    let traverse = gen_traverse(&input.data);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
     let errors = errors.into_iter().map(|e| e.into_compile_error());
     let output = quote! {
@@ -374,8 +374,8 @@ pub fn derive_topological(input: TokenStream) -> TokenStream {
 
         #[automatically_derived]
         impl #impl_generics ::object_rainbow::Topological for #name #ty_generics #where_clause {
-            fn accept_points(&self, visitor: &mut impl ::object_rainbow::PointVisitor) {
-                #accept_points
+            fn traverse(&self, visitor: &mut impl ::object_rainbow::PointVisitor) {
+                #traverse
             }
         }
     };
@@ -470,18 +470,18 @@ fn bounds_topological(
     Ok(generics)
 }
 
-fn fields_accept_points(fields: &syn::Fields) -> proc_macro2::TokenStream {
+fn fields_traverse(fields: &syn::Fields) -> proc_macro2::TokenStream {
     match fields {
         syn::Fields::Named(fields) => {
             let let_self = fields.named.iter().map(|f| f.ident.as_ref().unwrap());
-            let accept_points = let_self.clone().zip(fields.named.iter()).map(|(i, f)| {
+            let traverse = let_self.clone().zip(fields.named.iter()).map(|(i, f)| {
                 quote_spanned! { f.ty.span() =>
-                    #i.accept_points(visitor)
+                    #i.traverse(visitor)
                 }
             });
             quote! {
                 { #(#let_self),* } => {
-                    #(#accept_points);*
+                    #(#traverse);*
                 }
             }
         }
@@ -491,14 +491,14 @@ fn fields_accept_points(fields: &syn::Fields) -> proc_macro2::TokenStream {
                 .iter()
                 .enumerate()
                 .map(|(i, f)| Ident::new(&format!("field{i}"), f.ty.span()));
-            let accept_points = let_self.clone().zip(fields.unnamed.iter()).map(|(i, f)| {
+            let traverse = let_self.clone().zip(fields.unnamed.iter()).map(|(i, f)| {
                 quote_spanned! { f.ty.span() =>
-                    #i.accept_points(visitor)
+                    #i.traverse(visitor)
                 }
             });
             quote! {
                 (#(#let_self),*) => {
-                    #(#accept_points);*
+                    #(#traverse);*
                 }
             }
         }
@@ -508,10 +508,10 @@ fn fields_accept_points(fields: &syn::Fields) -> proc_macro2::TokenStream {
     }
 }
 
-fn gen_accept_points(data: &Data) -> proc_macro2::TokenStream {
+fn gen_traverse(data: &Data) -> proc_macro2::TokenStream {
     match data {
         Data::Struct(data) => {
-            let arm = fields_accept_points(&data.fields);
+            let arm = fields_traverse(&data.fields);
             quote! {
                 match self {
                     Self #arm
@@ -521,13 +521,13 @@ fn gen_accept_points(data: &Data) -> proc_macro2::TokenStream {
         Data::Enum(data) => {
             let to_output = data.variants.iter().map(|v| {
                 let ident = &v.ident;
-                let arm = fields_accept_points(&v.fields);
+                let arm = fields_traverse(&v.fields);
                 quote! { Self::#ident #arm }
             });
             quote! {
                 let kind = ::object_rainbow::Enum::kind(self);
                 let tag = ::object_rainbow::enumkind::EnumKind::to_tag(kind);
-                tag.accept_points(visitor);
+                tag.traverse(visitor);
                 match self {
                     #(#to_output)*
                 }

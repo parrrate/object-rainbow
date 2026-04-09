@@ -23,8 +23,8 @@ impl<T: ListHashes> ListHashes for (T,) {
 }
 
 impl<T: Topological> Topological for (T,) {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        self.0.accept_points(visitor);
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.0.traverse(visitor);
     }
 }
 

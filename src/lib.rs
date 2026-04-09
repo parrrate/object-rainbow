@@ -378,7 +378,7 @@ impl<T, Extra> ListHashes for RawPoint<T, Extra> {
 impl<T: 'static + Traversible, Extra: 'static + Send + Sync + Clone + ExtraFor<T>> Topological
     for RawPoint<T, Extra>
 {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
         visitor.visit(self);
     }
 }
@@ -962,13 +962,13 @@ pub trait ListHashes {
 }
 
 pub trait Topological: ListHashes {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
         let _ = visitor;
     }
 
     fn topology(&self) -> TopoVec {
         let mut topology = TopoVec::with_capacity(self.point_count());
-        self.accept_points(&mut topology);
+        self.traverse(&mut topology);
         topology
     }
 }
@@ -1108,7 +1108,7 @@ impl<T> ListHashes for Point<T> {
 }
 
 impl<T: Traversible> Topological for Point<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
         visitor.visit(self);
     }
 }
@@ -1551,12 +1551,11 @@ trait RainbowIterator: Sized + IntoIterator {
         self.into_iter().for_each(|item| item.list_hashes(f));
     }
 
-    fn iter_accept_points(self, visitor: &mut impl PointVisitor)
+    fn iter_traverse(self, visitor: &mut impl PointVisitor)
     where
         Self::Item: Topological,
     {
-        self.into_iter()
-            .for_each(|item| item.accept_points(visitor));
+        self.into_iter().for_each(|item| item.traverse(visitor));
     }
 }
 

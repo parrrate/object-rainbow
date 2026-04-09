@@ -221,9 +221,9 @@ impl<K, T> ListHashes for EncryptedInner<K, T> {
 }
 
 impl<K: Key, T: Topological> Topological for EncryptedInner<K, T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
         let resolution = &mut self.resolution.iter();
-        self.decrypted.0.accept_points(&mut IterateResolution {
+        self.decrypted.0.traverse(&mut IterateResolution {
             resolution,
             visitor,
         });
@@ -274,8 +274,8 @@ impl<K, T> ListHashes for Encrypted<K, T> {
 }
 
 impl<K: Key, T: Topological> Topological for Encrypted<K, T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        self.inner.accept_points(visitor);
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.inner.traverse(visitor);
     }
 }
 
@@ -526,7 +526,7 @@ pub async fn encrypt<K: Key, T: Traversible>(
     decrypted: T,
 ) -> object_rainbow::Result<Encrypted<K, T>> {
     let mut futures = Vec::with_capacity(decrypted.point_count());
-    decrypted.accept_points(&mut ExtractResolution {
+    decrypted.traverse(&mut ExtractResolution {
         extracted: &mut futures,
         key: &key,
     });
