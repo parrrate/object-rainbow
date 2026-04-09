@@ -15,7 +15,9 @@ impl InlineOutput for u8 {
     where
         Self: Sized,
     {
-        output.write(slice);
+        if output.is_real() {
+            output.write(slice);
+        }
     }
 }
 
