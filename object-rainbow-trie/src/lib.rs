@@ -350,6 +350,10 @@ where
     pub fn is_empty(&self) -> bool {
         self.trie.is_empty()
     }
+
+    pub async fn remove(&mut self, key: &K) -> object_rainbow::Result<Option<V>> {
+        self.trie.remove(key.as_ref()).await
+    }
 }
 
 #[cfg(test)]
