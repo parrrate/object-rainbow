@@ -460,14 +460,20 @@ impl<T> Size for Point<T> {
 
 impl<T: Object> Point<T> {
     pub fn from_address(address: Address, resolve: Arc<dyn Resolve>) -> Self {
+        Self::from_address_extra(address, resolve, ())
+    }
+}
+
+impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Point<T, Extra> {
+    pub fn from_address_extra(address: Address, resolve: Arc<dyn Resolve>, extra: Extra) -> Self {
         Self::from_origin(
             address.hash,
             Arc::new(ByAddress::from_inner(ByAddressInner {
                 address,
-                extra: (),
+                extra: extra.clone(),
                 resolve,
             })),
-            (),
+            extra,
         )
     }
 }
