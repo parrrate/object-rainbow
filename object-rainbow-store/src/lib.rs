@@ -200,6 +200,18 @@ impl<S: RainbowStoreMut, Extra: 'static + Send + Sync + Clone> StoreMut<S, Extra
         Ok(self.store.store_ref_raw(key, point, self.extra.clone()))
     }
 
+    pub async fn init<T: Object<Extra>, K: Send + Sync + AsRef<str>>(
+        &self,
+        key: K,
+        point: Point<T>,
+    ) -> object_rainbow::Result<StoreRef<S, K, T, Extra>> {
+        let point = self.store.saved_point(&point, self.extra.clone()).await?;
+        self.store
+            .update_ref(key.as_ref(), Some(OptionalHash::NONE), point.hash())
+            .await?;
+        Ok(self.store.store_ref_raw(key, point, self.extra.clone()))
+    }
+
     pub async fn load<T: Object<Extra>, K: Send + Sync + AsRef<str>>(
         &self,
         key: K,
