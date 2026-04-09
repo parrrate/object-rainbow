@@ -75,6 +75,12 @@ impl<T> ArrayMap<T> {
             range: self.map.range(range),
         }
     }
+
+    pub fn pop_first(&mut self) -> Option<(u8, T)> {
+        self.map
+            .pop_first()
+            .inspect(|&(key, _)| self.bits.set(key as usize, false))
+    }
 }
 
 pub struct Range<'a, T> {
