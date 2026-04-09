@@ -79,6 +79,12 @@ impl Address {
     }
 }
 
+impl ToOutput for Address {
+    fn to_output(&self, output: &mut dyn Output) {
+        self.hash.to_output(output);
+    }
+}
+
 impl<I: PointInput> ParseInline<I> for Address {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         Ok(Self {
