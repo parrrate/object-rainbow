@@ -13,6 +13,6 @@ impl<I: ParseInput> Parse<I> for String {
 }
 
 impl Tagged for String {}
-impl<E: 'static> Topological<E> for String {}
+impl Topological for String {}
 impl<E: 'static> Object<E> for String {}
 impl ReflessObject for String {}

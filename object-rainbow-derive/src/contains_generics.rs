@@ -5,7 +5,7 @@ use syn::{AngleBracketedGenericArguments, Expr, Ident, Path, Type};
 #[derive(Clone, Copy)]
 pub struct GContext<'a> {
     pub g: &'a BTreeSet<Ident>,
-    pub points: bool,
+    pub always: bool,
 }
 
 fn expr_contains_generics(cx: GContext, expr: &Expr) -> bool {
@@ -50,7 +50,7 @@ fn path_contains_generics(cx: GContext, path: &Path) -> bool {
 }
 
 pub fn type_contains_generics(cx: GContext, ty: &Type) -> bool {
-    if cx.points {
+    if cx.always {
         return true;
     }
     match ty {
@@ -63,7 +63,7 @@ pub fn type_contains_generics(cx: GContext, ty: &Type) -> bool {
                 }
         }
         Type::Group(ty) => type_contains_generics(cx, &ty.elem),
-        Type::Macro(_) => true,
+        Type::Macro(_) => false,
         Type::Paren(ty) => type_contains_generics(cx, &ty.elem),
         Type::Path(ty) => path_contains_generics(cx, &ty.path),
         Type::Reference(ty) => type_contains_generics(cx, &ty.elem),

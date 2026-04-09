@@ -6,18 +6,19 @@ use std::{
 use futures_util::{Stream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    Fetch, Inline, Object, Parse, Point, SimpleObject, Tagged, ToOutput, Topological,
+    Fetch, Inline, Object, Parse, Point, Tagged, ToOutput, Topological, Traversible,
     length_prefixed::LpBytes,
 };
 
-#[derive(ToOutput, Tagged, Topological, Parse, Clone)]
+#[derive(ToOutput, Tagged, Topological, Parse, Clone, Object)]
+#[topology(recursive)]
 pub struct Trie<T> {
     value: Option<T>,
     #[tags(skip)]
     children: BTreeMap<u8, Point<(LpBytes, Self)>>,
 }
 
-impl<T> Object for Trie<T> where Option<T>: Inline {}
+// impl<T> Object for Trie<T> where Option<T>: Inline {}
 
 impl<T> Default for Trie<T> {
     fn default() -> Self {

@@ -186,7 +186,7 @@ macro_rules! ae {
             type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
         }
 
-        impl<E: 'static> Topological<E> for Ae<$n> {}
+        impl Topological for Ae<$n> {}
         impl Tagged for Ae<$n> {}
         impl Tagged for Ae<NonZero<$n>> {}
         impl ReflessObject for Ae<$n> {}
@@ -360,8 +360,8 @@ macro_rules! lebe {
             type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
         }
 
-        impl<E: 'static> Topological<E> for Le<$n> {}
-        impl<E: 'static> Topological<E> for Be<$n> {}
+        impl Topological for Le<$n> {}
+        impl Topological for Be<$n> {}
         impl Tagged for Le<$n> {}
         impl Tagged for Be<$n> {}
         impl ReflessObject for Le<$n> {}
@@ -487,8 +487,8 @@ macro_rules! float {
             type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
         }
 
-        impl<E: 'static> Topological<E> for Le<$n> {}
-        impl<E: 'static> Topological<E> for Be<$n> {}
+        impl Topological for Le<$n> {}
+        impl Topological for Be<$n> {}
         impl Tagged for Le<$n> {}
         impl Tagged for Be<$n> {}
         impl ReflessObject for Le<$n> {}
@@ -554,7 +554,7 @@ impl<T: NonZeroable + Size> MaybeHasNiche for Nz<T> {
     type MnArray = SomeNiche<ZeroNiche<T::Size>>;
 }
 
-impl<T: NonZeroable, E: 'static> Topological<E> for Nz<T> {}
+impl<T: NonZeroable> Topological for Nz<T> {}
 impl<T: NonZeroable> Tagged for Nz<T> {}
 impl<T: NonZeroable + ReflessInline> ReflessObject for Nz<T> {}
 impl<T: NonZeroable + ReflessInline> ReflessInline for Nz<T> {}

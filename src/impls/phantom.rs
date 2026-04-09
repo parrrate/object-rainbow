@@ -16,7 +16,7 @@ impl<T: ?Sized, I: ParseInput> ParseInline<I> for PhantomData<T> {
     }
 }
 
-impl<T: ?Sized, E: 'static> Topological<E> for PhantomData<T> {}
+impl<T: ?Sized> Topological for PhantomData<T> {}
 impl<T: ?Sized> Tagged for PhantomData<T> {}
 impl<T: ?Sized + 'static + Send + Sync, E: 'static> Object<E> for PhantomData<T> {}
 impl<T: ?Sized + 'static + Send + Sync, E: 'static> Inline<E> for PhantomData<T> {}

@@ -6,7 +6,7 @@ use std::{
 
 use object_rainbow::{
     Address, Fetch, Hash, Object, ObjectHashes, OptionalHash, Point, PointVisitor, Resolve,
-    Singular, Topological,
+    Singular, Topological, Traversible,
 };
 
 pub trait RainbowFuture: Send + Future<Output = object_rainbow::Result<Self::T>> {
@@ -17,21 +17,17 @@ impl<F: Send + Future<Output = object_rainbow::Result<T>>, T> RainbowFuture for 
     type T = T;
 }
 
-struct StoreVisitor<'a, 'x, S: ?Sized, Extra> {
+struct StoreVisitor<'a, 'x, S: ?Sized> {
     store: &'a S,
     futures: &'x mut Vec<Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<()>>>>>,
-    extra: &'x Extra,
 }
 
-impl<'a, 'x, S: RainbowStore, Extra: 'static + Send + Sync + Clone> PointVisitor<Extra>
-    for StoreVisitor<'a, 'x, S, Extra>
-{
-    fn visit<T: Object<Extra>>(&mut self, point: &Point<T, Extra>) {
+impl<'a, 'x, S: RainbowStore> PointVisitor for StoreVisitor<'a, 'x, S> {
+    fn visit<T: Traversible>(&mut self, point: &Point<T>) {
         let point = point.clone();
         let store = self.store;
-        let extra = self.extra.clone();
         self.futures.push(Box::pin(async move {
-            store.save_point(&point, extra).await.map(|_| ())
+            store.save_point(&point).await.map(|_| ())
         }));
     }
 }
@@ -47,12 +43,14 @@ impl<S: 'static + Send + RainbowStore> Resolve for StoreResolve<S> {
     ) -> object_rainbow::FailFuture<'_, object_rainbow::ByteNode> {
         Box::pin(async move {
             let bytes = self.store.fetch(address.hash).await?.as_ref().to_vec();
-            Ok((
-                bytes,
-                Arc::new(Self {
-                    store: self.store.clone(),
-                }) as _,
-            ))
+            Ok((bytes, self.store.resolve()))
+        })
+    }
+
+    fn resolve_data(&'_ self, address: Address) -> object_rainbow::FailFuture<'_, Vec<u8>> {
+        Box::pin(async move {
+            let bytes = self.store.fetch(address.hash).await?.as_ref().to_vec();
+            Ok(bytes)
         })
     }
 
@@ -62,28 +60,29 @@ impl<S: 'static + Send + RainbowStore> Resolve for StoreResolve<S> {
 }
 
 pub trait RainbowStore: 'static + Send + Sync + Clone {
-    fn save_point<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
+    fn saved_point<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
         &self,
-        point: &Point<T, Extra>,
+        point: &Point<T>,
         extra: Extra,
-    ) -> impl RainbowFuture<T = Point<T, Extra>> {
+    ) -> impl RainbowFuture<T = Point<T>> {
         async {
-            if !self.contains(point.hash()).await? {
-                self.save_object(&point.fetch().await?, &extra).await?;
-            }
+            self.save_point(point).await?;
             Ok(point.with_resolve(self.resolve(), extra))
         }
     }
-    fn save_topology<Extra: 'static + Send + Sync + Clone>(
-        &self,
-        object: &impl Topological<Extra>,
-        extra: &Extra,
-    ) -> impl RainbowFuture<T = ()> {
+    fn save_point<T: Traversible>(&self, point: &Point<T>) -> impl RainbowFuture<T = ()> {
+        async {
+            if !self.contains(point.hash()).await? {
+                self.save_object(&point.fetch().await?).await?;
+            }
+            Ok(())
+        }
+    }
+    fn save_topology(&self, object: &impl Topological) -> impl RainbowFuture<T = ()> {
         let mut futures = Vec::with_capacity(object.point_count());
         object.accept_points(&mut StoreVisitor {
             store: self,
             futures: &mut futures,
-            extra,
         });
         async {
             for future in futures {
@@ -92,13 +91,9 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
             Ok(())
         }
     }
-    fn save_object<Extra: 'static + Send + Sync + Clone>(
-        &self,
-        object: &impl Object<Extra>,
-        extra: &Extra,
-    ) -> impl RainbowFuture<T = ()> {
+    fn save_object(&self, object: &impl Traversible) -> impl RainbowFuture<T = ()> {
         async {
-            self.save_topology(object, extra).await?;
+            self.save_topology(object).await?;
             self.save_data(object.hashes(), &object.vec()).await?;
             Ok(())
         }
@@ -112,7 +107,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
         &self,
         hash: Hash,
         extra: Extra,
-    ) -> Point<T, Extra> {
+    ) -> Point<T> {
         Point::from_address_extra(Address::from_hash(hash), self.resolve(), extra)
     }
     fn point<T: Object>(&self, hash: Hash) -> Point<T> {
@@ -147,7 +142,7 @@ pub trait RainbowStoreMut: RainbowStore {
     ) -> impl RainbowFuture<T = StoreRef<Self, impl 'static + Send + Sync + AsRef<str>, T, ()>>
     {
         async move {
-            let point = self.save_point(&point, ()).await?;
+            let point = self.saved_point(&point, ()).await?;
             let key = self.create_ref(point.hash()).await?;
             Ok(self.store_ref_raw(key, point, ()))
         }
@@ -158,7 +153,7 @@ pub trait RainbowStoreMut: RainbowStore {
         point: Point<T>,
     ) -> impl RainbowFuture<T = StoreRef<Self, K, T, ()>> {
         async move {
-            let point = self.save_point(&point, ()).await?;
+            let point = self.saved_point(&point, ()).await?;
             self.update_ref(key.as_ref(), None, point.hash()).await?;
             Ok(self.store_ref_raw(key, point, ()))
         }
@@ -196,7 +191,7 @@ pub trait RainbowStoreMut: RainbowStore {
     >(
         &self,
         key: K,
-        point: Point<T, Extra>,
+        point: Point<T>,
         extra: Extra,
     ) -> StoreRef<Self, K, T, Extra> {
         StoreRef {
@@ -213,12 +208,12 @@ pub struct StoreRef<S, K, T, Extra> {
     store: S,
     key: K,
     old: OptionalHash,
-    point: Point<T, Extra>,
+    point: Point<T>,
     extra: Extra,
 }
 
 impl<S, K, T, Extra> Deref for StoreRef<S, K, T, Extra> {
-    type Target = Point<T, Extra>;
+    type Target = Point<T>;
 
     fn deref(&self) -> &Self::Target {
         &self.point
@@ -249,7 +244,7 @@ impl<
     pub async fn save_point(&mut self) -> object_rainbow::Result<()> {
         self.point = self
             .store
-            .save_point(&self.point, self.extra.clone())
+            .saved_point(&self.point, self.extra.clone())
             .await?;
         Ok(())
     }

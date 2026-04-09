@@ -1,15 +1,14 @@
 use std::{
     collections::{BTreeMap, BTreeSet},
     future::ready,
-    marker::PhantomData,
     ops::Deref,
     sync::Arc,
 };
 
 use chacha20poly1305::{ChaCha20Poly1305, aead::Aead};
 use object_rainbow::{
-    ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Resolve, SimpleObject,
-    Singular, error_fetch, error_parse,
+    ByteNode, FailFuture, Fetch, Hash, Object, Point, PointVisitor, Resolve, Singular, Traversible,
+    error_fetch, error_parse,
 };
 use object_rainbow_encrypted::{Key, WithKey, encrypt_point};
 use sha2::digest::generic_array::GenericArray;
@@ -53,33 +52,32 @@ type Callback<'a> = dyn 'a + Send + FnOnce(&mut BTreeSet<Hash>);
 struct Event<'a>(Hash, Vec<u8>, Box<Callback<'a>>);
 
 #[derive(Debug, Clone)]
-struct EventContext<'ex, Extra> {
+struct EventContext<'ex> {
     executor: Arc<Executor<'ex>>,
     send: Sender<Event<'ex>>,
-    _extra: PhantomData<Extra>,
 }
 
-struct EventVisitor<'ex, 't, Extra> {
+struct EventVisitor<'ex, 't> {
     fetching: &'t mut BTreeSet<Hash>,
-    context: EventContext<'ex, Extra>,
+    context: EventContext<'ex>,
 }
 
-impl<'ex, Extra> Deref for EventVisitor<'ex, '_, Extra> {
-    type Target = EventContext<'ex, Extra>;
+impl<'ex> Deref for EventVisitor<'ex, '_> {
+    type Target = EventContext<'ex>;
 
     fn deref(&self) -> &Self::Target {
         &self.context
     }
 }
 
-impl<Extra: 'static + Send + Sync + Clone> EventContext<'_, Extra> {
-    async fn send(self, object: impl Object<Extra>) {
+impl EventContext<'_> {
+    async fn send(self, object: impl Traversible) {
         let send = self.send.clone();
         let event = Event::from_object(object, self);
         let _ = send.send(event).await;
     }
 
-    async fn resolve(self, point: Point<impl Object<Extra>, Extra>) {
+    async fn resolve(self, point: Point<impl Traversible>) {
         match point.fetch().await {
             Ok(object) => self.send(object).await,
             Err(e) => tracing::error!("{e:?}"),
@@ -87,8 +85,8 @@ impl<Extra: 'static + Send + Sync + Clone> EventContext<'_, Extra> {
     }
 }
 
-impl<Extra: 'static + Send + Sync + Clone> PointVisitor<Extra> for EventVisitor<'_, '_, Extra> {
-    fn visit<T: Object<Extra>>(&mut self, point: &object_rainbow::Point<T, Extra>) {
+impl PointVisitor for EventVisitor<'_, '_> {
+    fn visit<T: Traversible>(&mut self, point: &object_rainbow::Point<T>) {
         if !self.fetching.contains(&point.hash()) {
             self.fetching.insert(point.hash());
             let point = point.clone();
@@ -99,10 +97,7 @@ impl<Extra: 'static + Send + Sync + Clone> PointVisitor<Extra> for EventVisitor<
 }
 
 impl<'ex> Event<'ex> {
-    fn from_object<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
-        object: T,
-        context: EventContext<'ex, Extra>,
-    ) -> Self {
+    fn from_object<T: Traversible>(object: T, context: EventContext<'ex>) -> Self {
         let hash = object.full_hash();
         let data = object.output();
         Event(
@@ -124,21 +119,27 @@ impl Resolve for MapResolver {
         }))
     }
 
+    fn resolve_data(&'_ self, address: object_rainbow::Address) -> FailFuture<'_, Vec<u8>> {
+        Box::pin(ready(match self.0.get(&address.hash) {
+            Some(data) => Ok(data.clone()),
+            None => Err(error_parse!("hash not found")),
+        }))
+    }
+
     fn name(&self) -> &str {
         "map resolver"
     }
 }
 
 async fn iterate<T: Object<Extra>, Extra: 'static + Send + Sync + Clone>(
-    point: Point<T, Extra>,
+    point: Point<T>,
     extra: Extra,
-) -> anyhow::Result<Point<T, Extra>> {
+) -> anyhow::Result<Point<T>> {
     let (send, recv) = smol::channel::unbounded::<Event>();
     let executor = Arc::new(Executor::new());
     EventContext {
         executor: executor.clone(),
         send,
-        _extra: PhantomData,
     }
     .send(point.fetch().await?)
     .await;
@@ -178,10 +179,10 @@ fn main() -> anyhow::Result<()> {
         )
             .point();
         let key = Test(std::array::from_fn(|i| i as _));
-        let point = encrypt_point(key, point, &()).await?;
+        let point = encrypt_point(key, point).await?;
         let point = iterate(point, WithKey { key, extra: () }).await?;
         let point = point.fetch().await?.into_inner().point();
-        let point = encrypt_point(key, point, &()).await?;
+        let point = encrypt_point(key, point).await?;
         let point = point.fetch().await?.into_inner().point();
         assert_eq!(
             point.fetch().await?.0.fetch().await?.fetch().await?.0,

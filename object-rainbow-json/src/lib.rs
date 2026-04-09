@@ -3,8 +3,8 @@ use std::{collections::BTreeMap, io::Write};
 use futures_util::future::try_join_all;
 use object_rainbow::{
     Enum, Fetch, Inline, MaybeHasNiche, NicheForUnsized, NoNiche, Object, Output, Parse,
-    ParseInline, ParseInput, Point, ReflessObject, SimpleObject, Size, SomeNiche, Tagged, ToOutput,
-    Topological, ZeroNiche, length_prefixed::LpString, numeric::Le,
+    ParseInline, ParseInput, Point, ReflessObject, Size, SomeNiche, Tagged, ToOutput, Topological,
+    Traversible, ZeroNiche, length_prefixed::LpString, numeric::Le,
 };
 use serde::{Serialize, de::DeserializeOwned};
 

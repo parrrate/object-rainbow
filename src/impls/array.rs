@@ -10,8 +10,8 @@ impl<T: ToOutput, const N: usize> ToOutput for [T; N] {
     }
 }
 
-impl<T: Topological<E>, const N: usize, E: 'static> Topological<E> for [T; N] {
-    fn accept_points(&self, visitor: &mut impl PointVisitor<E>) {
+impl<T: Topological, const N: usize> Topological for [T; N] {
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.iter_accept_points(visitor);
     }
 }

@@ -6,8 +6,8 @@ use std::{
 };
 
 use object_rainbow::{
-    ByteNode, FailFuture, Fetch, FullHash, Hash, Object, Point, PointVisitor, Resolve,
-    SimpleObject, Singular, error_parse,
+    Address, ByteNode, FailFuture, Fetch, FullHash, Hash, Object, Point, PointVisitor, Resolve,
+    Singular, Traversible, error_parse,
 };
 use smol::{Executor, channel::Sender};
 
@@ -35,13 +35,13 @@ impl<'ex> Deref for EventVisitor<'ex, '_> {
 }
 
 impl EventContext<'_> {
-    async fn send(self, object: impl Object) {
+    async fn send(self, object: impl Traversible) {
         let send = self.send.clone();
         let event = Event::from_object(object, self);
         let _ = send.send(event).await;
     }
 
-    async fn resolve(self, point: Point<impl Object>) {
+    async fn resolve(self, point: Point<impl Traversible>) {
         match point.fetch().await {
             Ok(object) => self.send(object).await,
             Err(e) => tracing::error!("{e:?}"),
@@ -50,7 +50,7 @@ impl EventContext<'_> {
 }
 
 impl PointVisitor for EventVisitor<'_, '_> {
-    fn visit<T: Object>(&mut self, point: &object_rainbow::Point<T>) {
+    fn visit<T: Traversible>(&mut self, point: &object_rainbow::Point<T>) {
         if !self.fetching.contains(&point.hash()) {
             self.fetching.insert(point.hash());
             let point = point.clone();
@@ -61,7 +61,7 @@ impl PointVisitor for EventVisitor<'_, '_> {
 }
 
 impl<'ex> Event<'ex> {
-    fn from_object<T: Object>(object: T, context: EventContext<'ex>) -> Self {
+    fn from_object<T: Traversible>(object: T, context: EventContext<'ex>) -> Self {
         let hash = object.full_hash();
         let data = object.output();
         Event(
@@ -75,12 +75,25 @@ impl<'ex> Event<'ex> {
 #[derive(Debug, Clone)]
 struct MapResolver(Arc<BTreeMap<Hash, Vec<u8>>>);
 
-impl Resolve for MapResolver {
-    fn resolve(&'_ self, address: object_rainbow::Address) -> FailFuture<'_, ByteNode> {
-        Box::pin(ready(match self.0.get(&address.hash) {
-            Some(data) => Ok((data.clone(), Arc::new(self.clone()) as _)),
+impl MapResolver {
+    fn resolve_bytes(&self, address: Address) -> object_rainbow::Result<Vec<u8>> {
+        match self.0.get(&address.hash) {
+            Some(data) => Ok(data.clone()),
             None => Err(error_parse!("hash not found")),
-        }))
+        }
+    }
+}
+
+impl Resolve for MapResolver {
+    fn resolve(&'_ self, address: Address) -> FailFuture<'_, ByteNode> {
+        Box::pin(ready(
+            self.resolve_bytes(address)
+                .map(|data| (data, Arc::new(self.clone()) as _)),
+        ))
+    }
+
+    fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>> {
+        Box::pin(ready(self.resolve_bytes(address)))
     }
 
     fn name(&self) -> &str {

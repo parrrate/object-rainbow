@@ -1,4 +1,4 @@
-use object_rainbow::{Fetch, FullHash, SimpleObject};
+use object_rainbow::{Fetch, FullHash, Traversible};
 use object_rainbow_store::RainbowStore;
 use object_rainbow_store_opendal::OpendalStore;
 use opendal::{Operator, services::Memory};
@@ -7,7 +7,7 @@ fn main() -> anyhow::Result<()> {
     smol::block_on(async move {
         let store = OpendalStore::from_operator(Operator::new(Memory::default())?.finish());
         let mut point = store
-            .save_point(
+            .saved_point(
                 &((*b"alisa", *b"feistel").point(), [1, 2, 3, 4].point()).point(),
                 (),
             )

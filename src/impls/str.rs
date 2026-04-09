@@ -6,5 +6,5 @@ impl ToOutput for str {
     }
 }
 
-impl<E: 'static> Topological<E> for str {}
+impl Topological for str {}
 impl Tagged for str {}
