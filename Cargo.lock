@@ -1122,7 +1122,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.39"
+version = "0.0.0-a.40"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1154,7 +1154,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-append-tree"
-version = "0.0.0-a.8"
+version = "0.0.0-a.9"
 dependencies = [
  "macro_rules_attribute",
  "object-rainbow",
@@ -1175,7 +1175,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-chain-tree"
-version = "0.0.0-a.7"
+version = "0.0.0-a.8"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
@@ -1215,7 +1215,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-fetchall"
-version = "0.0.0-a.4"
+version = "0.0.0-a.5"
 dependencies = [
  "anyhow",
  "async-executor",
@@ -1229,7 +1229,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.5"
+version = "0.0.0-a.6"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1264,7 +1264,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-marshall"
-version = "0.0.0-a.6"
+version = "0.0.0-a.7"
 dependencies = [
  "anyhow",
  "object-rainbow",
@@ -1329,7 +1329,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-unique-diffs"
-version = "0.0.0-a.2"
+version = "0.0.0-a.3"
 dependencies = [
  "object-rainbow",
  "object-rainbow-amt-set",
