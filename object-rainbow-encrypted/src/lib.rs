@@ -1,9 +1,9 @@
 use std::{ops::Deref, sync::Arc};
 
 use object_rainbow::{
-    Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, FullHash, Hash, ListPoints, Node,
-    Object, Parse, ParseSliceExtra, Point, PointInput, PointVisitor, Resolve, Singular, Tagged,
-    ToOutput, Topological, Traversible, length_prefixed::Lp,
+    Address, ByteNode, Error, ExtractResolve, FailFuture, Fetch, FetchBytes, FullHash, Hash,
+    ListPoints, Node, Object, Parse, ParseSliceExtra, Point, PointInput, PointVisitor, Resolve,
+    Singular, Tagged, ToOutput, Topological, Traversible, length_prefixed::Lp,
 };
 
 #[derive(Clone)]

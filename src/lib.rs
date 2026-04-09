@@ -229,6 +229,17 @@ trait InnerCast: FetchBytes {
 
 impl<T: ?Sized + FetchBytes> InnerCast for T {}
 
+pub trait ExtractResolve: FetchBytes {
+    fn extract_resolve<R: Any>(&self) -> Option<(&Address, &R)> {
+        let ByAddressInner { address, resolve } =
+            self.as_inner()?.downcast_ref::<ByAddressInner>()?;
+        let resolve = resolve.as_ref().any_ref().downcast_ref::<R>()?;
+        Some((address, resolve))
+    }
+}
+
+impl<T: ?Sized + FetchBytes> ExtractResolve for T {}
+
 #[derive(Clone, ParseAsInline)]
 pub struct RawPointInner {
     hash: Hash,
@@ -499,15 +510,6 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra>
         } else {
             Ok(Some((object, resolve)))
         }
-    }
-}
-
-impl<T> Point<T> {
-    pub fn extract_resolve<R: Any>(&self) -> Option<(&Address, &R)> {
-        let ByAddressInner { address, resolve } =
-            self.fetch.as_inner()?.downcast_ref::<ByAddressInner>()?;
-        let resolve = resolve.as_ref().any_ref().downcast_ref::<R>()?;
-        Some((address, resolve))
     }
 }
 
