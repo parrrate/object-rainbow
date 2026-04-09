@@ -14,12 +14,12 @@ pub trait Key: 'static + Sized + Send + Sync + Clone {
     fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>, Self::Error>;
 }
 
-type Resolution<K> = Arc<Lp<Vec<Point<Encrypted<K, Vec<u8>>>>>>;
+type UntypedResolution<K> = Arc<Lp<Vec<Point<Encrypted<K, Vec<u8>>>>>>;
 
 #[derive(ToOutput)]
 struct EncryptedInner<K, T> {
     tags: Hash,
-    resolution: Resolution<K>,
+    resolution: UntypedResolution<K>,
     decrypted: Arc<T>,
 }
 
@@ -32,7 +32,7 @@ impl<
 {
     fn parse(mut input: I) -> object_rainbow::Result<Self> {
         let tags = input.parse_inline()?;
-        let resolution: Resolution<K> = input.parse_inline()?;
+        let resolution: UntypedResolution<K> = input.parse_inline()?;
         let (_, extra) = input.extra().parts();
         let resolve = Decrypt {
             resolution: resolution.clone(),
@@ -316,14 +316,14 @@ impl<K: Key, T: ToOutput> ToOutput for Encrypted<K, T> {
 
 #[derive(Clone)]
 struct Decrypt<K> {
-    resolution: Resolution<K>,
+    resolution: UntypedResolution<K>,
 }
 
 impl<K: Key> Decrypt<K> {
     async fn resolve_bytes(
         &self,
         address: Address,
-    ) -> object_rainbow::Result<(Vec<u8>, Resolution<K>)> {
+    ) -> object_rainbow::Result<(Vec<u8>, UntypedResolution<K>)> {
         let Encrypted {
             key: _,
             inner:
