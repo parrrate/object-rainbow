@@ -80,6 +80,10 @@ pub trait EnumKind: Copy {
     /// Underlying [`Inline`]. Typically [`EnumTag`].
     type Tag;
     fn to_tag(self) -> Self::Tag;
+    /// Convert from an [`EnumTag`] assuming the value is within bounds, such that otherwise we have
+    /// caught their violation during parsing of that tag.
+    ///
+    /// Panics on out-of-bounds.
     fn from_tag(tag: Self::Tag) -> Self;
 }
 
