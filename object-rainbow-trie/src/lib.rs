@@ -135,31 +135,41 @@ where
         Ok(item)
     }
 
+    async fn yield_all(
+        &self,
+        context: &mut Vec<u8>,
+        co: &Co<(Vec<u8>, T), object_rainbow::Error>,
+    ) -> object_rainbow::Result<()> {
+        let len = context.len();
+        if let Some(value) = self.value.clone() {
+            co.yield_((context.clone(), value)).await;
+        }
+        for (first, point) in &self.children {
+            {
+                context.push(*first);
+                let (prefix, trie) = point.fetch().await?;
+                context.extend_from_slice(&prefix);
+                Box::pin(trie.yield_all(context, co)).await?;
+            }
+            context.truncate(len);
+        }
+        Ok(())
+    }
+
     async fn prefix_yield(
         &self,
         context: &mut Vec<u8>,
         key: &[u8],
         co: &Co<(Vec<u8>, T), object_rainbow::Error>,
     ) -> object_rainbow::Result<()> {
-        let len = context.len();
         let Some((first, key)) = key.split_first() else {
-            if let Some(value) = self.value.clone() {
-                co.yield_((context.clone(), value)).await;
-            }
-            for (first, point) in &self.children {
-                {
-                    context.push(*first);
-                    let (prefix, trie) = point.fetch().await?;
-                    context.extend_from_slice(&prefix);
-                    Box::pin(trie.prefix_yield(context, b"", co)).await?;
-                }
-                context.truncate(len);
-            }
+            self.yield_all(context, co).await?;
             return Ok(());
         };
         let Some(point) = self.children.get(first) else {
             return Ok(());
         };
+        let len = context.len();
         'done: {
             context.push(*first);
             let (prefix, trie) = point.fetch().await?;
