@@ -148,6 +148,7 @@ impl<T, const N: usize> From<[(u8, T); N]> for ArrayMap<T> {
     Clone,
     Size,
     MaybeHasNiche,
+    Default,
 )]
 pub struct ArraySet {
     bits: Bits,
