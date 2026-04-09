@@ -1,7 +1,7 @@
 use crate::*;
 
 impl<T: InlineOutput> ToOutput for [T] {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         T::slice_to_output(self, output);
     }
 }

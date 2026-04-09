@@ -3,7 +3,7 @@ use typenum::tarr;
 use crate::*;
 
 impl<A: InlineOutput, B: ToOutput> ToOutput for (A, B) {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         self.0.to_output(output);
         self.1.to_output(output);
     }
@@ -55,7 +55,7 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche> MaybeHasNiche for (A, B) {
 }
 
 impl<A: InlineOutput, B: InlineOutput, C: ToOutput> ToOutput for (A, B, C) {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         self.0.to_output(output);
         self.1.to_output(output);
         self.2.to_output(output);
@@ -116,7 +116,7 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche> MaybeHasNiche for (A,
 }
 
 impl<A: InlineOutput, B: InlineOutput, C: InlineOutput, D: ToOutput> ToOutput for (A, B, C, D) {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         self.0.to_output(output);
         self.1.to_output(output);
         self.2.to_output(output);
@@ -195,7 +195,7 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche, D: MaybeHasNiche> May
 impl<A: InlineOutput, B: InlineOutput, C: InlineOutput, D: InlineOutput, E: ToOutput> ToOutput
     for (A, B, C, D, E)
 {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         self.0.to_output(output);
         self.1.to_output(output);
         self.2.to_output(output);
@@ -301,7 +301,7 @@ impl<
     F: ToOutput,
 > ToOutput for (A, B, C, D, E, F)
 {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         self.0.to_output(output);
         self.1.to_output(output);
         self.2.to_output(output);
@@ -441,7 +441,7 @@ impl<
     G: ToOutput,
 > ToOutput for (A, B, C, D, E, F, G)
 {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         self.0.to_output(output);
         self.1.to_output(output);
         self.2.to_output(output);
@@ -628,7 +628,7 @@ impl<
     H: ToOutput,
 > ToOutput for (A, B, C, D, E, F, G, H)
 {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         self.0.to_output(output);
         self.1.to_output(output);
         self.2.to_output(output);
@@ -833,7 +833,7 @@ impl<
     I: ToOutput,
 > ToOutput for (A, B, C, D, E, F, G, H, I)
 {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         self.0.to_output(output);
         self.1.to_output(output);
         self.2.to_output(output);
@@ -1063,7 +1063,7 @@ impl<
     J: ToOutput,
 > ToOutput for (A, B, C, D, E, F, G, H, I, J)
 {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         self.0.to_output(output);
         self.1.to_output(output);
         self.2.to_output(output);
@@ -1318,7 +1318,7 @@ impl<
     K: ToOutput,
 > ToOutput for (A, B, C, D, E, F, G, H, I, J, K)
 {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         self.0.to_output(output);
         self.1.to_output(output);
         self.2.to_output(output);
@@ -1602,7 +1602,7 @@ impl<
     L: ToOutput,
 > ToOutput for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         self.0.to_output(output);
         self.1.to_output(output);
         self.2.to_output(output);

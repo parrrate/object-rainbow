@@ -287,7 +287,7 @@ fn per_n(n: usize) -> String {
         Impl {
             header: "InlineOutput".bound().last("ToOutput").header(n),
             members: vec![Box::new(
-                "to_output".method("output", "&mut dyn Output").out(n),
+                "to_output".method("output", "&mut impl Output").out(n),
             )],
         },
         Impl {

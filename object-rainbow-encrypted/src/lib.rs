@@ -419,7 +419,7 @@ impl<K: Key, T: Topological> Topological for Encrypted<K, T> {
 }
 
 impl<K: Key, T: ToOutput> ToOutput for Encrypted<K, T> {
-    fn to_output(&self, output: &mut dyn object_rainbow::Output) {
+    fn to_output(&self, output: &mut impl object_rainbow::Output) {
         if output.is_mangling() {
             output.write(
                 &self

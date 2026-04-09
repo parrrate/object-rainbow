@@ -3,7 +3,7 @@ use typenum::U1;
 use crate::*;
 
 impl ToOutput for u8 {
-    fn to_output(&self, output: &mut dyn crate::Output) {
+    fn to_output(&self, output: &mut impl Output) {
         if output.is_real() {
             output.write(&[*self]);
         }
@@ -11,7 +11,7 @@ impl ToOutput for u8 {
 }
 
 impl InlineOutput for u8 {
-    fn slice_to_output(slice: &[Self], output: &mut dyn crate::Output)
+    fn slice_to_output(slice: &[Self], output: &mut impl Output)
     where
         Self: Sized,
     {

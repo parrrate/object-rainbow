@@ -957,7 +957,7 @@ mod private {
             }
 
             impl<V: InlineOutput, H: ToOutput> ToOutput for $next<V, H> {
-                fn to_output(&self, output: &mut dyn Output) {
+                fn to_output(&self, output: &mut impl Output) {
                     self.0.to_output(output);
                 }
             }

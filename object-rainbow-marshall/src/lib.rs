@@ -227,7 +227,7 @@ pub fn marshall(map: &LocalMap, root: Hash) -> MarshalledRoot {
 }
 
 impl ToOutput for MarshalledRoot {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         self.marshalled.root.to_output(output);
         self.marshalled.data.to_output(output);
     }
@@ -253,7 +253,7 @@ pub struct Marshalled<T> {
 }
 
 impl<T: ToOutput> ToOutput for Marshalled<T> {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         if output.is_mangling() {
             self.object.to_output(output);
         }

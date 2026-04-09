@@ -35,7 +35,7 @@ impl Write for Writer<'_> {
 }
 
 impl<T: Serialize> ToOutput for Json<T> {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         if output.is_real() {
             serde_json::to_writer(&mut Writer { output }, &self.0)
                 .expect("json write errors are considered bugs");

@@ -49,7 +49,7 @@ impl<T> Deref for Zt<T> {
 }
 
 impl<T: ToOutput> ToOutput for Zt<T> {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         if output.is_mangling() {
             self.inner.object.to_output(output);
         }

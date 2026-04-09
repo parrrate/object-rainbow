@@ -22,7 +22,7 @@ impl<T: MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag = B>,
 }
 
 impl<T: ToOutput + TaggedOption> ToOutput for Option<T> {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         match self {
             Some(value) => {
                 if T::TAGGED_OPTION && output.is_real() {

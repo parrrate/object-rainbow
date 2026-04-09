@@ -1,7 +1,7 @@
 use crate::*;
 
 impl ToOutput for char {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         if output.is_real() {
             let mut buf = [0; 4];
             self.encode_utf8(&mut buf).to_output(output);

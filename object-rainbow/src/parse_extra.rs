@@ -4,7 +4,7 @@ use crate::*;
 pub struct ParseExtra<T>(pub T);
 
 impl<T: ToOutput> ToOutput for ParseExtra<T> {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         if output.is_mangling() {
             self.0.to_output(output);
         }

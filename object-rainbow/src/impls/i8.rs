@@ -3,7 +3,7 @@ use typenum::U1;
 use crate::*;
 
 impl ToOutput for i8 {
-    fn to_output(&self, output: &mut dyn crate::Output) {
+    fn to_output(&self, output: &mut impl Output) {
         if output.is_real() {
             output.write(&self.to_le_bytes());
         }

@@ -152,7 +152,7 @@ macro_rules! ae {
         }
 
         impl ToOutput for NonZero<$n> {
-            fn to_output(&self, output: &mut dyn crate::Output) {
+            fn to_output(&self, output: &mut impl Output) {
                 self.get().to_output(output);
             }
         }
@@ -282,7 +282,7 @@ macro_rules! lebe {
         }
 
         impl ToOutput for Le<$n> {
-            fn to_output(&self, output: &mut dyn Output) {
+            fn to_output(&self, output: &mut impl Output) {
                 if output.is_real() {
                     output.write(&self.0.to_le_bytes());
                 }
@@ -290,7 +290,7 @@ macro_rules! lebe {
         }
 
         impl ToOutput for Be<$n> {
-            fn to_output(&self, output: &mut dyn Output) {
+            fn to_output(&self, output: &mut impl Output) {
                 if output.is_real() {
                     output.write(&self.0.to_be_bytes());
                 }
@@ -298,7 +298,7 @@ macro_rules! lebe {
         }
 
         impl ToOutput for Le<NonZero<$n>> {
-            fn to_output(&self, output: &mut dyn Output) {
+            fn to_output(&self, output: &mut impl Output) {
                 if output.is_real() {
                     output.write(&self.0.get().to_le_bytes());
                 }
@@ -306,7 +306,7 @@ macro_rules! lebe {
         }
 
         impl ToOutput for Be<NonZero<$n>> {
-            fn to_output(&self, output: &mut dyn Output) {
+            fn to_output(&self, output: &mut impl Output) {
                 if output.is_real() {
                     output.write(&self.0.get().to_be_bytes());
                 }
@@ -466,7 +466,7 @@ macro_rules! float {
         }
 
         impl ToOutput for Le<$n> {
-            fn to_output(&self, output: &mut dyn Output) {
+            fn to_output(&self, output: &mut impl Output) {
                 if output.is_real() {
                     output.write(&self.0.to_le_bytes());
                 }
@@ -474,7 +474,7 @@ macro_rules! float {
         }
 
         impl ToOutput for Be<$n> {
-            fn to_output(&self, output: &mut dyn Output) {
+            fn to_output(&self, output: &mut impl Output) {
                 if output.is_real() {
                     output.write(&self.0.to_be_bytes());
                 }

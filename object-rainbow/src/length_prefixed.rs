@@ -27,7 +27,7 @@ impl<T> DerefMut for Lp<T> {
 }
 
 impl<T: ToOutput> ToOutput for Lp<T> {
-    fn to_output(&self, output: &mut dyn crate::Output) {
+    fn to_output(&self, output: &mut impl Output) {
         if output.is_mangling() {
             self.0.to_output(output);
         }
@@ -96,7 +96,7 @@ impl DerefMut for LpBytes {
 }
 
 impl ToOutput for LpBytes {
-    fn to_output(&self, output: &mut dyn crate::Output) {
+    fn to_output(&self, output: &mut impl Output) {
         if output.is_real() {
             let data = &self.0;
             let len = data.len();
@@ -144,7 +144,7 @@ impl DerefMut for LpString {
 }
 
 impl ToOutput for LpString {
-    fn to_output(&self, output: &mut dyn crate::Output) {
+    fn to_output(&self, output: &mut impl Output) {
         if output.is_real() {
             let data = self.0.as_bytes();
             let len = data.len();

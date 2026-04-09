@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::*;
 
 impl<'a, B: 'a + ToOwned + ToOutput + ?Sized> ToOutput for Cow<'a, B> {
-    fn to_output(&self, output: &mut dyn crate::Output) {
+    fn to_output(&self, output: &mut impl Output) {
         (**self).to_output(output);
     }
 }

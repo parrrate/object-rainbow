@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use crate::*;
 
 impl<T: InlineOutput> ToOutput for Vec<T> {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         T::slice_to_output(self, output);
     }
 }
@@ -31,7 +31,7 @@ impl<T: Tagged> Tagged for Vec<T> {
 }
 
 impl<T: InlineOutput> ToOutput for VecDeque<T> {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         let (l, r) = self.as_slices();
         T::slice_to_output(l, output);
         T::slice_to_output(r, output);

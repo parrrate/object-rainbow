@@ -3,7 +3,7 @@ use std::ops::Mul;
 use crate::*;
 
 impl<T: InlineOutput, N: ArrayLength> ToOutput for GenericArray<T, N> {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         T::slice_to_output(self, output);
     }
 }

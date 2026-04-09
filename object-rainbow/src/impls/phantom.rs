@@ -1,7 +1,7 @@
 use crate::*;
 
 impl<T: ?Sized> ToOutput for PhantomData<T> {
-    fn to_output(&self, _: &mut dyn Output) {}
+    fn to_output(&self, _: &mut impl Output) {}
 }
 
 impl<T: ?Sized> InlineOutput for PhantomData<T> {}

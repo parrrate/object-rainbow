@@ -34,7 +34,7 @@ impl<Extra> Deref for Extras<Extra> {
 }
 
 impl<Extra> ToOutput for Extras<Extra> {
-    fn to_output(&self, _: &mut dyn Output) {}
+    fn to_output(&self, _: &mut impl Output) {}
 }
 
 impl<Extra> InlineOutput for Extras<Extra> {}
@@ -226,7 +226,7 @@ impl RawPointInner {
 }
 
 impl ToOutput for RawPointInner {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         self.hash.to_output(output);
     }
 }
@@ -591,7 +591,7 @@ impl<T: Tagged> Tagged for Point<T> {
 }
 
 impl<T> ToOutput for Point<T> {
-    fn to_output(&self, output: &mut dyn Output) {
+    fn to_output(&self, output: &mut impl Output) {
         self.hash().to_output(output);
     }
 }
