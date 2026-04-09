@@ -6,8 +6,8 @@ impl<T: ToOutput> ToOutput for (T,) {
     }
 }
 
-impl<T: Topological> Topological for (T,) {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+impl<T: Topological<E>, E: 'static> Topological<E> for (T,) {
+    fn accept_points(&self, visitor: &mut impl PointVisitor<E>) {
         self.0.accept_points(visitor);
     }
 }
@@ -28,12 +28,9 @@ impl<T: Tagged> Tagged for (T,) {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: Object> Object for (T,) {}
-
-impl<T: Inline> Inline for (T,) {}
-
+impl<T: Object<E>, E: 'static> Object<E> for (T,) {}
+impl<T: Inline<E>, E: 'static> Inline<E> for (T,) {}
 impl<T: ReflessObject> ReflessObject for (T,) {}
-
 impl<T: ReflessInline> ReflessInline for (T,) {}
 
 impl<T: Size> Size for (T,) {
