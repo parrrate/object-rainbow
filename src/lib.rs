@@ -191,6 +191,9 @@ pub trait Fetch: Send + Sync + FetchBytes {
     type T;
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)>;
     fn fetch(&'_ self) -> FailFuture<'_, Self::T>;
+    fn fetch_local(&self) -> Option<Self::T> {
+        None
+    }
     fn get(&self) -> Option<&Self::T> {
         None
     }
