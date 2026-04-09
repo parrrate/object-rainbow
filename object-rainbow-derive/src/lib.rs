@@ -1558,9 +1558,21 @@ pub fn derive_parse_inline(input: TokenStream) -> TokenStream {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let parse_inline = gen_parse_inline(&input.data);
+    let (parse_inline, enum_parse_inline) = gen_parse_inline(&input.data);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
     let target = parse_for(&name, &input.attrs);
+    let enum_parse_inline = enum_parse_inline.map(|enum_parse_inline| {
+        quote! {
+            #[automatically_derived]
+            impl #impl_generics ::object_rainbow::enumkind::EnumParseInline<__I> for #target #ty_generics #where_clause {
+                fn enum_parse_inline(
+                    kind: <Self as ::object_rainbow::Enum>::Kind, input: &mut __I,
+                ) -> ::object_rainbow::Result<Self> {
+                    #enum_parse_inline
+                }
+            }
+        }
+    });
     let output = quote! {
         #[automatically_derived]
         impl #impl_generics ::object_rainbow::ParseInline<__I> for #target #ty_generics #where_clause {
@@ -1568,6 +1580,8 @@ pub fn derive_parse_inline(input: TokenStream) -> TokenStream {
                 #parse_inline
             }
         }
+
+        #enum_parse_inline
     };
     TokenStream::from(output)
 }
@@ -1690,11 +1704,11 @@ fn fields_parse_inline(fields: &syn::Fields) -> proc_macro2::TokenStream {
     }
 }
 
-fn gen_parse_inline(data: &Data) -> proc_macro2::TokenStream {
+fn gen_parse_inline(data: &Data) -> (proc_macro2::TokenStream, Option<proc_macro2::TokenStream>) {
     match data {
         Data::Struct(data) => {
             let arm = fields_parse_inline(&data.fields);
-            quote! { Ok(Self #arm) }
+            (quote! { Ok(Self #arm) }, None)
         }
         Data::Enum(data) => {
             let parse_inline = data.variants.iter().map(|v| {
@@ -1704,15 +1718,21 @@ fn gen_parse_inline(data: &Data) -> proc_macro2::TokenStream {
                     <Self as ::object_rainbow::Enum>::Kind::#ident => Self::#ident #arm,
                 }
             });
-            quote! {
-                Ok(match input.parse_inline()? {
-                    #(#parse_inline)*
-                })
-            }
+            (
+                quote! {
+                    ::object_rainbow::enumkind::EnumParseInline::parse_as_inline_enum(input)
+                },
+                Some(quote! {
+                    Ok(match kind {
+                        #(#parse_inline)*
+                    })
+                }),
+            )
         }
-        Data::Union(data) => {
-            Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
-        }
+        Data::Union(data) => (
+            Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error(),
+            None,
+        ),
     }
 }
 
