@@ -218,7 +218,14 @@ where
         if own > N::U64 {
             return Err(object_rainbow::error_parse!("overflow"));
         }
-        let history = T::parse_with_len(input, len % T::CAPACITY)?;
+        let history = T::parse_with_len(
+            input,
+            if len.is_multiple_of(T::CAPACITY) {
+                T::CAPACITY
+            } else {
+                len % T::CAPACITY
+            },
+        )?;
         Ok((
             history,
             Self::new(
@@ -533,10 +540,10 @@ mod test {
     async fn test() -> object_rainbow::Result<()> {
         let mut tree = AppendTree::<Le<u64>>::new();
         for i in 0..100000u64 {
+            assert_eq!(tree.reparse()?, tree);
             tree.push(Le(i))?;
             assert_eq!(tree.get(i).await?.unwrap().0, i);
         }
-        assert_eq!(tree.reparse()?, tree);
         Ok(())
     }
 }
