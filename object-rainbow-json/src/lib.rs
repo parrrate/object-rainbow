@@ -6,7 +6,7 @@ use object_rainbow::{
     ParseInline, ParseInput, Point, ReflessObject, Size, SomeNiche, Tagged, ToOutput, Topological,
     Traversible, ZeroNiche, length_prefixed::LpString, numeric::Le,
 };
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct Json<T>(pub T);
@@ -54,7 +54,10 @@ impl MaybeHasNiche for Json<()> {
     type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
 }
 
-#[derive(Enum, ToOutput, Topological, Parse, ParseInline, Clone, Default)]
+#[derive(
+    Enum, ToOutput, Topological, Parse, ParseInline, Clone, Default, Serialize, Deserialize,
+)]
+#[serde(untagged)]
 pub enum Distributed {
     #[default]
     Null,

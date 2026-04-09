@@ -9,7 +9,7 @@ authors.workspace = true
 description = "serde_json for object-rainbow"
 
 [dependencies]
-object-rainbow.workspace = true
+object-rainbow = { workspace = true, features = ["point-serialize"] }
 
 futures-util = { version = "0.3.31" }
 serde = "1.0.218"
