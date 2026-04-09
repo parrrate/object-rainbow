@@ -480,7 +480,7 @@ pub async fn encrypt_point<K: Key, T: Traversible>(
         return Ok(point);
     }
     let decrypted = decrypted.fetch().await?;
-    let encrypted = encrypt(key.clone(), decrypted).await?;
+    let encrypted = encrypt(key, decrypted).await?;
     let point = encrypted.point();
     Ok(point)
 }
