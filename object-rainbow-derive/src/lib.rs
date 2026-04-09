@@ -234,7 +234,9 @@ fn gen_parse(data: &Data) -> proc_macro2::TokenStream {
                     Ok(Self(#(#parse),*))
                 }
             }
-            syn::Fields::Unit => quote! {},
+            syn::Fields::Unit => quote! {
+                Ok(Self)
+            },
         },
         Data::Enum(data) => {
             Error::new_spanned(data.enum_token, "`enum`s are not supported").to_compile_error()
@@ -338,7 +340,9 @@ fn gen_parse_inline(data: &Data) -> proc_macro2::TokenStream {
                     Ok(Self(#(#parse),*))
                 }
             }
-            syn::Fields::Unit => quote! {},
+            syn::Fields::Unit => quote! {
+                Ok(Self)
+            },
         },
         Data::Enum(data) => {
             Error::new_spanned(data.enum_token, "`enum`s are not supported").to_compile_error()
@@ -504,6 +508,9 @@ fn bounds_size(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
 fn gen_size(data: &Data) -> proc_macro2::TokenStream {
     match data {
         Data::Struct(data) => {
+            if data.fields.is_empty() {
+                return quote! {0};
+            }
             let size = data.fields.iter().map(|f| {
                 let ty = &f.ty;
                 quote! { <#ty as ::object_rainbow::Size>::SIZE }
