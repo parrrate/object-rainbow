@@ -266,7 +266,7 @@ impl ToOutput for RawPointInner {
     }
 }
 
-impl<I: PointInput<Extra: Clone>> ParseInline<I> for RawPointInner<I::Extra> {
+impl<I: PointInput> ParseInline<I> for RawPointInner<I::Extra> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         input.parse_raw_point_inner()
     }
