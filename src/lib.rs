@@ -17,8 +17,8 @@ pub use anyhow::anyhow;
 use futures_util::TryFutureExt;
 use generic_array::{ArrayLength, GenericArray};
 pub use object_rainbow_derive::{
-    Enum, Inline, ListPoints, MaybeHasNiche, Object, Parse, ParseAsInline, ParseInline,
-    ReflessInline, ReflessObject, Size, Tagged, ToOutput, Topological,
+    Enum, ListPoints, MaybeHasNiche, Parse, ParseAsInline, ParseInline, ReflessInline,
+    ReflessObject, Size, Tagged, ToOutput, Topological,
 };
 use sha2::{Digest, Sha256};
 #[doc(hidden)]
@@ -303,8 +303,6 @@ impl<T: ?Sized> Default for ObjectMarker<T> {
 }
 
 impl<T: ?Sized + Tagged> Tagged for ObjectMarker<T> {}
-impl<T: ?Sized + 'static + Tagged, Extra: 'static> Object<Extra> for ObjectMarker<T> {}
-impl<T: ?Sized + 'static + Tagged, Extra: 'static> Inline<Extra> for ObjectMarker<T> {}
 
 #[derive(Clone, ParseAsInline)]
 struct Extras<Extra>(Extra);
@@ -330,8 +328,6 @@ impl<I: PointInput> ParseInline<I> for Extras<I::Extra> {
 impl<Extra> Tagged for Extras<Extra> {}
 impl<Extra> ListPoints for Extras<Extra> {}
 impl<Extra> Topological for Extras<Extra> {}
-impl<Extra: 'static + Send + Sync + Clone> Object<Extra> for Extras<Extra> {}
-impl<Extra: 'static + Send + Sync + Clone> Inline<Extra> for Extras<Extra> {}
 
 #[derive(ToOutput, Tagged, Parse, ParseInline)]
 pub struct RawPoint<T = Infallible, Extra = ()> {
@@ -371,9 +367,6 @@ impl<T: 'static + Traversible, Extra: 'static + Send + Sync + Clone + ExtraFor<T
         visitor.visit(&self.clone().into_point());
     }
 }
-
-impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Object<Extra> for RawPoint<T, Extra> {}
-impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Inline<Extra> for RawPoint<T, Extra> {}
 
 impl<T, Extra: 'static + Clone> FromInner for RawPoint<T, Extra> {
     type Inner = RawPointInner;
@@ -1061,6 +1054,8 @@ impl<T: 'static + Send + Sync + FullHash + Topological> Traversible for T {}
 
 pub trait Object<Extra = ()>: Traversible + for<'a> Parse<Input<'a, Extra>> {}
 
+impl<T: Traversible + for<'a> Parse<Input<'a, Extra>>, Extra> Object<Extra> for T {}
+
 pub struct Tags(pub &'static [&'static str], pub &'static [&'static Self]);
 
 impl Tags {
@@ -1084,6 +1079,8 @@ impl Tags {
 }
 
 pub trait Inline<Extra = ()>: Object<Extra> + for<'a> ParseInline<Input<'a, Extra>> {}
+
+impl<T: Object<Extra> + for<'a> ParseInline<Input<'a, Extra>>, Extra> Inline<Extra> for T {}
 
 impl<T> ListPoints for Point<T> {
     fn list_points(&self, f: &mut impl FnMut(Hash)) {
@@ -1117,15 +1114,11 @@ impl<T: Tagged> Tagged for Point<T> {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Object<Extra> for Point<T> {}
-
 impl<T> ToOutput for Point<T> {
     fn to_output(&self, output: &mut dyn Output) {
         self.hash().to_output(output);
     }
 }
-
-impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Inline<Extra> for Point<T> {}
 
 pub trait Topology: Send + Sync {
     fn len(&self) -> usize;

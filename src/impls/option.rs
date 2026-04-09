@@ -204,24 +204,6 @@ impl<
 }
 
 impl<
-    T: Object<E> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
-    N: Niche<NeedsTag = B>,
-    B: for<'a> OptionParseBit<T, Input<'a, E>>,
-    E,
-> Object<E> for Option<T>
-{
-}
-
-impl<
-    T: Inline<E> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
-    N: Niche<NeedsTag = B>,
-    B: for<'a> OptionParseBitInline<T, Input<'a, E>>,
-    E,
-> Inline<E> for Option<T>
-{
-}
-
-impl<
     T: ReflessObject + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
     N: Niche<NeedsTag = B>,
     B: for<'a> OptionParseBit<T, ReflessInput<'a>>,

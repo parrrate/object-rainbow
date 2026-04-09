@@ -196,8 +196,6 @@ macro_rules! ae {
         impl Tagged for Ae<NonZero<$n>> {}
         impl ReflessObject for Ae<$n> {}
         impl ReflessInline for Ae<$n> {}
-        impl<E> Object<E> for Ae<$n> {}
-        impl<E> Inline<E> for Ae<$n> {}
 
         impl Equivalent<Ae<$n>> for Option<Ae<NonZero<$n>>> {
             fn into_equivalent(self) -> Ae<$n> {
@@ -375,10 +373,6 @@ macro_rules! lebe {
         impl ReflessObject for Be<$n> {}
         impl ReflessInline for Le<$n> {}
         impl ReflessInline for Be<$n> {}
-        impl<E> Object<E> for Le<$n> {}
-        impl<E> Object<E> for Be<$n> {}
-        impl<E> Inline<E> for Le<$n> {}
-        impl<E> Inline<E> for Be<$n> {}
 
         impl Equivalent<Le<$n>> for Option<Le<NonZero<$n>>> {
             fn into_equivalent(self) -> Le<$n> {
@@ -504,10 +498,6 @@ macro_rules! float {
         impl ReflessObject for Be<$n> {}
         impl ReflessInline for Le<$n> {}
         impl ReflessInline for Be<$n> {}
-        impl<E> Object<E> for Le<$n> {}
-        impl<E> Object<E> for Be<$n> {}
-        impl<E> Inline<E> for Le<$n> {}
-        impl<E> Inline<E> for Be<$n> {}
     };
 }
 
@@ -568,8 +558,6 @@ impl<T: NonZeroable> Topological for Nz<T> {}
 impl<T: NonZeroable> Tagged for Nz<T> {}
 impl<T: NonZeroable + ReflessInline> ReflessObject for Nz<T> {}
 impl<T: NonZeroable + ReflessInline> ReflessInline for Nz<T> {}
-impl<T: NonZeroable + Inline<E>, E> Object<E> for Nz<T> {}
-impl<T: NonZeroable + Inline<E>, E> Inline<E> for Nz<T> {}
 
 #[test]
 fn nonzero() {

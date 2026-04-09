@@ -27,10 +27,6 @@ impl<A: Tagged, B: Tagged> Tagged for (A, B) {
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS]);
 }
 
-impl<Extra, A: Inline<Extra>, B: Object<Extra>> Object<Extra> for (A, B) {}
-
-impl<Extra, A: Inline<Extra>, B: Inline<Extra>> Inline<Extra> for (A, B) {}
-
 impl<A: ReflessInline, B: ReflessObject> ReflessObject for (A, B) {}
 
 impl<A: ReflessInline, B: ReflessInline> ReflessInline for (A, B) {}
@@ -87,10 +83,6 @@ impl<A: Topological, B: Topological, C: Topological> Topological for (A, B, C) {
 impl<A: Tagged, B: Tagged, C: Tagged> Tagged for (A, B, C) {
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS]);
 }
-
-impl<Extra, A: Inline<Extra>, B: Inline<Extra>, C: Object<Extra>> Object<Extra> for (A, B, C) {}
-
-impl<Extra, A: Inline<Extra>, B: Inline<Extra>, C: Inline<Extra>> Inline<Extra> for (A, B, C) {}
 
 impl<A: ReflessInline, B: ReflessInline, C: ReflessObject> ReflessObject for (A, B, C) {}
 
@@ -156,16 +148,6 @@ impl<A: Topological, B: Topological, C: Topological, D: Topological> Topological
 
 impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged> Tagged for (A, B, C, D) {
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS]);
-}
-
-impl<Extra, A: Inline<Extra>, B: Inline<Extra>, C: Inline<Extra>, D: Object<Extra>> Object<Extra>
-    for (A, B, C, D)
-{
-}
-
-impl<Extra, A: Inline<Extra>, B: Inline<Extra>, C: Inline<Extra>, D: Inline<Extra>> Inline<Extra>
-    for (A, B, C, D)
-{
 }
 
 impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessObject> ReflessObject
@@ -255,28 +237,6 @@ impl<A: Topological, B: Topological, C: Topological, D: Topological, E: Topologi
 
 impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged> Tagged for (A, B, C, D, E) {
     const TAGS: Tags = Tags(&[], &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS, &E::TAGS]);
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Object<Extra>,
-> Object<Extra> for (A, B, C, D, E)
-{
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Inline<Extra>,
-> Inline<Extra> for (A, B, C, D, E)
-{
 }
 
 impl<A: ReflessInline, B: ReflessInline, C: ReflessInline, D: ReflessInline, E: ReflessObject>
@@ -390,30 +350,6 @@ impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged, F: Tagged> Tagged
         &[],
         &[&A::TAGS, &B::TAGS, &C::TAGS, &D::TAGS, &E::TAGS, &F::TAGS],
     );
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Inline<Extra>,
-    F: Object<Extra>,
-> Object<Extra> for (A, B, C, D, E, F)
-{
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Inline<Extra>,
-    F: Inline<Extra>,
-> Inline<Extra> for (A, B, C, D, E, F)
-{
 }
 
 impl<
@@ -583,32 +519,6 @@ impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged, F: Tagged, G: Tagged
             &G::TAGS,
         ],
     );
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Inline<Extra>,
-    F: Inline<Extra>,
-    G: Object<Extra>,
-> Object<Extra> for (A, B, C, D, E, F, G)
-{
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Inline<Extra>,
-    F: Inline<Extra>,
-    G: Inline<Extra>,
-> Inline<Extra> for (A, B, C, D, E, F, G)
-{
 }
 
 impl<
@@ -814,34 +724,6 @@ impl<A: Tagged, B: Tagged, C: Tagged, D: Tagged, E: Tagged, F: Tagged, G: Tagged
             &H::TAGS,
         ],
     );
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Inline<Extra>,
-    F: Inline<Extra>,
-    G: Inline<Extra>,
-    H: Object<Extra>,
-> Object<Extra> for (A, B, C, D, E, F, G, H)
-{
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Inline<Extra>,
-    F: Inline<Extra>,
-    G: Inline<Extra>,
-    H: Inline<Extra>,
-> Inline<Extra> for (A, B, C, D, E, F, G, H)
-{
 }
 
 impl<
@@ -1075,36 +957,6 @@ impl<
             &I::TAGS,
         ],
     );
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Inline<Extra>,
-    F: Inline<Extra>,
-    G: Inline<Extra>,
-    H: Inline<Extra>,
-    I: Object<Extra>,
-> Object<Extra> for (A, B, C, D, E, F, G, H, I)
-{
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Inline<Extra>,
-    F: Inline<Extra>,
-    G: Inline<Extra>,
-    H: Inline<Extra>,
-    I: Inline<Extra>,
-> Inline<Extra> for (A, B, C, D, E, F, G, H, I)
-{
 }
 
 impl<
@@ -1356,38 +1208,6 @@ impl<
             &J::TAGS,
         ],
     );
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Inline<Extra>,
-    F: Inline<Extra>,
-    G: Inline<Extra>,
-    H: Inline<Extra>,
-    I: Inline<Extra>,
-    J: Object<Extra>,
-> Object<Extra> for (A, B, C, D, E, F, G, H, I, J)
-{
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Inline<Extra>,
-    F: Inline<Extra>,
-    G: Inline<Extra>,
-    H: Inline<Extra>,
-    I: Inline<Extra>,
-    J: Inline<Extra>,
-> Inline<Extra> for (A, B, C, D, E, F, G, H, I, J)
-{
 }
 
 impl<
@@ -1665,40 +1485,6 @@ impl<
             &K::TAGS,
         ],
     );
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Inline<Extra>,
-    F: Inline<Extra>,
-    G: Inline<Extra>,
-    H: Inline<Extra>,
-    I: Inline<Extra>,
-    J: Inline<Extra>,
-    K: Object<Extra>,
-> Object<Extra> for (A, B, C, D, E, F, G, H, I, J, K)
-{
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Inline<Extra>,
-    F: Inline<Extra>,
-    G: Inline<Extra>,
-    H: Inline<Extra>,
-    I: Inline<Extra>,
-    J: Inline<Extra>,
-    K: Inline<Extra>,
-> Inline<Extra> for (A, B, C, D, E, F, G, H, I, J, K)
-{
 }
 
 impl<
@@ -2006,42 +1792,6 @@ impl<
             &L::TAGS,
         ],
     );
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Inline<Extra>,
-    F: Inline<Extra>,
-    G: Inline<Extra>,
-    H: Inline<Extra>,
-    I: Inline<Extra>,
-    J: Inline<Extra>,
-    K: Inline<Extra>,
-    L: Object<Extra>,
-> Object<Extra> for (A, B, C, D, E, F, G, H, I, J, K, L)
-{
-}
-
-impl<
-    Extra,
-    A: Inline<Extra>,
-    B: Inline<Extra>,
-    C: Inline<Extra>,
-    D: Inline<Extra>,
-    E: Inline<Extra>,
-    F: Inline<Extra>,
-    G: Inline<Extra>,
-    H: Inline<Extra>,
-    I: Inline<Extra>,
-    J: Inline<Extra>,
-    K: Inline<Extra>,
-    L: Inline<Extra>,
-> Inline<Extra> for (A, B, C, D, E, F, G, H, I, J, K, L)
-{
 }
 
 impl<
