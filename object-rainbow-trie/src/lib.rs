@@ -252,23 +252,17 @@ where
             self.value = Some(value);
         }
         {
-            // let mut futures = futures_util::stream::FuturesUnordered::new();
+            let mut futures = futures_util::stream::FuturesUnordered::new();
             for (key, point) in self.c_iter_mut() {
                 if let Some(other) = other.c_remove(key) {
-                    Box::pin(async {
+                    futures.push(async move {
                         let (mut other, key) = other.fetch().await?;
                         Self::prepare_point(point, &key, async |trie| trie.append(&mut other).await)
                             .await
-                    })
-                    .await?;
-                    // futures.push(async move {
-                    //     let (mut other, key) = other.fetch().await?;
-                    //     Self::prepare_point(point, &key, async |trie| trie.append(&mut other).await)
-                    //         .await
-                    // });
+                    });
                 }
             }
-            // while futures.try_next().await?.is_some() {}
+            while futures.try_next().await?.is_some() {}
         }
         while let Some((key, point)) = other.c_pop_first() {
             assert!(!self.c_contains(key));
