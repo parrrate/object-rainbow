@@ -488,9 +488,15 @@ impl<K, V: Clone> Clone for TrieMap<K, V> {
 
 impl<K, V> Default for TrieMap<K, V> {
     fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<K, V> TrieMap<K, V> {
+    pub const fn new() -> Self {
         Self {
-            key: Default::default(),
-            trie: Default::default(),
+            key: ObjectMarker::new(),
+            trie: Trie::new(),
         }
     }
 }
