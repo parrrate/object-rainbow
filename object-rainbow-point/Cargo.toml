@@ -13,6 +13,7 @@ object-rainbow.workspace = true
 
 futures-util = { version = "0.3.31", default-features = false }
 serde = { version = "1.0.218", optional = true }
+typenum = { version = "1.18.0", features = ["const-generics"] }
 
 [features]
 serde = ["dep:serde"]

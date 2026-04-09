@@ -1263,6 +1263,7 @@ dependencies = [
  "futures-util",
  "object-rainbow",
  "serde",
+ "typenum",
 ]
 
 [[package]]
