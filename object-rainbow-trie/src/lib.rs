@@ -16,7 +16,7 @@ use object_rainbow_point::{IntoPoint, Point};
 #[cfg(feature = "serde")]
 mod serde;
 
-type TriePoint<Tr> = Point<(LpBytes, Tr)>;
+type TriePoint<Tr> = Point<(Tr, LpBytes)>;
 
 #[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Clone)]
 #[topology(recursive, inline)]
@@ -124,7 +124,7 @@ where
         let Some(point) = self.c_get(*first) else {
             return Ok(None);
         };
-        let (prefix, trie) = point.fetch().await?;
+        let (trie, prefix) = point.fetch().await?;
         let Some(key) = key.strip_prefix(prefix.as_slice()) else {
             return Ok(None);
         };
@@ -138,31 +138,31 @@ where
         let Some(point) = self.c_get_mut(*first) else {
             self.c_insert(
                 *first,
-                (LpBytes(key.into()), Self::from_value(value)).point(),
+                (Self::from_value(value), LpBytes(key.into())).point(),
             );
             return Ok(None);
         };
-        let (prefix, trie) = &mut *point.fetch_mut().await?;
+        let (trie, prefix) = &mut *point.fetch_mut().await?;
         if let Some(key) = key.strip_prefix(prefix.as_slice()) {
             return Box::pin(trie.insert(key, value)).await;
         }
         if let Some(suffix) = prefix.strip_prefix(key) {
             let child = std::mem::replace(trie, Self::from_value(value));
             let (first, suffix) = suffix.split_first().expect("must be at least 1");
-            trie.c_insert(*first, (LpBytes(suffix.into()), child).point());
+            trie.c_insert(*first, (child, LpBytes(suffix.into())).point());
             prefix.0.truncate(key.len());
         } else {
             let common = prefix.iter().zip(key).take_while(|(a, b)| a == b).count();
             let child = std::mem::take(trie);
             trie.c_insert(
                 prefix[common],
-                (LpBytes(prefix[common + 1..].to_vec()), child).point(),
+                (child, LpBytes(prefix[common + 1..].to_vec())).point(),
             );
             trie.c_insert(
                 key[common],
                 (
-                    LpBytes(prefix[common + 1..].to_vec()),
                     Self::from_value(value),
+                    LpBytes(prefix[common + 1..].to_vec()),
                 )
                     .point(),
             );
@@ -183,7 +183,7 @@ where
             let Some(point) = self.c_get_mut(*first) else {
                 return Ok(None);
             };
-            let (prefix, trie) = &mut *point.fetch_mut().await?;
+            let (trie, prefix) = &mut *point.fetch_mut().await?;
             let Some(key) = key.strip_prefix(prefix.as_slice()) else {
                 return Ok(None);
             };
@@ -192,7 +192,7 @@ where
                 && trie.c_len() < 2
                 && let Some((first, point)) = trie.c_pop_first()
             {
-                let (suffix, child) = point.fetch().await?;
+                let (child, suffix) = point.fetch().await?;
                 prefix.push(first);
                 prefix.extend_from_slice(&suffix);
                 assert!(trie.is_empty());
@@ -218,7 +218,7 @@ where
         for (first, point) in self.c_range(u8::MIN, u8::MAX) {
             {
                 context.push(first);
-                let (prefix, trie) = point.fetch().await?;
+                let (trie, prefix) = point.fetch().await?;
                 context.extend_from_slice(&prefix);
                 Box::pin(trie.yield_all(context, co)).await?;
             }
@@ -243,7 +243,7 @@ where
         let len = context.len();
         'done: {
             context.push(*first);
-            let (prefix, trie) = point.fetch().await?;
+            let (trie, prefix) = point.fetch().await?;
             context.extend_from_slice(&prefix);
             if prefix.starts_with(key) {
                 trie.yield_all(context, co).await?;
@@ -297,7 +297,7 @@ where
         for (first, point) in self.c_range(min, max) {
             'done: {
                 context.push(first);
-                let (prefix, trie) = point.fetch().await?;
+                let (trie, prefix) = point.fetch().await?;
                 context.extend_from_slice(&prefix);
                 let extra = &context[context.len() - prefix.len() - 1..];
                 let start_bound = match range_start {
