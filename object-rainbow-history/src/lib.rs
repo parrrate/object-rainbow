@@ -449,7 +449,7 @@ impl<A: Apply<DiffA>, B: Apply<DiffB>, DiffA: Send, DiffB: Send> Apply<(DiffA, D
         &mut self,
         (a, b): (DiffA, DiffB),
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        async move { futures_util::try_join!(self.0.apply(a), self.1.apply(b)) }
+        futures_util::future::try_join(self.0.apply(a), self.1.apply(b))
     }
 }
 
