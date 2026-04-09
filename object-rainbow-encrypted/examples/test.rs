@@ -5,7 +5,7 @@ use object_rainbow_fetchall::fetchall;
 use object_rainbow_point::{IntoPoint, Point};
 use sha2::digest::generic_array::GenericArray;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Test([u8; 32]);
 
 impl Key for Test {
