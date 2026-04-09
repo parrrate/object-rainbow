@@ -1115,20 +1115,20 @@ impl HashOutput {
 
 pub struct PointMut<'a, T: FullHash> {
     hash: &'a mut OptionalHash,
-    origin: &'a mut dyn Fetch<T = T>,
+    fetch: &'a mut dyn Fetch<T = T>,
 }
 
 impl<T: FullHash> Deref for PointMut<'_, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        self.origin.get().unwrap()
+        self.fetch.get().unwrap()
     }
 }
 
 impl<T: FullHash> DerefMut for PointMut<'_, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        self.origin.get_mut().unwrap()
+        self.fetch.get_mut().unwrap()
     }
 }
 
@@ -1140,7 +1140,7 @@ impl<T: FullHash> Drop for PointMut<'_, T> {
 
 impl<'a, T: FullHash> PointMut<'a, T> {
     fn finalize(&mut self) {
-        self.origin.get_mut_finalize();
+        self.fetch.get_mut_finalize();
         *self.hash = self.full_hash().into();
     }
 }
@@ -1176,7 +1176,7 @@ impl<T: Traversible + Clone> Point<T> {
         self.hash.clear();
         Ok(PointMut {
             hash: &mut self.hash,
-            origin,
+            fetch: origin,
         })
     }
 
