@@ -1,7 +1,7 @@
 use std::{
     collections::{BTreeMap, btree_map},
     marker::PhantomData,
-    ops::{Deref, RangeBounds},
+    ops::{Deref, DerefMut, RangeBounds},
 };
 
 use bitvec::array::BitArray;
@@ -80,6 +80,12 @@ impl<T> Deref for KeyedArrayMap<T> {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl<T> DerefMut for KeyedArrayMap<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
