@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "object-rainbow",
     "object-rainbow-append-tree",
     "object-rainbow-array-map",
     "object-rainbow-chain-tree",
@@ -30,20 +31,8 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/parrrate/object-rainbow"
 authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 
-[package]
-name = "object-rainbow"
-version = "0.0.0-a.44"
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
-repository.workspace = true
-authors.workspace = true
-description = "distributed object model"
-documentation = "https://docs.rs/object-rainbow"
-exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
-
 [workspace.dependencies]
-object-rainbow = { version = "0.0.0-a.44", path = "." }
+object-rainbow = { version = "0.0.0-a.44", path = "object-rainbow" }
 object-rainbow-append-tree = { version = "0.0.0-a.10", path = "object-rainbow-append-tree" }
 object-rainbow-array-map = { version = "0.0.0-a.5", path = "object-rainbow-array-map" }
 object-rainbow-chain-tree = { version = "0.0.0-a.9", path = "object-rainbow-chain-tree" }
@@ -55,33 +44,3 @@ object-rainbow-point = { version = "0.0.0-a.5", path = "object-rainbow-point" }
 object-rainbow-store = { version = "0.0.0-a.7", path = "object-rainbow-store" }
 object-rainbow-store-opendal = { version = "0.0.0-a.5", path = "object-rainbow-store-opendal" }
 object-rainbow-trie = { version = "0.0.0-a.11", path = "object-rainbow-trie" }
-
-[dependencies]
-object-rainbow-derive = { version = "=0.0.0-a.14", path = "object-rainbow-derive" }
-
-anyhow = "1.0.96"
-bitvec = { version = "1.0.1", default-features = false, optional = true }
-futures-util = { version = "0.3.31", default-features = false }
-generic-array = { version = "1.2.0" }
-hex = { version = "0.4.3", optional = true }
-sha2 = "0.10.8"
-serde = { version = "1.0.218", optional = true, features = ["derive"] }
-thiserror = "2.0.11"
-typenum = { version = "1.18.0", features = ["const-generics"] }
-ulid = { version = "1.2.1", default-features = false, optional = true }
-
-[features]
-bitvec = ["dep:bitvec"]
-hex = ["dep:hex"]
-serde = ["dep:serde"]
-ulid = ["dep:ulid"]
-
-[dev-dependencies]
-hex = "0.4.3"
-smol = "2.0.2"
-tracing = "0.1.41"
-tracing-subscriber = "0.3.19"
-
-[package.metadata.docs.rs]
-all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
