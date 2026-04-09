@@ -77,7 +77,31 @@ impl<K: Key, T: Traversible> Fetch for Visited<K, T> {
     type T = Encrypted<K, T>;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
-        todo!()
+        Box::pin(async move {
+            let (
+                Encrypted {
+                    key,
+                    inner:
+                        EncryptedInner {
+                            resolution,
+                            decrypted: _,
+                        },
+                },
+                resolve,
+            ) = self.encrypted.fetch_full().await?;
+            let decrypted = self.decrypted.fetch().await?;
+            let decrypted = Unkeyed(Arc::new(decrypted));
+            Ok((
+                Encrypted {
+                    key,
+                    inner: EncryptedInner {
+                        resolution,
+                        decrypted,
+                    },
+                },
+                resolve,
+            ))
+        })
     }
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
