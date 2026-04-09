@@ -136,6 +136,26 @@ pub struct Point<T> {
     origin: Arc<dyn Fetch<T = T>>,
 }
 
+impl<T> PartialOrd for Point<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<T> Ord for Point<T> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.hash().cmp(other.hash())
+    }
+}
+
+impl<T> Eq for Point<T> {}
+
+impl<T> PartialEq for Point<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.hash() == other.hash()
+    }
+}
+
 impl<T> Clone for Point<T> {
     fn clone(&self) -> Self {
         Self {
@@ -281,6 +301,13 @@ impl ParseInput for ReflessInput<'_> {
         }
     }
 
+    fn parse_all<'a>(self) -> &'a [u8]
+    where
+        Self: 'a,
+    {
+        self.data
+    }
+
     fn empty(self) -> crate::Result<()> {
         if self.data.is_empty() {
             Ok(())
@@ -295,16 +322,6 @@ impl ParseInput for ReflessInput<'_> {
         } else {
             Some(self)
         }
-    }
-}
-
-impl<'a> ReflessInput<'a> {
-    pub fn parse_all(self) -> crate::Result<&'a [u8]> {
-        Ok(self.data)
-    }
-
-    pub fn tell(&self) -> usize {
-        self.at
     }
 }
 
@@ -336,6 +353,13 @@ impl ParseInput for Input<'_> {
             }
             None => Err(Error::EndOfInput),
         }
+    }
+
+    fn parse_all<'a>(self) -> &'a [u8]
+    where
+        Self: 'a,
+    {
+        self.refless.parse_all()
     }
 
     fn empty(self) -> crate::Result<()> {
@@ -825,6 +849,9 @@ pub trait ParseInput: Sized {
     where
         Self: 'a;
     fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>>;
+    fn parse_all<'a>(self) -> &'a [u8]
+    where
+        Self: 'a;
     fn empty(self) -> crate::Result<()>;
     fn non_empty(self) -> Option<Self>;
 
