@@ -348,3 +348,108 @@ fn gen_parse_inline(data: &Data) -> proc_macro2::TokenStream {
         }
     }
 }
+
+#[proc_macro_derive(ReflessObject)]
+pub fn derive_refless_object(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+    let generics = match bounds_refless_object(input.generics, &input.data) {
+        Ok(g) => g,
+        Err(e) => return e.into_compile_error().into(),
+    };
+    let parse = gen_parse(&input.data);
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let output = quote! {
+        impl #impl_generics ::object_rainbow::ReflessObject for #name #ty_generics #where_clause {
+            fn parse(mut input: ::object_rainbow::ReflessInput) -> ::object_rainbow::Result<Self> {
+                #parse
+            }
+        }
+    };
+    TokenStream::from(output)
+}
+
+fn bounds_refless_object(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    match data {
+        Data::Struct(data) => {
+            let last_at = data.fields.len().checked_sub(1).unwrap_or_default();
+            for (i, f) in data.fields.iter().enumerate() {
+                let last = i == last_at;
+                let ty = &f.ty;
+                let tr = if last {
+                    quote!(::object_rainbow::ReflessObject)
+                } else {
+                    quote!(::object_rainbow::ReflessInline)
+                };
+                generics
+                    .make_where_clause()
+                    .predicates
+                    .push(parse_quote_spanned! { ty.span() =>
+                        #ty: #tr
+                    });
+            }
+        }
+        Data::Enum(data) => {
+            return Err(Error::new_spanned(
+                data.enum_token,
+                "`enum`s are not supported",
+            ));
+        }
+        Data::Union(data) => {
+            return Err(Error::new_spanned(
+                data.union_token,
+                "`union`s are not supported",
+            ));
+        }
+    }
+    Ok(generics)
+}
+
+#[proc_macro_derive(ReflessInline)]
+pub fn derive_refless_inline(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+    let generics = match bounds_refless_inline(input.generics, &input.data) {
+        Ok(g) => g,
+        Err(e) => return e.into_compile_error().into(),
+    };
+    let parse_inline = gen_parse_inline(&input.data);
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let output = quote! {
+        impl #impl_generics ::object_rainbow::ReflessInline for #name #ty_generics #where_clause {
+            fn parse_inline(input: &mut ::object_rainbow::ReflessInput) -> ::object_rainbow::Result<Self> {
+                #parse_inline
+            }
+        }
+    };
+    TokenStream::from(output)
+}
+
+fn bounds_refless_inline(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    match data {
+        Data::Struct(data) => {
+            for f in data.fields.iter() {
+                let ty = &f.ty;
+                generics
+                    .make_where_clause()
+                    .predicates
+                    .push(parse_quote_spanned! { ty.span() =>
+                        #ty: ::object_rainbow::ReflessInline
+                    });
+            }
+        }
+        Data::Enum(data) => {
+            return Err(Error::new_spanned(
+                data.enum_token,
+                "`enum`s are not supported",
+            ));
+        }
+        Data::Union(data) => {
+            return Err(Error::new_spanned(
+                data.union_token,
+                "`union`s are not supported",
+            ));
+        }
+    }
+    Ok(generics)
+}
