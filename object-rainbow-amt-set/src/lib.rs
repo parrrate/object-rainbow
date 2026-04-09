@@ -180,7 +180,7 @@ type K32 = (u8, K31);
 
 mod private {
     use super::*;
-    type N1 = DeepestLeaf;
+    type N1<V = ()> = DeepestLeaf<V>;
 
     macro_rules! next_node {
         ($prev:ident, $next:ident, $pk:ident, $k:ident) => {
