@@ -114,3 +114,11 @@ impl<T> Default for ArrayMap<T> {
         }
     }
 }
+
+impl<T> Extend<(u8, T)> for ArrayMap<T> {
+    fn extend<I: IntoIterator<Item = (u8, T)>>(&mut self, iter: I) {
+        iter.into_iter().for_each(|(key, value)| {
+            self.insert(key, value);
+        });
+    }
+}
