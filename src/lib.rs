@@ -184,23 +184,53 @@ pub trait Fetch: Send + Sync + FetchBytes {
 }
 
 #[derive(Clone)]
-pub struct TypelessPoint {
-    pub hash: Hash,
-    pub origin: Arc<dyn FetchBytes>,
+pub struct RawPoint<T> {
+    hash: Hash,
+    origin: Arc<dyn Send + Sync + FetchBytes>,
+    _object: PhantomData<fn() -> T>,
 }
 
 impl<T> Point<T> {
-    pub fn typeless(self) -> TypelessPoint {
-        TypelessPoint {
+    pub fn raw(self) -> RawPoint<T> {
+        RawPoint {
             hash: *self.hash(),
             origin: self.origin,
+            _object: PhantomData,
         }
     }
 }
 
-impl FetchBytes for TypelessPoint {
+impl<T> FetchBytes for RawPoint<T> {
     fn fetch_bytes(&self) -> FailFuture<ByteNode> {
         self.origin.fetch_bytes()
+    }
+}
+
+impl<T: Object> Fetch for RawPoint<T> {
+    type T = T;
+
+    fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)> {
+        Box::pin(async {
+            let (data, resolve) = self.origin.fetch_bytes().await?;
+            let object = T::parse_slice(&data, &resolve)?;
+            if self.hash != object.full_hash() {
+                Err(Error::DataMismatch)
+            } else {
+                Ok((object, resolve))
+            }
+        })
+    }
+
+    fn fetch(&self) -> FailFuture<Self::T> {
+        Box::pin(async {
+            let (data, resolve) = self.origin.fetch_bytes().await?;
+            let object = T::parse_slice(&data, &resolve)?;
+            if self.hash != object.full_hash() {
+                Err(Error::DataMismatch)
+            } else {
+                Ok(object)
+            }
+        })
     }
 }
 
