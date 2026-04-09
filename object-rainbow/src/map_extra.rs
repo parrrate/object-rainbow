@@ -13,6 +13,12 @@ impl<T, M> Deref for MappedExtra<T, M> {
     }
 }
 
+impl<T, M> DerefMut for MappedExtra<T, M> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.1
+    }
+}
+
 #[derive_for_wrapped]
 pub trait MapExtra<Extra: 'static + Clone = ()> {
     type Mapped: 'static + Clone;
