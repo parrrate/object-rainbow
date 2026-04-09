@@ -37,12 +37,7 @@ impl<T: Clone + Traversible + InlineOutput + Default, D: Clone + Traversible + D
     History<T, D>
 {
     pub async fn commit(&mut self, diff: D) -> object_rainbow::Result<()> {
-        let tree = self
-            .0
-            .last()
-            .await?
-            .map(|(tree, _)| tree)
-            .unwrap_or_default();
+        let tree = self.tree().await?;
         let hash = tree.full_hash();
         let tree = diff.clone().forward(tree).await?;
         if hash != tree.full_hash() {
@@ -80,6 +75,15 @@ impl<T: Clone + Traversible + InlineOutput + Default, D: Clone + Traversible + D
             })
             .try_collect()
             .await
+    }
+
+    pub async fn tree(&self) -> object_rainbow::Result<T> {
+        Ok(self
+            .0
+            .last()
+            .await?
+            .map(|(tree, _)| tree)
+            .unwrap_or_default())
     }
 }
 
