@@ -52,7 +52,7 @@ impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Lp<T> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         let prefix: Le<u64> = input.parse_inline()?;
         let len = prefix.0;
-        let len = len.try_into().map_err(|_| Error::LenOutOfBounds)?;
+        let len = len.try_into().map_err(|_| Error::UnsupportedLength)?;
         Ok(Self(input.parse_ahead(len)?))
     }
 }
@@ -98,7 +98,7 @@ impl<I: ParseInput> ParseInline<I> for LpBytes {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         let prefix: Le<u64> = input.parse_inline()?;
         let len = prefix.0;
-        let len = len.try_into().map_err(|_| Error::LenOutOfBounds)?;
+        let len = len.try_into().map_err(|_| Error::UnsupportedLength)?;
         Ok(Self(input.parse_n(len)?.into()))
     }
 }
