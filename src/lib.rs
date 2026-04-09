@@ -816,6 +816,17 @@ pub trait ToOutputExt: ToOutput {
 
 impl<T: ?Sized + ToOutput> ToOutputExt for T {}
 
+#[derive(Default)]
+struct CountVisitor {
+    count: usize,
+}
+
+impl<Extra: 'static> PointVisitor<Extra> for CountVisitor {
+    fn visit<T: Object<Extra>>(&mut self, _: &Point<T, Extra>) {
+        self.count += 1;
+    }
+}
+
 pub trait Topological<Extra: 'static = ()> {
     fn accept_points(&self, visitor: &mut impl PointVisitor<Extra>) {
         let _ = visitor;
@@ -825,6 +836,12 @@ pub trait Topological<Extra: 'static = ()> {
         let mut hasher = Sha256::new();
         self.accept_points(&mut HashVisitor(|hash| hasher.update(hash)));
         hasher.finalize().into()
+    }
+
+    fn point_count(&self) -> usize {
+        let mut visitor = CountVisitor::default();
+        self.accept_points(&mut visitor);
+        visitor.count
     }
 
     fn topology(&self) -> TopoVec {
