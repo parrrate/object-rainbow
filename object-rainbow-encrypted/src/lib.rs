@@ -2,7 +2,7 @@ use std::{ops::Deref, sync::Arc};
 
 use object_rainbow::{
     Address, ByteNode, Error, FailFuture, Fetch, Hash, Object, Parse, ParseSliceExtra, Point,
-    PointInput, PointVisitor, RawPoint, Resolve, Tagged, ToOutput, ToOutputExt, Topological,
+    PointInput, PointVisitor, RawPoint, Resolve, Tagged, ToOutput, Topological,
     length_prefixed::Lp,
 };
 

@@ -897,9 +897,7 @@ pub trait ToOutput {
     {
         slice.iter_to_output(output);
     }
-}
 
-pub trait ToOutputExt: ToOutput {
     fn output<T: Output + Default>(&self) -> T {
         let mut output = T::default();
         self.to_output(&mut output);
@@ -910,8 +908,6 @@ pub trait ToOutputExt: ToOutput {
         self.output()
     }
 }
-
-impl<T: ?Sized + ToOutput> ToOutputExt for T {}
 
 #[derive(Default)]
 struct CountVisitor {
