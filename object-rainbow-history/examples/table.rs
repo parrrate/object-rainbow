@@ -220,6 +220,11 @@ trait Table {
     fn messages_by_users(
         &self,
     ) -> impl Send + Future<Output = object_rainbow::Result<TrieSet<MessageByUser>>>;
+    fn insert(
+        &mut self,
+        message: MessageId,
+        contents: Message,
+    ) -> impl Send + Future<Output = object_rainbow::Result<()>>;
 }
 
 impl Table for History {
@@ -234,6 +239,14 @@ impl Table for History {
     ) -> impl Send + Future<Output = object_rainbow::Result<TrieSet<MessageByUser>>> {
         async move { Ok(self.tree().await?.second().b().tree().0.clone()) }
     }
+
+    fn insert(
+        &mut self,
+        message: MessageId,
+        contents: Message,
+    ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+        self.commit((message, Some(contents)))
+    }
 }
 
 #[apply(main!)]
@@ -242,9 +255,7 @@ async fn main() -> object_rainbow::Result<()> {
     let channel = ChannelId(Ulid::new());
     let user = UserId(Ulid::new());
     let message = MessageId(Ulid::new());
-    history
-        .commit((message, Some(Message { channel, user })))
-        .await?;
+    history.insert(message, Message { channel, user }).await?;
     assert!(
         history
             .messages_by_channels()
