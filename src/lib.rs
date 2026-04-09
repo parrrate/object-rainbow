@@ -621,15 +621,15 @@ impl<F: FnMut(Hash)> PointVisitor for HashVisitor<F> {
     }
 }
 
-pub struct ReflessInput<'a> {
-    data: Option<&'a [u8]>,
+pub struct ReflessInput<'d> {
+    data: Option<&'d [u8]>,
 }
 
-pub struct Input<'a, Extra = ()> {
-    refless: ReflessInput<'a>,
-    resolve: &'a Arc<dyn Resolve>,
-    index: &'a Cell<usize>,
-    extra: &'a Extra,
+pub struct Input<'d, Extra = ()> {
+    refless: ReflessInput<'d>,
+    resolve: &'d Arc<dyn Resolve>,
+    index: &'d Cell<usize>,
+    extra: &'d Extra,
 }
 
 impl<'a, Extra> Deref for Input<'a, Extra> {
@@ -672,7 +672,9 @@ impl<'a> ReflessInput<'a> {
     }
 }
 
-impl ParseInput for ReflessInput<'_> {
+impl<'d> ParseInput for ReflessInput<'d> {
+    type Data = &'d [u8];
+
     fn parse_chunk<'a, const N: usize>(&mut self) -> crate::Result<&'a [u8; N]>
     where
         Self: 'a,
@@ -766,7 +768,9 @@ impl ParseInput for ReflessInput<'_> {
     }
 }
 
-impl<Extra> ParseInput for Input<'_, Extra> {
+impl<'d, Extra> ParseInput for Input<'d, Extra> {
+    type Data = &'d [u8];
+
     fn parse_chunk<'a, const N: usize>(&mut self) -> crate::Result<&'a [u8; N]>
     where
         Self: 'a,
@@ -846,9 +850,9 @@ impl<Extra> ParseInput for Input<'_, Extra> {
     }
 }
 
-impl<'a, Extra: 'static + Clone> PointInput for Input<'a, Extra> {
+impl<'d, Extra: 'static + Clone> PointInput for Input<'d, Extra> {
     type Extra = Extra;
-    type WithExtra<E: 'static + Clone> = Input<'a, E>;
+    type WithExtra<E: 'static + Clone> = Input<'d, E>;
 
     fn next_index(&mut self) -> usize {
         let index = self.index.get();
@@ -1440,6 +1444,7 @@ trait RainbowIterator: Sized + IntoIterator {
 }
 
 pub trait ParseInput: Sized {
+    type Data;
     fn parse_chunk<'a, const N: usize>(&mut self) -> crate::Result<&'a [u8; N]>
     where
         Self: 'a;
