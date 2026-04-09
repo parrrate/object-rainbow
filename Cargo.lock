@@ -1116,7 +1116,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.29"
+version = "0.0.0-a.30"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1131,11 +1131,12 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "typenum",
+ "ulid",
 ]
 
 [[package]]
 name = "object-rainbow-derive"
-version = "0.0.0-a.9"
+version = "0.0.0-a.10"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -1245,7 +1246,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-trie"
-version = "0.0.0-a.6"
+version = "0.0.0-a.7"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
@@ -2177,6 +2178,15 @@ name = "typenum"
 version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
+
+[[package]]
+name = "ulid"
+version = "1.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "470dbf6591da1b39d43c14523b2b469c86879a53e8b758c8e090a470fe7b1fbe"
+dependencies = [
+ "web-time",
+]
 
 [[package]]
 name = "unicode-ident"

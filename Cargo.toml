@@ -24,7 +24,7 @@ authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 
 [package]
 name = "object-rainbow"
-version = "0.0.0-a.29"
+version = "0.0.0-a.30"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -35,14 +35,14 @@ documentation = "https://docs.rs/object-rainbow"
 exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 
 [workspace.dependencies]
-object-rainbow = { version = "0.0.0-a.29", path = "." }
+object-rainbow = { version = "0.0.0-a.30", path = "." }
 object-rainbow-fetchall = { version = "0.0.0-a.2", path = "object-rainbow-fetchall" }
 object-rainbow-local-map = { version = "0.0.0-a.1", path = "object-rainbow-local-map" }
 object-rainbow-point = { version = "0.0.0-a.0", path = "object-rainbow-point" }
 object-rainbow-store = { version = "0.0.0-a.5", path = "object-rainbow-store" }
 
 [dependencies]
-object-rainbow-derive = { version = "=0.0.0-a.9", path = "object-rainbow-derive" }
+object-rainbow-derive = { version = "=0.0.0-a.10", path = "object-rainbow-derive" }
 
 anyhow = "1.0.96"
 bitvec = { version = "1.0.1", default-features = false, optional = true }
@@ -52,10 +52,12 @@ sha2 = "0.10.8"
 serde = { version = "1.0.218", optional = true, features = ["derive"] }
 thiserror = "2.0.11"
 typenum = { version = "1.18.0", features = ["const-generics"] }
+ulid = { version = "1.2.1", default-features = false, optional = true }
 
 [features]
 bitvec = ["dep:bitvec"]
 serde = ["dep:serde"]
+ulid = ["dep:ulid"]
 
 [dev-dependencies]
 hex = "0.4.3"

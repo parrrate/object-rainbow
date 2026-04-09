@@ -20,5 +20,7 @@ mod string;
 mod tuple;
 mod tuple1;
 mod u8;
+#[cfg(feature = "ulid")]
+mod ulid;
 mod unit;
 mod vec;
