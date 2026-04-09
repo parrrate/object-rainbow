@@ -54,3 +54,7 @@ impl<T: Size> Size for Arc<T> {
     const SIZE: usize = T::SIZE;
     type Size = T::Size;
 }
+
+impl<T: MaybeHasNiche> MaybeHasNiche for Arc<T> {
+    type MnArray = T::MnArray;
+}
