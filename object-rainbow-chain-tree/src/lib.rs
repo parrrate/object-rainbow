@@ -130,11 +130,10 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainTree<T> {
         let Some(early) = &other.0 else {
             return Ok(true);
         };
+        let (late, node) = futures_util::try_join!(late.fetch(), early.fetch())?;
         let follows = late
-            .fetch()
-            .await?
             .tree
-            .get(early.fetch().await?.tree.len())
+            .get(node.tree.len())
             .await?
             .is_some_and(|point| point == *early);
         Ok(follows)
