@@ -40,18 +40,28 @@ impl<
     type Size = N;
 }
 
-pub struct OptionNiche<N, I>(N, I);
+pub struct OptionNiche<N>(N);
 
-impl<N: ArrayLength, I: Bit> Niche for OptionNiche<N, I> {
-    type NeedsTag = I;
+impl<N: ArrayLength> Niche for OptionNiche<N> {
+    type NeedsTag = B0;
     type N = N;
     fn niche() -> GenericArray<u8, Self::N> {
         let mut niche = GenericArray::default();
-        if !I::BOOL {
-            niche[0] = 2;
-        }
+        niche[0] = 2;
         niche
     }
+}
+
+pub trait OptionNicheWrapper: Bit {
+    type Wrap<N: ArrayLength>: MaybeNiche;
+}
+
+impl OptionNicheWrapper for B0 {
+    type Wrap<N: ArrayLength> = NoNiche<N>;
+}
+
+impl OptionNicheWrapper for B1 {
+    type Wrap<N: ArrayLength> = SomeNiche<OptionNiche<N>>;
 }
 
 impl<
@@ -59,9 +69,8 @@ impl<
             MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B>>,
             Size: Add<B, Output: ArrayLength>,
         >,
-    B: Bit + Not<Output = I>,
-    I: Bit,
+    B: OptionNicheWrapper,
 > MaybeHasNiche for Option<T>
 {
-    type MnArray = SomeNiche<OptionNiche<Self::Size, I>>;
+    type MnArray = B::Wrap<Self::Size>;
 }

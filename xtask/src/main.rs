@@ -188,6 +188,36 @@ impl Display for SizeFoldAdd {
     }
 }
 
+struct WhereNicheArray {
+    n: usize,
+}
+
+impl Display for WhereNicheArray {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "where Self:Size, tarr![")?;
+        for c in LETTERS.iter().take(self.n) {
+            write!(f, "{c}::MnArray,")?;
+        }
+        write!(f, "]: MnArray")?;
+        Ok(())
+    }
+}
+
+struct NicheArray {
+    n: usize,
+}
+
+impl Display for NicheArray {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "type MnArray = tarr![")?;
+        for c in LETTERS.iter().take(self.n) {
+            write!(f, "{c}::MnArray,")?;
+        }
+        writeln!(f, "];")?;
+        Ok(())
+    }
+}
+
 struct Const {
     name: &'static str,
 }
@@ -333,6 +363,13 @@ fn per_n(n: usize) -> String {
                     .method("input", "&mut II")
                     .parse(n, "parse_inline"),
             )],
+        },
+        Impl {
+            header: "MaybeHasNiche"
+                .bound()
+                .header(n)
+                .suffix(WhereNicheArray { n }),
+            members: vec![Box::new(NicheArray { n })],
         },
     ])
 }
