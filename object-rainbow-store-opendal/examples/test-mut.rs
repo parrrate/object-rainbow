@@ -10,7 +10,7 @@ fn main() -> anyhow::Result<()> {
         let mut r = store
             .update(
                 "test",
-                ((*b"alisa", *b"feistel").point(), [1, 2, 3, 4].point()).point(),
+                ((*b"alisa", *b"feistel").point(), [1u8, 2, 3, 4].point()).point(),
             )
             .await?;
         assert_eq!(r.fetch().await?.0.fetch().await?.0, *b"alisa");
