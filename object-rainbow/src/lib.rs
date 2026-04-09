@@ -496,6 +496,7 @@ impl<'d, Extra: 'static + Clone> PointInput for Input<'d, Extra> {
     }
 }
 
+/// Values of this type can be uniquely represented as a `Vec<u8>`.
 pub trait ToOutput {
     fn to_output(&self, output: &mut dyn Output);
 
