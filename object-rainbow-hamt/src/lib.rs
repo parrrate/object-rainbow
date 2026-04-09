@@ -1134,32 +1134,45 @@ fn hash_key(hash: [u8; 32]) -> K32 {
 }
 
 #[derive(
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Default,
-    PartialEq,
-    Eq,
+    ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Size, MaybeHasNiche,
 )]
-pub struct HamtSet(HamtMap<()>);
+pub struct HamtSet<H = Hash>(HamtMap<(), H>);
+
+impl<H> Clone for HamtSet<H> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
+impl<H: Traversible + Clone> Default for HamtSet<H> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
+impl<H> PartialEq for HamtSet<H> {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl<H> Eq for HamtSet<H> {}
 
 assert_impl!(
-    impl<E> Inline<E> for HamtSet where E: 'static + Send + Sync + Clone {}
+    impl<H, E> Inline<E> for HamtSet
+    where
+        E: 'static + Send + Sync + Clone,
+        H: Object<E>,
+    {
+    }
 );
 
-impl HamtSet {
+impl<H: Traversible + Clone + Size<Size = <Hash as Size>::Size>> HamtSet<H> {
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub async fn insert(&mut self, hash: Hash) -> object_rainbow::Result<bool> {
+    pub async fn insert(&mut self, hash: H) -> object_rainbow::Result<bool> {
         Ok(self.0.insert(hash, ()).await?.is_none())
     }
 
