@@ -203,8 +203,25 @@ pub struct RawPoint<T = Infallible> {
 
 impl<T> Point<T> {
     pub fn raw(self) -> RawPoint<T> {
+        {
+            let origin: &dyn FetchBytes = self.origin.as_ref();
+            let origin: &dyn AsAny = origin;
+            if let Some(raw) = origin.any_ref().downcast_ref::<RawPoint>() {
+                return raw.clone().cast();
+            }
+        }
         RawPoint {
-            hash: *self.hash(),
+            hash: *self.hash.unwrap(),
+            origin: self.origin,
+            _object: PhantomData,
+        }
+    }
+}
+
+impl<T> RawPoint<T> {
+    pub fn cast<U>(self) -> RawPoint<U> {
+        RawPoint {
+            hash: self.hash,
             origin: self.origin,
             _object: PhantomData,
         }
