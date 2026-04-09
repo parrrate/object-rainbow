@@ -1,7 +1,7 @@
 use std::{ops::Deref, sync::Arc};
 
 use object_rainbow::{
-    Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, FullHash, Hash, Object, Parse,
+    Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, FullHash, Hash, Node, Object, Parse,
     ParseSliceExtra, Point, PointInput, PointVisitor, Resolve, Singular, Tagged, ToOutput,
     Topological, Traversible, length_prefixed::Lp,
 };
@@ -76,7 +76,7 @@ impl<K, T> FetchBytes for Visited<K, T> {
 impl<K: Key, T: Traversible> Fetch for Visited<K, T> {
     type T = Encrypted<K, T>;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
+    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
         Box::pin(async move {
             let (
                 Encrypted {
@@ -340,7 +340,7 @@ impl<K, T> FetchBytes for Untyped<K, T> {
 impl<K: Key, T: FullHash> Fetch for Untyped<K, T> {
     type T = Encrypted<K, Vec<u8>>;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
+    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
         Box::pin(async move {
             let (data, resolve) = self.fetch_bytes().await?;
             let encrypted = Self::T::parse_slice_extra(&data, &resolve, &self.key)?;
