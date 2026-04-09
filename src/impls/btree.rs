@@ -8,6 +8,12 @@ impl<T: ToOutput> ToOutput for BTreeSet<T> {
     }
 }
 
+impl<T: ListPoints> ListPoints for BTreeSet<T> {
+    fn list_points(&self, f: &mut impl FnMut(Hash)) {
+        self.iter_list_points(f);
+    }
+}
+
 impl<T: Topological> Topological for BTreeSet<T> {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.iter_accept_points(visitor);
@@ -31,6 +37,12 @@ impl<T: ReflessInline + Ord> ReflessObject for BTreeSet<T> {}
 impl<K: ToOutput, V: ToOutput> ToOutput for BTreeMap<K, V> {
     fn to_output(&self, output: &mut dyn Output) {
         self.iter_to_output(output);
+    }
+}
+
+impl<K: ListPoints, V: ListPoints> ListPoints for BTreeMap<K, V> {
+    fn list_points(&self, f: &mut impl FnMut(Hash)) {
+        self.iter_list_points(f);
     }
 }
 

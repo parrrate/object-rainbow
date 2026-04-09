@@ -190,6 +190,7 @@ macro_rules! ae {
             type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
         }
 
+        impl ListPoints for Ae<$n> {}
         impl Topological for Ae<$n> {}
         impl Tagged for Ae<$n> {}
         impl Tagged for Ae<NonZero<$n>> {}
@@ -364,6 +365,8 @@ macro_rules! lebe {
             type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
         }
 
+        impl ListPoints for Le<$n> {}
+        impl ListPoints for Be<$n> {}
         impl Topological for Le<$n> {}
         impl Topological for Be<$n> {}
         impl Tagged for Le<$n> {}
@@ -491,6 +494,8 @@ macro_rules! float {
             type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
         }
 
+        impl ListPoints for Le<$n> {}
+        impl ListPoints for Be<$n> {}
         impl Topological for Le<$n> {}
         impl Topological for Be<$n> {}
         impl Tagged for Le<$n> {}
@@ -558,6 +563,7 @@ impl<T: NonZeroable + Size> MaybeHasNiche for Nz<T> {
     type MnArray = SomeNiche<ZeroNiche<T::Size>>;
 }
 
+impl<T: NonZeroable> ListPoints for Nz<T> {}
 impl<T: NonZeroable> Topological for Nz<T> {}
 impl<T: NonZeroable> Tagged for Nz<T> {}
 impl<T: NonZeroable + ReflessInline> ReflessObject for Nz<T> {}

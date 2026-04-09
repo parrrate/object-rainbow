@@ -17,8 +17,8 @@ pub use anyhow::anyhow;
 use futures_util::TryFutureExt;
 use generic_array::{ArrayLength, GenericArray};
 pub use object_rainbow_derive::{
-    Enum, Inline, MaybeHasNiche, Object, Parse, ParseAsInline, ParseInline, ReflessInline,
-    ReflessObject, Size, Tagged, ToOutput, Topological,
+    Enum, Inline, ListPoints, MaybeHasNiche, Object, Parse, ParseAsInline, ParseInline,
+    ReflessInline, ReflessObject, Size, Tagged, ToOutput, Topological,
 };
 use sha2::{Digest, Sha256};
 #[doc(hidden)]
@@ -281,7 +281,7 @@ impl<T, Extra: Send + Sync> Singular for RawPoint<T, Extra> {
     }
 }
 
-#[derive(ToOutput, Topological, Parse, ParseInline)]
+#[derive(ToOutput, ListPoints, Topological, Parse, ParseInline)]
 pub struct ObjectMarker<T: ?Sized> {
     object: PhantomData<fn() -> T>,
 }
@@ -328,6 +328,7 @@ impl<I: PointInput> ParseInline<I> for Extras<I::Extra> {
 }
 
 impl<Extra> Tagged for Extras<Extra> {}
+impl<Extra> ListPoints for Extras<Extra> {}
 impl<Extra> Topological for Extras<Extra> {}
 impl<Extra: 'static + Send + Sync + Clone> Object<Extra> for Extras<Extra> {}
 impl<Extra: 'static + Send + Sync + Clone> Inline<Extra> for Extras<Extra> {}
@@ -339,13 +340,33 @@ pub struct RawPoint<T = Infallible, Extra = ()> {
     object: ObjectMarker<T>,
 }
 
-impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Topological for RawPoint<T, Extra> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        visitor.visit(&self.clone().point());
+impl ListPoints for RawPointInner {
+    fn list_points(&self, f: &mut impl FnMut(Hash)) {
+        f(self.hash)
     }
 
     fn point_count(&self) -> usize {
         1
+    }
+}
+
+impl<T, Extra> ListPoints for RawPoint<T, Extra> {
+    fn list_points(&self, f: &mut impl FnMut(Hash)) {
+        self.inner.list_points(f);
+    }
+
+    fn topology_hash(&self) -> Hash {
+        self.inner.topology_hash()
+    }
+
+    fn point_count(&self) -> usize {
+        self.inner.point_count()
+    }
+}
+
+impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Topological for RawPoint<T, Extra> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        visitor.visit(&self.clone().point());
     }
 }
 
@@ -697,14 +718,6 @@ pub trait PointVisitor {
     fn visit<T: Traversible>(&mut self, point: &Point<T>);
 }
 
-struct HashVisitor<F>(F);
-
-impl<F: FnMut(Hash)> PointVisitor for HashVisitor<F> {
-    fn visit<T: Traversible>(&mut self, point: &Point<T>) {
-        self.0(point.hash());
-    }
-}
-
 pub struct ReflessInput<'d> {
     data: Option<&'d [u8]>,
 }
@@ -929,32 +942,27 @@ pub trait ToOutput {
     }
 }
 
-#[derive(Default)]
-struct CountVisitor {
-    count: usize,
-}
-
-impl PointVisitor for CountVisitor {
-    fn visit<T: Traversible>(&mut self, _: &Point<T>) {
-        self.count += 1;
-    }
-}
-
-pub trait Topological {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        let _ = visitor;
+pub trait ListPoints {
+    fn list_points(&self, f: &mut impl FnMut(Hash)) {
+        let _ = f;
     }
 
     fn topology_hash(&self) -> Hash {
         let mut hasher = Sha256::new();
-        self.accept_points(&mut HashVisitor(|hash| hasher.update(hash)));
+        self.list_points(&mut |hash| hasher.update(hash));
         Hash::from_sha256(hasher.finalize().into())
     }
 
     fn point_count(&self) -> usize {
-        let mut visitor = CountVisitor::default();
-        self.accept_points(&mut visitor);
-        visitor.count
+        let mut count = 0;
+        self.list_points(&mut |_| count += 1);
+        count
+    }
+}
+
+pub trait Topological: ListPoints {
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        let _ = visitor;
     }
 
     fn topology(&self) -> TopoVec {
@@ -1078,13 +1086,19 @@ impl Tags {
 
 pub trait Inline<Extra = ()>: Object<Extra> + for<'a> ParseInline<Input<'a, Extra>> {}
 
-impl<T: Traversible> Topological for Point<T> {
-    fn accept_points(&self, visitor: &mut impl PointVisitor) {
-        visitor.visit(self);
+impl<T> ListPoints for Point<T> {
+    fn list_points(&self, f: &mut impl FnMut(Hash)) {
+        f(self.hash());
     }
 
     fn point_count(&self) -> usize {
         1
+    }
+}
+
+impl<T: Traversible> Topological for Point<T> {
+    fn accept_points(&self, visitor: &mut impl PointVisitor) {
+        visitor.visit(self);
     }
 }
 
@@ -1499,6 +1513,13 @@ trait RainbowIterator: Sized + IntoIterator {
         Self::Item: ToOutput,
     {
         self.into_iter().for_each(|item| item.to_output(output));
+    }
+
+    fn iter_list_points(self, f: &mut impl FnMut(Hash))
+    where
+        Self::Item: ListPoints,
+    {
+        self.into_iter().for_each(|item| item.list_points(f));
     }
 
     fn iter_accept_points(self, visitor: &mut impl PointVisitor)

@@ -75,6 +75,7 @@ impl<I: ParseInput> ParseInline<I> for bool {
 }
 
 impl Tagged for bool {}
+impl ListPoints for bool {}
 impl Topological for bool {}
 impl<E> Object<E> for bool {}
 impl<E> Inline<E> for bool {}

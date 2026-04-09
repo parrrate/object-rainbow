@@ -2,13 +2,13 @@ use object_rainbow_derive::{ParseAsInline, Tagged, Topological};
 
 use crate::*;
 
-#[derive(Tagged, Topological)]
+#[derive(Tagged, ListPoints, Topological)]
 struct ZtInner<T> {
     object: T,
     data: Vec<u8>,
 }
 
-#[derive(Tagged, Topological, ParseAsInline)]
+#[derive(Tagged, ListPoints, Topological, ParseAsInline)]
 pub struct Zt<T> {
     inner: Arc<ZtInner<T>>,
 }

@@ -6,6 +6,20 @@ impl<T: ToOutput> ToOutput for (T,) {
     }
 }
 
+impl<T: ListPoints> ListPoints for (T,) {
+    fn list_points(&self, f: &mut impl FnMut(Hash)) {
+        self.0.list_points(f);
+    }
+
+    fn topology_hash(&self) -> Hash {
+        self.0.topology_hash()
+    }
+
+    fn point_count(&self) -> usize {
+        self.0.point_count()
+    }
+}
+
 impl<T: Topological> Topological for (T,) {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         self.0.accept_points(visitor);

@@ -13,6 +13,7 @@ impl<I: ParseInput> Parse<I> for String {
 }
 
 impl Tagged for String {}
+impl ListPoints for String {}
 impl Topological for String {}
 impl<E> Object<E> for String {}
 impl ReflessObject for String {}
