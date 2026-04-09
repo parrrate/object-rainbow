@@ -1232,6 +1232,10 @@ impl<T: Traversible + Clone> Fetch for LocalFetch<T> {
         Box::pin(ready(Ok(self.object.clone())))
     }
 
+    fn fetch_local(&self) -> Option<Self::T> {
+        Some(self.object.clone())
+    }
+
     fn get(&self) -> Option<&Self::T> {
         Some(self)
     }
