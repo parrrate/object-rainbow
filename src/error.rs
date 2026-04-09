@@ -22,6 +22,14 @@ macro_rules! error_operation {
     };
 }
 
+#[macro_export]
+/// Construct [`Error::Consistency`].
+macro_rules! error_consistency {
+    ($($t:tt)*) => {
+        $crate::Error::Consistency($crate::anyhow!($($t)*))
+    };
+}
+
 /// Errors encountered during fetching an object. Mostly related to parsing.
 #[derive(Debug, thiserror::Error)]
 #[non_exhaustive]
