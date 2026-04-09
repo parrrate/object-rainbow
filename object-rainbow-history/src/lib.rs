@@ -26,14 +26,14 @@ impl<T, D> History<T, D> {
     }
 }
 
-pub trait Diff<Tree>: Send {
+pub trait Diff<Tree: Send>: Send {
     fn forward(
         self,
         tree: Option<Tree>,
     ) -> impl Send + Future<Output = object_rainbow::Result<Tree>>;
 }
 
-impl<T: Clone, D: Clone + Diff<T>> History<T, D>
+impl<T: Send + Clone, D: Clone + Diff<T>> History<T, D>
 where
     (T, D): Traversible,
 {
