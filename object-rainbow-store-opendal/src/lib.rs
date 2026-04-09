@@ -1,6 +1,6 @@
-use object_rainbow::ToOutput;
-use object_rainbow_store::RainbowStore;
-use opendal::Operator;
+use object_rainbow::{Hash, ObjectHashes, ToOutput};
+use object_rainbow_store::{RainbowStore, RainbowStoreMut};
+use opendal::{ErrorKind, Operator};
 
 #[derive(Debug, Clone)]
 pub struct OpendalStore {
@@ -14,11 +14,7 @@ impl OpendalStore {
 }
 
 impl RainbowStore for OpendalStore {
-    async fn save_data(
-        &self,
-        hashes: object_rainbow::ObjectHashes,
-        data: &[u8],
-    ) -> object_rainbow::Result<()> {
+    async fn save_data(&self, hashes: ObjectHashes, data: &[u8]) -> object_rainbow::Result<()> {
         self.operator
             .write(&hex::encode(hashes.data_hash()), data.to_vec())
             .await
@@ -26,7 +22,7 @@ impl RainbowStore for OpendalStore {
         Ok(())
     }
 
-    async fn contains(&self, hash: object_rainbow::Hash) -> object_rainbow::Result<bool> {
+    async fn contains(&self, hash: Hash) -> object_rainbow::Result<bool> {
         self.operator
             .exists(&hex::encode(hash))
             .await
@@ -35,7 +31,7 @@ impl RainbowStore for OpendalStore {
 
     async fn fetch(
         &self,
-        hash: object_rainbow::Hash,
+        hash: Hash,
     ) -> object_rainbow::Result<impl 'static + Send + Sync + AsRef<[u8]>> {
         self.operator
             .read(&hex::encode(hash))
@@ -46,5 +42,28 @@ impl RainbowStore for OpendalStore {
 
     fn name(&self) -> &str {
         "opendal"
+    }
+}
+
+impl RainbowStoreMut for OpendalStore {
+    async fn update_ref(&self, key: &str, hash: Hash) -> object_rainbow::Result<()> {
+        self.operator
+            .write(key, hash.to_vec())
+            .await
+            .map_err(|e| object_rainbow::error_fetch!("{e}"))?;
+        Ok(())
+    }
+
+    async fn fetch_ref(&self, key: &str) -> object_rainbow::Result<Option<Hash>> {
+        match self.operator.read(key).await {
+            Ok(value) => hex::decode(value.to_vec())
+                .map_err(|e| object_rainbow::error_parse!("{e}"))?
+                .as_slice()
+                .try_into()
+                .map_err(|e| object_rainbow::error_parse!("{e}"))
+                .map(Some),
+            Err(e) if e.kind() == ErrorKind::NotFound => Ok(None),
+            Err(e) => Err(object_rainbow::error_fetch!("{e}")),
+        }
     }
 }
