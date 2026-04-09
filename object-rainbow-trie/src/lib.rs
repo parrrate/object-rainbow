@@ -20,6 +20,7 @@ mod serde;
 pub struct Trie<T> {
     value: Option<T>,
     #[tags(skip)]
+    #[parse(unchecked)]
     children: BTreeMap<u8, Point<(LpBytes, Self)>>,
 }
 

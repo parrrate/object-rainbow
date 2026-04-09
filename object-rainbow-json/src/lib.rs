@@ -70,6 +70,7 @@ impl MaybeHasNiche for Json<()> {
     Deserialize,
 )]
 #[serde(untagged)]
+#[topology(recursive)]
 pub enum Distributed {
     #[default]
     Null,
@@ -78,8 +79,8 @@ pub enum Distributed {
     U64(Le<u64>),
     F64(Le<f64>),
     String(Point<String>),
-    Array(Point<Vec<Self>>),
-    Object(Point<BTreeMap<LpString, Self>>),
+    Array(#[parse(unchecked)] Point<Vec<Self>>),
+    Object(#[parse(unchecked)] Point<BTreeMap<LpString, Self>>),
 }
 
 impl Tagged for Distributed {}
