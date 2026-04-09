@@ -1176,6 +1176,10 @@ impl<T> FetchBytes for Point<T> {
     fn fetch_data_local(&self) -> Option<Vec<u8>> {
         self.fetch.fetch_data_local()
     }
+
+    fn as_inner(&self) -> Option<&dyn Any> {
+        self.fetch.as_inner()
+    }
 }
 
 impl<T> Singular for Point<T> {
