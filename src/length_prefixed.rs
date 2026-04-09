@@ -96,6 +96,8 @@ impl ToOutput for LpBytes {
     }
 }
 
+impl InlineOutput for LpBytes {}
+
 impl<I: ParseInput> ParseInline<I> for LpBytes {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         let prefix: Le<u64> = input.parse_inline()?;
