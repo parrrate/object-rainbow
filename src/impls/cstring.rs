@@ -7,3 +7,5 @@ impl ToOutput for CString {
         self.as_c_str().to_output(output);
     }
 }
+
+impl Topological for CString {}
