@@ -23,6 +23,7 @@ enum Request {
     End {
         hash: Hash,
         tags_hash: Hash,
+        mangle_hash: Hash,
         topology: Vec<Hash>,
         data: Vec<u8>,
         callback: oneshot::Sender<object_rainbow::Result<()>>,
@@ -78,7 +79,8 @@ impl<'r> Context<'r> {
             self.request
                 .send_async(Request::End {
                     hash: hashes.data_hash(),
-                    tags_hash: hashes.tags,
+                    tags_hash: hashes.diff.tags,
+                    mangle_hash: hashes.diff.mangle,
                     topology,
                     data: object.output(),
                     callback,
@@ -141,13 +143,14 @@ pub async fn fetchall(object: &impl Traversible) -> object_rainbow::Result<Local
                         Request::End {
                             hash,
                             tags_hash,
+                            mangle_hash,
                             topology,
                             data,
                             callback,
                         } => {
                             assert!(!map.contains(hash));
                             callback
-                                .send(map.insert(hash, tags_hash, topology, data))
+                                .send(map.insert(hash, tags_hash, mangle_hash, topology, data))
                                 .ok();
                         }
                     }
