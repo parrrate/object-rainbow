@@ -6,7 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
-description = "step-by-step change history"
+description = "Git-ish diff-by-diff change history"
 
 [dependencies]
 object-rainbow.workspace = true
