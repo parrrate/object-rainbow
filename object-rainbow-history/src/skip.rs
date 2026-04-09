@@ -3,7 +3,7 @@ use object_rainbow::{
     Topological,
 };
 
-use crate::Forward;
+use crate::Apply;
 
 #[derive(
     Debug,
@@ -26,16 +26,16 @@ use crate::Forward;
 )]
 pub struct FilterDiffs<T>(pub T);
 
-impl<T: Forward<D>, D: Send> Forward<(bool, D)> for FilterDiffs<T> {
+impl<T: Apply<D>, D: Send> Apply<(bool, D)> for FilterDiffs<T> {
     type Output = Option<T::Output>;
 
-    fn forward(
+    fn apply(
         &mut self,
         (include, diff): (bool, D),
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
         async move {
             Ok(if include {
-                Some(self.0.forward(diff).await?)
+                Some(self.0.apply(diff).await?)
             } else {
                 None
             })

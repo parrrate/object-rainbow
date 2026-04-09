@@ -3,7 +3,7 @@ use object_rainbow::{
     ToOutput, Topological,
 };
 
-use crate::Forward;
+use crate::Apply;
 
 #[derive(
     Debug,
@@ -34,13 +34,13 @@ impl<T> HashedDiffs<T> {
     }
 }
 
-impl<T: Forward<Hash>, D: Send + FullHash> Forward<D> for HashedDiffs<T> {
+impl<T: Apply<Hash>, D: Send + FullHash> Apply<D> for HashedDiffs<T> {
     type Output = T::Output;
 
-    fn forward(
+    fn apply(
         &mut self,
         diff: D,
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        self.tree.forward(diff.full_hash())
+        self.tree.apply(diff.full_hash())
     }
 }

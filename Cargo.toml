@@ -47,7 +47,7 @@ object-rainbow-array-map = { version = "0.0.0-a.5", path = "object-rainbow-array
 object-rainbow-chain-tree = { version = "0.0.0-a.8", path = "object-rainbow-chain-tree" }
 object-rainbow-fetchall = { version = "0.0.0-a.5", path = "object-rainbow-fetchall" }
 object-rainbow-hamt = { version = "0.0.0-a.2", path = "object-rainbow-hamt" }
-object-rainbow-history = { version = "0.0.0-a.15", path = "object-rainbow-history" }
+object-rainbow-history = { version = "0.0.0-a.16", path = "object-rainbow-history" }
 object-rainbow-local-map = { version = "0.0.0-a.1", path = "object-rainbow-local-map" }
 object-rainbow-point = { version = "0.0.0-a.5", path = "object-rainbow-point" }
 object-rainbow-store = { version = "0.0.0-a.7", path = "object-rainbow-store" }

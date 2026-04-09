@@ -1226,7 +1226,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.15"
+version = "0.0.0-a.16"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1242,7 +1242,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history-store"
-version = "0.0.0-a.2"
+version = "0.0.0-a.3"
 dependencies = [
  "anyhow",
  "object-rainbow",
