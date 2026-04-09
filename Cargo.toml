@@ -20,7 +20,7 @@ authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 
 [package]
 name = "object-rainbow"
-version = "0.0.0-a.20"
+version = "0.0.0-a.21"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true

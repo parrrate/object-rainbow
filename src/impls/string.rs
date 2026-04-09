@@ -8,7 +8,7 @@ impl ToOutput for String {
 
 impl<I: ParseInput> Parse<I> for String {
     fn parse(input: I) -> crate::Result<Self> {
-        Self::from_utf8(input.parse()?).map_err(crate::Error::parse)
+        Ok(Self::from_utf8(input.parse()?)?)
     }
 }
 
