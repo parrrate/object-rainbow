@@ -224,7 +224,7 @@ pub trait Fetch: Send + Sync + FetchBytes {
     fn extra(&self) -> &Self::Extra;
 }
 
-pub trait FetchBytesExt: FetchBytes {
+trait FetchBytesExt: FetchBytes {
     fn inner_cast<T: FromInner>(&self) -> Option<T> {
         self.as_inner()?.downcast_ref().cloned().map(T::from_inner)
     }
