@@ -123,6 +123,10 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> ChainTree<T> {
             .is_some_and(|point| point == *early);
         Ok(follows)
     }
+
+    pub async fn precedes(&self, other: &Self) -> object_rainbow::Result<bool> {
+        other.follows(self).await
+    }
 }
 
 #[cfg(test)]
