@@ -1372,8 +1372,8 @@ fn bounds_maybe_has_niche(mut generics: Generics, data: &Data) -> syn::Result<Ge
             generics.params.push(parse_quote!(
                 __N: ::typenum::Unsigned
             ));
-            for v in data.variants.iter() {
-                let mn_array = fields_mn_array(&v.fields);
+            for (i, v) in data.variants.iter().enumerate() {
+                let mn_array = fields_mn_array(&v.fields, Some(i));
                 generics
                     .make_where_clause()
                     .predicates
@@ -1406,7 +1406,7 @@ fn bounds_maybe_has_niche(mut generics: Generics, data: &Data) -> syn::Result<Ge
     Ok(generics)
 }
 
-fn fields_mn_array(fields: &syn::Fields) -> proc_macro2::TokenStream {
+fn fields_mn_array(fields: &syn::Fields, variant: Option<usize>) -> proc_macro2::TokenStream {
     let mn_array = fields.iter().map(|f| {
         let ty = &f.ty;
         quote! {
@@ -1421,45 +1421,26 @@ fn fields_mn_array(fields: &syn::Fields) -> proc_macro2::TokenStream {
             >::MaybeNiche
         }
     });
-    quote! { tarr![#(#mn_array),*] }
+    if let Some(variant) = variant {
+        let kind_niche = quote! {
+            ::object_rainbow::AutoEnumNiche<Self, #variant>
+        };
+        quote! { tarr![#kind_niche, #(#mn_array),*] }
+    } else {
+        quote! { tarr![#(#mn_array),*] }
+    }
 }
 
 fn gen_mn_array(data: &Data) -> proc_macro2::TokenStream {
     match data {
-        Data::Struct(data) => fields_mn_array(&data.fields),
+        Data::Struct(data) => fields_mn_array(&data.fields, None),
         Data::Enum(data) => {
-            let kind_niche = quote! {
-                <
-                    <
-                        <
-                            <
-                                Self
-                                as
-                                ::object_rainbow::Enum
-                            >::Kind
-                            as
-                            ::object_rainbow::enumkind::EnumKind
-                        >::Tag
-                        as
-                        ::object_rainbow::MaybeHasNiche
-                    >::MnArray
-                    as
-                    ::object_rainbow::MnArray
-                >::MaybeNiche
-            };
-            let mn_array = data.variants.iter().map(|v| {
-                let mn_array = fields_mn_array(&v.fields);
+            let mn_array = data.variants.iter().enumerate().map(|(i, v)| {
+                let mn_array = fields_mn_array(&v.fields, Some(i));
                 quote! { <#mn_array as ::object_rainbow::MnArray>::MaybeNiche }
             });
             quote! {
-                tarr![
-                    #kind_niche,
-                    <
-                        ::object_rainbow::NicheFoldOrArray<tarr![#(#mn_array),*]>
-                        as
-                        ::object_rainbow::MnArray
-                    >::MaybeNiche,
-                ]
+                ::object_rainbow::NicheFoldOrArray<tarr![#(#mn_array),*]>
             }
         }
         Data::Union(data) => {
