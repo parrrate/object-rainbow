@@ -3,6 +3,14 @@ use crate::*;
 #[derive(Debug, Tagged, ListHashes, Topological, Clone, Copy, Default, ParseAsInline)]
 pub struct ParseExtra<T>(pub T);
 
+impl<T: ToOutput> ToOutput for ParseExtra<T> {
+    fn to_output(&self, output: &mut dyn Output) {
+        if output.is_mangling() {
+            self.0.to_output(output);
+        }
+    }
+}
+
 impl<
     T: ParseSliceExtra<B>,
     I: PointInput<Extra = (A, B)>,
