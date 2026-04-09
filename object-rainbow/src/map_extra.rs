@@ -5,6 +5,7 @@ use crate::*;
 )]
 pub struct MappedExtra<T, M = ()>(pub M, pub T);
 
+#[derive_for_mapped]
 pub trait MapExtra<Extra: 'static + Clone = ()> {
     type Mapped: 'static + Clone;
     fn map_extra(&self, extra: Extra) -> Self::Mapped;
@@ -41,13 +42,5 @@ impl<
         let x = input.extra().clone();
         let t = input.parse_inline_extra(m.map_extra(x))?;
         Ok(Self(m, t))
-    }
-}
-
-impl<Extra: 'static + Clone, T: MapExtra<Extra>, M> MapExtra<Extra> for MappedExtra<T, M> {
-    type Mapped = T::Mapped;
-
-    fn map_extra(&self, extra: Extra) -> Self::Mapped {
-        self.1.map_extra(extra)
     }
 }
