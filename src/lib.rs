@@ -24,6 +24,7 @@ pub use typenum;
 use typenum::Unsigned;
 
 pub use self::enumkind::Enum;
+pub use self::hash::{Hash, OptionalHash};
 pub use self::niche::{
     AutoEnumNiche, HackNiche, MaybeHasNiche, Niche, NoNiche, SomeNiche, ZeroNiche, ZeroNoNiche,
 };
@@ -31,6 +32,7 @@ pub use self::niche::{
 pub use self::niche::{MaybeNiche, MnArray, NicheFoldOrArray, NicheOr};
 
 pub mod enumkind;
+mod hash;
 pub mod hashed;
 mod impls;
 pub mod length_prefixed;
@@ -88,8 +90,6 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 pub const HASH_SIZE: usize = sha2_const::Sha256::DIGEST_SIZE;
 
-pub type Hash = [u8; HASH_SIZE];
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, ParseAsInline)]
 pub struct Address {
     pub index: usize,
@@ -111,29 +111,6 @@ impl<I: PointInput> ParseInline<I> for Address {
             index: input.next_index(),
             hash: input.parse_inline()?,
         })
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-struct OptionalHash(Hash);
-
-impl From<Hash> for OptionalHash {
-    fn from(hash: Hash) -> Self {
-        Self(hash)
-    }
-}
-
-impl OptionalHash {
-    fn get(&self) -> Option<&Hash> {
-        (self.0 != Hash::default()).then_some(&self.0)
-    }
-
-    fn unwrap(&self) -> &Hash {
-        self.get().unwrap()
-    }
-
-    fn clear(&mut self) {
-        self.0 = Hash::default();
     }
 }
 
@@ -277,7 +254,7 @@ impl RawPointInner {
 
 impl ToOutput for RawPointInner {
     fn to_output(&self, output: &mut dyn Output) {
-        output.write(&self.hash);
+        self.hash.to_output(output);
     }
 }
 
@@ -290,13 +267,13 @@ impl<I: PointInput> ParseInline<I> for RawPointInner {
 impl Tagged for RawPointInner {}
 
 impl Singular for RawPointInner {
-    fn hash(&self) -> &Hash {
-        &self.hash
+    fn hash(&self) -> Hash {
+        self.hash
     }
 }
 
 impl<T, Extra: 'static + Send + Sync> Singular for RawPoint<T, Extra> {
-    fn hash(&self) -> &Hash {
+    fn hash(&self) -> Hash {
         self.inner.hash()
     }
 }
@@ -372,7 +349,7 @@ impl<T, Extra: 'static + Clone> Point<T, Extra> {
         }
         let extra = self.origin.extra().clone();
         RawPointInner {
-            hash: *self.hash.unwrap(),
+            hash: self.hash.unwrap(),
             origin: self.origin,
         }
         .cast(extra)
@@ -472,7 +449,7 @@ impl<T, Extra> PartialOrd for Point<T, Extra> {
 
 impl<T, Extra> Ord for Point<T, Extra> {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.hash().cmp(other.hash())
+        self.hash().cmp(&other.hash())
     }
 }
 
@@ -625,7 +602,7 @@ struct HashVisitor<F>(F);
 
 impl<F: FnMut(Hash), Extra: 'static> PointVisitor<Extra> for HashVisitor<F> {
     fn visit<T: Object<Extra>>(&mut self, point: &Point<T, Extra>) {
-        self.0(*point.hash());
+        self.0(point.hash());
     }
 }
 
@@ -878,7 +855,7 @@ pub trait Topological<Extra: 'static = ()> {
     fn topology_hash(&self) -> Hash {
         let mut hasher = Sha256::new();
         self.accept_points(&mut HashVisitor(|hash| hasher.update(hash)));
-        hasher.finalize().into()
+        Hash::from_sha256(hasher.finalize().into())
     }
 
     fn point_count(&self) -> usize {
@@ -897,7 +874,8 @@ pub trait Topological<Extra: 'static = ()> {
 pub trait Tagged {
     const TAGS: Tags = Tags(&[], &[]);
 
-    const HASH: Hash = const { Self::TAGS.const_hash(sha2_const::Sha256::new()).finalize() };
+    const HASH: Hash =
+        const { Hash::from_sha256(Self::TAGS.const_hash(sha2_const::Sha256::new()).finalize()) };
 }
 
 pub trait ParseSlice: for<'a> Parse<Input<'a>> {
@@ -1029,7 +1007,7 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Object<Extra> for P
 
 impl<T, Extra> ToOutput for Point<T, Extra> {
     fn to_output(&self, output: &mut dyn Output) {
-        output.write(self.hash());
+        self.hash().to_output(output);
     }
 }
 
@@ -1045,7 +1023,7 @@ pub trait Topology: Send + Sync {
 }
 
 pub trait Singular: Send + Sync + FetchBytes {
-    fn hash(&self) -> &Hash;
+    fn hash(&self) -> Hash;
 }
 
 pub type TopoVec = Vec<Arc<dyn Singular>>;
@@ -1067,7 +1045,7 @@ impl<T, Extra> FetchBytes for Point<T, Extra> {
 }
 
 impl<T, Extra> Singular for Point<T, Extra> {
-    fn hash(&self) -> &Hash {
+    fn hash(&self) -> Hash {
         self.hash.unwrap()
     }
 }
@@ -1136,7 +1114,7 @@ impl Output for HashOutput {
 
 impl HashOutput {
     fn hash(self) -> Hash {
-        self.hasher.finalize().into()
+        Hash::from_sha256(self.hasher.finalize().into())
     }
 }
 
@@ -1162,7 +1140,7 @@ impl<T: Object<Extra>, Extra> DerefMut for PointMut<'_, T, Extra> {
 impl<T: Object<Extra>, Extra> Drop for PointMut<'_, T, Extra> {
     fn drop(&mut self) {
         self.origin.get_mut_finalize();
-        self.hash.0 = self.full_hash();
+        *self.hash = self.full_hash().into();
     }
 }
 
@@ -1289,7 +1267,7 @@ impl<Extra> ByTopology<Extra> {
             .topology
             .get(address.index)
             .ok_or(Error::AddressOutOfBounds)?;
-        if *point.hash() != address.hash {
+        if point.hash() != address.hash {
             Err(Error::ResolutionMismatch)
         } else {
             Ok(point.fetch_bytes())
@@ -1346,7 +1324,7 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync> Fetch for Point<T, Extra> {
     fn get_mut_finalize(&mut self) {
         let origin = Arc::get_mut(&mut self.origin).unwrap();
         origin.get_mut_finalize();
-        self.hash.0 = origin.get().unwrap().full_hash();
+        self.hash = origin.get().unwrap().full_hash().into();
     }
 
     fn extra(&self) -> &Self::Extra {
