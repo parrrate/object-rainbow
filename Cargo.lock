@@ -1089,7 +1089,7 @@ dependencies = [
 name = "object-rainbow-trie"
 version = "0.1.0"
 dependencies = [
- "futures-core",
+ "futures-util",
  "genawaiter-try-stream",
  "macro_rules_attribute",
  "object-rainbow",

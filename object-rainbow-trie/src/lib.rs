@@ -3,7 +3,7 @@ use std::{
     ops::{Bound, RangeBounds},
 };
 
-use futures_core::Stream;
+use futures_util::{Stream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
     Fetch, Inline, Object, Parse, Point, SimpleObject, Tagged, ToOutput, Topological,
@@ -301,6 +301,12 @@ where
             )
             .await
         })
+    }
+
+    pub async fn count(&self) -> object_rainbow::Result<u64> {
+        self.range_stream(..)
+            .try_fold(0u64, async |ctr, _| Ok(ctr.saturating_add(1)))
+            .await
     }
 }
 
