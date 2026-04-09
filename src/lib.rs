@@ -1179,13 +1179,7 @@ pub trait ReflessObject:
 {
 }
 
-pub trait ReflessInline: ReflessObject + for<'a> ParseInline<ReflessInput<'a>> {
-    fn parse_as_inline(mut input: ReflessInput) -> crate::Result<Self> {
-        let object = Self::parse_inline(&mut input)?;
-        input.empty()?;
-        Ok(object)
-    }
-}
+pub trait ReflessInline: ReflessObject + for<'a> ParseInline<ReflessInput<'a>> {}
 
 pub trait Output {
     fn write(&mut self, data: &[u8]);
