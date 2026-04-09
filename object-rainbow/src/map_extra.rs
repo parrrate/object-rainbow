@@ -12,6 +12,7 @@ use crate::*;
     Size,
     MaybeHasNiche,
     PartialEq,
+    Eq,
 )]
 pub struct MappedExtra<T, M = ()>(pub M, pub T);
 
