@@ -7,7 +7,7 @@ use object_rainbow::{
     Topological,
 };
 use object_rainbow_history::{
-    FromIter, MappedDiff, Parallel, Return, Sequential,
+    FromIter, Parallel, Return, Sequential,
     remap::{MapToSet, MappedToSet},
 };
 use object_rainbow_trie::{TrieMap, TrieSet};
@@ -207,8 +207,8 @@ impl MapToSet<MessageId, Message> for MessageToUser {
 }
 
 type MessagesByChannels =
-    MappedDiff<MappedToSet<MessageToChannel>, FromIter<TrieSet<MessageByChannel>>>;
-type MessagesByUsers = MappedDiff<MappedToSet<MessageToUser>, FromIter<TrieSet<MessageByUser>>>;
+    Sequential<MappedToSet<MessageToChannel>, FromIter<TrieSet<MessageByChannel>>>;
+type MessagesByUsers = Sequential<MappedToSet<MessageToUser>, FromIter<TrieSet<MessageByUser>>>;
 type Tree = Sequential<
     Parallel<TrieMap<MessageId, Message>, Return>,
     Parallel<MessagesByChannels, MessagesByUsers>,
@@ -238,13 +238,13 @@ impl Table for History {
     fn messages_by_channels(
         &self,
     ) -> impl Send + Future<Output = object_rainbow::Result<TrieSet<MessageByChannel>>> {
-        async move { Ok(self.tree().await?.second().a().tree().0.clone()) }
+        async move { Ok(self.tree().await?.second().a().second().0.clone()) }
     }
 
     fn messages_by_users(
         &self,
     ) -> impl Send + Future<Output = object_rainbow::Result<TrieSet<MessageByUser>>> {
-        async move { Ok(self.tree().await?.second().b().tree().0.clone()) }
+        async move { Ok(self.tree().await?.second().b().second().0.clone()) }
     }
 
     fn insert(
