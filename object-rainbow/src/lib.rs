@@ -50,6 +50,7 @@ pub mod map_extra;
 mod niche;
 pub mod numeric;
 pub mod partial_byte_tag;
+pub mod tuple_extra;
 pub mod zero_terminated;
 
 /// SHA-256 hash size in bytes.
@@ -864,6 +865,16 @@ impl ToOutput for dyn Singular {
 }
 
 impl InlineOutput for dyn Singular {}
+
+impl ListHashes for Arc<dyn Singular> {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        f(self.hash());
+    }
+
+    fn point_count(&self) -> usize {
+        1
+    }
+}
 
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
