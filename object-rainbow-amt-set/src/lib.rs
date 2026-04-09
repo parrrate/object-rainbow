@@ -302,6 +302,14 @@ impl<V: Traversible + InlineOutput + Clone> AmtMap<V> {
     pub fn new() -> Self {
         Self::default()
     }
+
+    pub async fn insert(&mut self, hash: Hash, value: V) -> object_rainbow::Result<Option<V>> {
+        self.0
+            .fetch_mut()
+            .await?
+            .insert(hash_key(hash), value)
+            .await
+    }
 }
 
 #[derive(
@@ -369,14 +377,7 @@ impl AmtSet {
     }
 
     pub async fn insert(&mut self, hash: Hash) -> object_rainbow::Result<bool> {
-        Ok(self
-            .0
-            .0
-            .fetch_mut()
-            .await?
-            .insert(hash_key(hash), ())
-            .await?
-            .is_none())
+        Ok(self.0.insert(hash, ()).await?.is_none())
     }
 
     pub async fn contains(&self, hash: Hash) -> object_rainbow::Result<bool> {
