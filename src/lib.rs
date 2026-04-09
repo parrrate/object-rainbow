@@ -303,8 +303,8 @@ impl<T, Extra: Clone> Clone for RawPoint<T, Extra> {
     }
 }
 
-impl<T> Point<T> {
-    pub fn raw(self) -> RawPoint<T> {
+impl<T, Extra: 'static + Clone> Point<T, Extra> {
+    pub fn raw(self) -> RawPoint<T, Extra> {
         {
             if let Some(raw) = self.origin.inner_cast() {
                 return raw;
@@ -312,7 +312,7 @@ impl<T> Point<T> {
         }
         RawPointInner {
             hash: *self.hash.unwrap(),
-            extra: (),
+            extra: self.extra,
             origin: self.origin,
         }
         .cast()
