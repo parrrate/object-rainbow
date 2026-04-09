@@ -19,7 +19,7 @@ trait Tree {
     fn insert(
         &mut self,
         key: GenericArray<u8, Self::N>,
-    ) -> impl Future<Output = object_rainbow::Result<()>>;
+    ) -> impl Future<Output = object_rainbow::Result<bool>>;
     fn from_pair(a: GenericArray<u8, Self::N>, b: GenericArray<u8, Self::N>) -> Self;
 }
 
@@ -29,10 +29,9 @@ struct DeepestLeaf(ArraySet);
 impl Tree for DeepestLeaf {
     type N = U1;
 
-    async fn insert(&mut self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<()> {
+    async fn insert(&mut self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<bool> {
         let [key] = <[u8; 1]>::from(key);
-        self.0.insert(key);
-        Ok(())
+        Ok(self.0.insert(key))
     }
 
     fn from_pair(a: GenericArray<u8, Self::N>, b: GenericArray<u8, Self::N>) -> Self {
@@ -53,18 +52,16 @@ enum SubTree<T: Tree> {
 impl<T: Tree + Clone + Traversible> Tree for SubTree<T> {
     type N = T::N;
 
-    async fn insert(&mut self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<()> {
+    async fn insert(&mut self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<bool> {
         match self {
-            SubTree::Leaf(existing) => {
-                if *existing != key {
-                    *self = Self::from_pair(existing.clone(), key);
-                }
-            }
-            SubTree::SubTree(sub) => {
-                sub.fetch_mut().await?.insert(key).await?;
-            }
+            SubTree::Leaf(existing) => Ok(if *existing != key {
+                *self = Self::from_pair(existing.clone(), key);
+                true
+            } else {
+                false
+            }),
+            SubTree::SubTree(sub) => sub.fetch_mut().await?.insert(key).await,
         }
-        Ok(())
     }
 
     fn from_pair(a: GenericArray<u8, Self::N>, b: GenericArray<u8, Self::N>) -> Self {
@@ -83,15 +80,15 @@ impl<
 {
     type N = Add1<T::N>;
 
-    async fn insert(&mut self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<()> {
+    async fn insert(&mut self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<bool> {
         let (key, rest) = Split::<u8, U1>::split(key);
         let [key] = <[u8; 1]>::from(key);
         if let Some(sub) = self.0.get_mut(key) {
-            sub.insert(rest).await?;
+            sub.insert(rest).await
         } else {
-            self.0.insert(key, SubTree::Leaf(rest));
+            assert!(self.0.insert(key, SubTree::Leaf(rest)).is_none());
+            Ok(true)
         }
-        Ok(())
     }
 
     fn from_pair(a: GenericArray<u8, Self::N>, b: GenericArray<u8, Self::N>) -> Self {
@@ -122,7 +119,7 @@ mod private {
                 fn insert(
                     &mut self,
                     key: GenericArray<u8, Self::N>,
-                ) -> impl Future<Output = object_rainbow::Result<()>> {
+                ) -> impl Future<Output = object_rainbow::Result<bool>> {
                     self.0.insert(key)
                 }
 
@@ -181,7 +178,7 @@ mod private {
 pub struct AmtSet(Point<private::N32>);
 
 impl AmtSet {
-    pub async fn insert(&mut self, hash: Hash) -> object_rainbow::Result<()> {
+    pub async fn insert(&mut self, hash: Hash) -> object_rainbow::Result<bool> {
         self.0
             .fetch_mut()
             .await?
