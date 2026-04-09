@@ -8,7 +8,7 @@ use object_rainbow::{
 use object_rainbow_point::{ExtractResolve, IntoPoint, Point};
 
 #[derive_for_wrapped]
-pub trait Key: 'static + Sized + Send + Sync + Clone {
+pub trait Key: 'static + Sized + Send + Sync + Clone + PartialEq + Eq {
     type Error: Into<anyhow::Error>;
     fn encrypt(&self, data: &[u8]) -> Vec<u8>;
     fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>, Self::Error>;
