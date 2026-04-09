@@ -19,3 +19,7 @@ impl<T: Topological, N: ArrayLength> Topological for GenericArray<T, N> {
         self.iter_traverse(visitor);
     }
 }
+
+impl<T: Tagged, N: ArrayLength> Tagged for GenericArray<T, N> {
+    const TAGS: Tags = T::TAGS;
+}
