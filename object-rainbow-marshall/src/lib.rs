@@ -261,7 +261,7 @@ impl<I: PointInput, T: Object<I::Extra>> Parse<I> for Marshalled<T> {
     }
 }
 
-impl<T> FetchBytes for Marshalled<T> {
+impl<T: ToOutput> FetchBytes for Marshalled<T> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.root.fetch_bytes()
     }
@@ -269,9 +269,13 @@ impl<T> FetchBytes for Marshalled<T> {
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
         self.root.fetch_data()
     }
+
+    fn fetch_data_local(&self) -> Option<Vec<u8>> {
+        Some(self.object.output())
+    }
 }
 
-impl<T: Send + Sync + Clone> Fetch for Marshalled<T> {
+impl<T: Send + Sync + Clone + ToOutput> Fetch for Marshalled<T> {
     type T = T;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
@@ -287,7 +291,7 @@ impl<T: Send + Sync + Clone> Fetch for Marshalled<T> {
     }
 }
 
-impl<T: Send + Sync> Singular for Marshalled<T> {
+impl<T: Send + Sync + ToOutput> Singular for Marshalled<T> {
     fn hash(&self) -> Hash {
         self.root.hash()
     }
