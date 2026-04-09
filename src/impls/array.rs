@@ -37,3 +37,15 @@ where
     type Size =
         <<typenum::generic_const_mappings::Const<N> as ToUInt>::Output as Mul<T::Size>>::Output;
 }
+
+impl<T: ParseInline<I>, const N: usize, I: ParseInput> Parse<I> for [T; N] {
+    fn parse(input: I) -> crate::Result<Self> {
+        ParseInline::parse_as_inline(input)
+    }
+}
+
+impl<T: ParseInline<I>, const N: usize, I: ParseInput> ParseInline<I> for [T; N] {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        input.parse_array()
+    }
+}
