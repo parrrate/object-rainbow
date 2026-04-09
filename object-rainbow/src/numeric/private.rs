@@ -153,7 +153,9 @@ macro_rules! ae {
 
         impl ToOutput for NonZero<$n> {
             fn to_output(&self, output: &mut dyn crate::Output) {
-                self.get().to_output(output);
+                if output.is_real() {
+                    self.get().to_output(output);
+                }
             }
         }
 
@@ -283,25 +285,33 @@ macro_rules! lebe {
 
         impl ToOutput for Le<$n> {
             fn to_output(&self, output: &mut dyn Output) {
-                output.write(&self.0.to_le_bytes());
+                if output.is_real() {
+                    output.write(&self.0.to_le_bytes());
+                }
             }
         }
 
         impl ToOutput for Be<$n> {
             fn to_output(&self, output: &mut dyn Output) {
-                output.write(&self.0.to_be_bytes());
+                if output.is_real() {
+                    output.write(&self.0.to_be_bytes());
+                }
             }
         }
 
         impl ToOutput for Le<NonZero<$n>> {
             fn to_output(&self, output: &mut dyn Output) {
-                output.write(&self.0.get().to_le_bytes());
+                if output.is_real() {
+                    output.write(&self.0.get().to_le_bytes());
+                }
             }
         }
 
         impl ToOutput for Be<NonZero<$n>> {
             fn to_output(&self, output: &mut dyn Output) {
-                output.write(&self.0.get().to_be_bytes());
+                if output.is_real() {
+                    output.write(&self.0.get().to_be_bytes());
+                }
             }
         }
 
@@ -459,13 +469,17 @@ macro_rules! float {
 
         impl ToOutput for Le<$n> {
             fn to_output(&self, output: &mut dyn Output) {
-                output.write(&self.0.to_le_bytes());
+                if output.is_real() {
+                    output.write(&self.0.to_le_bytes());
+                }
             }
         }
 
         impl ToOutput for Be<$n> {
             fn to_output(&self, output: &mut dyn Output) {
-                output.write(&self.0.to_be_bytes());
+                if output.is_real() {
+                    output.write(&self.0.to_be_bytes());
+                }
             }
         }
 
