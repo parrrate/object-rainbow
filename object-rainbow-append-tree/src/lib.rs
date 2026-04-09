@@ -1,8 +1,9 @@
 use std::{future::ready, marker::PhantomData};
 
 use object_rainbow::{
-    Enum, Fetch, Inline, InlineOutput, ListHashes, Object, Output, Parse, ParseAsInline,
-    ParseInline, ParseInput, Tagged, ToOutput, Topological, Traversible, assert_impl, numeric::Le,
+    Address, Enum, ExtraFor, Fetch, FullHash, Inline, InlineOutput, ListHashes, Object, Output,
+    Parse, ParseAsInline, ParseInline, ParseInput, PointInput, Tagged, ToOutput, Topological,
+    Traversible, assert_impl, numeric::Le,
 };
 use object_rainbow_point::{IntoPoint, Point};
 use typenum::{U256, Unsigned};
@@ -198,12 +199,16 @@ impl<T: ToContiguousOutput, N: Send + Sync + Unsigned> ToContiguousOutput
 {
     fn to_contiguous_output(&self, (history, prev): &Self::History, output: &mut dyn Output) {
         prev.to_contiguous_output(history, output);
-        self.to_output(output);
+        self.prev.to_output(output);
+        self.items[..self.items.len() - 1].to_output(output);
     }
 }
 
-impl<T: Send + Sync + ParseWithLen<I>, N: Send + Sync + Unsigned, I: ParseInput> ParseWithLen<I>
-    for Node<Point<T>, N, NonLeaf>
+impl<
+    T: 'static + Send + Sync + ParseWithLen<I> + FullHash,
+    N: Send + Sync + Unsigned,
+    I: PointInput<Extra: Send + Sync + ExtraFor<T>>,
+> ParseWithLen<I> for Node<Point<T>, N, NonLeaf>
 where
     Point<T>: ParseInline<I>,
     Point<Self>: ParseInline<I>,
@@ -226,16 +231,22 @@ where
                 len % T::CAPACITY
             },
         )?;
-        Ok((
-            history,
-            Self::new(
-                input.parse_inline()?,
-                input.parse_vec_n(
-                    own.try_into()
-                        .map_err(|_| object_rainbow::error_parse!("overflow"))?,
-                )?,
-            ),
-        ))
+        let hash = history.1.full_hash();
+        let prev = input.parse_inline()?;
+        let mut items = input.parse_vec_n::<Point<T>>(
+            own.saturating_sub(1)
+                .try_into()
+                .map_err(|_| object_rainbow::error_parse!("overflow"))?,
+        )?;
+        items.push(Point::from_address_extra(
+            Address {
+                index: input.next_index(),
+                hash,
+            },
+            input.resolve(),
+            input.extra().clone(),
+        ));
+        Ok((history, Self::new(prev, items)))
     }
 }
 
@@ -539,7 +550,7 @@ mod test {
     #[apply(test!)]
     async fn test() -> object_rainbow::Result<()> {
         let mut tree = AppendTree::<Le<u64>>::new();
-        for i in 0..100000u64 {
+        for i in 0..100_000u64 {
             assert_eq!(tree.reparse()?, tree);
             tree.push(Le(i))?;
             assert_eq!(tree.get(i).await?.unwrap().0, i);
