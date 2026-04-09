@@ -442,7 +442,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
         }
     }
 
-    pub async fn push(&mut self, value: T) -> object_rainbow::Result<()> {
+    pub fn push(&mut self, value: T) -> object_rainbow::Result<()> {
         let len = self.len.0;
         macro_rules! upgrade {
             ($history:ident, $node:ident, $child:ident, $parent:ident) => {
@@ -515,7 +515,7 @@ mod test {
     async fn test() -> object_rainbow::Result<()> {
         let mut tree = AppendTree::<Le<u64>>::new();
         for i in 0..100000u64 {
-            tree.push(Le(i)).await?;
+            tree.push(Le(i))?;
             assert_eq!(tree.get(i).await?.unwrap().0, i);
         }
         Ok(())
