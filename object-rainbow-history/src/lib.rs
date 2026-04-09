@@ -389,7 +389,7 @@ impl<Diff: Send + Clone, A: Apply<Diff>, B: Apply<Diff>> Apply<Diff> for Paralle
         &mut self,
         diff: Diff,
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        async move { futures_util::try_join!(self.a.apply(diff.clone()), self.b.apply(diff)) }
+        futures_util::future::try_join(self.a.apply(diff.clone()), self.b.apply(diff))
     }
 }
 
