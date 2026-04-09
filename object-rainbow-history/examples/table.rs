@@ -225,6 +225,10 @@ trait Table {
         message: MessageId,
         contents: Message,
     ) -> impl Send + Future<Output = object_rainbow::Result<()>>;
+    fn delete(
+        &mut self,
+        message: MessageId,
+    ) -> impl Send + Future<Output = object_rainbow::Result<()>>;
 }
 
 impl Table for History {
@@ -246,6 +250,13 @@ impl Table for History {
         contents: Message,
     ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
         self.commit((message, Some(contents)))
+    }
+
+    fn delete(
+        &mut self,
+        message: MessageId,
+    ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+        self.commit((message, None))
     }
 }
 
@@ -302,7 +313,7 @@ async fn main() -> object_rainbow::Result<()> {
             user,
         }]),
     );
-    history.commit((message, None)).await?;
+    history.delete(message).await?;
     assert!(
         !history
             .messages_by_channels()
