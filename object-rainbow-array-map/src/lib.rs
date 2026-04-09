@@ -94,3 +94,12 @@ impl<'a, T> Iterator for Range<'a, T> {
         self.range.next().map(|(&k, v)| (k, v))
     }
 }
+
+impl<T> Default for ArrayMap<T> {
+    fn default() -> Self {
+        Self {
+            bits: Default::default(),
+            map: Default::default(),
+        }
+    }
+}
