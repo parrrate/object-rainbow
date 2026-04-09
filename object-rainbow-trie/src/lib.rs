@@ -515,6 +515,10 @@ where
         self.trie.remove(&key.vec()).await
     }
 
+    pub async fn append(&mut self, other: &mut Self) -> object_rainbow::Result<()> {
+        self.trie.append(&mut other.trie).await
+    }
+
     pub fn prefix_stream(
         &self,
         prefix: &[u8],
