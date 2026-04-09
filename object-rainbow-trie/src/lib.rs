@@ -488,6 +488,14 @@ impl<T> Clone for TrieSet<T> {
     }
 }
 
+impl<T> Default for TrieSet<T> {
+    fn default() -> Self {
+        Self {
+            map: Default::default(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
