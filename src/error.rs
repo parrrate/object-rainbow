@@ -79,6 +79,10 @@ impl Error {
         Self::Fetch(e.into())
     }
 
+    pub fn io(e: impl Into<std::io::Error>) -> Self {
+        e.into().into()
+    }
+
     fn io_kind(&self) -> std::io::ErrorKind {
         use std::io::ErrorKind;
         match self {

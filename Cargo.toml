@@ -32,7 +32,7 @@ exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 
 [workspace.dependencies]
 object-rainbow = { version = "0.0.0-a.22", path = "." }
-object-rainbow-store = { version = "0.0.0-a.1", path = "object-rainbow-store" }
+object-rainbow-store = { version = "0.0.0-a.2", path = "object-rainbow-store" }
 
 [dependencies]
 object-rainbow-derive = { version = "=0.0.0-a.7", path = "object-rainbow-derive" }

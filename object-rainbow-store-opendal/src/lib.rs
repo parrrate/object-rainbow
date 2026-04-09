@@ -18,7 +18,7 @@ impl RainbowStore for OpendalStore {
         self.operator
             .write(&hex::encode(hashes.data_hash()), data.to_vec())
             .await
-            .map_err(std::io::Error::from)?;
+            .map_err(object_rainbow::Error::io)?;
         Ok(())
     }
 
@@ -26,8 +26,7 @@ impl RainbowStore for OpendalStore {
         self.operator
             .exists(&hex::encode(hash))
             .await
-            .map_err(std::io::Error::from)
-            .map_err(object_rainbow::Error::from)
+            .map_err(object_rainbow::Error::io)
     }
 
     async fn fetch(
@@ -37,8 +36,7 @@ impl RainbowStore for OpendalStore {
         self.operator
             .read(&hex::encode(hash))
             .await
-            .map_err(std::io::Error::from)
-            .map_err(object_rainbow::Error::from)
+            .map_err(object_rainbow::Error::io)
             .map(|b| b.to_bytes())
     }
 
@@ -57,7 +55,7 @@ impl RainbowStoreMut for OpendalStore {
         self.operator
             .write(key, hash.to_vec())
             .await
-            .map_err(std::io::Error::from)?;
+            .map_err(object_rainbow::Error::io)?;
         Ok(())
     }
 
@@ -65,7 +63,7 @@ impl RainbowStoreMut for OpendalStore {
         match self.operator.read(key).await {
             Ok(value) => OptionalHash::parse_slice_refless(&value.to_vec()),
             Err(e) if e.kind() == ErrorKind::NotFound => Ok(Default::default()),
-            Err(e) => Err(object_rainbow::Error::from(std::io::Error::from(e))),
+            Err(e) => Err(object_rainbow::Error::io(e)),
         }
     }
 
@@ -73,7 +71,6 @@ impl RainbowStoreMut for OpendalStore {
         self.operator
             .exists(key)
             .await
-            .map_err(std::io::Error::from)
-            .map_err(object_rainbow::Error::from)
+            .map_err(object_rainbow::Error::io)
     }
 }
