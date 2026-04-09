@@ -55,4 +55,8 @@ impl<T> ArrayMap<T> {
             btree_map::Entry::Occupied(mut e) => Some(e.insert(value)),
         }
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.map.is_empty()
+    }
 }
