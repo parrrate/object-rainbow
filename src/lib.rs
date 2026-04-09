@@ -283,7 +283,7 @@ impl ToOutput for RawPointInner {
 
 impl<I: PointInput> ParseInline<I> for RawPointInner {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        Ok(Self::from_address(input.parse_address()?, input.resolve()))
+        Ok(Self::from_address(input.parse_inline()?, input.resolve()))
     }
 }
 
@@ -996,7 +996,7 @@ impl<T: Object<Extra>, Extra: 'static> Topological<Extra> for Point<T, Extra> {
 impl<T: Object<I::Extra>, I: PointInput<Extra: Send + Sync>> ParseInline<I> for Point<T, I::Extra> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         Ok(Self::from_address_extra(
-            input.parse_address()?,
+            input.parse_inline()?,
             input.resolve(),
             input.extra().clone(),
         ))
@@ -1441,9 +1441,6 @@ pub trait PointInput: ParseInput {
     type Extra: 'static + Clone;
     type WithExtra<E: 'static + Clone>: PointInput<Extra = E, WithExtra<Self::Extra> = Self>;
     fn next_index(&mut self) -> usize;
-    fn parse_address(&mut self) -> crate::Result<Address> {
-        self.parse_inline()
-    }
     fn resolve_arc_ref(&self) -> &Arc<dyn Resolve>;
     fn resolve(&self) -> Arc<dyn Resolve> {
         self.resolve_arc_ref().clone()
