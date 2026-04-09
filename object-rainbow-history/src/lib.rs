@@ -47,8 +47,12 @@ impl<T, D> History<T, D> {
 }
 
 pub trait Forward<Diff: Send>: Send {
+    type Output: Send;
     /// Must stay isomorphic under [`Equivalent`] conversions.
-    fn forward(&mut self, diff: Diff) -> impl Send + Future<Output = object_rainbow::Result<()>>;
+    fn forward(
+        &mut self,
+        diff: Diff,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>>;
 }
 
 impl<T: Clone + Traversible + InlineOutput + Default + Forward<D>, D: Clone + Traversible>
@@ -156,16 +160,21 @@ assert_impl!(
 );
 
 impl<T: Forward<D>, D: Send> Forward<Vec<D>> for Compat<T> {
-    async fn forward(&mut self, diff: Vec<D>) -> object_rainbow::Result<()> {
+    type Output = Vec<T::Output>;
+
+    async fn forward(&mut self, diff: Vec<D>) -> object_rainbow::Result<Self::Output> {
+        let mut output = Vec::new();
         for diff in diff {
-            self.0.forward(diff).await?;
+            output.push(self.0.forward(diff).await?);
         }
-        Ok(())
+        Ok(output)
     }
 }
 
 impl<T: Forward<D>, D: Send + Traversible> Forward<Point<D>> for Compat<T> {
-    async fn forward(&mut self, diff: Point<D>) -> object_rainbow::Result<()> {
+    type Output = T::Output;
+
+    async fn forward(&mut self, diff: Point<D>) -> object_rainbow::Result<Self::Output> {
         self.0.forward(diff.fetch().await?).await
     }
 }
@@ -208,10 +217,12 @@ assert_impl!(
 );
 
 impl<T: Forward<D>, D: Send, H: Send> Forward<(H, D)> for DiscardHeader<T> {
+    type Output = T::Output;
+
     fn forward(
         &mut self,
         (_, diff): (H, D),
-    ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
         self.0.forward(diff)
     }
 }
@@ -260,7 +271,12 @@ impl<T, M> MappedDiff<T, M> {
 }
 
 impl<T: Forward<M::Inner>, M: MapDiff<Outer>, Outer: Send> Forward<Outer> for MappedDiff<T, M> {
-    fn forward(&mut self, outer: Outer) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+    type Output = T::Output;
+
+    fn forward(
+        &mut self,
+        outer: Outer,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
         async move { self.tree.forward(self.map.map(outer).await?).await }
     }
 }
@@ -300,11 +316,14 @@ impl<First, Second> Sequential<First, Second> {
 impl<Diff: Send + Clone, First: Forward<Diff>, Second: Forward<Diff>> Forward<Diff>
     for Sequential<First, Second>
 {
-    fn forward(&mut self, diff: Diff) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+    type Output = Second::Output;
+    fn forward(
+        &mut self,
+        diff: Diff,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
         async move {
             self.first.forward(diff.clone()).await?;
-            self.second.forward(diff).await?;
-            Ok(())
+            self.second.forward(diff).await
         }
     }
 }
@@ -342,11 +361,13 @@ impl<A, B> Parallel<A, B> {
 }
 
 impl<Diff: Send + Clone, A: Forward<Diff>, B: Forward<Diff>> Forward<Diff> for Parallel<A, B> {
-    fn forward(&mut self, diff: Diff) -> impl Send + Future<Output = object_rainbow::Result<()>> {
-        async move {
-            futures_util::try_join!(self.a.forward(diff.clone()), self.b.forward(diff))?;
-            Ok(())
-        }
+    type Output = (A::Output, B::Output);
+
+    fn forward(
+        &mut self,
+        diff: Diff,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        async move { futures_util::try_join!(self.a.forward(diff.clone()), self.b.forward(diff)) }
     }
 }
 

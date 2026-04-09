@@ -7,34 +7,36 @@ impl<K: ReflessObject, V: 'static + Send + Sync + Clone> Forward<(K, Option<V>)>
 where
     Option<V>: Traversible + InlineOutput,
 {
+    type Output = Option<V>;
+
     fn forward(
         &mut self,
         (key, value): (K, Option<V>),
-    ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
         async move {
             if let Some(value) = value {
-                self.insert(&key, value).await?;
+                self.insert(&key, value).await
             } else {
-                self.remove(&key).await?;
+                self.remove(&key).await
             }
-            Ok(())
         }
     }
 }
 
 /// `true` represents removal, `false` represents insertion to keep layout equivalence.
 impl<T: ReflessObject> Forward<(T, bool)> for TrieSet<T> {
+    type Output = bool;
+
     fn forward(
         &mut self,
         (value, remove): (T, bool),
-    ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
         async move {
-            if remove {
-                self.remove(&value).await?;
+            Ok(if remove {
+                !self.remove(&value).await?
             } else {
-                self.insert(&value).await?;
-            }
-            Ok(())
+                self.insert(&value).await?
+            })
         }
     }
 }
