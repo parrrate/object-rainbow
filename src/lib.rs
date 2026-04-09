@@ -1304,6 +1304,9 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
         input.empty()?;
         Ok(object)
     }
+    fn parse_vec(input: I) -> crate::Result<Vec<Self>> {
+        input.parse_collect()
+    }
 }
 
 pub trait Equivalent<T>: Sized {
