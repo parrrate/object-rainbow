@@ -45,6 +45,8 @@ impl<
     type Size = N;
 }
 
+pub struct UnspecifiedOptionNiche;
+
 pub struct OptionNiche<N, K>(N, K);
 
 pub trait NextNiche {
@@ -60,7 +62,7 @@ impl WrapNext for B1 {
 }
 
 impl WrapNext for B0 {
-    type Wrap<N: ArrayLength, J> = NoNiche<ZeroNoNiche<N>>;
+    type Wrap<N: ArrayLength, J> = UnspecifiedOptionNiche;
 }
 
 impl<
