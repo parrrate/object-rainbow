@@ -43,7 +43,7 @@ exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 object-rainbow = { version = "0.0.0-a.38", path = "." }
 object-rainbow-append-tree = { version = "0.0.0-a.7", path = "object-rainbow-append-tree" }
 object-rainbow-array-map = { version = "0.0.0-a.2", path = "object-rainbow-array-map" }
-object-rainbow-chain-tree = { version = "0.0.0-a.5", path = "object-rainbow-chain-tree" }
+object-rainbow-chain-tree = { version = "0.0.0-a.6", path = "object-rainbow-chain-tree" }
 object-rainbow-fetchall = { version = "0.0.0-a.2", path = "object-rainbow-fetchall" }
 object-rainbow-local-map = { version = "0.0.0-a.1", path = "object-rainbow-local-map" }
 object-rainbow-point = { version = "0.0.0-a.3", path = "object-rainbow-point" }

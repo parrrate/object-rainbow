@@ -1176,7 +1176,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-chain-tree"
-version = "0.0.0-a.5"
+version = "0.0.0-a.6"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
