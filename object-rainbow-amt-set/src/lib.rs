@@ -229,6 +229,7 @@ mod private {
     MaybeHasNiche,
     Clone,
     Default,
+    PartialEq,
 )]
 pub struct AmtSet(Point<private::N32>);
 
