@@ -15,7 +15,7 @@ pub use object_rainbow_derive::{
     Tagged, ToOutput, Topological,
 };
 use sha2::{Digest, Sha256};
-use typenum::{ATerm, B0, B1, Bit, Sum, TArr, U0, U1, Unsigned, tarr};
+use typenum::{ATerm, B0, B1, Bit, Max, Sum, TArr, U0, U1, Unsigned, tarr};
 
 pub use self::enumkind::Enum;
 
@@ -999,4 +999,16 @@ fn options() {
         Some(Some((Some(true), Some(true)))).output::<Vec<u8>>(),
         [0, 1, 1],
     );
+}
+
+pub trait FoldMax {
+    type Max;
+}
+
+impl<N> FoldMax for TArr<N, ATerm> {
+    type Max = N;
+}
+
+impl<N: Max<A::Max>, A: FoldMax> FoldMax for TArr<N, A> {
+    type Max = N::Output;
 }
