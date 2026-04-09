@@ -1444,7 +1444,7 @@ trait RainbowIterator: Sized + IntoIterator {
 }
 
 pub trait ParseInput: Sized {
-    type Data;
+    type Data: AsRef<[u8]> + Deref<Target = [u8]> + Copy;
     fn parse_chunk<'a, const N: usize>(&mut self) -> crate::Result<&'a [u8; N]>
     where
         Self: 'a;
