@@ -44,3 +44,13 @@ impl<T: Size> Size for (T,) {
 impl<T: MaybeHasNiche> MaybeHasNiche for (T,) {
     type MnArray = T::MnArray;
 }
+
+impl<T> Equivalent<T> for (T,) {
+    fn into_equivalent(self) -> T {
+        self.0
+    }
+
+    fn from_equivalent(object: T) -> Self {
+        (object,)
+    }
+}
