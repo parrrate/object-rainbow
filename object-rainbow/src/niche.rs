@@ -25,6 +25,7 @@ impl Niche for NicheForUnsized {
 
 /// [`MaybeNiche`] asserting that `V` is a fake niche.
 pub struct NoNiche<V>(V);
+/// [`MaybeNiche`] asserting that `A` and `B` are fake niches.
 pub struct NoNiche2<A, B>(A, B);
 pub struct AndNiche<V, T>(V, T);
 pub struct NicheAnd<T, V>(T, V);
