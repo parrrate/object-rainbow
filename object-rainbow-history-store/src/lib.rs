@@ -1,6 +1,8 @@
 use std::{marker::PhantomData, sync::Arc};
 
-use object_rainbow_store::StoreMut;
+use object_rainbow::{Inline, Object};
+use object_rainbow_history::{Forward, History};
+use object_rainbow_store::{RainbowStoreMut, StoreMut};
 
 pub struct HistoryStore<T, D, S, Extra = ()> {
     key: Arc<str>,
@@ -31,5 +33,23 @@ impl<T, D, S: Clone, Extra: Clone> Clone for HistoryStore<T, D, S, Extra> {
             store: self.store.clone(),
             _marker: PhantomData,
         }
+    }
+}
+
+impl<
+    T: Inline<Extra> + Clone + Default + Forward<D>,
+    D: Object<Extra> + Clone,
+    S: RainbowStoreMut,
+    Extra: 'static + Send + Sync + Clone,
+> HistoryStore<T, D, S, Extra>
+{
+    pub async fn commit(&self, diff: D) -> object_rainbow::Result<()> {
+        let mut history = self
+            .store
+            .load::<History<T, D>, _>(self.key.as_ref())
+            .await?;
+        history.fetch_mut().await?.commit(diff).await?;
+        history.save().await?;
+        Ok(())
     }
 }
