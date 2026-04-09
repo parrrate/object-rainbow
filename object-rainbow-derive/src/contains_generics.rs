@@ -37,10 +37,8 @@ fn args_contains_generics(cx: GContext, args: &AngleBracketedGenericArguments) -
 
 fn path_contains_generics(cx: GContext, path: &Path) -> bool {
     path.segments.iter().any(|seg| match &seg.arguments {
-        syn::PathArguments::None => !cx.g.is_empty() || cx.g.contains(&seg.ident),
-        syn::PathArguments::AngleBracketed(args) => {
-            (cx.points && seg.ident == "Point") || args_contains_generics(cx, args)
-        }
+        syn::PathArguments::None => cx.g.contains(&seg.ident),
+        syn::PathArguments::AngleBracketed(args) => args_contains_generics(cx, args),
         syn::PathArguments::Parenthesized(args) => {
             args.inputs.iter().any(|ty| type_contains_generics(cx, ty))
                 || match &args.output {
@@ -52,6 +50,9 @@ fn path_contains_generics(cx: GContext, path: &Path) -> bool {
 }
 
 pub fn type_contains_generics(cx: GContext, ty: &Type) -> bool {
+    if cx.points {
+        return true;
+    }
     match ty {
         Type::Array(ty) => type_contains_generics(cx, &ty.elem),
         Type::BareFn(ty) => {
