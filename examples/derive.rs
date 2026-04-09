@@ -83,6 +83,7 @@ enum Stuff<T> {
     ParseInline,
     MaybeHasNiche,
 )]
+#[enumtag("bool")]
 enum Either<L, R> {
     Left(L),
     Right(R),
