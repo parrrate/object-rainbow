@@ -207,3 +207,21 @@ pub trait MapDiff<Outer: Send> {
     fn map(&self, outer: Outer)
     -> impl Send + Future<Output = object_rainbow::Result<Self::Inner>>;
 }
+
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Size,
+    MaybeHasNiche,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+)]
+pub struct MappedDiff<T, M>(T, M);
