@@ -1003,6 +1003,16 @@ pub trait Object<Extra: 'static = ()>:
     {
         Point::from_object_extra(self, extra)
     }
+
+    fn to_resolve(&self) -> Arc<dyn Resolve>
+    where
+        Self: Clone,
+    {
+        Arc::new(ByTopology {
+            topology: self.topology(),
+            extension: Box::new(self.clone()),
+        })
+    }
 }
 
 pub trait SimpleObject: Object {
@@ -1278,14 +1288,7 @@ impl<T: Object<Extra> + Clone, Extra: 'static + Send + Sync> Fetch for LocalOrig
     type Extra = Extra;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
-        let extension = self.object.clone();
-        Box::pin(ready(Ok((
-            self.object.clone(),
-            Arc::new(ByTopology {
-                topology: self.object.topology(),
-                extension: Box::new(extension),
-            }) as _,
-        ))))
+        Box::pin(ready(Ok((self.object.clone(), self.object.to_resolve()))))
     }
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
@@ -1307,14 +1310,7 @@ impl<T: Object<Extra> + Clone, Extra: 'static + Send + Sync> Fetch for LocalOrig
 
 impl<T: Object<Extra> + Clone, Extra: 'static> FetchBytes for LocalOrigin<T, Extra> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        let extension = self.object.clone();
-        Box::pin(ready(Ok((
-            self.object.output(),
-            Arc::new(ByTopology {
-                topology: self.object.topology(),
-                extension: Box::new(extension),
-            }) as _,
-        ))))
+        Box::pin(ready(Ok((self.object.output(), self.object.to_resolve()))))
     }
 
     fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
