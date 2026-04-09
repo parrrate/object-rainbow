@@ -88,6 +88,7 @@ pub trait EnumKind: Copy {
 }
 
 pub trait Enum {
+    /// Discriminant uniquely identifying this `enum`'s variants.
     type Kind: EnumKind;
     fn kind(&self) -> Self::Kind;
 }
