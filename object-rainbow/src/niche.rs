@@ -312,6 +312,7 @@ impl<T: NicheOr, A: NicheFoldOr<Or: MaybeNiche<N = T::N>>> NicheFoldOr for TArr<
     }
 }
 
+#[doc(hidden)]
 pub struct NicheFoldOrArray<T>(T);
 
 impl<T: NicheFoldOr> MnArray for NicheFoldOrArray<T> {
