@@ -172,6 +172,16 @@ impl<'a, T> Iterator for Entries<'a, T> {
     }
 }
 
+impl<'a, T> IntoIterator for &'a ArrayMap<T> {
+    type Item = (u8, &'a T);
+
+    type IntoIter = Entries<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
 #[derive(
     ToOutput,
     InlineOutput,
