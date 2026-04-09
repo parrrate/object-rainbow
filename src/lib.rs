@@ -413,6 +413,10 @@ impl<T, Extra> FetchBytes for RawPoint<T, Extra> {
         self.inner.fetch_data()
     }
 
+    fn fetch_data_local(&self) -> Option<Vec<u8>> {
+        self.inner.fetch_data_local()
+    }
+
     fn as_inner(&self) -> Option<&dyn Any> {
         Some(&self.inner)
     }
