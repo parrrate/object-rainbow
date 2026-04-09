@@ -1,6 +1,6 @@
 use std::ops::Add;
 
-use generic_array::{ArrayLength, GenericArray, sequence::Concat};
+use generic_array::{ArrayLength, GenericArray, functional::FunctionalSequence, sequence::Concat};
 use typenum::{ATerm, B0, B1, Bit, Sum, TArr, U0, Unsigned};
 
 use crate::{
@@ -215,6 +215,16 @@ impl<N: ArrayLength> Niche for ZeroNiche<N> {
     type N = N;
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::default()
+    }
+}
+
+pub struct OneNiche<N>(N);
+
+impl<N: ArrayLength> Niche for OneNiche<N> {
+    type NeedsTag = B0;
+    type N = N;
+    fn niche() -> GenericArray<u8, Self::N> {
+        GenericArray::default().map(|()| 0xff)
     }
 }
 

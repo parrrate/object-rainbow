@@ -45,7 +45,7 @@ impl<T: Size> MaybeHasNiche for Lp<T>
 where
     U8: Add<T::Size, Output: ArrayLength>,
 {
-    type MnArray = tarr![SomeNiche<ZeroNiche<U8>>, NoNiche<ZeroNoNiche<T::Size>>];
+    type MnArray = tarr![SomeNiche<OneNiche<U8>>, NoNiche<ZeroNoNiche<T::Size>>];
 }
 
 impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Lp<T> {
