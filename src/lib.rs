@@ -245,6 +245,7 @@ impl ParseInline<Input<'_>> for RawPointInner {
     }
 }
 
+#[derive(ToOutput, ParseInline, ParseAsInline)]
 pub struct RawPoint<T = Infallible> {
     inner: RawPointInner,
     _object: PhantomData<fn() -> T>,
