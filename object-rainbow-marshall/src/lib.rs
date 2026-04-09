@@ -14,7 +14,7 @@ use std::{
 
 use object_rainbow::{
     Address, ByteNode, FailFuture, Fetch, FetchBytes, Hash, Object, Output, Parse, ParseInput,
-    ParseSliceExtra, PointInput, Resolve, Singular, Tagged, ToOutput, Topological,
+    ParseSliceExtra, PointInput, ReflessObject, Resolve, Singular, Tagged, ToOutput, Topological,
 };
 use object_rainbow_local_map::LocalMap;
 
@@ -230,6 +230,7 @@ impl<I: ParseInput> Parse<I> for MarshalledRoot {
 }
 
 impl<E> Object<E> for MarshalledRoot {}
+impl ReflessObject for MarshalledRoot {}
 
 pub struct Marshalled<T> {
     root: MarshalledRoot,
