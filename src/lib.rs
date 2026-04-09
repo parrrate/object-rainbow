@@ -175,6 +175,9 @@ pub trait Resolve: Send + Sync + AsAny {
     fn topology_hash(&self) -> Option<Hash> {
         None
     }
+    fn into_topovec(self: Arc<Self>) -> Option<TopoVec> {
+        None
+    }
 }
 
 pub trait FetchBytes: AsAny {
