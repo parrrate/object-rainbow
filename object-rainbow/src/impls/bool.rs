@@ -4,7 +4,9 @@ use crate::{incr_byte_niche::IncrByteNiche, *};
 
 impl ToOutput for bool {
     fn to_output(&self, output: &mut dyn Output) {
-        output.write(&[*self as _])
+        if output.is_real() {
+            output.write(&[*self as _])
+        }
     }
 }
 
