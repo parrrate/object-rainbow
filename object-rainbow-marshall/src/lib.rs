@@ -286,6 +286,13 @@ impl<T: Send + Sync + Clone + ToOutput> Fetch for Marshalled<T> {
         Box::pin(async move { Ok(self.object.clone()) })
     }
 
+    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
+        Ok(Some((
+            self.object.clone(),
+            self.root.marshalled.to_resolve(),
+        )))
+    }
+
     fn fetch_local(&self) -> Option<Self::T> {
         Some(self.object.clone())
     }
