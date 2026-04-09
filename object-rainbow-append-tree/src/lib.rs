@@ -72,7 +72,7 @@ trait ToContiguousOutput: History {
 }
 
 trait ParseWithLen<I: ParseInput>: History {
-    fn parse_with_len(input: &mut I, len: u64) -> object_rainbow::Result<(Self::History, Self)>;
+    fn parse_with_len(input: &mut I, len: u64) -> object_rainbow::Result<(Self, Self::History)>;
 }
 
 trait Push: Clone + History {
@@ -137,12 +137,11 @@ impl<T: ParseInline<I> + Send + Sync, N: Send + Sync + Unsigned, I: ParseInput> 
 where
     Point<Self>: ParseInline<I>,
 {
-    fn parse_with_len(input: &mut I, len: u64) -> object_rainbow::Result<(Self::History, Self)> {
+    fn parse_with_len(input: &mut I, len: u64) -> object_rainbow::Result<(Self, Self::History)> {
         if len > N::U64 {
             return Err(object_rainbow::error_parse!("overflow"));
         }
         Ok((
-            (),
             Self::new(
                 input.parse_inline()?,
                 input.parse_vec_n(
@@ -150,6 +149,7 @@ where
                         .map_err(|_| object_rainbow::error_parse!("overflow"))?,
                 )?,
             ),
+            (),
         ))
     }
 }
@@ -200,7 +200,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsig
 struct NonLeaf;
 
 impl<T: Send + Sync + History, N: Send + Sync + Unsigned> History for Node<Point<T>, N, NonLeaf> {
-    type History = (T::History, T);
+    type History = (T, T::History);
     type Block = T::Block;
     const CAPACITY: u64 = N::U64.saturating_mul(T::CAPACITY);
 }
@@ -208,10 +208,10 @@ impl<T: Send + Sync + History, N: Send + Sync + Unsigned> History for Node<Point
 impl<T: ToContiguousOutput, N: Send + Sync + Unsigned> ToContiguousOutput
     for Node<Point<T>, N, NonLeaf>
 {
-    fn to_contiguous_output(&self, (history, prev): &Self::History, output: &mut dyn Output) {
-        prev.to_contiguous_output(history, output);
+    fn to_contiguous_output(&self, (prev, history): &Self::History, output: &mut dyn Output) {
         self.prev.to_output(output);
         self.items[..self.items.len() - 1].to_output(output);
+        prev.to_contiguous_output(history, output);
     }
 }
 
@@ -224,7 +224,7 @@ where
     Point<T>: ParseInline<I>,
     Point<Self>: ParseInline<I>,
 {
-    fn parse_with_len(input: &mut I, len: u64) -> object_rainbow::Result<(Self::History, Self)> {
+    fn parse_with_len(input: &mut I, len: u64) -> object_rainbow::Result<(Self, Self::History)> {
         let own = len / T::CAPACITY
             + if len.is_multiple_of(T::CAPACITY) {
                 0
@@ -234,6 +234,13 @@ where
         if own > N::U64 {
             return Err(object_rainbow::error_parse!("overflow"));
         }
+        let prev = input.parse_inline()?;
+        let mut items = input.parse_vec_n::<Point<T>>(
+            own.saturating_sub(1)
+                .try_into()
+                .map_err(|_| object_rainbow::error_parse!("overflow"))?,
+        )?;
+        let index = input.next_index();
         let history = T::parse_with_len(
             input,
             if len.is_multiple_of(T::CAPACITY) {
@@ -242,21 +249,14 @@ where
                 len % T::CAPACITY
             },
         )?;
-        let hash = history.1.full_hash();
-        let prev = input.parse_inline()?;
-        let mut items = input.parse_vec_n::<Point<T>>(
-            own.saturating_sub(1)
-                .try_into()
-                .map_err(|_| object_rainbow::error_parse!("overflow"))?,
-        )?;
-        let index = input.next_index();
+        let hash = history.0.full_hash();
         let address = Address { index, hash };
         items.push(Point::from_address_extra(
             address,
             input.resolve(),
             input.extra().clone(),
         ));
-        Ok((history, Self::new(prev, items)))
+        Ok((Self::new(prev, items), history))
     }
 }
 
@@ -282,7 +282,7 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
         &mut self,
         len: u64,
         value: Self::T,
-        (history, prev): &mut Self::History,
+        (prev, history): &mut Self::History,
     ) -> object_rainbow::Result<()> {
         if let Some(last) = self.items.last_mut() {
             if len.is_multiple_of(T::CAPACITY) {
@@ -311,11 +311,11 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
         }
     }
 
-    fn last<'a>(&'a self, (history, node): &'a Self::History) -> Option<&'a Self::T> {
+    fn last<'a>(&'a self, (node, history): &'a Self::History) -> Option<&'a Self::T> {
         node.last(history)
     }
 
-    fn from_value(prev: Point<Self>, (history, child): &mut Self::History, value: Self::T) -> Self {
+    fn from_value(prev: Point<Self>, (child, history): &mut Self::History, value: Self::T) -> Self {
         *child = T::from_value(child.clone().point(), history, value);
         Self::new(Some(prev), vec![child.clone().point()])
     }
@@ -326,11 +326,11 @@ impl<T: Push<History: Clone> + Traversible, N: Send + Sync + Unsigned> Node<Poin
         inner: T,
         history: &mut T::History,
         value: T::T,
-    ) -> (<Self as History>::History, Self) {
+    ) -> (Self, <Self as History>::History) {
         let inner = inner.point();
         let next = T::from_value(inner.clone(), history, value);
         let parent = Self::new(None, vec![inner, next.clone().point()]);
-        ((history.clone(), next), parent)
+        (parent, (next, history.clone()))
     }
 }
 
@@ -369,24 +369,24 @@ assert_impl!(
 );
 
 type H1 = ();
-type H2<T> = (H1, N1<T>);
-type H3<T> = (H2<T>, N2<T>);
-type H4<T> = (H3<T>, N3<T>);
-type H5<T> = (H4<T>, N4<T>);
-type H6<T> = (H5<T>, N5<T>);
-type H7<T> = (H6<T>, N6<T>);
-type H8<T> = (H7<T>, N7<T>);
+type H2<T> = (N1<T>, H1);
+type H3<T> = (N2<T>, H2<T>);
+type H4<T> = (N3<T>, H3<T>);
+type H5<T> = (N4<T>, H4<T>);
+type H6<T> = (N5<T>, H5<T>);
+type H7<T> = (N6<T>, H6<T>);
+type H8<T> = (N7<T>, H7<T>);
 
 #[derive(Enum, Tagged, ListHashes, Topological, Clone, PartialEq, Eq, Debug)]
 enum TreeKind<T> {
-    N1((H1, N1<T>)),
-    N2((H2<T>, N2<T>)),
-    N3((H3<T>, N3<T>)),
-    N4((H4<T>, N4<T>)),
-    N5((H5<T>, N5<T>)),
-    N6((H6<T>, N6<T>)),
-    N7((H7<T>, N7<T>)),
-    N8((H8<T>, N8<T>)),
+    N1((N1<T>, H1)),
+    N2((N2<T>, H2<T>)),
+    N3((N3<T>, H3<T>)),
+    N4((N4<T>, H4<T>)),
+    N5((N5<T>, H5<T>)),
+    N6((N6<T>, H6<T>)),
+    N7((N7<T>, H7<T>)),
+    N8((N8<T>, H8<T>)),
 }
 
 #[derive(Tagged, ListHashes, Topological, Clone, ParseAsInline, PartialEq, Eq, Debug)]
@@ -399,14 +399,14 @@ impl<T: Send + Sync + InlineOutput> ToOutput for AppendTree<T> {
     fn to_output(&self, output: &mut dyn Output) {
         self.len.to_output(output);
         match &self.kind {
-            TreeKind::N1((history, node)) => node.to_contiguous_output(history, output),
-            TreeKind::N2((history, node)) => node.to_contiguous_output(history, output),
-            TreeKind::N3((history, node)) => node.to_contiguous_output(history, output),
-            TreeKind::N4((history, node)) => node.to_contiguous_output(history, output),
-            TreeKind::N5((history, node)) => node.to_contiguous_output(history, output),
-            TreeKind::N6((history, node)) => node.to_contiguous_output(history, output),
-            TreeKind::N7((history, node)) => node.to_contiguous_output(history, output),
-            TreeKind::N8((history, node)) => node.to_contiguous_output(history, output),
+            TreeKind::N1((node, history)) => node.to_contiguous_output(history, output),
+            TreeKind::N2((node, history)) => node.to_contiguous_output(history, output),
+            TreeKind::N3((node, history)) => node.to_contiguous_output(history, output),
+            TreeKind::N4((node, history)) => node.to_contiguous_output(history, output),
+            TreeKind::N5((node, history)) => node.to_contiguous_output(history, output),
+            TreeKind::N6((node, history)) => node.to_contiguous_output(history, output),
+            TreeKind::N7((node, history)) => node.to_contiguous_output(history, output),
+            TreeKind::N8((node, history)) => node.to_contiguous_output(history, output),
         }
     }
 }
@@ -469,21 +469,21 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
     pub const fn new() -> Self {
         Self {
             len: Le::<u64>::new(0u64),
-            kind: TreeKind::N1(((), Node::new(None, Vec::new()))),
+            kind: TreeKind::N1((Node::new(None, Vec::new()), ())),
         }
     }
 
     pub async fn get(&self, index: u64) -> object_rainbow::Result<Option<T>> {
         if index < self.len.0 {
             match &self.kind {
-                TreeKind::N1((_, node)) => node.get(index).await,
-                TreeKind::N2((_, node)) => node.get(index).await,
-                TreeKind::N3((_, node)) => node.get(index).await,
-                TreeKind::N4((_, node)) => node.get(index).await,
-                TreeKind::N5((_, node)) => node.get(index).await,
-                TreeKind::N6((_, node)) => node.get(index).await,
-                TreeKind::N7((_, node)) => node.get(index).await,
-                TreeKind::N8((_, node)) => node.get(index).await,
+                TreeKind::N1((node, _)) => node.get(index).await,
+                TreeKind::N2((node, _)) => node.get(index).await,
+                TreeKind::N3((node, _)) => node.get(index).await,
+                TreeKind::N4((node, _)) => node.get(index).await,
+                TreeKind::N5((node, _)) => node.get(index).await,
+                TreeKind::N6((node, _)) => node.get(index).await,
+                TreeKind::N7((node, _)) => node.get(index).await,
+                TreeKind::N8((node, _)) => node.get(index).await,
             }
             .map(Some)
         } else {
@@ -504,14 +504,14 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
             };
         }
         match &mut self.kind {
-            TreeKind::N1((history, node)) => upgrade!(history, node, N1, N2),
-            TreeKind::N2((history, node)) => upgrade!(history, node, N2, N3),
-            TreeKind::N3((history, node)) => upgrade!(history, node, N3, N4),
-            TreeKind::N4((history, node)) => upgrade!(history, node, N4, N5),
-            TreeKind::N5((history, node)) => upgrade!(history, node, N5, N6),
-            TreeKind::N6((history, node)) => upgrade!(history, node, N6, N7),
-            TreeKind::N7((history, node)) => upgrade!(history, node, N7, N8),
-            TreeKind::N8((history, node)) => {
+            TreeKind::N1((node, history)) => upgrade!(history, node, N1, N2),
+            TreeKind::N2((node, history)) => upgrade!(history, node, N2, N3),
+            TreeKind::N3((node, history)) => upgrade!(history, node, N3, N4),
+            TreeKind::N4((node, history)) => upgrade!(history, node, N4, N5),
+            TreeKind::N5((node, history)) => upgrade!(history, node, N5, N6),
+            TreeKind::N6((node, history)) => upgrade!(history, node, N6, N7),
+            TreeKind::N7((node, history)) => upgrade!(history, node, N7, N8),
+            TreeKind::N8((node, history)) => {
                 if len == N8::<T>::CAPACITY {
                     return Err(object_rainbow::error_fetch!("root overflow"));
                 } else {
@@ -533,14 +533,14 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
 
     pub fn last(&self) -> Option<&T> {
         match &self.kind {
-            TreeKind::N1((history, node)) => Push::last(node, history),
-            TreeKind::N2((history, node)) => Push::last(node, history),
-            TreeKind::N3((history, node)) => Push::last(node, history),
-            TreeKind::N4((history, node)) => Push::last(node, history),
-            TreeKind::N5((history, node)) => Push::last(node, history),
-            TreeKind::N6((history, node)) => Push::last(node, history),
-            TreeKind::N7((history, node)) => Push::last(node, history),
-            TreeKind::N8((history, node)) => Push::last(node, history),
+            TreeKind::N1((node, history)) => Push::last(node, history),
+            TreeKind::N2((node, history)) => Push::last(node, history),
+            TreeKind::N3((node, history)) => Push::last(node, history),
+            TreeKind::N4((node, history)) => Push::last(node, history),
+            TreeKind::N5((node, history)) => Push::last(node, history),
+            TreeKind::N6((node, history)) => Push::last(node, history),
+            TreeKind::N7((node, history)) => Push::last(node, history),
+            TreeKind::N8((node, history)) => Push::last(node, history),
         }
     }
 }
