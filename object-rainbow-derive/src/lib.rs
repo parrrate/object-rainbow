@@ -435,7 +435,7 @@ struct FieldTopologyArgs {
     #[darling(default)]
     unchecked: bool,
     with: Option<Expr>,
-    #[darling(default)]
+    #[darling(default, rename = "unstable_mutual")]
     mutual: bool,
 }
 
@@ -1173,7 +1173,7 @@ struct ParseArgs {
     #[darling(default)]
     unchecked: bool,
     with: Option<Expr>,
-    #[darling(default)]
+    #[darling(default, rename = "unstable_mutual")]
     mutual: bool,
 }
 
