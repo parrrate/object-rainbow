@@ -1643,6 +1643,11 @@ fn options() {
     assert_eq!(T3::SIZE, 1);
     assert_eq!(T4::SIZE, 1);
     assert_eq!(T5::SIZE, 1);
+    assert_eq!(Some(Some(Some(()))).output::<Vec<u8>>(), [0]);
+    assert_eq!(Some(Some(None::<()>)).output::<Vec<u8>>(), [1]);
+    assert_eq!(Some(None::<Option<()>>).output::<Vec<u8>>(), [2]);
+    assert_eq!(None::<Option<Option<()>>>.output::<Vec<u8>>(), [3]);
+
     assert_eq!(false.output::<Vec<u8>>(), [0]);
     assert_eq!(true.output::<Vec<u8>>(), [1]);
     assert_eq!(Some(false).output::<Vec<u8>>(), [0]);
