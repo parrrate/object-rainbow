@@ -1235,6 +1235,7 @@ dependencies = [
  "object-rainbow",
  "object-rainbow-chain-tree",
  "object-rainbow-point",
+ "object-rainbow-trie",
 ]
 
 [[package]]
