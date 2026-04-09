@@ -7,6 +7,7 @@ license.workspace = true
 repository.workspace = true
 authors.workspace = true
 description = "sled storage for object-rainbow"
+publish = false
 
 [dependencies]
 object-rainbow.workspace = true
