@@ -1342,6 +1342,10 @@ impl<T: FullHash> Fetch for Point<T> {
         self.fetch.fetch()
     }
 
+    fn try_fetch_local(&self) -> Result<Option<Node<Self::T>>> {
+        self.fetch.try_fetch_local()
+    }
+
     fn fetch_local(&self) -> Option<Self::T> {
         self.fetch.fetch_local()
     }
