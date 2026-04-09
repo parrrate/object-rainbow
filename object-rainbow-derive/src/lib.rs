@@ -490,7 +490,9 @@ fn bounds_topological(
                                     ) where #this: ::object_rainbow::Traversible;
                                 }
 
-                                impl #impl_generics #conditional #ty_generics for #ty #where_clause {
+                                impl #impl_generics #conditional #ty_generics for #ty
+                                #where_clause
+                                {
                                     fn traverse(
                                         &self, visitor: &mut impl ::object_rainbow::PointVisitor,
                                     ) where #this: ::object_rainbow::Traversible {
@@ -546,7 +548,9 @@ fn bounds_topological(
                                     ) where #this: ::object_rainbow::Traversible;
                                 }
 
-                                impl #impl_generics #conditional #ty_generics for #ty #where_clause {
+                                impl #impl_generics #conditional #ty_generics for #ty
+                                #where_clause
+                                {
                                     fn traverse(
                                         &self, visitor: &mut impl ::object_rainbow::PointVisitor,
                                     ) where #this: ::object_rainbow::Traversible {
@@ -1564,7 +1568,8 @@ pub fn derive_parse_inline(input: TokenStream) -> TokenStream {
     let enum_parse_inline = enum_parse_inline.map(|enum_parse_inline| {
         quote! {
             #[automatically_derived]
-            impl #impl_generics ::object_rainbow::enumkind::EnumParseInline<__I> for #target #ty_generics #where_clause {
+            impl #impl_generics ::object_rainbow::enumkind::EnumParseInline<__I>
+            for #target #ty_generics #where_clause {
                 fn enum_parse_inline(
                     kind: <Self as ::object_rainbow::Enum>::Kind, input: &mut __I,
                 ) -> ::object_rainbow::Result<Self> {
@@ -1575,7 +1580,8 @@ pub fn derive_parse_inline(input: TokenStream) -> TokenStream {
     });
     let output = quote! {
         #[automatically_derived]
-        impl #impl_generics ::object_rainbow::ParseInline<__I> for #target #ty_generics #where_clause {
+        impl #impl_generics ::object_rainbow::ParseInline<__I>
+        for #target #ty_generics #where_clause {
             fn parse_inline(input: &mut __I) -> ::object_rainbow::Result<Self> {
                 #parse_inline
             }
@@ -1979,7 +1985,8 @@ pub fn derive_maybe_has_niche(input: TokenStream) -> TokenStream {
             use ::object_rainbow::typenum::tarr;
 
             #[automatically_derived]
-            impl #impl_generics ::object_rainbow::MaybeHasNiche for #target #ty_generics #where_clause {
+            impl #impl_generics ::object_rainbow::MaybeHasNiche
+            for #target #ty_generics #where_clause {
                 type MnArray = #mn_array;
             }
         };
@@ -2061,7 +2068,12 @@ fn fields_mn_array(fields: &syn::Fields, variant: Option<usize>) -> proc_macro2:
         let kind_niche = quote! {
             ::object_rainbow::AutoEnumNiche<Self, #variant>
         };
-        quote! { tarr![#kind_niche, ::object_rainbow::NoNiche<::object_rainbow::HackNiche<#variant>>, #(#mn_array),*] }
+        quote! {
+            tarr![
+                #kind_niche,
+                ::object_rainbow::NoNiche<::object_rainbow::HackNiche<#variant>>, #(#mn_array),*
+            ]
+        }
     } else {
         quote! { tarr![#(#mn_array),*] }
     }
