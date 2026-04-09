@@ -4,7 +4,7 @@ use crate::*;
 
 impl<T: ToOutput> ToOutput for Vec<T> {
     fn to_output(&self, output: &mut dyn Output) {
-        self.iter_to_output(output);
+        T::slice_to_output(self, output);
     }
 }
 
@@ -30,7 +30,9 @@ impl<T: ReflessInline> ReflessObject for Vec<T> {}
 
 impl<T: ToOutput> ToOutput for VecDeque<T> {
     fn to_output(&self, output: &mut dyn Output) {
-        self.iter_to_output(output);
+        let (l, r) = self.as_slices();
+        T::slice_to_output(l, output);
+        T::slice_to_output(r, output);
     }
 }
 
