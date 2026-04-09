@@ -214,7 +214,7 @@ impl<T: ?Sized + FetchBytes> FetchBytesExt for T {}
 #[derive(Clone, ParseAsInline)]
 pub struct RawPointInner {
     hash: Hash,
-    origin: Arc<dyn Send + Sync + FetchBytes>,
+    fetch: Arc<dyn Send + Sync + FetchBytes>,
 }
 
 impl RawPointInner {
@@ -225,14 +225,14 @@ impl RawPointInner {
     pub fn from_address(address: Address, resolve: Arc<dyn Resolve>) -> Self {
         Self {
             hash: address.hash,
-            origin: Arc::new(ByAddressInner { address, resolve }),
+            fetch: Arc::new(ByAddressInner { address, resolve }),
         }
     }
 
     pub fn from_singular(singular: impl 'static + Singular) -> Self {
         Self {
             hash: singular.hash(),
-            origin: Arc::new(singular),
+            fetch: Arc::new(singular),
         }
     }
 }
@@ -366,7 +366,7 @@ impl<T> Point<T> {
         }
         RawPointInner {
             hash: self.hash.unwrap(),
-            origin: self.origin,
+            fetch: self.origin,
         }
         .cast(extra)
     }
@@ -386,11 +386,11 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> RawPoint<T, Extra> 
 
 impl FetchBytes for RawPointInner {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        self.origin.fetch_bytes()
+        self.fetch.fetch_bytes()
     }
 
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        self.origin.fetch_data()
+        self.fetch.fetch_data()
     }
 }
 
@@ -413,7 +413,7 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for RawPoint<T, Extra> {
 
     fn fetch_full(&'_ self) -> FailFuture<'_, (Self::T, Arc<dyn Resolve>)> {
         Box::pin(async {
-            let (data, resolve) = self.inner.origin.fetch_bytes().await?;
+            let (data, resolve) = self.inner.fetch.fetch_bytes().await?;
             let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
             if self.inner.hash != object.full_hash() {
                 Err(Error::DataMismatch)
@@ -425,7 +425,7 @@ impl<T: Object<Extra>, Extra: Send + Sync> Fetch for RawPoint<T, Extra> {
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
-            let (data, resolve) = self.inner.origin.fetch_bytes().await?;
+            let (data, resolve) = self.inner.fetch.fetch_bytes().await?;
             let object = T::parse_slice_extra(&data, &resolve, &self.extra)?;
             if self.inner.hash != object.full_hash() {
                 Err(Error::DataMismatch)
