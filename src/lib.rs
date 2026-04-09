@@ -125,8 +125,9 @@ pub type ByteNode = (Vec<u8>, Arc<dyn Resolve>);
 
 pub trait FromInner {
     type Inner: 'static + Clone;
+    type Extra: 'static + Clone;
 
-    fn from_inner(inner: Self::Inner) -> Self;
+    fn from_inner(inner: Self::Inner, extra: Self::Extra) -> Self;
 }
 
 pub trait AsAny {
@@ -225,8 +226,11 @@ pub trait Fetch: Send + Sync + FetchBytes {
 }
 
 trait FetchBytesExt: FetchBytes {
-    fn inner_cast<T: FromInner>(&self) -> Option<T> {
-        self.as_inner()?.downcast_ref().cloned().map(T::from_inner)
+    fn inner_cast<T: FromInner>(&self, extra: &T::Extra) -> Option<T> {
+        self.as_inner()?
+            .downcast_ref()
+            .cloned()
+            .map(|inner| T::from_inner(inner, extra.clone()))
     }
 }
 
@@ -294,8 +298,9 @@ pub struct RawPoint<T = Infallible, Extra = ()> {
 
 impl<T, Extra: 'static + Clone> FromInner for RawPoint<T, Extra> {
     type Inner = RawPointInner<Extra>;
+    type Extra = Extra;
 
-    fn from_inner(inner: Self::Inner) -> Self {
+    fn from_inner(inner: Self::Inner, extra: Self::Extra) -> Self {
         inner.cast()
     }
 }
@@ -312,7 +317,7 @@ impl<T, Extra: Clone> Clone for RawPoint<T, Extra> {
 impl<T, Extra: 'static + Clone> Point<T, Extra> {
     pub fn raw(self) -> RawPoint<T, Extra> {
         {
-            if let Some(raw) = self.origin.inner_cast() {
+            if let Some(raw) = self.origin.inner_cast(self.origin.extra()) {
                 return raw;
             }
         }
@@ -471,11 +476,14 @@ impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Point<T, Extra> {
     pub fn from_address_extra(address: Address, resolve: Arc<dyn Resolve>, extra: Extra) -> Self {
         Self::from_origin(
             address.hash,
-            Arc::new(ByAddress::from_inner(ByAddressInner {
-                address,
+            Arc::new(ByAddress::from_inner(
+                ByAddressInner {
+                    address,
+                    extra: extra.clone(),
+                    resolve,
+                },
                 extra,
-                resolve,
-            })),
+            )),
         )
     }
 }
@@ -504,8 +512,9 @@ struct ByAddress<T, Extra> {
 
 impl<T, Extra: 'static + Clone> FromInner for ByAddress<T, Extra> {
     type Inner = ByAddressInner<Extra>;
+    type Extra = Extra;
 
-    fn from_inner(inner: Self::Inner) -> Self {
+    fn from_inner(inner: Self::Inner, extra: Self::Extra) -> Self {
         Self {
             inner,
             _object: PhantomData,
