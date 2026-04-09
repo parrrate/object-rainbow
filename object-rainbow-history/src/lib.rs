@@ -452,3 +452,11 @@ impl<A: Apply<DiffA>, B: Apply<DiffB>, DiffA: Send, DiffB: Send> Apply<(DiffA, D
         async move { futures_util::try_join!(self.0.apply(a), self.1.apply(b)) }
     }
 }
+
+impl<T: Clone + Traversible + Apply<D>, D: Send> Apply<D> for Point<T> {
+    type Output = T::Output;
+
+    async fn apply(&mut self, diff: D) -> object_rainbow::Result<Self::Output> {
+        self.fetch_mut().await?.apply(diff).await
+    }
+}
