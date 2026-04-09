@@ -14,6 +14,7 @@ use std::{
 
 use object_rainbow::{
     Address, ByteNode, FailFuture, FetchBytes, Hash, Output, Resolve, Singular, Tagged, ToOutput,
+    Topological,
 };
 use object_rainbow_local_map::LocalMap;
 
@@ -215,3 +216,4 @@ impl ToOutput for MarshalledRoot {
 }
 
 impl Tagged for MarshalledRoot {}
+impl Topological for MarshalledRoot {}
