@@ -10,9 +10,14 @@ description = "serde_json for object-rainbow"
 
 [dependencies]
 object-rainbow = { workspace = true, features = ["serde"] }
-object-rainbow-point = { workspace = true, features = ["point-serialize"] }
+object-rainbow-point = { workspace = true, features = [
+    "point-serialize",
+], optional = true }
 
-futures-util = { version = "0.3.31" }
+futures-util = { version = "0.3.31", optional = true }
 serde = { version = "1.0.218", features = ["derive"] }
 serde_json = "1.0.140"
-thiserror = "2.0.17"
+thiserror = { version = "2.0.17", optional = true }
+
+[features]
+distributed = ["dep:object-rainbow-point", "dep:futures-util", "dep:thiserror"]

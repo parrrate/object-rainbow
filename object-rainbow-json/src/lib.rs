@@ -6,8 +6,10 @@ use object_rainbow::{
 };
 use serde::{Serialize, de::DeserializeOwned};
 
+#[cfg(feature = "distributed")]
 pub use self::distributed::{Distributed, DistributedParseError};
 
+#[cfg(feature = "distributed")]
 mod distributed;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
