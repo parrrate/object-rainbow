@@ -132,6 +132,7 @@ pub trait RainbowStoreMut: RainbowStore {
     }
     fn update_ref(&self, key: &str, hash: Hash) -> impl RainbowFuture<T = ()>;
     fn fetch_ref(&self, key: &str) -> impl RainbowFuture<T = Option<Hash>>;
+    fn ref_exists(&self, key: &str) -> impl RainbowFuture<T = bool>;
     fn create<T: Object>(
         &self,
         point: Point<T>,
