@@ -50,8 +50,13 @@ impl<T> Deref for Zt<T> {
 
 impl<T: ToOutput> ToOutput for Zt<T> {
     fn to_output(&self, output: &mut dyn Output) {
-        self.inner.data.to_output(output);
-        output.write(&[0]);
+        if output.is_mangling() {
+            self.inner.object.to_output(output);
+        }
+        if output.is_real() {
+            self.inner.data.to_output(output);
+            output.write(&[0]);
+        }
     }
 }
 
