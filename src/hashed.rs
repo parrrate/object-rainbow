@@ -2,7 +2,7 @@ use std::ops::Deref;
 
 use crate::*;
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash, Tagged)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash, Tagged, Default)]
 pub struct Hashed<T>(pub T);
 
 impl<T> Deref for Hashed<T> {
