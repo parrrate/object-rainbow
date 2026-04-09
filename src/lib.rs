@@ -299,27 +299,11 @@ impl<T, Extra: 'static + Send + Sync> Singular for RawPoint<T, Extra> {
     }
 }
 
-#[derive(ParseAsInline)]
+#[derive(ToOutput, ParseInline, ParseAsInline)]
 pub struct RawPoint<T = Infallible, Extra = ()> {
     inner: RawPointInner,
-    extra: Extra,
+    extra: Extras<Extra>,
     _object: PhantomData<fn() -> T>,
-}
-
-impl<T, I: PointInput> ParseInline<I> for RawPoint<T, I::Extra> {
-    fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        Ok(Self {
-            inner: input.parse_inline()?,
-            extra: input.extra().clone(),
-            _object: PhantomData,
-        })
-    }
-}
-
-impl<T, Extra> ToOutput for RawPoint<T, Extra> {
-    fn to_output(&self, output: &mut dyn Output) {
-        self.inner.to_output(output);
-    }
 }
 
 impl<T, Extra: 'static + Clone> FromInner for RawPoint<T, Extra> {
@@ -329,7 +313,7 @@ impl<T, Extra: 'static + Clone> FromInner for RawPoint<T, Extra> {
     fn from_inner(inner: Self::Inner, extra: Self::Extra) -> Self {
         RawPoint {
             inner,
-            extra,
+            extra: Extras(extra),
             _object: PhantomData,
         }
     }
@@ -363,7 +347,7 @@ impl<T, Extra: 'static + Clone> Point<T, Extra> {
 
 impl<T, Extra: 'static + Clone> RawPoint<T, Extra> {
     pub fn cast<U>(self) -> RawPoint<U, Extra> {
-        self.inner.cast(self.extra)
+        self.inner.cast(self.extra.0)
     }
 }
 
@@ -1478,6 +1462,32 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
         input.parse_collect()
     }
 }
+
+#[derive(Clone, ParseAsInline)]
+struct Extras<Extra>(Extra);
+
+impl<Extra> Deref for Extras<Extra> {
+    type Target = Extra;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<Extra> ToOutput for Extras<Extra> {
+    fn to_output(&self, _: &mut dyn Output) {}
+}
+
+impl<I: PointInput> ParseInline<I> for Extras<I::Extra> {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        Ok(Self(input.extra().clone()))
+    }
+}
+
+impl<Extra> Tagged for Extras<Extra> {}
+impl<Extra: 'static> Topological<Extra> for Extras<Extra> {}
+impl<Extra: 'static + Send + Sync + Clone> Object<Extra> for Extras<Extra> {}
+impl<Extra: 'static + Send + Sync + Clone> Inline<Extra> for Extras<Extra> {}
 
 pub trait Equivalent<T>: Sized {
     fn into_equivalent(self) -> T;
