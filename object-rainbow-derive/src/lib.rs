@@ -7,7 +7,7 @@ use syn::{
     parse_macro_input, parse_quote, parse_quote_spanned, spanned::Spanned, token::Comma,
 };
 
-use self::contains_generics::type_contains_generics;
+use self::contains_generics::{GContext, type_contains_generics};
 
 mod contains_generics;
 
@@ -46,12 +46,12 @@ pub fn derive_to_output(input: TokenStream) -> TokenStream {
 }
 
 fn bounds_to_output(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
-    let g = bounds_g(&generics);
+    let g = &bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
                 let ty = &f.ty;
-                if type_contains_generics(&g, ty) {
+                if type_contains_generics(GContext { g, points: false }, ty) {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
                             #ty: ::object_rainbow::ToOutput
@@ -64,7 +64,7 @@ fn bounds_to_output(mut generics: Generics, data: &Data) -> syn::Result<Generics
             for v in data.variants.iter() {
                 for f in v.fields.iter() {
                     let ty = &f.ty;
-                    if type_contains_generics(&g, ty) {
+                    if type_contains_generics(GContext { g, points: false }, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
                                 #ty: ::object_rainbow::ToOutput
@@ -177,12 +177,12 @@ pub fn derive_topological(input: TokenStream) -> TokenStream {
 }
 
 fn bounds_topological(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
-    let g = bounds_g(&generics);
+    let g = &bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
                 let ty = &f.ty;
-                if type_contains_generics(&g, ty) {
+                if type_contains_generics(GContext { g, points: true }, ty) {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
                             #ty: ::object_rainbow::Topological<__E>
@@ -195,7 +195,7 @@ fn bounds_topological(mut generics: Generics, data: &Data) -> syn::Result<Generi
             for v in data.variants.iter() {
                 for f in v.fields.iter() {
                     let ty = &f.ty;
-                    if type_contains_generics(&g, ty) {
+                    if type_contains_generics(GContext { g, points: true }, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
                                 #ty: ::object_rainbow::Topological<__E>
@@ -334,7 +334,7 @@ fn bounds_tagged(
     data: &Data,
     errors: &mut Vec<Error>,
 ) -> syn::Result<Generics> {
-    let g = bounds_g(&generics);
+    let g = &bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
@@ -349,7 +349,7 @@ fn bounds_tagged(
                 }
                 if !skip {
                     let ty = &f.ty;
-                    if type_contains_generics(&g, ty) {
+                    if type_contains_generics(GContext { g, points: false }, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
                                 #ty: ::object_rainbow::Tagged
@@ -373,7 +373,7 @@ fn bounds_tagged(
                     }
                     if !skip {
                         let ty = &f.ty;
-                        if type_contains_generics(&g, ty) {
+                        if type_contains_generics(GContext { g, points: false }, ty) {
                             generics.make_where_clause().predicates.push(
                                 parse_quote_spanned! { ty.span() =>
                                     #ty: ::object_rainbow::Tagged
@@ -518,7 +518,7 @@ pub fn derive_object(input: TokenStream) -> TokenStream {
 }
 
 fn bounds_object(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
-    let g = bounds_g(&generics);
+    let g = &bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             let last_at = data.fields.len().checked_sub(1).unwrap_or_default();
@@ -530,7 +530,7 @@ fn bounds_object(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
                 } else {
                     quote!(::object_rainbow::Inline<__E>)
                 };
-                if type_contains_generics(&g, ty) {
+                if type_contains_generics(GContext { g, points: true }, ty) {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
                             #ty: #tr
@@ -550,7 +550,7 @@ fn bounds_object(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
                     } else {
                         quote!(::object_rainbow::Inline<__E>)
                     };
-                    if type_contains_generics(&g, ty) {
+                    if type_contains_generics(GContext { g, points: true }, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
                                 #ty: #tr
@@ -590,12 +590,12 @@ pub fn derive_inline(input: TokenStream) -> TokenStream {
 }
 
 fn bounds_inline(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
-    let g = bounds_g(&generics);
+    let g = &bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
                 let ty = &f.ty;
-                if type_contains_generics(&g, ty) {
+                if type_contains_generics(GContext { g, points: true }, ty) {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
                             #ty: ::object_rainbow::Inline<__E>
@@ -608,7 +608,7 @@ fn bounds_inline(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
             for v in data.variants.iter() {
                 for f in v.fields.iter() {
                     let ty = &f.ty;
-                    if type_contains_generics(&g, ty) {
+                    if type_contains_generics(GContext { g, points: true }, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
                                 #ty: ::object_rainbow::Inline<__E>
@@ -646,7 +646,7 @@ pub fn derive_refless_object(input: TokenStream) -> TokenStream {
 }
 
 fn bounds_refless_object(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
-    let g = bounds_g(&generics);
+    let g = &bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             let last_at = data.fields.len().checked_sub(1).unwrap_or_default();
@@ -658,7 +658,7 @@ fn bounds_refless_object(mut generics: Generics, data: &Data) -> syn::Result<Gen
                 } else {
                     quote!(::object_rainbow::ReflessInline)
                 };
-                if type_contains_generics(&g, ty) {
+                if type_contains_generics(GContext { g, points: false }, ty) {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
                             #ty: #tr
@@ -678,7 +678,7 @@ fn bounds_refless_object(mut generics: Generics, data: &Data) -> syn::Result<Gen
                     } else {
                         quote!(::object_rainbow::ReflessInline)
                     };
-                    if type_contains_generics(&g, ty) {
+                    if type_contains_generics(GContext { g, points: false }, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
                                 #ty: #tr
@@ -715,12 +715,12 @@ pub fn derive_refless_inline(input: TokenStream) -> TokenStream {
 }
 
 fn bounds_refless_inline(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
-    let g = bounds_g(&generics);
+    let g = &bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
                 let ty = &f.ty;
-                if type_contains_generics(&g, ty) {
+                if type_contains_generics(GContext { g, points: false }, ty) {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
                             #ty: ::object_rainbow::ReflessInline
@@ -733,7 +733,7 @@ fn bounds_refless_inline(mut generics: Generics, data: &Data) -> syn::Result<Gen
             for v in data.variants.iter() {
                 for f in v.fields.iter() {
                     let ty = &f.ty;
-                    if type_contains_generics(&g, ty) {
+                    if type_contains_generics(GContext { g, points: false }, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
                                 #ty: ::object_rainbow::ReflessInline
@@ -789,12 +789,12 @@ fn bounds_size(
     data: &Data,
     size_arr: &proc_macro2::TokenStream,
 ) -> syn::Result<Generics> {
-    let g = bounds_g(&generics);
+    let g = &bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
                 let ty = &f.ty;
-                if type_contains_generics(&g, ty) {
+                if type_contains_generics(GContext { g, points: false }, ty) {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
                             #ty: ::object_rainbow::Size
@@ -807,7 +807,7 @@ fn bounds_size(
             for v in data.variants.iter() {
                 for f in v.fields.iter() {
                     let ty = &f.ty;
-                    if type_contains_generics(&g, ty) {
+                    if type_contains_generics(GContext { g, points: false }, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
                                 #ty: ::object_rainbow::Size
