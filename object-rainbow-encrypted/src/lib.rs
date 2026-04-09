@@ -88,7 +88,10 @@ struct InnerHeader<K> {
 }
 
 impl<K: Key> InnerHeader<K> {
-    fn with<T: Topological>(self, decrypted: T) -> object_rainbow::Result<Inner<K, T>> {
+    fn with<T: Topological + Tagged>(self, decrypted: T) -> object_rainbow::Result<Inner<K, T>> {
+        if self.tags != T::HASH {
+            return Err(object_rainbow::error_consistency!("tags mismatch"));
+        }
         let mut topology = TopoVec::new();
         let mut v = RawVisit {
             at: 0,
@@ -150,7 +153,7 @@ impl<K, D> FetchBytes for RawFetch<K, D> {
     }
 }
 
-impl<K: Key, D: Fetch<T: Topological>> Fetch for RawFetch<K, D> {
+impl<K: Key, D: Fetch<T: Topological + Tagged>> Fetch for RawFetch<K, D> {
     type T = Encrypted<K, D::T>;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
@@ -247,7 +250,7 @@ impl<K, D> FetchBytes for InnerFetch<K, D> {
     }
 }
 
-impl<K: Key, D: Fetch<T: Topological>> Fetch for InnerFetch<K, D> {
+impl<K: Key, D: Fetch<T: Topological + Tagged>> Fetch for InnerFetch<K, D> {
     type T = Encrypted<K, D::T>;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
