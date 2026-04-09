@@ -1,5 +1,7 @@
 use std::collections::BTreeMap;
 
+use futures_core::Stream;
+use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
     Fetch, Inline, Object, Parse, Point, SimpleObject, Tagged, ToOutput, Topological,
     length_prefixed::LpBytes,
@@ -23,7 +25,7 @@ impl<T> Default for Trie<T> {
     }
 }
 
-impl<T: Clone> Trie<T>
+impl<T: 'static + Send + Sync + Clone> Trie<T>
 where
     Option<T>: Inline,
 {
@@ -132,11 +134,55 @@ where
         }
         Ok(item)
     }
+
+    async fn prefix_yield(
+        &self,
+        context: &mut Vec<u8>,
+        key: &[u8],
+        co: &Co<(Vec<u8>, T), object_rainbow::Error>,
+    ) -> object_rainbow::Result<()> {
+        let Some((first, key)) = key.split_first() else {
+            if let Some(value) = self.value.clone() {
+                co.yield_((context.clone(), value)).await;
+            }
+            let len = context.len();
+            for (first, point) in &self.children {
+                context.truncate(len);
+                context.push(*first);
+                let (prefix, trie) = point.fetch().await?;
+                context.extend_from_slice(&prefix);
+                Box::pin(trie.prefix_yield(context, b"", co)).await?;
+            }
+            return Ok(());
+        };
+        context.push(*first);
+        let Some(point) = self.children.get(first) else {
+            return Ok(());
+        };
+        let (prefix, trie) = point.fetch().await?;
+        if prefix.starts_with(key) {
+            context.extend_from_slice(&prefix);
+            Box::pin(trie.prefix_yield(context, b"", co)).await?;
+            return Ok(());
+        }
+        let Some(key) = key.strip_prefix(prefix.as_slice()) else {
+            return Ok(());
+        };
+        Box::pin(trie.prefix_yield(context, key, co)).await
+    }
+
+    pub fn prefix_stream(
+        &self,
+        key: &[u8],
+    ) -> impl Stream<Item = object_rainbow::Result<(Vec<u8>, T)>> {
+        try_stream(async |co| self.prefix_yield(&mut Vec::new(), key, &co).await)
+    }
 }
 
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
+    use smol::stream::StreamExt;
     use smol_macros::test;
 
     use crate::Trie;
@@ -154,6 +200,41 @@ mod test {
         assert_eq!(trie.get(b"a").await?.unwrap(), 4);
         trie.insert(b"abce", 5).await?;
         assert_eq!(trie.get(b"abce").await?.unwrap(), 5);
+        assert_eq!(
+            trie.prefix_stream(b"")
+                .try_collect::<_, _, Vec<_>>()
+                .await?,
+            [
+                (b"a".into(), 4),
+                (b"ab".into(), 3),
+                (b"abc".into(), 1),
+                (b"abce".into(), 5),
+                (b"abd".into(), 2),
+            ],
+        );
+        assert_eq!(
+            trie.prefix_stream(b"a")
+                .try_collect::<_, _, Vec<_>>()
+                .await?,
+            [
+                (b"a".into(), 4),
+                (b"ab".into(), 3),
+                (b"abc".into(), 1),
+                (b"abce".into(), 5),
+                (b"abd".into(), 2),
+            ],
+        );
+        assert_eq!(
+            trie.prefix_stream(b"ab")
+                .try_collect::<_, _, Vec<_>>()
+                .await?,
+            [
+                (b"ab".into(), 3),
+                (b"abc".into(), 1),
+                (b"abce".into(), 5),
+                (b"abd".into(), 2),
+            ],
+        );
         assert_eq!(trie.remove(b"a").await?.unwrap(), 4);
         assert_eq!(trie.remove(b"ab").await?.unwrap(), 3);
         assert_eq!(trie.remove(b"abc").await?.unwrap(), 1);
