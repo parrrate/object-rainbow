@@ -1,6 +1,6 @@
 use crate::*;
 
-impl<T: ToOutput> ToOutput for Box<T> {
+impl<T: ?Sized + ToOutput> ToOutput for Box<T> {
     fn to_output(&self, output: &mut dyn Output) {
         (**self).to_output(output);
     }
@@ -18,7 +18,7 @@ impl<T: ParseInline<I>, I: ParseInput> ParseInline<I> for Box<T> {
     }
 }
 
-impl<T: Topological> Topological for Box<T> {
+impl<T: ?Sized + Topological> Topological for Box<T> {
     fn accept_points(&self, visitor: &mut impl PointVisitor) {
         (**self).accept_points(visitor);
     }
@@ -32,9 +32,8 @@ impl<T: Topological> Topological for Box<T> {
     }
 }
 
-impl<T: Tagged> Tagged for Box<T> {
+impl<T: ?Sized + Tagged> Tagged for Box<T> {
     const TAGS: Tags = T::TAGS;
-
     const HASH: Hash = T::HASH;
 }
 
@@ -50,12 +49,12 @@ impl<T: ReflessObject> ReflessObject for Box<T> {}
 
 impl<T: ReflessInline> ReflessInline for Box<T> {}
 
-impl<T: Size> Size for Box<T> {
+impl<T: ?Sized + Size> Size for Box<T> {
     const SIZE: usize = T::SIZE;
     type Size = T::Size;
 }
 
-impl<T: MaybeHasNiche> MaybeHasNiche for Box<T> {
+impl<T: ?Sized + MaybeHasNiche> MaybeHasNiche for Box<T> {
     type MnArray = T::MnArray;
 }
 
