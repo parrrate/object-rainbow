@@ -1,5 +1,8 @@
-use crate::map_extra::MapExtra;
+use crate::{map_extra::MapExtra, *};
 
+#[derive(
+    Debug, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Clone, Copy, Parse, ParseInline,
+)]
 pub struct WithoutHeader;
 
 impl<H: 'static + Clone, E: 'static + Clone> MapExtra<(H, E)> for WithoutHeader {
