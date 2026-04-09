@@ -634,14 +634,16 @@ fn bounds_object(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
 pub fn derive_inline(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
+    let generics = input.generics.clone();
+    let (_, ty_generics, _) = generics.split_for_impl();
     let generics = match bounds_inline(input.generics, &input.data) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let (impl_generics, _, where_clause) = generics.split_for_impl();
     let output = quote! {
         #[automatically_derived]
-        impl #impl_generics ::object_rainbow::Inline for #name #ty_generics #where_clause {}
+        impl #impl_generics ::object_rainbow::Inline<__E> for #name #ty_generics #where_clause {}
     };
     TokenStream::from(output)
 }
@@ -655,7 +657,7 @@ fn bounds_inline(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
                 if type_contains_generics(&g, ty) {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
-                            #ty: ::object_rainbow::Inline
+                            #ty: ::object_rainbow::Inline<__E>
                         },
                     );
                 }
@@ -668,7 +670,7 @@ fn bounds_inline(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
                     if type_contains_generics(&g, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
-                                #ty: ::object_rainbow::Inline
+                                #ty: ::object_rainbow::Inline<__E>
                             },
                         );
                     }
@@ -682,6 +684,7 @@ fn bounds_inline(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
             ));
         }
     }
+    generics.params.push(parse_quote!(__E: 'static));
     Ok(generics)
 }
 
