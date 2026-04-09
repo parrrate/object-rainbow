@@ -6,8 +6,8 @@ use std::{
 use futures_util::{Stream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    Fetch, Inline, Object, ObjectMarker, Parse, Point, Tagged, ToOutput, Topological, Traversible,
-    length_prefixed::LpBytes,
+    Fetch, Inline, Object, ObjectMarker, Parse, Point, ReflessObject, Tagged, ToOutput,
+    Topological, Traversible, length_prefixed::LpBytes,
 };
 
 #[derive(ToOutput, Tagged, Topological, Parse, Clone)]
@@ -332,6 +332,15 @@ impl<K, V> Default for TrieMap<K, V> {
             trie: Default::default(),
             key: Default::default(),
         }
+    }
+}
+
+impl<K: ReflessObject + AsRef<[u8]>, V: 'static + Send + Sync + Clone> TrieMap<K, V>
+where
+    Option<V>: Inline,
+{
+    pub async fn get(&self, key: &K) -> object_rainbow::Result<Option<V>> {
+        self.trie.get(key.as_ref()).await
     }
 }
 
