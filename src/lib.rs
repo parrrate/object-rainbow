@@ -695,16 +695,16 @@ impl ParseInput for Input<'_> {
     }
 }
 
-impl PointInput for Input<'_> {}
-
-impl Input<'_> {
+impl PointInput for Input<'_> {
     fn parse_address(&mut self) -> crate::Result<Address> {
         let hash = *self.parse_chunk()?;
         let index = self.index.get();
         self.index.set(index + 1);
         Ok(Address { hash, index })
     }
+}
 
+impl Input<'_> {
     fn parse_point<T: Object>(&mut self) -> crate::Result<Point<T>> {
         let address = self.parse_address()?;
         Ok(Point::from_address(address, self.resolve.clone()))
@@ -1300,7 +1300,9 @@ pub trait ParseInput: Sized {
     }
 }
 
-pub trait PointInput: ParseInput {}
+pub trait PointInput: ParseInput {
+    fn parse_address(&mut self) -> crate::Result<Address>;
+}
 
 impl<T: Sized + IntoIterator> RainbowIterator for T {}
 
