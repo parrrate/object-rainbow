@@ -9,12 +9,6 @@ impl ToOutput for bool {
     }
 }
 
-impl Topological for bool {
-    fn accept_points(&self, _: &mut impl PointVisitor) {}
-}
-
-impl Tagged for bool {}
-
 impl Size for bool {
     type Size = U1;
 }
@@ -49,6 +43,8 @@ impl<I: ParseInput> ParseInline<I> for bool {
     }
 }
 
+impl Topological for bool {}
+impl Tagged for bool {}
 impl Object for bool {}
 impl Inline for bool {}
 impl ReflessObject for bool {}
