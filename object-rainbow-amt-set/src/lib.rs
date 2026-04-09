@@ -4,7 +4,7 @@ use std::ops::{Add, Sub};
 
 use generic_array::{ArrayLength, GenericArray, sequence::Split};
 use object_rainbow::{
-    Enum, Hash, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged,
+    Enum, Fetch, Hash, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged,
     ToOutput, Topological, Traversible,
 };
 use object_rainbow_array_map::{ArrayMap, ArraySet};
@@ -21,6 +21,10 @@ trait Tree {
         key: GenericArray<u8, Self::N>,
     ) -> impl Future<Output = object_rainbow::Result<bool>>;
     fn from_pair(a: GenericArray<u8, Self::N>, b: GenericArray<u8, Self::N>) -> Self;
+    fn contains(
+        &self,
+        key: GenericArray<u8, Self::N>,
+    ) -> impl Future<Output = object_rainbow::Result<bool>>;
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
@@ -38,6 +42,11 @@ impl Tree for DeepestLeaf {
         let [a] = <[u8; 1]>::from(a);
         let [b] = <[u8; 1]>::from(b);
         Self([a, b].into())
+    }
+
+    async fn contains(&self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<bool> {
+        let [key] = <[u8; 1]>::from(key);
+        Ok(self.0.contains(key))
     }
 }
 
@@ -66,6 +75,13 @@ impl<T: Tree + Clone + Traversible> Tree for SubTree<T> {
 
     fn from_pair(a: GenericArray<u8, Self::N>, b: GenericArray<u8, Self::N>) -> Self {
         Self::SubTree(T::from_pair(a, b).point())
+    }
+
+    async fn contains(&self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<bool> {
+        match self {
+            SubTree::Leaf(existing) => Ok(*existing == key),
+            SubTree::SubTree(sub) => sub.fetch().await?.contains(key).await,
+        }
     }
 }
 
@@ -102,6 +118,16 @@ impl<
             Self([(a, SubTree::Leaf(rest_a)), (b, SubTree::Leaf(rest_b))].into())
         }
     }
+
+    async fn contains(&self, key: GenericArray<u8, Self::N>) -> object_rainbow::Result<bool> {
+        let (key, rest) = Split::<u8, U1>::split(key);
+        let [key] = <[u8; 1]>::from(key);
+        if let Some(sub) = self.0.get(key) {
+            sub.contains(rest).await
+        } else {
+            Ok(false)
+        }
+    }
 }
 
 mod private {
@@ -125,6 +151,13 @@ mod private {
 
                 fn from_pair(a: GenericArray<u8, Self::N>, b: GenericArray<u8, Self::N>) -> Self {
                     Self(Tree::from_pair(a, b))
+                }
+
+                fn contains(
+                    &self,
+                    key: GenericArray<u8, Self::N>,
+                ) -> impl Future<Output = object_rainbow::Result<bool>> {
+                    self.0.contains(key)
                 }
             }
         };
@@ -183,6 +216,14 @@ impl AmtSet {
             .fetch_mut()
             .await?
             .insert(hash.into_bytes().into())
+            .await
+    }
+
+    pub async fn contains(&self, hash: Hash) -> object_rainbow::Result<bool> {
+        self.0
+            .fetch()
+            .await?
+            .contains(hash.into_bytes().into())
             .await
     }
 }
