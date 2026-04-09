@@ -24,6 +24,8 @@ pub enum Error {
     /// Arbitrary fetching error.
     #[error(transparent)]
     Fetch(anyhow::Error),
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
     /// Data left after an [`Inline`] got parsed.
     #[error("extra input left")]
     ExtraInputLeft,
