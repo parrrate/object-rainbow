@@ -206,7 +206,7 @@ pub fn marshall(map: &LocalMap, root: Hash) -> MarshalledRoot {
                         at: d.len(),
                         of: hash,
                     });
-                    data.copy_from_slice(&u64::MAX.to_bytes());
+                    data.extend_from_slice(&u64::MAX.to_bytes());
                     stack.push(Action::SaveFull { hash });
                 }
             }
