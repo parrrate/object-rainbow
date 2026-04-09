@@ -11,3 +11,12 @@ authors.workspace = true
 object-rainbow.workspace = true
 object-rainbow-history.workspace = true
 object-rainbow-store.workspace = true
+
+[dev-dependencies]
+object-rainbow-history = { workspace = true, features = ["trie"] }
+object-rainbow-store-opendal.workspace = true
+object-rainbow-trie.workspace = true
+
+anyhow = "1.0.96"
+opendal = "0.55.0"
+smol = "2.0.2"
