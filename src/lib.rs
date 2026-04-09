@@ -15,6 +15,7 @@ pub use object_rainbow_derive::{
 };
 use sha2::{Digest, Sha256};
 
+pub mod enumtag;
 mod impls;
 pub mod numeric;
 mod sha2_const;
@@ -35,6 +36,10 @@ macro_rules! error_fetch {
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    #[error(transparent)]
+    Parse(anyhow::Error),
+    #[error(transparent)]
+    Fetch(anyhow::Error),
     #[error("extra input left")]
     ExtraInputLeft,
     #[error("end of input")]
@@ -43,10 +48,8 @@ pub enum Error {
     AddressOutOfBounds,
     #[error("hash resolution mismatch")]
     HashMismatch,
-    #[error(transparent)]
-    Parse(anyhow::Error),
-    #[error(transparent)]
-    Fetch(anyhow::Error),
+    #[error("discriminant overflow")]
+    DiscriminantOverflow,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
