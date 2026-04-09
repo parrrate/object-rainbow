@@ -79,7 +79,7 @@ impl<T: Clone + Traversible + InlineOutput + Default + Apply<D>, D: Clone + Trav
         Ok(())
     }
 
-    pub async fn can_forward(&self, other: &Self) -> object_rainbow::Result<()> {
+    pub async fn check_forward(&self, other: &Self) -> object_rainbow::Result<()> {
         other
             .0
             .diff(&self.0)
@@ -109,7 +109,7 @@ impl<T: Clone + Traversible + InlineOutput + Default + Apply<D>, D: Clone + Trav
     }
 
     pub async fn forward(&mut self, other: Self) -> object_rainbow::Result<()> {
-        self.can_forward(&other).await?;
+        self.check_forward(&other).await?;
         self.forward(other).await
     }
 
