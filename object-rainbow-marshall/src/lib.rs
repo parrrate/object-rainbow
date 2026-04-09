@@ -281,6 +281,10 @@ impl<T: Send + Sync + Clone> Fetch for Marshalled<T> {
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async move { Ok(self.object.clone()) })
     }
+
+    fn fetch_local(&self) -> Option<Self::T> {
+        Some(self.object.clone())
+    }
 }
 
 impl<T: Send + Sync> Singular for Marshalled<T> {
