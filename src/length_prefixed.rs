@@ -3,11 +3,7 @@ use std::ops::{Add, Deref, DerefMut};
 use generic_array::ArrayLength;
 use typenum::{Sum, U8, Unsigned, tarr};
 
-use crate::{
-    Error, Inline, MaybeHasNiche, NoNiche, Object, Parse, ParseAsInline, ParseInline, ParseInput,
-    ReflessInline, ReflessObject, Size, SomeNiche, Tagged, ToOutput, ToOutputExt, Topological,
-    ZeroNiche, ZeroNoNiche, numeric::Le,
-};
+use crate::{numeric::Le, *};
 
 #[derive(Topological, Tagged, Object, Inline, ReflessObject, ReflessInline, ParseAsInline)]
 pub struct Lp<T>(pub T);
@@ -65,7 +61,7 @@ impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Lp<T> {
 fn prefixed() {
     let a = Lp(vec![0, 1, 2]);
     let data = a.output::<Vec<u8>>();
-    let b = <Lp<Vec<u8>> as ReflessObject>::parse_slice(&data).unwrap();
+    let b = Lp::<Vec<u8>>::parse_slice_refless(&data).unwrap();
     assert_eq!(*a, *b);
 }
 

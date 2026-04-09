@@ -1,7 +1,7 @@
 extern crate self as object_rainbow;
 
 use std::{
-    any::Any,
+    any::{Any, TypeId},
     cell::Cell,
     convert::Infallible,
     future::ready,
@@ -77,6 +77,10 @@ pub enum Error {
     LenOutOfBounds,
     #[error(transparent)]
     Utf8(std::string::FromUtf8Error),
+    #[error("unknown extension")]
+    UnknownExtension,
+    #[error("wrong extension type")]
+    ExtensionType,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -181,12 +185,25 @@ impl<T> AsAny for T {
 
 pub trait Resolve: Send + Sync + AsAny {
     fn resolve(&self, address: Address) -> FailFuture<ByteNode>;
+    fn resolve_extension(&self, address: Address, typeid: TypeId) -> crate::Result<&dyn Any> {
+        let _ = address;
+        let _ = typeid;
+        Err(Error::UnknownExtension)
+    }
+    fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
+        let _ = typeid;
+        Err(Error::UnknownExtension)
+    }
 }
 
 pub trait FetchBytes: AsAny {
     fn fetch_bytes(&self) -> FailFuture<ByteNode>;
     fn as_inner(&self) -> Option<&dyn Any> {
         None
+    }
+    fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
+        let _ = typeid;
+        Err(Error::UnknownExtension)
     }
 }
 
@@ -203,7 +220,7 @@ pub trait Fetch: Send + Sync + FetchBytes {
     fn get_mut_finalize(&mut self) {}
 }
 
-trait FetchBytesExt: FetchBytes {
+pub trait FetchBytesExt: FetchBytes {
     fn inner_cast<T: FromInner>(&self) -> Option<T> {
         self.as_inner()?.downcast_ref().cloned().map(T::from_inner)
     }
@@ -307,6 +324,10 @@ impl FetchBytes for RawPointInner {
     fn fetch_bytes(&self) -> FailFuture<ByteNode> {
         self.origin.fetch_bytes()
     }
+
+    fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
+        self.origin.extension(typeid)
+    }
 }
 
 impl<T> FetchBytes for RawPoint<T> {
@@ -316,6 +337,10 @@ impl<T> FetchBytes for RawPoint<T> {
 
     fn as_inner(&self) -> Option<&dyn Any> {
         Some(&self.inner)
+    }
+
+    fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
+        self.inner.extension(typeid)
     }
 }
 
@@ -418,6 +443,10 @@ impl FetchBytes for ByAddressInner {
     fn fetch_bytes(&self) -> FailFuture<ByteNode> {
         self.resolve.resolve(self.address)
     }
+
+    fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
+        self.resolve.resolve_extension(self.address, typeid)
+    }
 }
 
 struct ByAddress<T> {
@@ -443,6 +472,10 @@ impl<T> FetchBytes for ByAddress<T> {
 
     fn as_inner(&self) -> Option<&dyn Any> {
         Some(&self.inner)
+    }
+
+    fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
+        self.inner.extension(typeid)
     }
 }
 
@@ -656,6 +689,17 @@ impl Input<'_> {
         let address = self.parse_address()?;
         Ok(RawPointInner::from_address(address, self.resolve.clone()))
     }
+
+    pub fn extension<T: Any>(&self) -> crate::Result<&T> {
+        self.resolve
+            .extension(TypeId::of::<T>())?
+            .downcast_ref()
+            .ok_or(Error::ExtensionType)
+    }
+
+    pub fn resolve(&self) -> Arc<dyn Resolve> {
+        self.resolve.clone()
+    }
 }
 
 pub trait ToOutput {
@@ -702,9 +746,7 @@ pub trait Tagged {
     const HASH: Hash = const { Self::TAGS.const_hash(sha2_const::Sha256::new()).finalize() };
 }
 
-pub trait Object:
-    'static + Sized + Send + Sync + ToOutput + Topological + Tagged + for<'a> Parse<Input<'a>>
-{
+pub trait ParseSlice: for<'a> Parse<Input<'a>> {
     fn parse_slice(data: &[u8], resolve: &Arc<dyn Resolve>) -> crate::Result<Self> {
         let input = Input {
             refless: ReflessInput { data },
@@ -714,13 +756,24 @@ pub trait Object:
         let object = Self::parse(input)?;
         Ok(object)
     }
+}
 
+impl<T: for<'a> Parse<Input<'a>>> ParseSlice for T {}
+
+pub trait Object:
+    'static + Sized + Send + Sync + ToOutput + Topological + Tagged + for<'a> Parse<Input<'a>>
+{
     fn full_hash(&self) -> Hash {
         let mut output = HashOutput::default();
         output.hasher.update(Self::HASH);
         output.hasher.update(self.topology_hash());
         output.hasher.update(self.data_hash());
         output.hash()
+    }
+
+    fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
+        let _ = typeid;
+        Err(Error::UnknownExtension)
     }
 }
 
@@ -799,6 +852,10 @@ impl<T> FetchBytes for Point<T> {
     fn fetch_bytes(&self) -> FailFuture<ByteNode> {
         self.origin.fetch_bytes()
     }
+
+    fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
+        self.origin.extension(typeid)
+    }
 }
 
 impl<T> Singular for Point<T> {
@@ -817,14 +874,19 @@ impl Topology for TopoVec {
     }
 }
 
-pub trait ReflessObject:
-    'static + Sized + Send + Sync + ToOutput + Tagged + for<'a> Parse<ReflessInput<'a>>
-{
-    fn parse_slice(data: &[u8]) -> crate::Result<Self> {
+pub trait ParseSliceRefless: for<'a> Parse<ReflessInput<'a>> {
+    fn parse_slice_refless(data: &[u8]) -> crate::Result<Self> {
         let input = ReflessInput { data };
         let object = Self::parse(input)?;
         Ok(object)
     }
+}
+
+impl<T: for<'a> Parse<ReflessInput<'a>>> ParseSliceRefless for T {}
+
+pub trait ReflessObject:
+    'static + Sized + Send + Sync + ToOutput + Tagged + for<'a> Parse<ReflessInput<'a>>
+{
 }
 
 pub trait ReflessInline: ReflessObject + for<'a> ParseInline<ReflessInput<'a>> {
@@ -984,10 +1046,12 @@ impl<T: Object + Clone> Fetch for LocalOrigin<T> {
     type T = T;
 
     fn fetch_full(&self) -> FailFuture<(Self::T, Arc<dyn Resolve>)> {
+        let extension = self.0.clone();
         Box::pin(ready(Ok((
             self.0.clone(),
             Arc::new(ByTopology {
                 topology: self.0.topology(),
+                extension: Box::new(extension),
             }) as _,
         ))))
     }
@@ -1005,19 +1069,36 @@ impl<T: Object + Clone> Fetch for LocalOrigin<T> {
     }
 }
 
-impl<T: Object> FetchBytes for LocalOrigin<T> {
+impl<T: Object + Clone> FetchBytes for LocalOrigin<T> {
     fn fetch_bytes(&self) -> FailFuture<ByteNode> {
+        let extension = self.0.clone();
         Box::pin(ready(Ok((
             self.0.output(),
             Arc::new(ByTopology {
                 topology: self.0.topology(),
+                extension: Box::new(extension),
             }) as _,
         ))))
+    }
+
+    fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
+        self.0.extension(typeid)
+    }
+}
+
+trait AsExtension {
+    fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any>;
+}
+
+impl<T: Object> AsExtension for T {
+    fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
+        self.extension(typeid)
     }
 }
 
 struct ByTopology {
     topology: TopoVec,
+    extension: Box<dyn Send + Sync + AsExtension>,
 }
 
 impl ByTopology {
@@ -1041,6 +1122,17 @@ impl Resolve for ByTopology {
             .map_err(ready)
             .map_err(Box::pin)
             .unwrap_or_else(|x| x)
+    }
+
+    fn resolve_extension(&self, address: Address, typeid: TypeId) -> crate::Result<&dyn Any> {
+        self.topology
+            .get(address.index)
+            .ok_or(Error::AddressOutOfBounds)?
+            .extension(typeid)
+    }
+
+    fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
+        self.extension.extension(typeid)
     }
 }
 
@@ -1222,6 +1314,10 @@ struct MapEquivalent<T, F> {
 impl<T, F> FetchBytes for MapEquivalent<T, F> {
     fn fetch_bytes(&self) -> FailFuture<ByteNode> {
         self.origin.fetch_bytes()
+    }
+
+    fn extension(&self, typeid: TypeId) -> crate::Result<&dyn Any> {
+        self.origin.extension(typeid)
     }
 }
 
