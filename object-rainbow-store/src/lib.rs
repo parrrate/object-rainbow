@@ -5,8 +5,8 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, Fetch, Hash, Object, ObjectHashes, OptionalHash, Point, PointVisitor, Resolve,
-    Singular, Topological, Traversible,
+    Address, Hash, Object, ObjectHashes, OptionalHash, Point, PointVisitor, Resolve, Singular,
+    SingularFetch, Topological, Traversible,
 };
 
 pub trait RainbowFuture: Send + Future<Output = object_rainbow::Result<Self::T>> {
@@ -66,10 +66,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
             Ok(point.with_resolve(self.resolve(), extra))
         }
     }
-    fn save_point(
-        &self,
-        point: &(impl Fetch<T: Traversible> + Singular),
-    ) -> impl RainbowFuture<T = ()> {
+    fn save_point(&self, point: &impl SingularFetch<T: Traversible>) -> impl RainbowFuture<T = ()> {
         async {
             if !self.contains(point.hash()).await? {
                 self.save_object(&point.fetch().await?).await?;
