@@ -8,13 +8,13 @@ pub trait HasOtherSign {
 
 type Os<T> = <T as HasOtherSign>::OtherSign;
 
-#[derive(ParseAsInline)]
+#[derive(ParseAsInline, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Ae<T>(pub T);
-#[derive(ParseAsInline)]
+#[derive(ParseAsInline, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Le<T>(pub T);
-#[derive(ParseAsInline)]
+#[derive(ParseAsInline, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Be<T>(pub T);
-#[derive(ParseAsInline)]
+#[derive(ParseAsInline, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Nz<T: NonZeroable>(pub T::Nz);
 
 pub trait NonZeroable {
