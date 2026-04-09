@@ -1085,6 +1085,7 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
     fn parse_vec_n(input: &mut I, n: usize) -> crate::Result<Vec<Self>> {
         (0..n).map(|_| input.parse_inline()).collect()
     }
+    /// Parse an array of `Self`. Customisable for optimisations.
     fn parse_array<const N: usize>(input: &mut I) -> crate::Result<[Self; N]> {
         let mut scratch = std::array::from_fn(|_| None);
         for item in scratch.iter_mut() {
