@@ -45,6 +45,8 @@ impl<T> ListPoints for Json<T> {}
 impl<T> Topological for Json<T> {}
 impl<T> Tagged for Json<T> {}
 
+impl InlineOutput for Json<()> {}
+
 impl Size for Json<()> {
     type Size = object_rainbow::typenum::consts::U4;
 }
