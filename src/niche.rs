@@ -164,34 +164,54 @@ impl<N: ArrayLength> Niche for ZeroNiche<N> {
 
 pub trait NicheOr: MaybeNiche {
     type NicheOr<U: NicheOr<N = Self::N>>: NicheOr<N = Self::N>;
+    fn index(index: usize) -> usize;
 }
 
 impl<N: Unsigned> NicheOr for NoNiche<N> {
     type NicheOr<U: NicheOr<N = Self::N>> = U;
+    fn index(index: usize) -> usize {
+        index + 1
+    }
 }
 
 impl<N: Unsigned + Add<T::N, Output: Unsigned>, T: MaybeNiche> NicheOr for AndNiche<N, T> {
     type NicheOr<U: NicheOr<N = Self::N>> = Self;
+    fn index(_: usize) -> usize {
+        0
+    }
 }
 
 impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, N: Unsigned> NicheOr for NicheAnd<T, N> {
     type NicheOr<U: NicheOr<N = Self::N>> = Self;
+    fn index(_: usize) -> usize {
+        0
+    }
 }
 
 impl<T: Niche<NeedsTag = B0>> NicheOr for SomeNiche<T> {
     type NicheOr<U: NicheOr<N = Self::N>> = Self;
+    fn index(_: usize) -> usize {
+        0
+    }
 }
 
 pub trait NicheFoldOr {
     type Or: NicheOr;
+    fn index() -> usize;
 }
 
 impl<T: MnArray<MaybeNiche: NicheOr>> NicheFoldOr for TArr<T, ATerm> {
     type Or = T::MaybeNiche;
+    fn index() -> usize {
+        0
+    }
 }
 
 impl<T: NicheOr, A: NicheFoldOr<Or: MaybeNiche<N = T::N>>> NicheFoldOr for TArr<T, A> {
     type Or = T::NicheOr<A::Or>;
+    fn index() -> usize {
+        T::index(A::index())
+    }
 }
 
 pub struct NicheFoldOrArray<T>(T);
