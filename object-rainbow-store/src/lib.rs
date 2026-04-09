@@ -23,7 +23,7 @@ struct StoreVisitor<'a, 'x, S: ?Sized> {
 }
 
 impl<'a, 'x, S: RainbowStore> PointVisitor for StoreVisitor<'a, 'x, S> {
-    fn visit<T: Traversible>(&mut self, point: &Point<T>) {
+    fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone)) {
         let point = point.clone();
         let store = self.store;
         self.futures.push(Box::pin(async move {

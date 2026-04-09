@@ -6,7 +6,7 @@ use std::{
 use async_executor::Executor;
 use flume::Sender;
 use futures_channel::oneshot;
-use object_rainbow::{Fetch, Hash, Point, PointVisitor, Singular, ToOutput, Traversible};
+use object_rainbow::{Hash, PointVisitor, SingularFetch, ToOutput, Traversible};
 use object_rainbow_local_map::LocalMap;
 
 type Dependency = Box<
@@ -39,7 +39,7 @@ struct DependencyVisitor<'v> {
 }
 
 impl<'v> PointVisitor for DependencyVisitor<'v> {
-    fn visit<T: Traversible>(&mut self, point: &Point<T>) {
+    fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone)) {
         if let btree_map::Entry::Vacant(e) = self.dependencies.entry(point.hash()) {
             let point = point.clone();
             e.insert(Box::new(move |context| {

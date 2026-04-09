@@ -713,7 +713,7 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for ByAddress<T, Extra
 }
 
 pub trait PointVisitor {
-    fn visit<T: Traversible>(&mut self, point: &Point<T>);
+    fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone));
 }
 
 pub struct ReflessInput<'d> {
@@ -1157,7 +1157,7 @@ impl<T: ?Sized + Singular + Fetch> SingularFetch for T {}
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
 impl PointVisitor for TopoVec {
-    fn visit<T: Traversible>(&mut self, point: &Point<T>) {
+    fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone)) {
         self.push(Arc::new(point.clone()));
     }
 }

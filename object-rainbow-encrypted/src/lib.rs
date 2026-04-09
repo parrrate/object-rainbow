@@ -192,7 +192,7 @@ impl<K: Key, P: Fetch<T: Traversible>> Fetch for Visited<K, P> {
 }
 
 impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, '_, K, V> {
-    fn visit<T: Traversible>(&mut self, decrypted: &Point<T>) {
+    fn visit<T: Traversible>(&mut self, decrypted: &(impl 'static + SingularFetch<T = T> + Clone)) {
         let decrypted = decrypted.clone();
         let encrypted = self.resolution.next().expect("length mismatch").clone();
         let point = Point::from_fetch(
@@ -479,7 +479,7 @@ impl<K: Key, T: FullHash> Fetch for Untyped<K, T> {
 }
 
 impl<K: Key> PointVisitor for ExtractResolution<'_, K> {
-    fn visit<T: Traversible>(&mut self, decrypted: &Point<T>) {
+    fn visit<T: Traversible>(&mut self, decrypted: &(impl 'static + SingularFetch<T = T> + Clone)) {
         let decrypted = decrypted.clone();
         let key = self.key.clone();
         self.extracted.push(Box::pin(async move {

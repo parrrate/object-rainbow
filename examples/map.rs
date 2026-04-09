@@ -7,7 +7,7 @@ use std::{
 
 use object_rainbow::{
     Address, ByteNode, FailFuture, Fetch, FullHash, Hash, Object, Point, PointVisitor, Resolve,
-    Singular, Traversible,
+    SingularFetch, Traversible,
 };
 use smol::{Executor, channel::Sender};
 
@@ -50,7 +50,7 @@ impl EventContext<'_> {
 }
 
 impl PointVisitor for EventVisitor<'_, '_> {
-    fn visit<T: Traversible>(&mut self, point: &object_rainbow::Point<T>) {
+    fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone)) {
         if !self.fetching.contains(&point.hash()) {
             self.fetching.insert(point.hash());
             let point = point.clone();
