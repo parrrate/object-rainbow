@@ -6,8 +6,8 @@ use std::{
 use futures_util::{Stream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    Fetch, Inline, Object, ObjectMarker, Parse, Point, ReflessObject, Tagged, ToOutput,
-    Topological, Traversible, length_prefixed::LpBytes,
+    Fetch, Inline, Object, ObjectMarker, Parse, ParseSliceRefless, Point, ReflessObject, Tagged,
+    ToOutput, Topological, Traversible, length_prefixed::LpBytes,
 };
 
 #[derive(ToOutput, Tagged, Topological, Parse, Clone)]
@@ -353,6 +353,15 @@ where
 
     pub async fn remove(&mut self, key: &K) -> object_rainbow::Result<Option<V>> {
         self.trie.remove(key.as_ref()).await
+    }
+
+    pub fn prefix_stream(
+        &self,
+        prefix: &[u8],
+    ) -> impl Send + Stream<Item = object_rainbow::Result<(K, V)>> {
+        self.trie
+            .prefix_stream(prefix)
+            .and_then(async |(key, value)| Ok((K::parse_slice_refless(&key)?, value)))
     }
 }
 
