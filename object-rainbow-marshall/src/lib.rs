@@ -120,6 +120,10 @@ impl Resolve for MarshalledInner {
             Ok(data)
         })
     }
+
+    fn try_resolve_local(&self, address: Address) -> object_rainbow::Result<Option<ByteNode>> {
+        self.resolve_node(address).map(Some)
+    }
 }
 
 impl Singular for MarshalledInner {
