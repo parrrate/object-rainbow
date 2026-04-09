@@ -66,7 +66,7 @@ impl LocalMap {
         }
     }
 
-    pub fn remove(&mut self, hash: Hash) -> Result<(), impl Iterator<Item = Hash>> {
+    pub fn remove(&mut self, hash: Hash) -> Result<(), impl use<> + Iterator<Item = Hash>> {
         if let Some(referenced_by) = self.referenced_by(hash) {
             return Err(referenced_by);
         }
