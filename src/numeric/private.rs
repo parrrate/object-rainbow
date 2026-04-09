@@ -15,6 +15,12 @@ pub struct Le<T>(pub T);
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Be<T>(pub T);
 
+impl<T> Le<T> {
+    pub const fn new(value: T) -> Self {
+        Self(value)
+    }
+}
+
 impl<T> From<T> for Be<T> {
     fn from(n: T) -> Self {
         Self(n)
