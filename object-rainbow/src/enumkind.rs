@@ -56,6 +56,7 @@ impl<T: UsizeTag, const MAX: usize> EnumTag<T, MAX> {
         self.0.to_usize()
     }
 
+    #[doc(hidden)]
     pub fn from_const<const N: usize>() -> Self {
         assert!(N < MAX);
         Self(UsizeTag::from_usize(N))
