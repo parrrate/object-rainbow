@@ -1,10 +1,14 @@
 use std::pin::Pin;
 
 use object_rainbow::{
-    Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseInline,
-    PointInput, PointVisitor, Size, Tagged, Tags, ToOutput, Topological, Traversible, assert_impl,
+    Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Output, Parse,
+    ParseInline, PointInput, PointVisitor, Size, Tagged, Tags, ToOutput, Topological, Traversible,
+    assert_impl,
+    inline_extra::InlineExtra,
+    map_extra::{MapExtra, MappedExtra},
+    without_header::WithoutHeader,
 };
-use object_rainbow_array_map::ArrayMap;
+use object_rainbow_array_map::KeyedArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
 
 type OptionFuture<'a, T> =
@@ -17,36 +21,615 @@ trait Amt<K> {
     fn get(&self, key: K) -> OptionFuture<'_, Self::V>;
 }
 
+type P1 = u8;
+type P2 = (P1, u8);
+type P3 = (P2, u8);
+type P4 = (P3, u8);
+type P5 = (P4, u8);
+type P6 = (P5, u8);
+type P7 = (P6, u8);
+type P8 = (P7, u8);
+type P9 = (P8, u8);
+type P10 = (P9, u8);
+type P11 = (P10, u8);
+type P12 = (P11, u8);
+type P13 = (P12, u8);
+type P14 = (P13, u8);
+type P15 = (P14, u8);
+type P16 = (P15, u8);
+type P17 = (P16, u8);
+type P18 = (P17, u8);
+type P19 = (P18, u8);
+type P20 = (P19, u8);
+type P21 = (P20, u8);
+type P22 = (P21, u8);
+type P23 = (P22, u8);
+type P24 = (P23, u8);
+type P25 = (P24, u8);
+type P26 = (P25, u8);
+type P27 = (P26, u8);
+type P28 = (P27, u8);
+type P29 = (P28, u8);
+type P30 = (P29, u8);
+type P31 = (P30, u8);
+type P32 = (P31, u8);
+
+type X32<E> = E;
+type X31<E> = (P1, E);
+type X30<E> = (P2, E);
+type X29<E> = (P3, E);
+type X28<E> = (P4, E);
+type X27<E> = (P5, E);
+type X26<E> = (P6, E);
+type X25<E> = (P7, E);
+type X24<E> = (P8, E);
+type X23<E> = (P9, E);
+type X22<E> = (P10, E);
+type X21<E> = (P11, E);
+type X20<E> = (P12, E);
+type X19<E> = (P13, E);
+type X18<E> = (P14, E);
+type X17<E> = (P15, E);
+type X16<E> = (P16, E);
+type X15<E> = (P17, E);
+type X14<E> = (P18, E);
+type X13<E> = (P19, E);
+type X12<E> = (P20, E);
+type X11<E> = (P21, E);
+type X10<E> = (P22, E);
+type X9<E> = (P23, E);
+type X8<E> = (P24, E);
+type X7<E> = (P25, E);
+type X6<E> = (P26, E);
+type X5<E> = (P27, E);
+type X4<E> = (P28, E);
+type X3<E> = (P29, E);
+type X2<E> = (P30, E);
+type X1<E> = (P31, E);
+type X0<E> = (P32, E);
+
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R1;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R2;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R3;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R4;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R5;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R6;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R7;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R8;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R9;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R10;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R11;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R12;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R13;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R14;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R15;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R16;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R17;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R18;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R19;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R20;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R21;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R22;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R23;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R24;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R25;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R26;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R27;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R28;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R29;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R30;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R31;
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+)]
+struct R32;
+
+impl<E: 'static + Clone> MapExtra<(u8, X32<E>)> for R32 {
+    type Mapped = X31<E>;
+
+    fn map_extra(&self, (key, extra): (u8, X32<E>)) -> Self::Mapped {
+        (key, extra)
+    }
+}
+
+macro_rules! rearrange {
+    ($xouter:ident, $router:ident, $xinner:ident) => {
+        impl<E: 'static + Clone> MapExtra<(u8, $xouter<E>)> for $router {
+            type Mapped = $xinner<E>;
+
+            fn map_extra(&self, (key, (prefix, extra)): (u8, $xouter<E>)) -> Self::Mapped {
+                ((prefix, key), extra)
+            }
+        }
+    };
+}
+
+rearrange!(X31, R31, X30);
+rearrange!(X30, R30, X29);
+rearrange!(X29, R29, X28);
+rearrange!(X28, R28, X27);
+rearrange!(X27, R27, X26);
+rearrange!(X26, R26, X25);
+rearrange!(X25, R25, X24);
+rearrange!(X24, R24, X23);
+rearrange!(X23, R23, X22);
+rearrange!(X22, R22, X21);
+rearrange!(X21, R21, X20);
+rearrange!(X20, R20, X19);
+rearrange!(X19, R19, X18);
+rearrange!(X18, R18, X17);
+rearrange!(X17, R17, X16);
+rearrange!(X16, R16, X15);
+rearrange!(X15, R15, X14);
+rearrange!(X14, R14, X13);
+rearrange!(X13, R13, X12);
+rearrange!(X12, R12, X11);
+rearrange!(X11, R11, X10);
+rearrange!(X10, R10, X9);
+rearrange!(X9, R9, X8);
+rearrange!(X8, R8, X7);
+rearrange!(X7, R7, X6);
+rearrange!(X6, R6, X5);
+rearrange!(X5, R5, X4);
+rearrange!(X4, R4, X3);
+rearrange!(X3, R3, X2);
+rearrange!(X2, R2, X1);
+rearrange!(X1, R1, X0);
+
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 /// what are you even doing at this point
-struct DeepestLeaf<V = ()>(ArrayMap<V>);
+struct DeepestLeaf<V = ()>(KeyedArrayMap<MappedExtra<MappedExtra<V, WithoutHeader>, R1>>);
 
 impl<V: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V> {
     type V = V;
 
     fn insert(&mut self, key: u8, value: Self::V) -> OptionFuture<'_, Self::V> {
-        Box::pin(async move { Ok(self.0.insert(key, value)) })
+        Box::pin(async move {
+            Ok(self
+                .0
+                .insert(key, MappedExtra(R1, MappedExtra(WithoutHeader, value)))
+                .map(|value| value.1.1))
+        })
     }
 
-    fn from_pair(a: (u8, Self::V), b: (u8, Self::V)) -> Self {
-        Self([a, b].into())
+    fn from_pair((ka, va): (u8, Self::V), (kb, vb): (u8, Self::V)) -> Self {
+        Self(KeyedArrayMap(
+            [
+                (ka, MappedExtra(R1, MappedExtra(WithoutHeader, va))),
+                (kb, MappedExtra(R1, MappedExtra(WithoutHeader, vb))),
+            ]
+            .into(),
+        ))
     }
 
     fn get(&self, key: u8) -> OptionFuture<'_, Self::V> {
-        Box::pin(async move { Ok(self.0.get(key).cloned()) })
+        Box::pin(async move { Ok(self.0.get(key).cloned().map(|value| value.1.1)) })
     }
 }
 
 #[derive(Enum, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline)]
 enum SubTree<T, K, V = <T as Amt<K>>::V> {
-    Leaf(K, V),
+    Leaf(MappedExtra<MappedExtra<MappedExtra<V, WithoutHeader>, WithoutHeader>, InlineExtra<K>>),
     SubTree(Point<T>),
 }
 
 impl<T, K: Clone, V: Clone> Clone for SubTree<T, K, V> {
     fn clone(&self) -> Self {
         match self {
-            Self::Leaf(key, value) => Self::Leaf(key.clone(), value.clone()),
+            Self::Leaf(mapped) => Self::Leaf(mapped.clone()),
             Self::SubTree(point) => Self::SubTree(point.clone()),
         }
     }
@@ -60,12 +643,14 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
     fn insert(&mut self, key: K, value: Self::V) -> OptionFuture<'_, Self::V> {
         Box::pin(async move {
             match self {
-                SubTree::Leaf(xkey, xvalue) => Ok(if *xkey != key {
-                    *self = Self::from_pair((xkey.clone(), xvalue.clone()), (key, value));
-                    None
-                } else {
-                    Some(std::mem::replace(xvalue, value))
-                }),
+                SubTree::Leaf(MappedExtra(InlineExtra(xkey), MappedExtra(_, xvalue))) => {
+                    Ok(if *xkey != key {
+                        *self = Self::from_pair((xkey.clone(), xvalue.1.clone()), (key, value));
+                        None
+                    } else {
+                        Some(std::mem::replace(&mut xvalue.1, value))
+                    })
+                }
                 SubTree::SubTree(sub) => sub.fetch_mut().await?.insert(key, value).await,
             }
         })
@@ -78,7 +663,9 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
     fn get(&self, key: K) -> OptionFuture<'_, Self::V> {
         Box::pin(async move {
             match self {
-                SubTree::Leaf(existing, value) => Ok((*existing == key).then(|| value.clone())),
+                SubTree::Leaf(MappedExtra(InlineExtra(existing), MappedExtra(_, value))) => {
+                    Ok((*existing == key).then(|| value.1.clone()))
+                }
                 SubTree::SubTree(sub) => sub.fetch().await?.get(key).await,
             }
         })
@@ -86,22 +673,25 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse)]
-struct SetNode<T, K, V = <T as Amt<K>>::V>(ArrayMap<SubTree<T, K, V>>);
+struct SetNode<T, K, R, V = <T as Amt<K>>::V>(KeyedArrayMap<MappedExtra<SubTree<T, K, V>, R>>);
 
-impl<T, K: Clone, V: Clone> Clone for SetNode<T, K, V> {
+impl<T, K: Clone, R: Clone, V: Clone> Clone for SetNode<T, K, R, V> {
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
 }
 
-impl<T, K, V> Default for SetNode<T, K, V> {
+impl<T, K, R, V> Default for SetNode<T, K, R, V> {
     fn default() -> Self {
         Self(Default::default())
     }
 }
 
-impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clone> Amt<(u8, K)>
-    for SetNode<T, K>
+impl<
+    T: Amt<K, V: Clone> + Clone + Traversible,
+    K: Send + Sync + PartialEq + Clone,
+    R: Send + Sync + Clone + Default,
+> Amt<(u8, K)> for SetNode<T, K, R>
 {
     type V = T::V;
 
@@ -110,7 +700,20 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
             if let Some(sub) = self.0.get_mut(key) {
                 sub.insert(rest, value).await
             } else {
-                assert!(self.0.insert(key, SubTree::Leaf(rest, value)).is_none());
+                assert!(
+                    self.0
+                        .insert(
+                            key,
+                            MappedExtra(
+                                R::default(),
+                                SubTree::Leaf(MappedExtra(
+                                    InlineExtra(rest),
+                                    MappedExtra(WithoutHeader, MappedExtra(WithoutHeader, value))
+                                ))
+                            )
+                        )
+                        .is_none()
+                );
                 Ok(None)
             }
         })
@@ -121,15 +724,42 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
         ((b, rest_b), value_b): ((u8, K), Self::V),
     ) -> Self {
         if a == b {
-            Self([(a, SubTree::from_pair((rest_a, value_a), (rest_b, value_b)))].into())
+            Self(KeyedArrayMap(
+                [(
+                    a,
+                    MappedExtra(
+                        R::default(),
+                        SubTree::from_pair((rest_a, value_a), (rest_b, value_b)),
+                    ),
+                )]
+                .into(),
+            ))
         } else {
-            Self(
+            Self(KeyedArrayMap(
                 [
-                    (a, SubTree::Leaf(rest_a, value_a)),
-                    (b, SubTree::Leaf(rest_b, value_b)),
+                    (
+                        a,
+                        MappedExtra(
+                            R::default(),
+                            SubTree::Leaf(MappedExtra(
+                                InlineExtra(rest_a),
+                                MappedExtra(WithoutHeader, MappedExtra(WithoutHeader, value_a)),
+                            )),
+                        ),
+                    ),
+                    (
+                        b,
+                        MappedExtra(
+                            R::default(),
+                            SubTree::Leaf(MappedExtra(
+                                InlineExtra(rest_b),
+                                MappedExtra(WithoutHeader, MappedExtra(WithoutHeader, value_b)),
+                            )),
+                        ),
+                    ),
                 ]
                 .into(),
-            )
+            ))
         }
     }
 
@@ -178,13 +808,15 @@ type K31 = (u8, K30);
 type K32 = (u8, K31);
 
 mod private {
+    use object_rainbow::ParseSliceExtra;
+
     use super::*;
     type N1<V = ()> = DeepestLeaf<V>;
 
     macro_rules! next_node {
-        ($prev:ident, $next:ident, $pk:ident, $k:ident) => {
+        ($prev:ident, $next:ident, $pk:ident, $k:ident, $r:ident, $x:ident) => {
             #[derive(Clone)]
-            pub struct $next<V = ()>(SetNode<$prev<V>, $pk, V>);
+            pub struct $next<V = ()>(SetNode<$prev<V>, $pk, $r, V>);
 
             impl<V> Default for $next<V> {
                 fn default() -> Self {
@@ -192,11 +824,19 @@ mod private {
                 }
             }
 
-            impl<V: ParseInline<I> + Inline<I::Extra>, I: PointInput<Extra: Send + Sync>> Parse<I>
-                for $next<V>
+            impl<
+                V: Inline<Extra>,
+                I: PointInput<Extra = $x<Extra>>,
+                Extra: 'static + Send + Sync + Clone,
+            > Parse<I> for $next<V>
             {
                 fn parse(input: I) -> object_rainbow::Result<Self> {
-                    Ok(Self(input.parse()?))
+                    let extra = &input.extra().clone();
+                    let resolve = input.resolve();
+                    let data = input.parse_all()?;
+                    Ok(Self(ParseSliceExtra::parse_slice_extra(
+                        &data, &resolve, extra,
+                    )?))
                 }
             }
 
@@ -240,37 +880,43 @@ mod private {
         };
     }
 
-    next_node!(N1, N2, K1, K2);
-    next_node!(N2, N3, K2, K3);
-    next_node!(N3, N4, K3, K4);
-    next_node!(N4, N5, K4, K5);
-    next_node!(N5, N6, K5, K6);
-    next_node!(N6, N7, K6, K7);
-    next_node!(N7, N8, K7, K8);
-    next_node!(N8, N9, K8, K9);
-    next_node!(N9, N10, K9, K10);
-    next_node!(N10, N11, K10, K11);
-    next_node!(N11, N12, K11, K12);
-    next_node!(N12, N13, K12, K13);
-    next_node!(N13, N14, K13, K14);
-    next_node!(N14, N15, K14, K15);
-    next_node!(N15, N16, K15, K16);
-    next_node!(N16, N17, K16, K17);
-    next_node!(N17, N18, K17, K18);
-    next_node!(N18, N19, K18, K19);
-    next_node!(N19, N20, K19, K20);
-    next_node!(N20, N21, K20, K21);
-    next_node!(N21, N22, K21, K22);
-    next_node!(N22, N23, K22, K23);
-    next_node!(N23, N24, K23, K24);
-    next_node!(N24, N25, K24, K25);
-    next_node!(N25, N26, K25, K26);
-    next_node!(N26, N27, K26, K27);
-    next_node!(N27, N28, K27, K28);
-    next_node!(N28, N29, K28, K29);
-    next_node!(N29, N30, K29, K30);
-    next_node!(N30, N31, K30, K31);
-    next_node!(N31, N32, K31, K32);
+    next_node!(N1, N2, K1, K2, R2, X2);
+    next_node!(N2, N3, K2, K3, R3, X3);
+    next_node!(N3, N4, K3, K4, R4, X4);
+    next_node!(N4, N5, K4, K5, R5, X5);
+    next_node!(N5, N6, K5, K6, R6, X6);
+    next_node!(N6, N7, K6, K7, R7, X7);
+    next_node!(N7, N8, K7, K8, R8, X8);
+    next_node!(N8, N9, K8, K9, R9, X9);
+    next_node!(N9, N10, K9, K10, R10, X10);
+    next_node!(N10, N11, K10, K11, R11, X11);
+    next_node!(N11, N12, K11, K12, R12, X12);
+    next_node!(N12, N13, K12, K13, R13, X13);
+    next_node!(N13, N14, K13, K14, R14, X14);
+    next_node!(N14, N15, K14, K15, R15, X15);
+    next_node!(N15, N16, K15, K16, R16, X16);
+    next_node!(N16, N17, K16, K17, R17, X17);
+    next_node!(N17, N18, K17, K18, R18, X18);
+    next_node!(N18, N19, K18, K19, R19, X19);
+    next_node!(N19, N20, K19, K20, R20, X20);
+    next_node!(N20, N21, K20, K21, R21, X21);
+    next_node!(N21, N22, K21, K22, R22, X22);
+    next_node!(N22, N23, K22, K23, R23, X23);
+    next_node!(N23, N24, K23, K24, R24, X24);
+    next_node!(N24, N25, K24, K25, R25, X25);
+    next_node!(N25, N26, K25, K26, R26, X26);
+    next_node!(N26, N27, K26, K27, R27, X27);
+    next_node!(N27, N28, K27, K28, R28, X28);
+    next_node!(N28, N29, K28, K29, R29, X29);
+    next_node!(N29, N30, K29, K30, R30, X30);
+    next_node!(N30, N31, K30, K31, R31, X31);
+    next_node!(N31, N32, K31, K32, R32, X32);
+
+    fn _test<E>(_: impl Object<X2<E>>) {}
+
+    fn __test<E: 'static + Send + Sync + Clone, V: Inline<E>>(x: SetNode<N1<V>, K1, R2, V>) {
+        _test::<E>(x);
+    }
 }
 
 #[derive(
