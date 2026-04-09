@@ -118,6 +118,7 @@ impl ReflessObject for LpBytes {}
 impl ReflessInline for LpBytes {}
 
 #[derive(Debug, Clone, ParseAsInline, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LpString(pub String);
 
 impl Deref for LpString {
