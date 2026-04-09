@@ -13,7 +13,9 @@ object-rainbow.workspace = true
 object-rainbow-array-map.workspace = true
 object-rainbow-point.workspace = true
 
-futures-util = { version = "0.3.31", default-features = false }
+futures-util = { version = "0.3.31", default-features = false, features = [
+    "std",
+] }
 genawaiter-try-stream = "0.1.0"
 serde = { version = "1.0.218", optional = true, features = ["derive"] }
 

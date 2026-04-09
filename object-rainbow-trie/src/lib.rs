@@ -52,10 +52,11 @@ impl<T> Default for Trie<T> {
 trait TrieChildren<Tr = Self>: Sized {
     fn c_get_mut(&mut self, key: u8) -> Option<&mut TriePoint<Tr>>;
     fn c_get(&self, key: u8) -> Option<&TriePoint<Tr>>;
+    fn c_contains(&self, key: u8) -> bool;
     fn c_insert(&mut self, key: u8, point: TriePoint<Tr>);
     fn c_empty(&self) -> bool;
     fn c_len(&self) -> usize;
-    fn c_remove(&mut self, key: u8);
+    fn c_remove(&mut self, key: u8) -> Option<TriePoint<Tr>>;
     fn c_range<'a>(
         &'a self,
         min_inclusive: u8,
@@ -64,6 +65,9 @@ trait TrieChildren<Tr = Self>: Sized {
     where
         Tr: 'a;
     fn c_pop_first(&mut self) -> Option<(u8, TriePoint<Tr>)>;
+    fn c_iter_mut<'a>(&'a mut self) -> impl Iterator<Item = (u8, &'a mut TriePoint<Tr>)>
+    where
+        Tr: 'a;
 }
 
 impl<T> TrieChildren for Trie<T> {
@@ -73,6 +77,10 @@ impl<T> TrieChildren for Trie<T> {
 
     fn c_get(&self, key: u8) -> Option<&TriePoint<Self>> {
         self.children.get(key)
+    }
+
+    fn c_contains(&self, key: u8) -> bool {
+        self.children.contains(key)
     }
 
     fn c_insert(&mut self, key: u8, point: TriePoint<Self>) {
@@ -87,8 +95,8 @@ impl<T> TrieChildren for Trie<T> {
         self.children.len()
     }
 
-    fn c_remove(&mut self, key: u8) {
-        self.children.remove(key);
+    fn c_remove(&mut self, key: u8) -> Option<TriePoint<Self>> {
+        self.children.remove(key)
     }
 
     fn c_range<'a>(
@@ -104,6 +112,13 @@ impl<T> TrieChildren for Trie<T> {
 
     fn c_pop_first(&mut self) -> Option<(u8, TriePoint<Self>)> {
         self.children.pop_first()
+    }
+
+    fn c_iter_mut<'a>(&'a mut self) -> impl Iterator<Item = (u8, &'a mut TriePoint<Self>)>
+    where
+        Self: 'a,
+    {
+        self.children.iter_mut()
     }
 }
 
@@ -229,6 +244,30 @@ where
             self.c_remove(*first);
         }
         Ok(item)
+    }
+
+    pub async fn append(&mut self, other: &mut Self) -> object_rainbow::Result<()> {
+        if let Some(value) = other.value.take() {
+            self.value = Some(value);
+        }
+        {
+            let mut futures = futures_util::stream::FuturesUnordered::new();
+            for (key, point) in self.c_iter_mut() {
+                if let Some(other) = other.c_remove(key) {
+                    futures.push(async move {
+                        let (mut other, key) = other.fetch().await?;
+                        Self::prepare_point(point, &key, async |trie| trie.append(&mut other).await)
+                            .await
+                    });
+                }
+            }
+            while futures.try_next().await?.is_some() {}
+        }
+        while let Some((key, point)) = other.c_pop_first() {
+            assert!(!self.c_contains(key));
+            self.c_insert(key, point);
+        }
+        Ok(())
     }
 
     async fn yield_all(
