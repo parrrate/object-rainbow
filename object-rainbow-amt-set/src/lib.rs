@@ -11,7 +11,7 @@ type OptionFuture<'a, T> =
     Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<Option<T>>>>>;
 type BoolFuture<'a> = Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<bool>>>>;
 
-trait Tree<K> {
+trait Amt<K> {
     type V: Send + Sync;
     fn insert(&mut self, key: K, value: Self::V) -> OptionFuture<'_, Self::V>;
     fn from_pair(a: (K, Self::V), b: (K, Self::V)) -> Self;
@@ -22,7 +22,7 @@ trait Tree<K> {
 /// what are you even doing at this point
 struct DeepestLeaf<V = ()>(ArrayMap<V>);
 
-impl<V: Send + Sync> Tree<u8> for DeepestLeaf<V> {
+impl<V: Send + Sync> Amt<u8> for DeepestLeaf<V> {
     type V = V;
 
     fn insert(&mut self, key: u8, value: Self::V) -> OptionFuture<'_, Self::V> {
@@ -39,7 +39,7 @@ impl<V: Send + Sync> Tree<u8> for DeepestLeaf<V> {
 }
 
 #[derive(Enum, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline)]
-enum SubTree<T, K, V = <T as Tree<K>>::V> {
+enum SubTree<T, K, V = <T as Amt<K>>::V> {
     Leaf(K, V),
     SubTree(Point<T>),
 }
@@ -53,7 +53,7 @@ impl<T, K: Clone, V: Clone> Clone for SubTree<T, K, V> {
     }
 }
 
-impl<T: Tree<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clone> Tree<K>
+impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clone> Amt<K>
     for SubTree<T, K>
 {
     type V = T::V;
@@ -87,7 +87,7 @@ impl<T: Tree<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Cl
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse)]
-struct SetNode<T, K, V = <T as Tree<K>>::V>(ArrayMap<SubTree<T, K, V>>);
+struct SetNode<T, K, V = <T as Amt<K>>::V>(ArrayMap<SubTree<T, K, V>>);
 
 impl<T, K: Clone, V: Clone> Clone for SetNode<T, K, V> {
     fn clone(&self) -> Self {
@@ -101,7 +101,7 @@ impl<T, K, V> Default for SetNode<T, K, V> {
     }
 }
 
-impl<T: Tree<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clone> Tree<(u8, K)>
+impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clone> Amt<(u8, K)>
     for SetNode<T, K>
 {
     type V = T::V;
@@ -192,7 +192,7 @@ mod private {
                 SetNode<$prev, $pk>,
             );
 
-            impl Tree<$k> for $next {
+            impl Amt<$k> for $next {
                 type V = ();
 
                 fn insert(&mut self, key: $k, value: Self::V) -> OptionFuture<'_, Self::V> {
@@ -200,7 +200,7 @@ mod private {
                 }
 
                 fn from_pair(a: ($k, Self::V), b: ($k, Self::V)) -> Self {
-                    Self(Tree::from_pair(a, b))
+                    Self(Amt::from_pair(a, b))
                 }
 
                 fn contains(&self, key: $k) -> BoolFuture<'_> {
@@ -337,17 +337,17 @@ mod test {
 
     #[apply(test!)]
     async fn test() -> object_rainbow::Result<()> {
-        let mut tree = AmtSet::default();
-        assert!(tree.insert(1u8.data_hash()).await?);
-        assert!(tree.contains(1u8.data_hash()).await?);
-        assert!(!tree.insert(1u8.data_hash()).await?);
-        assert!(tree.contains(1u8.data_hash()).await?);
-        assert!(tree.insert(2u8.data_hash()).await?);
-        assert!(tree.contains(1u8.data_hash()).await?);
-        assert!(tree.contains(2u8.data_hash()).await?);
-        assert!(!tree.insert(2u8.data_hash()).await?);
-        assert!(tree.contains(1u8.data_hash()).await?);
-        assert!(tree.contains(2u8.data_hash()).await?);
+        let mut set = AmtSet::default();
+        assert!(set.insert(1u8.data_hash()).await?);
+        assert!(set.contains(1u8.data_hash()).await?);
+        assert!(!set.insert(1u8.data_hash()).await?);
+        assert!(set.contains(1u8.data_hash()).await?);
+        assert!(set.insert(2u8.data_hash()).await?);
+        assert!(set.contains(1u8.data_hash()).await?);
+        assert!(set.contains(2u8.data_hash()).await?);
+        assert!(!set.insert(2u8.data_hash()).await?);
+        assert!(set.contains(1u8.data_hash()).await?);
+        assert!(set.contains(2u8.data_hash()).await?);
         Ok(())
     }
 }
