@@ -165,10 +165,12 @@ impl<T: Clone + Traversible + InlineOutput + Default + Apply<D>, D: Clone + Trav
 )]
 pub struct FromIter<T>(pub T);
 
-impl<T: Apply<D>, D: Send> Apply<Vec<D>> for FromIter<T> {
+impl<T: Apply<D>, D: Send, I: Send + IntoIterator<Item = D, IntoIter: Send>> Apply<I>
+    for FromIter<T>
+{
     type Output = Vec<T::Output>;
 
-    async fn apply(&mut self, diff: Vec<D>) -> object_rainbow::Result<Self::Output> {
+    async fn apply(&mut self, diff: I) -> object_rainbow::Result<Self::Output> {
         let mut output = Vec::new();
         for diff in diff {
             output.push(self.0.apply(diff).await?);
