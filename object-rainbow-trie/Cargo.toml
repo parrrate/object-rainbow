@@ -1,6 +1,6 @@
 [package]
 name = "object-rainbow-trie"
-version = "0.0.0-a.3"
+version = "0.0.0-a.4"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -13,6 +13,10 @@ object-rainbow.workspace = true
 
 futures-util = { version = "0.3.31", default-features = false }
 genawaiter-try-stream = "0.1.0"
+serde = { version = "1.0.218", optional = true, features = ["derive"] }
+
+[features]
+serde = ["dep:serde"]
 
 [dev-dependencies]
 macro_rules_attribute = "0.2.2"
