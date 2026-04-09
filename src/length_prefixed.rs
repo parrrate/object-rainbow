@@ -72,6 +72,7 @@ fn prefixed() {
 }
 
 #[derive(Debug, Clone, ParseAsInline, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LpBytes(pub Vec<u8>);
 
 impl Deref for LpBytes {
