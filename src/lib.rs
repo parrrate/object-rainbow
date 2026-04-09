@@ -697,6 +697,8 @@ impl<Extra> ParseInput for Input<'_, Extra> {
 }
 
 impl<Extra> PointInput for Input<'_, Extra> {
+    type Extra = Extra;
+
     fn parse_address(&mut self) -> crate::Result<Address> {
         let hash = *self.parse_chunk()?;
         let index = self.index.get();
@@ -1300,6 +1302,7 @@ pub trait ParseInput: Sized {
 }
 
 pub trait PointInput: ParseInput {
+    type Extra;
     fn parse_address(&mut self) -> crate::Result<Address>;
     fn resolve_arc_ref(&self) -> &Arc<dyn Resolve>;
     fn resolve(&self) -> Arc<dyn Resolve> {
