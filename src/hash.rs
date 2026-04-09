@@ -136,7 +136,7 @@ impl OptionalHash {
         self.get().unwrap()
     }
 
-    pub(crate) fn clear(&mut self) {
+    pub fn clear(&mut self) {
         *self = Self::NONE;
     }
 }
