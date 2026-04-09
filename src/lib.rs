@@ -246,14 +246,14 @@ impl<Extra> RawPointInner<Extra> {
     }
 }
 
-impl<Extra> RawPointInner<Extra> {
+impl<Extra: 'static + Send + Sync + Clone> RawPointInner<Extra> {
     pub fn from_address(address: Address, resolve: Arc<dyn Resolve>, extra: Extra) -> Self {
         Self {
             hash: address.hash,
-            extra,
+            extra: extra.clone(),
             origin: Arc::new(ByAddressInner {
                 address,
-                extra: (),
+                extra,
                 resolve,
             }),
         }
@@ -711,7 +711,7 @@ impl<Extra> ParseInput for Input<'_, Extra> {
     }
 }
 
-impl<Extra> PointInput for Input<'_, Extra> {
+impl<Extra: 'static + Send + Sync + Clone> PointInput for Input<'_, Extra> {
     type Extra = Extra;
 
     fn parse_address(&mut self) -> crate::Result<Address> {
@@ -1321,7 +1321,7 @@ pub trait ParseInput: Sized {
 }
 
 pub trait PointInput: ParseInput {
-    type Extra;
+    type Extra: 'static + Send + Sync + Clone;
     fn parse_address(&mut self) -> crate::Result<Address>;
     fn resolve_arc_ref(&self) -> &Arc<dyn Resolve>;
     fn resolve(&self) -> Arc<dyn Resolve> {
@@ -1334,10 +1334,7 @@ pub trait PointInput: ParseInput {
         let address = self.parse_address()?;
         Ok(Point::from_address(address, self.resolve()))
     }
-    fn parse_raw_point_inner(&mut self) -> crate::Result<RawPointInner<Self::Extra>>
-    where
-        Self::Extra: Clone,
-    {
+    fn parse_raw_point_inner(&mut self) -> crate::Result<RawPointInner<Self::Extra>> {
         let address = self.parse_address()?;
         Ok(RawPointInner::from_address(
             address,
