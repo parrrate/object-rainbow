@@ -14,7 +14,7 @@ use std::{
 };
 
 pub use anyhow::anyhow;
-use generic_array::{ArrayLength, GenericArray};
+use generic_array::{ArrayLength, GenericArray, functional::FunctionalSequence};
 pub use object_rainbow_derive::{
     Enum, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseAsInline, ParseInline, Size, Tagged,
     ToOutput, Topological,
@@ -1007,6 +1007,13 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
     }
     fn parse_array<const N: usize>(input: &mut I) -> crate::Result<[Self; N]> {
         let mut scratch = std::array::from_fn(|_| None);
+        for item in scratch.iter_mut() {
+            *item = Some(input.parse_inline()?);
+        }
+        Ok(scratch.map(Option::unwrap))
+    }
+    fn parse_generic_array<N: ArrayLength>(input: &mut I) -> crate::Result<GenericArray<Self, N>> {
+        let mut scratch = GenericArray::default();
         for item in scratch.iter_mut() {
             *item = Some(input.parse_inline()?);
         }
