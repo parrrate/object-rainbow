@@ -278,6 +278,15 @@ mod private {
 )]
 pub struct AmtMap<V>(Point<private::N32<V>>);
 
+assert_impl!(
+    impl<V, E> Inline<E> for AmtMap<V>
+    where
+        E: 'static + Send + Sync + Clone,
+        V: Inline<E>,
+    {
+    }
+);
+
 impl<V> Clone for AmtMap<V> {
     fn clone(&self) -> Self {
         Self(self.0.clone())
