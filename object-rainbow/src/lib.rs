@@ -864,6 +864,9 @@ impl<T: ReflessObject + InlineOutput + for<'a> ParseInline<ReflessInput<'a>>> Re
 
 pub trait Output {
     fn write(&mut self, data: &[u8]);
+    fn is_mangle(&self) -> bool {
+        false
+    }
 }
 
 impl Output for Vec<u8> {
