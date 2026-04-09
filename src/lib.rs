@@ -629,3 +629,7 @@ impl<T: Size + Inline> Fixed for T {}
 pub trait ReflessFixed: Size + ReflessInline {}
 
 impl<T: Size + ReflessInline> ReflessFixed for T {}
+
+impl<T: Size, const N: usize> Size for [T; N] {
+    const SIZE: usize = T::SIZE * N;
+}
