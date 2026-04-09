@@ -885,7 +885,7 @@ impl<T: Tagged, Extra> Tagged for Point<T, Extra> {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: Object> Object for Point<T> {}
+impl<T: Object<Extra>, Extra: 'static + Send + Sync + Clone> Object<Extra> for Point<T, Extra> {}
 
 impl<T, Extra> ToOutput for Point<T, Extra> {
     fn to_output(&self, output: &mut dyn Output) {
