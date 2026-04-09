@@ -412,20 +412,27 @@ pub fn derive_topological(input: TokenStream) -> TokenStream {
 #[derive(Debug, FromMeta)]
 #[darling(derive_syn_parse)]
 struct ContainerTopologyArgs {
+    #[darling(default)]
     recursive: bool,
+    #[darling(default)]
+    inline: bool,
 }
 
-fn parse_recursive(attrs: &[Attribute]) -> syn::Result<bool> {
+fn parse_recursive_inline(attrs: &[Attribute]) -> syn::Result<(bool, bool)> {
     let mut r = false;
+    let mut i = false;
     for attr in attrs {
         if attr_str(attr).as_deref() == Some("topology") {
-            let ContainerTopologyArgs { recursive } = attr.parse_args()?;
+            let ContainerTopologyArgs { recursive, inline } = attr.parse_args()?;
             if recursive {
                 r = true;
             }
+            if inline {
+                i = true;
+            }
         }
     }
-    Ok(r)
+    Ok((r, i))
 }
 
 #[derive(Debug, FromMeta)]
@@ -446,7 +453,7 @@ fn bounds_topological(
     name: &Ident,
     defs: &mut Vec<proc_macro2::TokenStream>,
 ) -> syn::Result<Generics> {
-    let recursive = parse_recursive(attrs)?;
+    let (recursive, inline) = parse_recursive_inline(attrs)?;
     let g = &bounds_g(&generics);
     let g_clone = generics.clone();
     let (impl_generics, ty_generics, where_clause) = g_clone.split_for_impl();
@@ -578,12 +585,21 @@ fn bounds_topological(
             ));
         }
     }
+    let output_bound = if inline {
+        quote! {
+            ::object_rainbow::InlineOutput
+        }
+    } else {
+        quote! {
+            ::object_rainbow::ToOutput
+        }
+    };
     if recursive {
         generics
             .make_where_clause()
             .predicates
             .push(parse_quote_spanned! { name.span() =>
-                Self: ::object_rainbow::ToOutput + ::object_rainbow::Tagged
+                Self: #output_bound + ::object_rainbow::Tagged
             });
     }
     Ok(generics)
@@ -1211,7 +1227,7 @@ fn bounds_parse(
     let this = quote_spanned! { name.span() =>
         #name #ty_generics
     };
-    let recursive = parse_recursive(attrs)?;
+    let (recursive, _) = parse_recursive_inline(attrs)?;
     let tr = |last| match (last, recursive) {
         (true, true) => {
             quote!(::object_rainbow::Parse<__I> + ::object_rainbow::Object<__I::Extra>)
@@ -1527,7 +1543,7 @@ fn bounds_parse_inline(
     data: &Data,
     attrs: &[Attribute],
 ) -> syn::Result<Generics> {
-    let recursive = parse_recursive(attrs)?;
+    let (recursive, _) = parse_recursive_inline(attrs)?;
     let tr = if recursive {
         quote!(::object_rainbow::ParseInline<__I> + ::object_rainbow::Inline<__I::Extra>)
     } else {
