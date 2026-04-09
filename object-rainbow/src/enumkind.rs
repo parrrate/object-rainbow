@@ -1,5 +1,6 @@
 use crate::*;
 
+/// Discriminant arithmetic glue to make `#[derive(Enum)]` function.
 pub trait UsizeTag: Sized {
     /// Used by [`EnumTag::from_const`].
     ///
