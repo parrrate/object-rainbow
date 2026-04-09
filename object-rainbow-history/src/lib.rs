@@ -240,3 +240,24 @@ impl<T: Forward<M::Inner>, M: MapDiff<Outer>, Outer: Send> Forward<Outer> for Ma
         async move { self.tree.forward(self.map.map(outer).await?).await }
     }
 }
+
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Size,
+    MaybeHasNiche,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+)]
+pub struct Sequential<First, Second> {
+    first: First,
+    second: Second,
+}
