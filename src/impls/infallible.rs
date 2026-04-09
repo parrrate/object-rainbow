@@ -12,3 +12,7 @@ impl Size for Infallible {
     type Size = U0;
     const SIZE: usize = 0;
 }
+
+impl MaybeHasNiche for Infallible {
+    type MnArray = SomeNiche<ZeroNiche<U0>>;
+}
