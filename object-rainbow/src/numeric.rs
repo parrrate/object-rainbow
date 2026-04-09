@@ -1,5 +1,6 @@
 mod private;
 
+/// Little-endian wrapper.
 pub type Le<T> = <T as private::AsLe>::Le;
 /// Big-endian wrapper.
 pub type Be<T> = <T as private::AsBe>::Be;
