@@ -1676,6 +1676,12 @@ impl<T: FullHash + Default> Point<T> {
     }
 }
 
+impl<T: Default + Traversible + Clone> Default for Point<T> {
+    fn default() -> Self {
+        T::default().point()
+    }
+}
+
 #[test]
 fn options() {
     type T0 = ();
