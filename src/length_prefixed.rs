@@ -24,7 +24,7 @@ impl<T> DerefMut for Lp<T> {
 
 impl<T: ToOutput> ToOutput for Lp<T> {
     fn to_output(&self, output: &mut dyn crate::Output) {
-        let data = self.0.output::<Vec<u8>>();
+        let data = self.0.vec();
         let len = data.len();
         let len = len as u64;
         assert_ne!(len, u64::MAX);
@@ -60,7 +60,7 @@ impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Lp<T> {
 #[test]
 fn prefixed() {
     let a = Lp(vec![0, 1, 2]);
-    let data = a.output::<Vec<u8>>();
+    let data = a.vec();
     let b = Lp::<Vec<u8>>::parse_slice_refless(&data).unwrap();
     assert_eq!(*a, *b);
 }

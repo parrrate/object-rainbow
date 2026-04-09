@@ -116,9 +116,9 @@ fn main() {
     println!("{}", Option::<Test<(), (), ()>>::SIZE);
     println!("{}", Option::<Stuff<()>>::SIZE);
     println!("{}", Option::<Stuff<bool>>::SIZE);
-    println!("{:?}", None::<Stuff<(bool, ())>>.output::<Vec<u8>>());
+    println!("{:?}", None::<Stuff<(bool, ())>>.vec());
     println!("{}", Option::<Either<bool, Option<Option<()>>>>::SIZE);
-    println!("{:?}", None::<Abc>.output::<Vec<u8>>());
-    println!("{:?}", None::<(bool, bool)>.output::<Vec<u8>>());
+    println!("{:?}", None::<Abc>.vec());
+    println!("{:?}", None::<(bool, bool)>.vec());
     Option::<Abc>::parse_slice_refless(&[1, 2]).unwrap();
 }

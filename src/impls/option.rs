@@ -198,27 +198,21 @@ impl<T, U: Equivalent<T>> Equivalent<Option<T>> for Option<U> {
 
 #[test]
 fn equivalent_to_bool() {
-    assert_eq!(
-        false.output::<Vec<u8>>(),
-        Option::from_equivalent(false).output::<Vec<u8>>(),
-    );
-    assert_eq!(
-        true.output::<Vec<u8>>(),
-        Option::from_equivalent(true).output::<Vec<u8>>(),
-    );
+    assert_eq!(false.vec(), Option::from_equivalent(false).vec());
+    assert_eq!(true.vec(), Option::from_equivalent(true).vec());
 }
 
 #[test]
 fn unit_none_is_1() {
-    assert_eq!(None::<()>.output::<Vec<u8>>(), [1]);
+    assert_eq!(None::<()>.vec(), [1]);
 }
 
 #[test]
 fn unit_none_none_is_2() {
-    assert_eq!(None::<Option<()>>.output::<Vec<u8>>(), [2]);
+    assert_eq!(None::<Option<()>>.vec(), [2]);
 }
 
 #[test]
 fn unit_none_none_none_is_3() {
-    assert_eq!(None::<Option<Option<()>>>.output::<Vec<u8>>(), [3]);
+    assert_eq!(None::<Option<Option<()>>>.vec(), [3]);
 }
