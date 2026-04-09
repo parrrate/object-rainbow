@@ -56,8 +56,8 @@ impl RainbowStoreMut for OpendalStore {
 
     async fn fetch_ref(&self, key: &str) -> object_rainbow::Result<Option<Hash>> {
         match self.operator.read(key).await {
-            Ok(value) => hex::decode(value.to_vec())
-                .map_err(|e| object_rainbow::error_parse!("{e}"))?
+            Ok(value) => value
+                .to_vec()
                 .as_slice()
                 .try_into()
                 .map_err(|e| object_rainbow::error_parse!("{e}"))
