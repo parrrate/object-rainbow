@@ -229,6 +229,10 @@ impl<
         *self.point.hash() != self.old
     }
 
+    pub fn is_new(&self) -> bool {
+        self.old == Hash::default()
+    }
+
     pub async fn save(&mut self) -> object_rainbow::Result<()> {
         if self.is_modified() {
             self.store.save_point(&self.point).await?;
