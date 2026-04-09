@@ -1,6 +1,6 @@
 [package]
 name = "object-rainbow-json"
-version = "0.0.0-a.13"
+version = "0.0.0-a.14"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -13,6 +13,6 @@ object-rainbow = { workspace = true }
 object-rainbow-point = { workspace = true, features = ["point-serialize"] }
 
 futures-util = { version = "0.3.31" }
-serde = "1.0.218"
+serde = { version = "1.0.218", features = ["derive"] }
 serde_json = "1.0.140"
 thiserror = "2.0.17"
