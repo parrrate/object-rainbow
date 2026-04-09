@@ -1191,7 +1191,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.51"
+version = "0.0.0-a.52"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1224,7 +1224,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-array-map"
-version = "0.0.0-a.5"
+version = "0.0.0-a.6"
 dependencies = [
  "bitvec",
  "object-rainbow",
@@ -1359,7 +1359,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-point"
-version = "0.0.0-a.5"
+version = "0.0.0-a.6"
 dependencies = [
  "futures-util",
  "object-rainbow",
@@ -1397,7 +1397,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-trie"
-version = "0.0.0-a.12"
+version = "0.0.0-a.13"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
