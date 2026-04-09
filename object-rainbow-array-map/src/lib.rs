@@ -110,6 +110,12 @@ impl<T> ArrayMap<T> {
             inner: self.map.iter(),
         }
     }
+
+    pub fn iter_mut(&mut self) -> EntriesMut<'_, T> {
+        EntriesMut {
+            inner: self.map.iter_mut(),
+        }
+    }
 }
 
 pub struct Range<'a, T> {
