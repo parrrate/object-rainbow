@@ -7,7 +7,7 @@ use object_rainbow::{
     Topological,
 };
 use object_rainbow_history::{
-    Compat, History, MappedDiff, Parallel, Sequential,
+    Compat, MappedDiff, Parallel, Sequential,
     remap::{MapToSet, MappedToSet},
 };
 use object_rainbow_trie::{TrieMap, TrieSet};
@@ -211,10 +211,11 @@ type MessagesByChannels =
 type MessagesByUsers = MappedDiff<Compat<TrieSet<MessageByUser>>, MappedToSet<MessageToUser>>;
 type Tree = Sequential<TrieMap<MessageId, Message>, Parallel<MessagesByChannels, MessagesByUsers>>;
 type Diff = (MessageId, Option<Message>);
+type History = object_rainbow_history::History<Tree, Diff>;
 
 #[apply(main!)]
 async fn main() -> object_rainbow::Result<()> {
-    let mut history = History::<Tree, Diff>::new();
+    let mut history = History::new();
     let channel = ChannelId(Ulid::new());
     let user = UserId(Ulid::new());
     let message = MessageId(Ulid::new());
