@@ -179,6 +179,9 @@ pub trait Resolve: Send + Sync + AsAny {
 
 pub trait FetchBytes: AsAny {
     fn fetch_bytes(&self) -> FailFuture<ByteNode>;
+    fn as_inner(&self) -> Option<&dyn Any> {
+        None
+    }
 }
 
 pub trait Fetch: Send + Sync + FetchBytes {
@@ -192,9 +195,6 @@ pub trait Fetch: Send + Sync + FetchBytes {
         None
     }
     fn get_mut_finalize(&mut self) {}
-    fn as_inner(&self) -> Option<&dyn Any> {
-        None
-    }
     fn as_raw_point(&self) -> Option<RawPoint<Self::T>> {
         self.as_inner()?
             .downcast_ref::<RawPointInner>()
@@ -265,6 +265,10 @@ impl<T> FetchBytes for RawPoint<T> {
     fn fetch_bytes(&self) -> FailFuture<ByteNode> {
         self.inner.fetch_bytes()
     }
+
+    fn as_inner(&self) -> Option<&dyn Any> {
+        Some(&self.inner)
+    }
 }
 
 impl<T: Object> Fetch for RawPoint<T> {
@@ -292,10 +296,6 @@ impl<T: Object> Fetch for RawPoint<T> {
                 Ok(object)
             }
         })
-    }
-
-    fn as_inner(&self) -> Option<&dyn Any> {
-        Some(&self.inner)
     }
 
     fn as_raw_point(&self) -> Option<RawPoint<Self::T>> {
