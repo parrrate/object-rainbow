@@ -35,6 +35,7 @@ pub trait Niche {
     type NeedsTag: Bit;
     /// Length in bytes.
     type N: ArrayLength;
+    /// Get the niche bytes.
     fn niche() -> GenericArray<u8, Self::N>;
     type Next;
 }
