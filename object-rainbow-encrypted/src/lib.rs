@@ -191,10 +191,11 @@ impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, '_, K, 
         let encrypted = self.resolution.next().expect("length mismatch").clone();
         let point = Point::from_fetch(
             encrypted.hash(),
-            Arc::new(Visited {
+            Visited {
                 decrypted,
                 encrypted,
-            }),
+            }
+            .into_dyn_fetch(),
         );
         self.visitor.visit(&point);
     }
@@ -504,8 +505,10 @@ impl<K: Key> PointVisitor for ExtractResolution<'_, K> {
         let key = self.key.clone();
         self.extracted.push(Box::pin(async move {
             let encrypted = encrypt_point(key.clone(), decrypted).await?;
-            let encrypted =
-                Point::from_fetch(encrypted.hash(), Arc::new(Untyped { key, encrypted }));
+            let encrypted = Point::from_fetch(
+                encrypted.hash(),
+                Untyped { key, encrypted }.into_dyn_fetch(),
+            );
             Ok(encrypted)
         }));
     }
@@ -523,10 +526,11 @@ pub async fn encrypt_point<K: Key, T: Traversible>(
             .clone();
         let point = Point::from_fetch(
             encrypted.hash(),
-            Arc::new(Visited {
+            Visited {
                 decrypted,
                 encrypted,
-            }),
+            }
+            .into_dyn_fetch(),
         );
         return Ok(point);
     }
