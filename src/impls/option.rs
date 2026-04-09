@@ -197,3 +197,18 @@ fn equivalent_to_bool() {
         Option::from_equivalent(true).output::<Vec<u8>>(),
     );
 }
+
+#[test]
+fn unit_none_is_1() {
+    assert_eq!(None::<()>.output::<Vec<u8>>(), [1]);
+}
+
+#[test]
+fn unit_none_none_is_2() {
+    assert_eq!(None::<Option<()>>.output::<Vec<u8>>(), [2]);
+}
+
+#[test]
+fn unit_none_none_none_is_3() {
+    assert_eq!(None::<Option<Option<()>>>.output::<Vec<u8>>(), [3]);
+}
