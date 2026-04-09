@@ -25,16 +25,18 @@ impl<T: ToOutput + TaggedOption> ToOutput for Option<T> {
     fn to_output(&self, output: &mut dyn Output) {
         match self {
             Some(value) => {
-                if T::TAGGED_OPTION {
+                if T::TAGGED_OPTION && output.is_real() {
                     output.write(&[0]);
                 }
                 value.to_output(output);
             }
             None => {
-                if T::TAGGED_OPTION {
-                    output.write(&[1]);
-                } else {
-                    output.write(T::none_data().as_ref());
+                if output.is_real() {
+                    if T::TAGGED_OPTION {
+                        output.write(&[1]);
+                    } else {
+                        output.write(T::none_data().as_ref());
+                    }
                 }
             }
         }
