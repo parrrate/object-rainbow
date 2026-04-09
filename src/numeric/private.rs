@@ -175,6 +175,8 @@ macro_rules! ae {
             }
         }
 
+        impl InlineOutput for Ae<$n> {}
+
         impl<I: ParseInput> ParseInline<I> for Ae<$n> {
             fn parse_inline(input: &mut I) -> crate::Result<Self> {
                 Ok(Self(<$n>::from_le_bytes(*input.parse_chunk()?)))
@@ -331,6 +333,9 @@ macro_rules! lebe {
             }
         }
 
+        impl InlineOutput for Le<$n> {}
+        impl InlineOutput for Be<$n> {}
+
         impl<I: ParseInput> ParseInline<I> for Le<$n> {
             fn parse_inline(input: &mut I) -> crate::Result<Self> {
                 Ok(Self(<$n>::from_le_bytes(*input.parse_chunk()?)))
@@ -452,6 +457,9 @@ macro_rules! float {
             }
         }
 
+        impl InlineOutput for Le<$n> {}
+        impl InlineOutput for Be<$n> {}
+
         impl<I: ParseInput> ParseInline<I> for Le<$n> {
             fn parse_inline(input: &mut I) -> crate::Result<Self> {
                 Ok(Self(<$n>::from_le_bytes(*input.parse_chunk()?)))
@@ -528,6 +536,8 @@ impl<T: NonZeroable + ToOutput> ToOutput for Nz<T> {
         T::from_nz(&self.0).to_output(output);
     }
 }
+
+impl<T: NonZeroable + InlineOutput> InlineOutput for Nz<T> {}
 
 impl<T: NonZeroable + ParseInline<I>, I: ParseInput> ParseInline<I> for Nz<T> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
