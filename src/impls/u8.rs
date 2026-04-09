@@ -6,7 +6,9 @@ impl ToOutput for u8 {
     fn to_output(&self, output: &mut dyn crate::Output) {
         output.write(&[*self]);
     }
+}
 
+impl InlineOutput for u8 {
     fn slice_to_output(slice: &[Self], output: &mut dyn crate::Output)
     where
         Self: Sized,
@@ -14,8 +16,6 @@ impl ToOutput for u8 {
         output.write(slice);
     }
 }
-
-impl InlineOutput for u8 {}
 
 impl<I: ParseInput> Parse<I> for u8 {
     fn parse(input: I) -> crate::Result<Self> {

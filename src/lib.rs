@@ -920,13 +920,6 @@ pub trait ToOutput {
         output.hash()
     }
 
-    fn slice_to_output(slice: &[Self], output: &mut dyn Output)
-    where
-        Self: Sized,
-    {
-        slice.iter_to_output(output);
-    }
-
     fn output<T: Output + Default>(&self) -> T {
         let mut output = T::default();
         self.to_output(&mut output);
@@ -939,7 +932,14 @@ pub trait ToOutput {
 }
 
 /// Marker trait indicating that [`ToOutput`] result cannot be extended.
-pub trait InlineOutput: ToOutput {}
+pub trait InlineOutput: ToOutput {
+    fn slice_to_output(slice: &[Self], output: &mut dyn Output)
+    where
+        Self: Sized,
+    {
+        slice.iter_to_output(output);
+    }
+}
 
 pub trait ListPoints {
     fn list_points(&self, f: &mut impl FnMut(Hash)) {
@@ -1520,7 +1520,7 @@ impl Output for ArrayOutput<'_> {
 trait RainbowIterator: Sized + IntoIterator {
     fn iter_to_output(self, output: &mut dyn Output)
     where
-        Self::Item: ToOutput,
+        Self::Item: InlineOutput,
     {
         self.into_iter().for_each(|item| item.to_output(output));
     }
