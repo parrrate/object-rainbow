@@ -712,11 +712,11 @@ impl ParseInput for ReflessInput<'_> {
         }
     }
 
-    fn parse_all<'a>(self) -> &'a [u8]
+    fn parse_all<'a>(self) -> crate::Result<&'a [u8]>
     where
         Self: 'a,
     {
-        self.data().expect("parsing after an error")
+        self.data()
     }
 
     fn empty(self) -> crate::Result<()> {
@@ -777,7 +777,7 @@ impl<Extra> ParseInput for Input<'_, Extra> {
         }
     }
 
-    fn parse_all<'a>(self) -> &'a [u8]
+    fn parse_all<'a>(self) -> crate::Result<&'a [u8]>
     where
         Self: 'a,
     {
@@ -1437,7 +1437,7 @@ pub trait ParseInput: Sized {
         Self: 'a;
     fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T>;
     fn parse_compare<T: ParseInline<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>>;
-    fn parse_all<'a>(self) -> &'a [u8]
+    fn parse_all<'a>(self) -> crate::Result<&'a [u8]>
     where
         Self: 'a;
     fn empty(self) -> crate::Result<()>;

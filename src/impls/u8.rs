@@ -27,7 +27,7 @@ impl<I: ParseInput> ParseInline<I> for u8 {
     }
 
     fn parse_vec(input: I) -> crate::Result<Vec<Self>> {
-        Ok(input.parse_all().into())
+        Ok(input.parse_all()?.into())
     }
 }
 
