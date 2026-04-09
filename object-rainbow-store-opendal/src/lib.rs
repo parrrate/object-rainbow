@@ -39,10 +39,6 @@ impl RainbowStore for OpendalStore {
             .map_err(object_rainbow::Error::io)
             .map(|b| b.to_bytes())
     }
-
-    fn name(&self) -> &str {
-        "opendal"
-    }
 }
 
 impl RainbowStoreMut for OpendalStore {

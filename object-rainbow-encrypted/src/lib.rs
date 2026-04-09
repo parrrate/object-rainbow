@@ -249,10 +249,6 @@ impl<K: Key> Resolve for Decrypt<K> {
             Ok(data)
         })
     }
-
-    fn name(&self) -> &str {
-        "decrypt"
-    }
 }
 
 impl<
