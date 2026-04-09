@@ -77,6 +77,8 @@ pub enum Error {
     Unimplemented,
     #[error("hash not found in the resolve")]
     HashNotFound,
+    #[error("interrupted")]
+    Interrupted,
 }
 
 impl Error {
@@ -120,6 +122,7 @@ impl Error {
             Error::ExtensionType => ErrorKind::Other,
             Error::Unimplemented => ErrorKind::Unsupported,
             Error::HashNotFound => ErrorKind::NotFound,
+            Error::Interrupted => ErrorKind::Interrupted,
         }
     }
 }
