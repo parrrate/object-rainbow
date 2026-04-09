@@ -281,11 +281,21 @@ impl<T, Extra: 'static + Send + Sync> Singular for RawPoint<T, Extra> {
     }
 }
 
-#[derive(ParseInline, ParseAsInline)]
+#[derive(ParseAsInline)]
 pub struct RawPoint<T = Infallible, Extra = ()> {
     inner: RawPointInner,
     extra: Extra,
     _object: PhantomData<fn() -> T>,
+}
+
+impl<T, I: PointInput> ParseInline<I> for RawPoint<T, I::Extra> {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        Ok(Self {
+            inner: input.parse_inline()?,
+            extra: input.extra().clone(),
+            _object: PhantomData,
+        })
+    }
 }
 
 impl<T, Extra> ToOutput for RawPoint<T, Extra> {
