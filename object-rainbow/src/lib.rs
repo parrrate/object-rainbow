@@ -47,6 +47,7 @@ pub mod incr_byte_niche;
 pub mod length_prefixed;
 mod niche;
 pub mod numeric;
+pub mod partial_byte_tag;
 mod sha2_const;
 pub mod zero_terminated;
 
