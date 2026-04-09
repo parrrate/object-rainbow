@@ -123,7 +123,7 @@ pub type FailFuture<'a, T> = Pin<Box<dyn 'a + Send + Future<Output = Result<T>>>
 
 pub type ByteNode = (Vec<u8>, Arc<dyn Resolve>);
 
-pub trait FromInner {
+trait FromInner {
     type Inner: 'static + Clone;
     type Extra: 'static + Clone;
 
