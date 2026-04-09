@@ -1331,6 +1331,7 @@ impl<T> Size for dyn ExtraFor<T> {
     const SIZE: usize = 0;
 }
 
+impl<T> InlineOutput for dyn ExtraFor<T> {}
 impl<T> ListHashes for dyn ExtraFor<T> {}
 impl<T> Topological for dyn ExtraFor<T> {}
 
