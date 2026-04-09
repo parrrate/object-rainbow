@@ -330,7 +330,7 @@ impl<T, Extra: 'static + Send + Sync> Singular for RawPoint<T, Extra> {
 }
 
 #[derive(ToOutput, Topological, Parse, ParseInline)]
-struct ObjectMarker<T: ?Sized> {
+pub struct ObjectMarker<T: ?Sized> {
     object: PhantomData<fn() -> T>,
 }
 
