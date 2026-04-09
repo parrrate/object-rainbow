@@ -3,7 +3,7 @@ use std::{ops::Deref, sync::Arc};
 use object_rainbow::{
     Address, ByteNode, Error, ExtractResolve, FailFuture, Fetch, FetchBytes, FullHash, Hash,
     ListPoints, Node, Object, Parse, ParseSliceExtra, Point, PointInput, PointVisitor, Resolve,
-    Singular, Tagged, ToOutput, Topological, Traversible, length_prefixed::Lp,
+    Singular, SingularFetch, Tagged, ToOutput, Topological, Traversible, length_prefixed::Lp,
 };
 
 #[derive(Clone)]
@@ -498,7 +498,7 @@ impl<K: Key> PointVisitor for ExtractResolution<'_, K> {
 
 pub async fn encrypt_point<K: Key, T: Traversible>(
     key: K,
-    decrypted: Point<T>,
+    decrypted: impl 'static + SingularFetch<T = T>,
 ) -> object_rainbow::Result<Point<Encrypted<K, T>>> {
     if let Some((address, decrypt)) = decrypted.extract_resolve::<Decrypt<K>>() {
         let encrypted = decrypt
