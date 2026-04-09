@@ -1,11 +1,13 @@
 use std::io::Write;
 
 use object_rainbow::{
-    Object, Output, Parse, ParseInput, ReflessObject, Tagged, ToOutput, Topological, error_parse,
+    MaybeHasNiche, Object, Output, Parse, ParseInput, ReflessObject, Size, SomeNiche, Tagged,
+    ToOutput, Topological, ZeroNiche, error_parse,
 };
 use serde::{Serialize, de::DeserializeOwned};
 
-pub struct Json<T>(T);
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+pub struct Json<T>(pub T);
 
 struct Writer<'a> {
     output: &'a mut dyn Output,
@@ -41,3 +43,11 @@ impl<T> Topological for Json<T> {}
 impl<T> Tagged for Json<T> {}
 impl<T: 'static + Send + Sync + Serialize + DeserializeOwned> Object for Json<T> {}
 impl<T: 'static + Send + Sync + Serialize + DeserializeOwned> ReflessObject for Json<T> {}
+
+impl Size for Json<()> {
+    type Size = object_rainbow::typenum::consts::U4;
+}
+
+impl MaybeHasNiche for Json<()> {
+    type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
+}
