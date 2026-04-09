@@ -715,15 +715,6 @@ impl<'d> ParseInput for ReflessInput<'d> {
         T::parse(input)
     }
 
-    fn parse_compare<T: Parse<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
-        let data = self.parse_n(n)?;
-        if data == c {
-            Ok(None)
-        } else {
-            self.reparse(data).map(Some)
-        }
-    }
-
     fn parse_all(self) -> crate::Result<Self::Data> {
         self.data()
     }
@@ -771,15 +762,6 @@ impl<'d, Extra> ParseInput for Input<'d, Extra> {
             extra: self.extra,
         };
         T::parse(input)
-    }
-
-    fn parse_compare<T: Parse<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
-        let data = self.parse_n(n)?;
-        if data == c {
-            Ok(None)
-        } else {
-            self.reparse(data).map(Some)
-        }
     }
 
     fn parse_all(self) -> crate::Result<Self::Data> {
@@ -1399,6 +1381,14 @@ pub trait ParseInput: Sized {
         Self: 'a;
     fn parse_n(&mut self, n: usize) -> crate::Result<Self::Data>;
     fn parse_until_zero(&mut self) -> crate::Result<Self::Data>;
+    fn parse_n_compare(&mut self, n: usize, c: &[u8]) -> crate::Result<Option<Self::Data>> {
+        let data = self.parse_n(n)?;
+        if *data == *c {
+            Ok(None)
+        } else {
+            Ok(Some(data))
+        }
+    }
     fn reparse<T: Parse<Self>>(&mut self, data: Self::Data) -> crate::Result<T>;
     fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
         let data = self.parse_n(n)?;
@@ -1408,7 +1398,11 @@ pub trait ParseInput: Sized {
         let data = self.parse_until_zero()?;
         self.reparse(data)
     }
-    fn parse_compare<T: Parse<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>>;
+    fn parse_compare<T: Parse<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
+        self.parse_n_compare(n, c)?
+            .map(|data| self.reparse(data))
+            .transpose()
+    }
     fn parse_all(self) -> crate::Result<Self::Data>;
     fn empty(self) -> crate::Result<()>;
     fn non_empty(self) -> crate::Result<Option<Self>>;
