@@ -223,13 +223,18 @@ impl RawPointInner {
     pub fn cast<T, Extra: 'static + Clone>(self, extra: Extra) -> RawPoint<T, Extra> {
         RawPoint::from_inner(self, extra)
     }
-}
 
-impl RawPointInner {
     pub fn from_address(address: Address, resolve: Arc<dyn Resolve>) -> Self {
         Self {
             hash: address.hash,
             origin: Arc::new(ByAddressInner { address, resolve }),
+        }
+    }
+
+    pub fn from_singular(singular: impl 'static + Singular) -> Self {
+        Self {
+            hash: singular.hash(),
+            origin: Arc::new(singular),
         }
     }
 }
