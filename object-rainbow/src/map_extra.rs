@@ -1,7 +1,17 @@
 use crate::*;
 
 #[derive(
-    Debug, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Clone, Copy, Size, MaybeHasNiche,
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Size,
+    MaybeHasNiche,
+    PartialEq,
 )]
 pub struct MappedExtra<T, M = ()>(pub M, pub T);
 
