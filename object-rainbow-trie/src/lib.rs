@@ -42,9 +42,15 @@ assert_impl!(
 
 impl<T> Default for Trie<T> {
     fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T> Trie<T> {
+    pub const fn new() -> Self {
         Self {
-            value: Default::default(),
-            children: Default::default(),
+            value: None,
+            children: ArrayMap::new(),
         }
     }
 }
