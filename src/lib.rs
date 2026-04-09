@@ -286,8 +286,8 @@ pub struct RawPoint<T = Infallible, Extra = ()> {
     _object: PhantomData<fn() -> T>,
 }
 
-impl<T> FromInner for RawPoint<T> {
-    type Inner = RawPointInner;
+impl<T, Extra: 'static + Clone> FromInner for RawPoint<T, Extra> {
+    type Inner = RawPointInner<Extra>;
 
     fn from_inner(inner: Self::Inner) -> Self {
         inner.cast()
