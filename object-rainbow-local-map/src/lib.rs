@@ -56,11 +56,19 @@ impl LocalMap {
         Ok(())
     }
 
-    pub fn remove(&mut self, hash: Hash) -> Result<(), impl Iterator<Item = Hash>> {
+    pub fn referenced_by(&self, hash: Hash) -> Option<impl use<> + Iterator<Item = Hash>> {
         if let Some(entry) = self.map.get(&hash)
             && !entry.referenced_by.is_empty()
         {
-            return Err(entry.referenced_by.clone().into_iter());
+            Some(entry.referenced_by.clone().into_iter())
+        } else {
+            None
+        }
+    }
+
+    pub fn remove(&mut self, hash: Hash) -> Result<(), impl Iterator<Item = Hash>> {
+        if let Some(referenced_by) = self.referenced_by(hash) {
+            return Err(referenced_by);
         }
         let mut map = self.map.clone();
         if let Some(Entry { inner, .. }) = self.map.remove(&hash) {
