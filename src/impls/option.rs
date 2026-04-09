@@ -1,7 +1,7 @@
 use std::ops::Add;
 
 use generic_array::{ArrayLength, GenericArray};
-use typenum::{B0, B1, Bit};
+use typenum::{B0, B1, Bit, ToInt, U2};
 
 use crate::*;
 
@@ -45,14 +45,14 @@ impl<
     type Size = N;
 }
 
-pub struct OptionNiche<N>(N);
+pub struct OptionNiche<N, K>(N, K);
 
-impl<N: ArrayLength> Niche for OptionNiche<N> {
+impl<N: ArrayLength, K: ToInt<u8>> Niche for OptionNiche<N, K> {
     type NeedsTag = B0;
     type N = N;
     fn niche() -> GenericArray<u8, Self::N> {
         let mut niche = GenericArray::default();
-        niche[0] = 2;
+        niche[0] = K::INT;
         niche
     }
     type Next = NoNiche<ZeroNoNiche<N>>;
@@ -68,7 +68,7 @@ impl OptionNicheWrapper for B0 {
 
 impl OptionNicheWrapper for B1 {
     type Wrap<Mn: Niche<NeedsTag = Self, N: Add<Self, Output: ArrayLength>>> =
-        SomeNiche<OptionNiche<<<Mn as Niche>::N as Add<Self>>::Output>>;
+        SomeNiche<OptionNiche<<<Mn as Niche>::N as Add<Self>>::Output, U2>>;
 }
 
 impl<
