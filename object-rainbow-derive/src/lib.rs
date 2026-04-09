@@ -1073,6 +1073,27 @@ fn gen_tags(data: &Data, attrs: &[Attribute], errors: &mut Vec<Error>) -> proc_m
     }
 }
 
+/// ```rust
+/// use object_rainbow::Size;
+///
+/// #[derive(Size)]
+/// struct Three<A, B, C> {
+///     a: A,
+///     b: B,
+///     c: C,
+/// }
+///
+/// object_rainbow::assert_impl!(
+///     impl<A, B, C> Size for Three<A, B, C>
+///     where
+///         A: Size<Size = typenum::U2>,
+///         B: Size<Size = typenum::U3>,
+///         C: Size<Size = typenum::U7>,
+///     {}
+/// );
+///
+/// assert_eq!(Three::<[u8; 2], [u8; 3], [u8; 7]>::SIZE, 12);
+/// ```
 #[proc_macro_derive(Size)]
 pub fn derive_size(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
