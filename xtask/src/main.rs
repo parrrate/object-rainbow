@@ -43,6 +43,7 @@ impl Bound {
             bound: self,
             n,
             prefix: "",
+            suffix: "".into(),
         }
     }
 }
@@ -53,11 +54,17 @@ struct Header {
     bound: Bound,
     n: usize,
     prefix: &'static str,
+    suffix: String,
 }
 
 impl Header {
     fn prefix(mut self, prefix: &'static str) -> Self {
         self.prefix = prefix;
+        self
+    }
+
+    fn suffix(mut self, suffix: impl Display) -> Self {
+        self.suffix = suffix.to_string();
         self
     }
 }
@@ -75,7 +82,7 @@ impl Display for Header {
             write!(f, "{c}, ")?;
         }
         write!(f, "{last}")?;
-        write!(f, ")")?;
+        write!(f, ") {}", self.suffix)?;
         Ok(())
     }
 }
@@ -147,6 +154,36 @@ impl Display for ParseMethod {
         writeln!(f, "            {arg}.{}()?,", self.last)?;
         writeln!(f, "        ))")?;
         writeln!(f, "    }}")?;
+        Ok(())
+    }
+}
+
+struct WhereFoldAdd {
+    n: usize,
+}
+
+impl Display for WhereFoldAdd {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "where tarr![")?;
+        for c in LETTERS.iter().take(self.n) {
+            write!(f, "{c},")?;
+        }
+        write!(f, "]: typenum::FoldAdd<Output: Unsigned>")?;
+        Ok(())
+    }
+}
+
+struct SizeFoldAdd {
+    n: usize,
+}
+
+impl Display for SizeFoldAdd {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "type Size = <tarr![")?;
+        for c in LETTERS.iter().take(self.n) {
+            write!(f, "{c},")?;
+        }
+        writeln!(f, "] as typenum::FoldAdd>::Output;")?;
         Ok(())
     }
 }
@@ -267,8 +304,11 @@ fn per_n(n: usize) -> String {
             members: vec![],
         },
         Impl {
-            header: "Size".bound().header(n),
-            members: vec![Box::new("SIZE".co().add(n, "usize"))],
+            header: "Size".bound().header(n).suffix(WhereFoldAdd { n }),
+            members: vec![
+                Box::new("SIZE".co().add(n, "usize")),
+                Box::new(SizeFoldAdd { n }),
+            ],
         },
         Impl {
             header: "ParseInline<II>"
@@ -298,6 +338,8 @@ fn per_n(n: usize) -> String {
 }
 
 fn main() {
+    println!("use typenum::tarr;");
+    println!();
     println!("use crate::*;");
     println!();
 

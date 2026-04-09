@@ -38,4 +38,5 @@ impl<T: ReflessInline> ReflessInline for (T,) {}
 
 impl<T: Size> Size for (T,) {
     const SIZE: usize = T::SIZE;
+    type Size = T::Size;
 }
