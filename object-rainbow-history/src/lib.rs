@@ -33,9 +33,8 @@ pub trait Diff<Tree: Send>: Send {
     fn forward(self, tree: Tree) -> impl Send + Future<Output = object_rainbow::Result<Tree>>;
 }
 
-impl<T: Send + Clone + Default, D: Clone + Diff<T>> History<T, D>
-where
-    (T, D): Traversible,
+impl<T: Clone + Traversible + InlineOutput + Default, D: Clone + Traversible + Diff<T>>
+    History<T, D>
 {
     pub async fn commit(&mut self, diff: D) -> object_rainbow::Result<()> {
         let tree = self
