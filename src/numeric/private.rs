@@ -11,7 +11,7 @@ type Os<T> = <T as HasOtherSign>::OtherSign;
 #[derive(ParseAsInline, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Le<T>(pub T);
-#[derive(ParseAsInline, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[derive(ParseAsInline, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Be<T>(pub T);
 
