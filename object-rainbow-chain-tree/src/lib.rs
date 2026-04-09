@@ -42,6 +42,8 @@ impl<T: Clone + Traversible> ChainNode<T> {
     }
 }
 
+pub struct ChainHandle<T>(Option<ChainNode<T>>);
+
 #[derive(
     ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Size, MaybeHasNiche,
 )]
