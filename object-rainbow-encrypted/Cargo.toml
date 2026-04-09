@@ -1,6 +1,6 @@
 [package]
 name = "object-rainbow-encrypted"
-version = "0.0.0-a.11"
+version = "0.0.0-a.12"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -12,11 +12,11 @@ description = "encryption for object-rainbow"
 object-rainbow.workspace = true
 object-rainbow-point.workspace = true
 
+anyhow = "1.0.96"
 futures-util = { version = "0.3.31" }
 
 [dev-dependencies]
-anyhow = "1.0.96"
-chacha20poly1305 = "0.10.1"
+chacha20poly1305 = { version = "0.10.1", features = ["std"] }
 hex = "0.4.3"
 sha2 = "0.10.8"
 smol = "2.0.2"

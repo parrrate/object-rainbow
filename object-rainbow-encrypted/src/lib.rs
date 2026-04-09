@@ -8,8 +8,9 @@ use object_rainbow::{
 use object_rainbow_point::{ExtractResolve, IntoPoint, Point};
 
 pub trait Key: 'static + Sized + Send + Sync + Clone {
+    type Error: Into<anyhow::Error>;
     fn encrypt(&self, data: &[u8]) -> Vec<u8>;
-    fn decrypt(&self, data: &[u8]) -> object_rainbow::Result<Vec<u8>>;
+    fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>, Self::Error>;
 }
 
 type Resolution<K> = Arc<Lp<Vec<Point<Encrypted<K, Vec<u8>>>>>>;
@@ -381,7 +382,10 @@ impl<
     fn parse(input: I) -> object_rainbow::Result<Self> {
         let with_key = input.extra().parts();
         let resolve = input.resolve().clone();
-        let source = with_key.0.decrypt(&input.parse_all()?)?;
+        let source = with_key
+            .0
+            .decrypt(&input.parse_all()?)
+            .map_err(object_rainbow::Error::consistency)?;
         let EncryptedInner {
             resolution,
             decrypted,

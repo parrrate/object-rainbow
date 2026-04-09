@@ -8,7 +8,6 @@ use std::{
 use chacha20poly1305::{ChaCha20Poly1305, aead::Aead};
 use object_rainbow::{
     ByteNode, FailFuture, Fetch, Hash, Object, PointVisitor, Resolve, SingularFetch, Traversible,
-    error_consistency,
 };
 use object_rainbow_encrypted::{Key, encrypt_point};
 use object_rainbow_point::{IntoPoint, Point};
@@ -19,6 +18,8 @@ use smol::{Executor, channel::Sender};
 struct Test([u8; 32]);
 
 impl Key for Test {
+    type Error = chacha20poly1305::Error;
+
     fn encrypt(&self, data: &[u8]) -> Vec<u8> {
         println!("encrypt");
         let cipher = {
@@ -38,14 +39,12 @@ impl Key for Test {
         [nonce, encrypted.as_slice()].concat()
     }
 
-    fn decrypt(&self, data: &[u8]) -> object_rainbow::Result<Vec<u8>> {
+    fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>, Self::Error> {
         let cipher = {
             use chacha20poly1305::KeyInit;
             ChaCha20Poly1305::new(&self.0.into())
         };
-        cipher
-            .decrypt(GenericArray::from_slice(&data[..12]), &data[12..])
-            .map_err(|_| error_consistency!("decryption failed"))
+        cipher.decrypt(GenericArray::from_slice(&data[..12]), &data[12..])
     }
 }
 
