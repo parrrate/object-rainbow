@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use crate::*;
 
-impl<T: ToOutput> ToOutput for Vec<T> {
+impl<T: InlineOutput> ToOutput for Vec<T> {
     fn to_output(&self, output: &mut dyn Output) {
         T::slice_to_output(self, output);
     }
