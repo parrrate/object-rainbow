@@ -8,6 +8,8 @@ impl ToOutput for Infallible {
     }
 }
 
+impl InlineOutput for Infallible {}
+
 impl Size for Infallible {
     type Size = U0;
     const SIZE: usize = 0;
