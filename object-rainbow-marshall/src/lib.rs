@@ -254,7 +254,7 @@ impl<I: PointInput, T: Object<I::Extra>> Parse<I> for Marshalled<T> {
             &extra,
         )?;
         if object.full_hash() != root.hash() {
-            return Err(object_rainbow::Error::DataMismatch);
+            return Err(object_rainbow::Error::FullHashMismatch);
         }
         Ok(Self { root, object })
     }
