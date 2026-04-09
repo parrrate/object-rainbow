@@ -36,6 +36,10 @@ impl Size for u8 {
     const SIZE: usize = 1;
 }
 
+impl MaybeHasNiche for u8 {
+    type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
+}
+
 impl Topological for u8 {}
 impl Tagged for u8 {}
 impl Object for u8 {}
