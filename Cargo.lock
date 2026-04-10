@@ -1193,7 +1193,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.57"
+version = "0.0.0-a.58"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1214,7 +1214,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-append-tree"
-version = "0.0.0-a.10"
+version = "0.0.0-a.11"
 dependencies = [
  "macro_rules_attribute",
  "object-rainbow",
@@ -1227,7 +1227,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-array-map"
-version = "0.0.0-a.6"
+version = "0.0.0-a.7"
 dependencies = [
  "bitvec",
  "object-rainbow",
@@ -1249,7 +1249,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-derive"
-version = "0.0.0-a.18"
+version = "0.0.0-a.19"
 dependencies = [
  "darling",
  "object-rainbow",
@@ -1261,7 +1261,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-encrypted"
-version = "0.0.0-a.15"
+version = "0.0.0-a.16"
 dependencies = [
  "anyhow",
  "chacha20poly1305",
@@ -1292,7 +1292,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-hamt"
-version = "0.0.0-a.2"
+version = "0.0.0-a.3"
 dependencies = [
  "macro_rules_attribute",
  "object-rainbow",
@@ -1334,7 +1334,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-json"
-version = "0.0.0-a.19"
+version = "0.0.0-a.20"
 dependencies = [
  "futures-util",
  "object-rainbow",
@@ -1354,7 +1354,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-marshall"
-version = "0.0.0-a.9"
+version = "0.0.0-a.10"
 dependencies = [
  "anyhow",
  "object-rainbow",
@@ -1366,7 +1366,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-point"
-version = "0.0.0-a.10"
+version = "0.0.0-a.11"
 dependencies = [
  "futures-util",
  "object-rainbow",
@@ -1404,7 +1404,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-trie"
-version = "0.0.0-a.14"
+version = "0.0.0-a.15"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
