@@ -137,7 +137,7 @@ impl<T: 'static + Send + Sync + Clone> Trie<T>
 where
     Option<T>: Traversible + InlineOutput,
 {
-    pub async fn nested(self, key: &[u8]) -> Self {
+    pub fn nested(self, key: &[u8]) -> Self {
         if !self.is_empty()
             && let Some((first, rest)) = key.split_first()
         {
