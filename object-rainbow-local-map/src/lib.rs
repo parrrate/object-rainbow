@@ -121,6 +121,10 @@ impl LocalMap {
     pub fn len(&self) -> usize {
         self.map.len()
     }
+
+    pub fn values_size(&self) -> usize {
+        self.map.values().map(|x| x.inner.data.len()).sum()
+    }
 }
 
 impl Resolve for LocalMap {
