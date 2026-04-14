@@ -72,10 +72,10 @@ impl<T: ParseInline<I> + UsizeTag, I: ParseInput, const MAX: usize> ParseInline<
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         let n_raw = T::parse_inline(input)?;
         let n: Option<usize> = n_raw.try_to_usize();
-        if let Some(n) = n {
-            if n < MAX {
-                return Ok(Self(n_raw));
-            }
+        if let Some(n) = n
+            && n < MAX
+        {
+            return Ok(Self(n_raw));
         }
         Err(Error::DiscriminantOverflow)
     }
