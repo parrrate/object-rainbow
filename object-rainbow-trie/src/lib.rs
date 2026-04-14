@@ -22,7 +22,9 @@ mod serde;
 
 type TriePoint<Tr> = Point<(Tr, Vec<u8>)>;
 
-#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Clone)]
+#[derive(
+    ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Clone, PartialEq,
+)]
 #[topology(recursive, inline)]
 pub struct Trie<T> {
     value: Option<T>,
