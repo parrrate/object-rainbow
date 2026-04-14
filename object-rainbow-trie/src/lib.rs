@@ -137,6 +137,18 @@ impl<T: 'static + Send + Sync + Clone> Trie<T>
 where
     Option<T>: Traversible + InlineOutput,
 {
+    pub async fn nested(self, key: &[u8]) -> Self {
+        if !self.is_empty()
+            && let Some((first, rest)) = key.split_first()
+        {
+            return Trie {
+                value: None,
+                children: [(*first, (self, rest.into()).point())].into(),
+            };
+        }
+        self
+    }
+
     pub async fn get(&self, key: &[u8]) -> object_rainbow::Result<Option<T>> {
         let Some((first, key)) = key.split_first() else {
             return Ok(self.value.clone());
