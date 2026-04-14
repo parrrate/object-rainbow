@@ -486,6 +486,30 @@ where
         }
         Ok(trie)
     }
+
+    pub fn all_subsequences(value: T, key: &[u8]) -> Self {
+        struct SeenAt<T>(T, [Option<TriePoint<Trie<T>>>; 256]);
+        impl<T: 'static + Send + Sync + Clone> SeenAt<T>
+        where
+            Option<T>: Traversible + InlineOutput,
+        {
+            fn next(&mut self) -> Trie<T> {
+                let value = Some(self.0.clone());
+                let children = self
+                    .1
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(k, t)| t.as_ref().map(|t| (k as u8, t.clone())))
+                    .collect();
+                Trie { value, children }
+            }
+        }
+        let mut seen_at = SeenAt(value, std::array::repeat(None));
+        for k in key.iter().rev() {
+            seen_at.1[*k as usize] = Some((seen_at.next(), Vec::new()).point());
+        }
+        seen_at.next()
+    }
 }
 
 #[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline)]
