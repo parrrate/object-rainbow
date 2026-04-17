@@ -207,14 +207,10 @@ where
                 prefix.truncate(key.len());
             } else {
                 let common = common_length(prefix, key);
-                let child = std::mem::take(trie);
-                let mut overlay = Self::new();
-                overlay.c_insert(
-                    prefix[common],
-                    (child, prefix[common + 1..].to_vec()).point(),
-                );
-                overlay.c_insert(key[common], (new, key[common + 1..].to_vec()).point());
-                trie.append(&mut overlay).await?;
+                let old = std::mem::take(trie);
+                assert_ne!(prefix[common], key[common]);
+                trie.c_insert(prefix[common], (old, prefix[common + 1..].to_vec()).point());
+                trie.c_insert(key[common], (new, key[common + 1..].to_vec()).point());
                 prefix.truncate(common);
             }
             o
