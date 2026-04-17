@@ -397,3 +397,24 @@ impl HamtSet {
         Ok(self.0.get(hash).await?.is_some())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use macro_rules_attribute::apply;
+    use object_rainbow::{FullHash, numeric::Le};
+    use smol_macros::test;
+
+    use crate::HamtMap;
+
+    #[apply(test!)]
+    async fn test() -> object_rainbow::Result<()> {
+        let mut map = HamtMap::<Le<u16>>::new();
+        for i in (0u16..=10_000).map(Le) {
+            map.insert(i.full_hash(), i).await?;
+        }
+        for i in (0u16..=10_000).map(Le) {
+            assert_eq!(map.get(i.full_hash()).await?, Some(i));
+        }
+        Ok(())
+    }
+}
