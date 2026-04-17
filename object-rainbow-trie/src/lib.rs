@@ -179,19 +179,18 @@ where
         assert!(self.value.is_some() || self.children.len() > 1);
     }
 
-    async fn from_f<O>(
-        f: impl AsyncFnOnce(&mut Self) -> object_rainbow::Result<O>,
+    async fn from_f<O, F: Send + Future<Output = object_rainbow::Result<(Self, O)>>>(
+        f: impl Send + FnOnce(Self) -> F,
     ) -> object_rainbow::Result<(Self, O)> {
-        let mut trie = Self::default();
-        let o = f(&mut trie).await?;
+        let (trie, o) = f(Self::new()).await?;
         trie.internal_state_check();
         Ok((trie, o))
     }
 
-    async fn update_point<O>(
+    async fn update_point<O, F: Send + Future<Output = object_rainbow::Result<(Self, O)>>>(
         point: &mut TriePoint<Self>,
         key: &[u8],
-        f: impl AsyncFnOnce(&mut Self) -> object_rainbow::Result<O>,
+        f: impl Send + FnOnce(Self) -> F,
     ) -> object_rainbow::Result<O> {
         let (trie, prefix) = &mut *point.fetch_mut().await?;
         let o = if let Some(key) = key.strip_prefix(prefix.as_slice()) {
@@ -219,13 +218,15 @@ where
         Ok(o)
     }
 
-    async fn update<O>(
+    async fn update<O, F: Send + Future<Output = object_rainbow::Result<(Self, O)>>>(
         &mut self,
         key: &[u8],
-        f: impl AsyncFnOnce(&mut Self) -> object_rainbow::Result<O>,
+        f: impl Send + FnOnce(Self) -> F,
     ) -> object_rainbow::Result<O> {
         let Some((first, key)) = key.split_first() else {
-            return f(self).await;
+            let o;
+            (*self, o) = f(std::mem::take(self)).await?;
+            return Ok(o);
         };
         if let Some(point) = self.c_get_mut(*first) {
             Self::update_point(point, key, f).await
@@ -237,8 +238,11 @@ where
     }
 
     pub async fn insert(&mut self, key: &[u8], value: T) -> object_rainbow::Result<Option<T>> {
-        self.update(key, async |trie| Ok(trie.value.replace(value)))
-            .await
+        self.update(key, async |mut trie| {
+            let o = trie.value.replace(value);
+            Ok((trie, o))
+        })
+        .await
     }
 
     pub fn is_empty(&self) -> bool {
@@ -276,6 +280,13 @@ where
         Ok(item)
     }
 
+    fn append_inner<'a>(
+        &'a mut self,
+        other: &'a mut Self,
+    ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+        self.append(other)
+    }
+
     pub async fn append(&mut self, other: &mut Self) -> object_rainbow::Result<()> {
         if let Some(value) = other.value.take() {
             self.value = Some(value);
@@ -286,8 +297,11 @@ where
                 if let Some(other) = other.c_remove(key) {
                     futures.push(async move {
                         let (mut other, key) = other.fetch().await?;
-                        Self::update_point(point, &key, async |trie| trie.append(&mut other).await)
-                            .await
+                        Self::update_point(point, &key, |mut trie| async move {
+                            trie.append_inner(&mut other).await?;
+                            Ok((trie, ()))
+                        })
+                        .await
                     });
                 }
             }
