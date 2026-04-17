@@ -202,7 +202,7 @@ where
                 let (first, suffix) = suffix.split_first().expect("must be at least 1");
                 let mut overlay = Self::new();
                 overlay.c_insert(*first, (old, suffix.into()).point());
-                trie.append(&mut overlay).await?;
+                trie.append_inner(&mut overlay).await?;
                 prefix.truncate(key.len());
             } else {
                 let common = common_length(prefix, key);
