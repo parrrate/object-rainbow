@@ -199,10 +199,10 @@ where
         } else {
             let (new, o) = Self::from_f(f).await?;
             if let Some(suffix) = prefix.strip_prefix(key) {
-                let child = std::mem::replace(trie, new);
+                let old = std::mem::replace(trie, new);
                 let (first, suffix) = suffix.split_first().expect("must be at least 1");
                 let mut overlay = Self::new();
-                overlay.c_insert(*first, (child, suffix.into()).point());
+                overlay.c_insert(*first, (old, suffix.into()).point());
                 trie.append(&mut overlay).await?;
                 prefix.truncate(key.len());
             } else {
