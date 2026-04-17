@@ -1,8 +1,9 @@
 use std::pin::Pin;
 
 use object_rainbow::{
-    Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseInline,
-    PointInput, PointVisitor, Size, Tagged, Tags, ToOutput, Topological, Traversible, assert_impl,
+    Enum, Fetch, FromSized, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse,
+    ParseInline, PointInput, PointVisitor, Size, Tagged, Tags, ToOutput, Topological, Traversible,
+    assert_impl,
 };
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
@@ -326,41 +327,7 @@ impl<V: Traversible + InlineOutput + Clone> HamtMap<V> {
 }
 
 fn hash_key(hash: Hash) -> K32 {
-    let [
-        x0,
-        x1,
-        x2,
-        x3,
-        x4,
-        x5,
-        x6,
-        x7,
-        x8,
-        x9,
-        x10,
-        x11,
-        x12,
-        x13,
-        x14,
-        x15,
-        x16,
-        x17,
-        x18,
-        x19,
-        x20,
-        x21,
-        x22,
-        x23,
-        x24,
-        x25,
-        x26,
-        x27,
-        x28,
-        x29,
-        x30,
-        x31,
-    ] = hash.into_bytes();
-    (x0,(x1,(x2,(x3,(x4,(x5,(x6,(x7,(x8,(x9,(x10,(x11,(x12,(x13,(x14,(x15,(x16,(x17,(x18,(x19,(x20,(x21,(x22,(x23,(x24,(x25,(x26,(x27,(x28,(x29,(x30,(x31))))))))))))))))))))))))))))))))
+    <K32 as FromSized>::from_sized(&hash.into_bytes().into())
 }
 
 #[derive(
