@@ -45,3 +45,10 @@ impl Size for u8 {
     type Size = U1;
     const SIZE: usize = 1;
 }
+
+impl FromSized for u8 {
+    fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self {
+        let [byte] = From::from(Clone::clone(data));
+        byte
+    }
+}
