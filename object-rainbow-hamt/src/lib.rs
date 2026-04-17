@@ -1,9 +1,9 @@
 use std::pin::Pin;
 
 use object_rainbow::{
-    Enum, Fetch, FromSized, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse,
-    ParseInline, PointInput, PointVisitor, Size, SizeExt, Tagged, Tags, ToOutput, Topological,
-    Traversible, assert_impl,
+    Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseInline,
+    PointInput, PointVisitor, Size, SizeExt, Tagged, Tags, ToOutput, Topological, Traversible,
+    assert_impl,
 };
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
@@ -317,17 +317,13 @@ impl<V: Traversible + InlineOutput + Clone> HamtMap<V> {
         self.0
             .fetch_mut()
             .await?
-            .insert(hash_key(hash), value)
+            .insert(hash.reinterpret(), value)
             .await
     }
 
     pub async fn get(&self, hash: Hash) -> object_rainbow::Result<Option<V>> {
-        self.0.fetch().await?.get(hash_key(hash)).await
+        self.0.fetch().await?.get(hash.reinterpret()).await
     }
-}
-
-fn hash_key(hash: Hash) -> K32 {
-    <K32 as FromSized>::from_sized(&hash.to_array())
 }
 
 #[derive(
