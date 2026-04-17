@@ -2,8 +2,8 @@ use std::pin::Pin;
 
 use object_rainbow::{
     Enum, Fetch, FromSized, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse,
-    ParseInline, PointInput, PointVisitor, Size, Tagged, Tags, ToOutput, Topological, Traversible,
-    assert_impl,
+    ParseInline, PointInput, PointVisitor, Size, SizeExt, Tagged, Tags, ToOutput, Topological,
+    Traversible, assert_impl,
 };
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
@@ -327,7 +327,7 @@ impl<V: Traversible + InlineOutput + Clone> HamtMap<V> {
 }
 
 fn hash_key(hash: Hash) -> K32 {
-    <K32 as FromSized>::from_sized(&hash.into_bytes().into())
+    <K32 as FromSized>::from_sized(&hash.to_array())
 }
 
 #[derive(
