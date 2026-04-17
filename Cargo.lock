@@ -1193,7 +1193,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.58"
+version = "0.0.0-a.59"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1227,7 +1227,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-array-map"
-version = "0.0.0-a.7"
+version = "0.0.0-a.8"
 dependencies = [
  "bitvec",
  "object-rainbow",
@@ -1292,7 +1292,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-hamt"
-version = "0.0.0-a.3"
+version = "0.0.0-a.4"
 dependencies = [
  "macro_rules_attribute",
  "object-rainbow",
@@ -1346,7 +1346,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-local-map"
-version = "0.0.0-a.3"
+version = "0.0.0-a.4"
 dependencies = [
  "imbl",
  "object-rainbow",
@@ -1404,7 +1404,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-trie"
-version = "0.0.0-a.15"
+version = "0.0.0-a.16"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
