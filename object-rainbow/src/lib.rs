@@ -1070,6 +1070,10 @@ impl Output for ArrayOutput<'_> {
     }
 }
 
+pub trait FromSized: Size<Size: ArrayLength> {
+    fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self;
+}
+
 pub trait RainbowIterator: Sized + IntoIterator {
     fn iter_to_output(self, output: &mut impl Output)
     where
