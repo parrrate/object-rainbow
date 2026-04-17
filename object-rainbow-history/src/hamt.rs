@@ -35,6 +35,23 @@ impl<V: 'static + Send + Sync + Clone + Traversible + InlineOutput> Apply<(V, Ha
     }
 }
 
+impl Apply<(bool, Hash)> for HamtSet {
+    type Output = bool;
+
+    fn apply(
+        &mut self,
+        (remove, hash): (bool, Hash),
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        async move {
+            Ok(if remove {
+                !self.remove(hash).await?
+            } else {
+                self.insert(hash).await?
+            })
+        }
+    }
+}
+
 impl Apply<Hash> for HamtSet {
     type Output = bool;
 
