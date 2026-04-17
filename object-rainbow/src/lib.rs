@@ -1048,6 +1048,10 @@ pub trait SizeExt: Size<Size: ArrayLength> + ToOutput {
         output.finalize();
         array
     }
+
+    fn reinterpret<T: FromSized<Size = Self::Size>>(&self) -> T {
+        T::from_sized(&self.to_array())
+    }
 }
 
 impl<T: Size<Size: ArrayLength> + ToOutput> SizeExt for T {}
