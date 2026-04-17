@@ -11,13 +11,13 @@ use std::{
     convert::Infallible,
     future::ready,
     marker::PhantomData,
-    ops::{Deref, DerefMut},
+    ops::{Add, Deref, DerefMut, Sub},
     pin::Pin,
     sync::Arc,
 };
 
 pub use anyhow::anyhow;
-use generic_array::{ArrayLength, GenericArray, functional::FunctionalSequence};
+use generic_array::{ArrayLength, GenericArray, functional::FunctionalSequence, sequence::Split};
 pub use object_rainbow_derive::{
     Enum, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseAsInline, ParseInline, Size, Tagged,
     ToOutput, Topological, derive_for_wrapped,
@@ -1072,6 +1072,19 @@ impl Output for ArrayOutput<'_> {
 
 pub trait FromSized: Size<Size: ArrayLength> {
     fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self;
+}
+
+impl<
+    A: FromSized<Size = An>,
+    B: FromSized<Size = Bn>,
+    An,
+    Bn: Add<An, Output: ArrayLength + Sub<An, Output = Bn>>,
+> FromSized for (A, B)
+{
+    fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self {
+        let (a, b) = data.split();
+        (A::from_sized(a), B::from_sized(b))
+    }
 }
 
 pub trait RainbowIterator: Sized + IntoIterator {
