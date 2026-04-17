@@ -14,6 +14,8 @@ type OptionFuture<'a, T> =
 trait Amt<K> {
     type V: Send + Sync;
     fn insert(&mut self, key: K, value: Self::V) -> OptionFuture<'_, Self::V>;
+    fn remove(&mut self, key: K) -> OptionFuture<'_, Self::V>;
+    fn extract_only(&mut self) -> OptionFuture<'_, (K, Self::V)>;
     fn from_pair(a: (K, Self::V), b: (K, Self::V)) -> Self;
     fn get(&self, key: K) -> OptionFuture<'_, Self::V>;
 }
@@ -29,6 +31,20 @@ impl<V: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V> {
         Box::pin(async move { Ok(self.0.insert(key, value)) })
     }
 
+    fn remove(&mut self, key: u8) -> OptionFuture<'_, Self::V> {
+        Box::pin(async move { Ok(self.0.remove(key)) })
+    }
+
+    fn extract_only(&mut self) -> OptionFuture<'_, (u8, Self::V)> {
+        Box::pin(async move {
+            Ok(if self.0.len() == 1 {
+                self.0.pop_first()
+            } else {
+                None
+            })
+        })
+    }
+
     fn from_pair(a: (u8, Self::V), b: (u8, Self::V)) -> Self {
         Self([a, b].into())
     }
@@ -41,14 +57,16 @@ impl<V: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V> {
 #[derive(Enum, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline)]
 enum SubTree<T, K, V = <T as Amt<K>>::V> {
     Leaf(K, V),
-    SubTree(Point<T>),
+    Sub(Point<T>),
+    Empty,
 }
 
 impl<T, K: Clone, V: Clone> Clone for SubTree<T, K, V> {
     fn clone(&self) -> Self {
         match self {
             Self::Leaf(key, value) => Self::Leaf(key.clone(), value.clone()),
-            Self::SubTree(point) => Self::SubTree(point.clone()),
+            Self::Sub(point) => Self::Sub(point.clone()),
+            Self::Empty => Self::Empty,
         }
     }
 }
@@ -61,26 +79,84 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
     fn insert(&mut self, key: K, value: Self::V) -> OptionFuture<'_, Self::V> {
         Box::pin(async move {
             match self {
-                SubTree::Leaf(xkey, xvalue) => Ok(if *xkey != key {
+                Self::Leaf(xkey, xvalue) => Ok(if *xkey != key {
                     *self = Self::from_pair((xkey.clone(), xvalue.clone()), (key, value));
                     None
                 } else {
                     Some(std::mem::replace(xvalue, value))
                 }),
-                SubTree::SubTree(sub) => sub.fetch_mut().await?.insert(key, value).await,
+                Self::Sub(sub) => sub.fetch_mut().await?.insert(key, value).await,
+                Self::Empty => Err(object_rainbow::error_consistency!(
+                    "empty subtree? (invalid state)",
+                )),
+            }
+        })
+    }
+
+    fn remove(&mut self, key: K) -> OptionFuture<'_, Self::V> {
+        Box::pin(async move {
+            match self {
+                Self::Leaf(xkey, _) => Ok(if *xkey != key {
+                    None
+                } else {
+                    match std::mem::replace(self, Self::Empty) {
+                        Self::Leaf(_, v) => Some(v),
+                        _ => unreachable!(),
+                    }
+                }),
+                Self::Sub(point) => {
+                    let (value, extracted) = {
+                        let sub = &mut *point.fetch_mut().await?;
+                        let value = sub.remove(key).await?;
+                        (value, sub.extract_only().await?)
+                    };
+                    if let Some((k, v)) = extracted {
+                        *self = Self::Leaf(k, v);
+                    }
+                    Ok(value)
+                }
+                Self::Empty => Err(object_rainbow::error_consistency!(
+                    "empty subtree? (invalid state)",
+                )),
+            }
+        })
+    }
+
+    fn extract_only(&mut self) -> OptionFuture<'_, (K, Self::V)> {
+        Box::pin(async move {
+            match self {
+                Self::Leaf(_, _) => match std::mem::replace(self, Self::Empty) {
+                    Self::Leaf(k, v) => Ok(Some((k, v))),
+                    _ => unreachable!(),
+                },
+                Self::Sub(point) => {
+                    let extracted = point.fetch_mut().await?.extract_only().await?;
+                    if let Some((k, v)) = extracted {
+                        *self = Self::Empty;
+                        Ok(Some((k, v)))
+                    } else {
+                        Ok(None)
+                    }
+                }
+                Self::Empty => Err(object_rainbow::error_consistency!(
+                    "empty subtree? (invalid state)",
+                )),
             }
         })
     }
 
     fn from_pair(a: (K, Self::V), b: (K, Self::V)) -> Self {
-        Self::SubTree(T::from_pair(a, b).point())
+        Self::Sub(T::from_pair(a, b).point())
     }
 
     fn get(&self, key: K) -> OptionFuture<'_, Self::V> {
         Box::pin(async move {
             match self {
-                SubTree::Leaf(existing, value) => Ok((*existing == key).then(|| value.clone())),
-                SubTree::SubTree(sub) => sub.fetch().await?.get(key).await,
+                Self::Leaf(existing, value) => Ok((*existing == key).then(|| value.clone())),
+                Self::Sub(sub) => sub.fetch().await?.get(key).await,
+                Self::Empty => Err(object_rainbow::error_consistency!(
+                    "empty subtree? (invalid state)",
+                )),
             }
         })
     }
@@ -114,6 +190,36 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
                 assert!(self.0.insert(key, SubTree::Leaf(rest, value)).is_none());
                 Ok(None)
             }
+        })
+    }
+
+    fn remove(&mut self, (key, rest): (u8, K)) -> OptionFuture<'_, Self::V> {
+        Box::pin(async move {
+            if let Some(sub) = self.0.get_mut(key) {
+                let value = sub.remove(rest).await?;
+                if matches!(sub, SubTree::Empty) {
+                    self.0.remove(key);
+                }
+                Ok(value)
+            } else {
+                Ok(None)
+            }
+        })
+    }
+
+    fn extract_only(&mut self) -> OptionFuture<'_, ((u8, K), Self::V)> {
+        Box::pin(async move {
+            Ok(if self.0.len() == 1 {
+                let (key, sub) = self.0.iter_mut().next().expect("must be len 1");
+                if let Some((rest, v)) = sub.extract_only().await? {
+                    self.0.remove(key);
+                    Some(((key, rest), v))
+                } else {
+                    None
+                }
+            } else {
+                None
+            })
         })
     }
 
@@ -230,6 +336,14 @@ mod private {
                     self.0.insert(key, value)
                 }
 
+                fn remove(&mut self, key: $k) -> OptionFuture<'_, Self::V> {
+                    self.0.remove(key)
+                }
+
+                fn extract_only(&mut self) -> OptionFuture<'_, ($k, Self::V)> {
+                    self.0.extract_only()
+                }
+
                 fn from_pair(a: ($k, Self::V), b: ($k, Self::V)) -> Self {
                     Self(Amt::from_pair(a, b))
                 }
@@ -321,6 +435,10 @@ impl<V: Traversible + InlineOutput + Clone> HamtMap<V> {
             .await
     }
 
+    pub async fn remove(&mut self, hash: Hash) -> object_rainbow::Result<Option<V>> {
+        self.0.fetch_mut().await?.remove(hash.reinterpret()).await
+    }
+
     pub async fn get(&self, hash: Hash) -> object_rainbow::Result<Option<V>> {
         self.0.fetch().await?.get(hash.reinterpret()).await
     }
@@ -372,12 +490,17 @@ mod test {
     #[apply(test!)]
     async fn test() -> object_rainbow::Result<()> {
         let mut map = HamtMap::<Le<u16>>::new();
+        let empty_hash = map.full_hash();
         for i in (0u16..=10_000).map(Le) {
             map.insert(i.full_hash(), i).await?;
         }
         for i in (0u16..=10_000).map(Le) {
             assert_eq!(map.get(i.full_hash()).await?, Some(i));
         }
+        for i in (0u16..=10_000).map(Le) {
+            map.remove(i.full_hash()).await?;
+        }
+        assert_eq!(map.full_hash(), empty_hash);
         Ok(())
     }
 }
