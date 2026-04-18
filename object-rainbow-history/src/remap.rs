@@ -63,11 +63,32 @@ pub trait Collision<Diff: Send, State>: Send + Sized {
 }
 
 pub struct ExposedState;
+pub struct ConcealedState;
 
 pub struct NoOverwrites<T>(pub T);
 
 impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, ExposedState, Output = O>, O: Send> Apply<D>
     for NoOverwrites<T>
+{
+    type Output = O;
+
+    async fn apply(&mut self, diff: D) -> object_rainbow::Result<Self::Output> {
+        let always_okay = X::always_okay(&diff);
+        let output = self.0.apply(diff).await?;
+        if always_okay {
+            Ok(output.okay())
+        } else {
+            output.check()
+        }
+    }
+}
+
+/// This is separate from [`NoOverwrites`] both because of potential implementation conflicts and
+/// because of some semantical differences.
+pub struct NoCollisions<T>(T);
+
+impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, ConcealedState, Output = O>, O: Send>
+    Apply<D> for NoCollisions<T>
 {
     type Output = O;
 
