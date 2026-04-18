@@ -602,6 +602,10 @@ impl HamtSet {
     pub async fn contains(&self, hash: Hash) -> object_rainbow::Result<bool> {
         self.0.contains(hash).await
     }
+
+    pub async fn append(&mut self, other: &mut Self) -> object_rainbow::Result<()> {
+        self.0.append(&mut other.0).await
+    }
 }
 
 #[cfg(test)]
