@@ -676,6 +676,10 @@ impl<V: Traversible + InlineOutput + Clone> HamtMap<V> {
     pub fn is_empty(&self) -> bool {
         self.0.is_default()
     }
+
+    pub fn clear(&mut self) {
+        std::mem::take(self);
+    }
 }
 
 #[derive(
