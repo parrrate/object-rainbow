@@ -17,7 +17,11 @@ trait Amt<K> {
     fn remove(&mut self, key: K) -> OptionFuture<'_, Self::V>;
     fn extract_only(&mut self) -> OptionFuture<'_, (K, Self::V)>;
     fn from_pair(a: (K, Self::V), b: (K, Self::V)) -> Self;
-    fn get(&self, key: K) -> OptionFuture<'_, Self::V>;
+    fn get<'a, O: Send>(
+        &'a self,
+        key: K,
+        f: impl 'a + Send + FnOnce(&Self::V) -> O,
+    ) -> OptionFuture<'a, O>;
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
@@ -49,8 +53,12 @@ impl<V: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V> {
         Self([a, b].into())
     }
 
-    fn get(&self, key: u8) -> OptionFuture<'_, Self::V> {
-        Box::pin(async move { Ok(self.0.get(key).cloned()) })
+    fn get<'a, O: Send>(
+        &'a self,
+        key: u8,
+        f: impl 'a + Send + FnOnce(&Self::V) -> O,
+    ) -> OptionFuture<'a, O> {
+        Box::pin(async move { Ok(self.0.get(key).map(f)) })
     }
 }
 
@@ -149,11 +157,15 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
         Self::Sub(T::from_pair(a, b).point())
     }
 
-    fn get(&self, key: K) -> OptionFuture<'_, Self::V> {
+    fn get<'a, O: Send>(
+        &'a self,
+        key: K,
+        f: impl 'a + Send + FnOnce(&Self::V) -> O,
+    ) -> OptionFuture<'a, O> {
         Box::pin(async move {
             match self {
-                Self::Leaf(existing, value) => Ok((*existing == key).then(|| value.clone())),
-                Self::Sub(sub) => sub.fetch().await?.get(key).await,
+                Self::Leaf(existing, value) => Ok((*existing == key).then(|| f(value))),
+                Self::Sub(sub) => sub.fetch().await?.get(key, f).await,
                 Self::Empty => Err(object_rainbow::error_consistency!(
                     "empty subtree? (invalid state)",
                 )),
@@ -240,10 +252,14 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
         }
     }
 
-    fn get(&self, (key, rest): (u8, K)) -> OptionFuture<'_, Self::V> {
+    fn get<'a, O: Send>(
+        &'a self,
+        (key, rest): (u8, K),
+        f: impl 'a + Send + FnOnce(&Self::V) -> O,
+    ) -> OptionFuture<'a, O> {
         Box::pin(async move {
             if let Some(sub) = self.0.get(key) {
-                sub.get(rest).await
+                sub.get(rest, f).await
             } else {
                 Ok(None)
             }
@@ -348,8 +364,12 @@ mod private {
                     Self(Amt::from_pair(a, b))
                 }
 
-                fn get(&self, key: $k) -> OptionFuture<'_, Self::V> {
-                    self.0.get(key)
+                fn get<'a, O: Send>(
+                    &'a self,
+                    key: $k,
+                    f: impl 'a + Send + FnOnce(&Self::V) -> O,
+                ) -> OptionFuture<'a, O> {
+                    self.0.get(key, f)
                 }
             }
         };
@@ -440,7 +460,11 @@ impl<V: Traversible + InlineOutput + Clone> HamtMap<V> {
     }
 
     pub async fn get(&self, hash: Hash) -> object_rainbow::Result<Option<V>> {
-        self.0.fetch().await?.get(hash.reinterpret()).await
+        self.0
+            .fetch()
+            .await?
+            .get(hash.reinterpret(), |value| value.clone())
+            .await
     }
 }
 
