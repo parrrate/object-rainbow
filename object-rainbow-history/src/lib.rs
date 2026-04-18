@@ -10,6 +10,7 @@ use object_rainbow::{
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
 
+pub mod enforce_unique;
 #[cfg(feature = "hamt")]
 mod hamt;
 pub mod hashed;
