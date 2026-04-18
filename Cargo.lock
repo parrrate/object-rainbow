@@ -1192,7 +1192,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.59"
+version = "0.0.0-a.60"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1226,7 +1226,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-array-map"
-version = "0.0.0-a.9"
+version = "0.0.0-a.10"
 dependencies = [
  "bitvec",
  "object-rainbow",
@@ -1291,7 +1291,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-hamt"
-version = "0.0.0-a.6"
+version = "0.0.0-a.7"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1304,7 +1304,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.23"
+version = "0.0.0-a.24"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
