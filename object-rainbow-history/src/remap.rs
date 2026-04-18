@@ -61,3 +61,19 @@ pub trait Collision<Diff: Send>: Send + Sized {
     fn okay(self) -> Self::Output;
     fn check(self) -> object_rainbow::Result<Self::Output>;
 }
+
+pub struct CheckUnique<T>(pub T);
+
+impl<D: Send, T: Apply<D, Output: Collision<D, Output = O>>, O: Send> Apply<D> for CheckUnique<T> {
+    type Output = O;
+
+    async fn apply(&mut self, diff: D) -> object_rainbow::Result<Self::Output> {
+        let always_okay = <T::Output as Collision<D>>::always_okay(&diff);
+        let output = self.0.apply(diff).await?;
+        if always_okay {
+            Ok(output.okay())
+        } else {
+            output.check()
+        }
+    }
+}
