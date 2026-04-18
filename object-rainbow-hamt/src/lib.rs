@@ -26,6 +26,9 @@ trait Amt<K>: Sized {
         f: impl 'a + Send + FnOnce(&Self::V) -> O,
     ) -> OptionFuture<'a, O>;
     fn append<'a>(&'a mut self, other: &'a mut Self) -> ActionFuture<'a>;
+    fn intersect<'a>(&'a mut self, other: &'a Self) -> ActionFuture<'a>
+    where
+        Self::V: PartialEq;
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
@@ -72,6 +75,17 @@ impl<V: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V> {
     fn append<'a>(&'a mut self, other: &'a mut Self) -> ActionFuture<'a> {
         Box::pin(async move {
             self.0.append(&mut other.0);
+            Ok(())
+        })
+    }
+
+    fn intersect<'a>(&'a mut self, other: &'a Self) -> ActionFuture<'a>
+    where
+        Self::V: PartialEq,
+    {
+        Box::pin(async move {
+            self.0
+                .retain(|key, value| other.0.get(key).is_some_and(|other| other == value));
             Ok(())
         })
     }
@@ -233,6 +247,56 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
             Ok(())
         })
     }
+
+    fn intersect<'a>(&'a mut self, other: &'a Self) -> ActionFuture<'a>
+    where
+        Self::V: PartialEq,
+    {
+        Box::pin(async move {
+            match (&mut *self, other) {
+                (Self::Empty, _) => {}
+                (_, Self::Empty) => *self = Self::Empty,
+                (Self::Leaf(kl, vl), Self::Leaf(kr, vr)) if kl == kr && vl == vr => {}
+                (Self::Leaf(_, _), Self::Leaf(_, _)) => *self = Self::Empty,
+                (Self::Leaf(key, value), Self::Sub(sub))
+                    if sub
+                        .fetch()
+                        .await?
+                        .get(key.clone(), |existing| value == existing)
+                        .await?
+                        .unwrap_or_default() => {}
+                (Self::Leaf(_, _), Self::Sub(_)) => *self = Self::Empty,
+                (Self::Sub(sub), Self::Leaf(key, value))
+                    if sub
+                        .fetch()
+                        .await?
+                        .get(key.clone(), |existing| value == existing)
+                        .await?
+                        .unwrap_or_default() =>
+                {
+                    *self = other.clone()
+                }
+                (Self::Sub(_), Self::Leaf(_, _)) => *self = Self::Empty,
+                (Self::Sub(sub), Self::Sub(other)) => {
+                    let (is_empty, extracted) = {
+                        let sub = &mut *sub.fetch_mut().await?;
+                        let other = &other.fetch().await?;
+                        sub.intersect(other).await?;
+                        (sub.is_empty(), sub.extract_only().await?)
+                    };
+                    if is_empty {
+                        assert!(extracted.is_none());
+                        *self = Self::Empty;
+                    }
+                    if let Some((k, v)) = extracted {
+                        assert!(!is_empty);
+                        *self = Self::Leaf(k, v);
+                    }
+                }
+            }
+            Ok(())
+        })
+    }
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse)]
@@ -354,6 +418,27 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
             Ok(())
         })
     }
+
+    fn intersect<'a>(&'a mut self, other: &'a Self) -> ActionFuture<'a>
+    where
+        Self::V: PartialEq,
+    {
+        Box::pin(async move {
+            {
+                let mut futures = futures_util::stream::FuturesUnordered::new();
+                for (key, sub) in self.0.iter_mut() {
+                    if let Some(other) = other.0.get(key) {
+                        futures.push(sub.intersect(other));
+                    } else {
+                        *sub = SubTree::Empty;
+                    }
+                }
+                while futures.try_next().await?.is_some() {}
+            }
+            self.0.retain(|_, sub| !sub.is_empty());
+            Ok(())
+        })
+    }
 }
 
 type K1 = u8;
@@ -467,6 +552,13 @@ mod private {
 
                 fn append<'a>(&'a mut self, other: &'a mut Self) -> ActionFuture<'a> {
                     self.0.append(&mut other.0)
+                }
+
+                fn intersect<'a>(&'a mut self, other: &'a Self) -> ActionFuture<'a>
+                where
+                    Self::V: PartialEq,
+                {
+                    self.0.intersect(&other.0)
                 }
             }
         };
@@ -623,6 +715,15 @@ impl HamtSet {
     pub async fn append(&mut self, other: &mut Self) -> object_rainbow::Result<()> {
         self.0.append(&mut other.0).await
     }
+
+    pub async fn intersect(&mut self, other: &Self) -> object_rainbow::Result<()> {
+        self.0
+            .0
+            .fetch_mut()
+            .await?
+            .intersect(&other.0.0.fetch().await?)
+            .await
+    }
 }
 
 #[cfg(test)]
@@ -631,7 +732,7 @@ mod test {
     use object_rainbow::{FullHash, numeric::Le};
     use smol_macros::test;
 
-    use crate::HamtMap;
+    use crate::{HamtMap, HamtSet};
 
     #[apply(test!)]
     async fn test() -> object_rainbow::Result<()> {
@@ -647,6 +748,27 @@ mod test {
             map.remove(i.full_hash()).await?;
         }
         assert_eq!(map.full_hash(), empty_hash);
+        Ok(())
+    }
+
+    #[apply(test!)]
+    async fn intersect() -> object_rainbow::Result<()> {
+        let mut l = HamtSet::new();
+        for i in 0u8..=254 {
+            l.insert((i, 1u8).full_hash()).await?;
+            l.insert((i, 3u8).full_hash()).await?;
+        }
+        let mut r = HamtSet::new();
+        for i in 0u8..=254 {
+            r.insert((i, 2u8).full_hash()).await?;
+            r.insert((i, 3u8).full_hash()).await?;
+        }
+        l.intersect(&r).await?;
+        for i in 0u8..=254 {
+            assert!(!l.contains((i, 1u8).full_hash()).await?);
+            assert!(!l.contains((i, 2u8).full_hash()).await?);
+            assert!(l.contains((i, 3u8).full_hash()).await?);
+        }
         Ok(())
     }
 }
