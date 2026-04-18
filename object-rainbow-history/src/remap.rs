@@ -54,3 +54,10 @@ impl<K: Send + Clone, V: Send, M: MapToSet<K, V>> Apply<(Option<V>, (Option<V>, 
         }
     }
 }
+
+pub trait Collision<Diff: Send>: Send + Sized {
+    type Output: Send;
+    fn always_okay(diff: &Diff) -> bool;
+    fn okay(self) -> Self::Output;
+    fn check(self) -> object_rainbow::Result<Self::Output>;
+}
