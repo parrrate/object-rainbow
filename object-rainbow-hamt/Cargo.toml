@@ -13,6 +13,10 @@ object-rainbow.workspace = true
 object-rainbow-array-map.workspace = true
 object-rainbow-point.workspace = true
 
+futures-util = { version = "0.3.31", default-features = false, features = [
+    "std",
+] }
+
 [dev-dependencies]
 macro_rules_attribute = "0.2.2"
 smol = "2.0.2"

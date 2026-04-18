@@ -1,5 +1,6 @@
 use std::pin::Pin;
 
+use futures_util::TryStreamExt;
 use object_rainbow::{
     Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseInline,
     PointInput, PointVisitor, Size, SizeExt, Tagged, Tags, ToOutput, Topological, Traversible,
@@ -8,6 +9,7 @@ use object_rainbow::{
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
 
+type ActionFuture<'a> = Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<()>>>>;
 type OptionFuture<'a, T> =
     Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<Option<T>>>>>;
 
@@ -22,6 +24,7 @@ trait Amt<K> {
         key: K,
         f: impl 'a + Send + FnOnce(&Self::V) -> O,
     ) -> OptionFuture<'a, O>;
+    fn append<'a>(&'a mut self, other: &'a mut Self) -> ActionFuture<'a>;
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
@@ -60,12 +63,22 @@ impl<V: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V> {
     ) -> OptionFuture<'a, O> {
         Box::pin(async move { Ok(self.0.get(key).map(f)) })
     }
+
+    fn append<'a>(&'a mut self, other: &'a mut Self) -> ActionFuture<'a> {
+        Box::pin(async move {
+            self.0.append(&mut other.0);
+            Ok(())
+        })
+    }
 }
 
-#[derive(Enum, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline)]
+#[derive(
+    Enum, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Default,
+)]
 enum SubTree<T, K, V = <T as Amt<K>>::V> {
     Leaf(K, V),
     Sub(Point<T>),
+    #[default]
     Empty,
 }
 
@@ -107,7 +120,7 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
                 Self::Leaf(xkey, _) => Ok(if *xkey != key {
                     None
                 } else {
-                    match std::mem::replace(self, Self::Empty) {
+                    match std::mem::take(self) {
                         Self::Leaf(_, v) => Some(v),
                         _ => unreachable!(),
                     }
@@ -133,7 +146,7 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
     fn extract_only(&mut self) -> OptionFuture<'_, (K, Self::V)> {
         Box::pin(async move {
             match self {
-                Self::Leaf(_, _) => match std::mem::replace(self, Self::Empty) {
+                Self::Leaf(_, _) => match std::mem::take(self) {
                     Self::Leaf(k, v) => Ok(Some((k, v))),
                     _ => unreachable!(),
                 },
@@ -170,6 +183,45 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
                     "empty subtree? (invalid state)",
                 )),
             }
+        })
+    }
+
+    fn append<'a>(&'a mut self, other: &'a mut Self) -> ActionFuture<'a> {
+        Box::pin(async move {
+            if matches!((&*self, &*other), (Self::Leaf(_, _), Self::Sub(_))) {
+                std::mem::swap(self, other);
+            }
+            match (&mut *self, &mut *other) {
+                (_, Self::Empty) => {}
+                (Self::Leaf(kl, vl), Self::Leaf(kr, vr)) if kl == kr => {
+                    std::mem::swap(vl, vr);
+                    *other = Self::Empty;
+                }
+                (Self::Leaf(_, _), Self::Leaf(_, _)) => {
+                    match (std::mem::take(self), std::mem::take(other)) {
+                        (Self::Leaf(kl, vl), Self::Leaf(kr, vr)) => {
+                            *self = Self::Sub(T::from_pair((kl, vl), (kr, vr)).point());
+                        }
+                        _ => unreachable!(),
+                    }
+                }
+                (Self::Leaf(_, _), Self::Sub(_)) => unreachable!(),
+                (Self::Sub(point), Self::Leaf(_, _)) => match std::mem::take(other) {
+                    Self::Leaf(key, value) => {
+                        point.fetch_mut().await?.insert(key, value).await?;
+                    }
+                    _ => unreachable!(),
+                },
+                (Self::Sub(l), Self::Sub(r)) => {
+                    l.fetch_mut()
+                        .await?
+                        .append(&mut *r.fetch_mut().await?)
+                        .await?;
+                    *other = Self::Empty;
+                }
+                (Self::Empty, _) => std::mem::swap(self, other),
+            }
+            Ok(())
         })
     }
 }
@@ -263,6 +315,30 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
             } else {
                 Ok(None)
             }
+        })
+    }
+
+    fn append<'a>(&'a mut self, other: &'a mut Self) -> ActionFuture<'a> {
+        Box::pin(async move {
+            {
+                let mut futures = futures_util::stream::FuturesUnordered::new();
+                for (key, sub) in self.0.iter_mut() {
+                    if let Some(mut other) = other.0.remove(key) {
+                        futures.push(async move {
+                            sub.append(&mut other)
+                                .await
+                                .map(|_| assert!(matches!(other, SubTree::Empty)))
+                        });
+                    }
+                }
+                while futures.try_next().await?.is_some() {}
+            }
+            while let Some((key, sub)) = other.0.pop_first() {
+                assert!(!self.0.contains(key));
+                self.0.insert(key, sub);
+            }
+            assert!(other.0.is_empty());
+            Ok(())
         })
     }
 }
@@ -371,6 +447,10 @@ mod private {
                 ) -> OptionFuture<'a, O> {
                     self.0.get(key, f)
                 }
+
+                fn append<'a>(&'a mut self, other: &'a mut Self) -> ActionFuture<'a> {
+                    self.0.append(&mut other.0)
+                }
             }
         };
     }
@@ -474,6 +554,14 @@ impl<V: Traversible + InlineOutput + Clone> HamtMap<V> {
             .get(hash.reinterpret(), |_| {})
             .await
             .map(|o| o.is_some())
+    }
+
+    pub async fn append(&mut self, other: &mut Self) -> object_rainbow::Result<()> {
+        self.0
+            .fetch_mut()
+            .await?
+            .append(&mut *other.0.fetch_mut().await?)
+            .await
     }
 }
 
