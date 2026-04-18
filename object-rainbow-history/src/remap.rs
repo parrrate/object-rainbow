@@ -81,3 +81,23 @@ impl<D: Send, T: Apply<D, Output: Collision<D, Output = O>>, O: Send> Apply<D> f
 #[derive(Debug, thiserror::Error)]
 #[error("not unique")]
 pub struct NotUnique;
+
+impl<K: Send, V: Send> Collision<(V, K)> for Option<V> {
+    type Output = ();
+
+    fn always_okay(_: &(V, K)) -> bool {
+        false
+    }
+
+    fn okay(self) -> Self::Output {
+        assert!(self.is_none());
+    }
+
+    fn check(self) -> object_rainbow::Result<Self::Output> {
+        if self.is_none() {
+            Ok(())
+        } else {
+            Err(object_rainbow::Error::consistency(NotUnique))
+        }
+    }
+}
