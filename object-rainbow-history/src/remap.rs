@@ -55,20 +55,24 @@ impl<K: Send + Clone, V: Send, M: MapToSet<K, V>> Apply<(Option<V>, (Option<V>, 
     }
 }
 
-pub trait Collision<Diff: Send>: Send + Sized {
+pub trait Collision<Diff: Send, State>: Send + Sized {
     type Output: Send;
     fn always_okay(diff: &Diff) -> bool;
     fn okay(self) -> Self::Output;
     fn check(self) -> object_rainbow::Result<Self::Output>;
 }
 
+pub struct ExposedState;
+
 pub struct CheckUnique<T>(pub T);
 
-impl<D: Send, T: Apply<D, Output: Collision<D, Output = O>>, O: Send> Apply<D> for CheckUnique<T> {
+impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, ExposedState, Output = O>, O: Send> Apply<D>
+    for CheckUnique<T>
+{
     type Output = O;
 
     async fn apply(&mut self, diff: D) -> object_rainbow::Result<Self::Output> {
-        let always_okay = <T::Output as Collision<D>>::always_okay(&diff);
+        let always_okay = X::always_okay(&diff);
         let output = self.0.apply(diff).await?;
         if always_okay {
             Ok(output.okay())
@@ -82,7 +86,7 @@ impl<D: Send, T: Apply<D, Output: Collision<D, Output = O>>, O: Send> Apply<D> f
 #[error("not unique")]
 pub struct NotUnique;
 
-impl<K: Send, V: Send> Collision<(V, K)> for Option<V> {
+impl<K: Send, V: Send, S> Collision<(V, K), S> for Option<V> {
     type Output = ();
 
     fn always_okay(_: &(V, K)) -> bool {
@@ -102,7 +106,7 @@ impl<K: Send, V: Send> Collision<(V, K)> for Option<V> {
     }
 }
 
-impl<K: Send, V: Send> Collision<(Option<V>, K)> for Option<V> {
+impl<K: Send, V: Send> Collision<(Option<V>, K), ExposedState> for Option<V> {
     type Output = Option<V>;
 
     fn always_okay((value, _): &(Option<V>, K)) -> bool {
@@ -122,7 +126,7 @@ impl<K: Send, V: Send> Collision<(Option<V>, K)> for Option<V> {
     }
 }
 
-impl<T: Send> Collision<(bool, T)> for bool {
+impl<T: Send> Collision<(bool, T), ExposedState> for bool {
     type Output = bool;
 
     fn always_okay((remove, _): &(bool, T)) -> bool {
