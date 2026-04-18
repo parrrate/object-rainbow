@@ -466,6 +466,15 @@ impl<V: Traversible + InlineOutput + Clone> HamtMap<V> {
             .get(hash.reinterpret(), |value| value.clone())
             .await
     }
+
+    pub async fn contains(&self, hash: Hash) -> object_rainbow::Result<bool> {
+        self.0
+            .fetch()
+            .await?
+            .get(hash.reinterpret(), |_| {})
+            .await
+            .map(|o| o.is_some())
+    }
 }
 
 #[derive(
@@ -503,7 +512,7 @@ impl HamtSet {
     }
 
     pub async fn contains(&self, hash: Hash) -> object_rainbow::Result<bool> {
-        Ok(self.0.get(hash).await?.is_some())
+        self.0.contains(hash).await
     }
 }
 
