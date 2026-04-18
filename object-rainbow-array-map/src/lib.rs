@@ -160,7 +160,7 @@ impl<T> ArrayMap<T> {
         }
     }
 
-    pub async fn append(&mut self, other: &mut Self) {
+    pub fn append(&mut self, other: &mut Self) {
         while let Some((key, value)) = other.pop_first() {
             self.insert(key, value);
         }
