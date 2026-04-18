@@ -77,3 +77,7 @@ impl<D: Send, T: Apply<D, Output: Collision<D, Output = O>>, O: Send> Apply<D> f
         }
     }
 }
+
+#[derive(Debug, thiserror::Error)]
+#[error("not unique")]
+pub struct NotUnique;

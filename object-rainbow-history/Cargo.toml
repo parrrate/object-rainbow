@@ -16,6 +16,7 @@ object-rainbow-point.workspace = true
 object-rainbow-trie = { workspace = true, optional = true }
 
 futures-util = { version = "0.3.31", default-features = false }
+thiserror = "2.0.17"
 
 [features]
 hamt = ["dep:object-rainbow-hamt"]

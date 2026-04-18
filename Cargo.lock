@@ -1315,6 +1315,7 @@ dependencies = [
  "object-rainbow-trie",
  "smol",
  "smol-macros",
+ "thiserror",
  "ulid",
 ]
 
