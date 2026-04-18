@@ -122,10 +122,10 @@ impl<K: Send, V: Send> Collision<(Option<V>, K)> for Option<V> {
     }
 }
 
-impl<V: Send> Collision<V> for bool {
+impl<T: Send> Collision<T> for bool {
     type Output = ();
 
-    fn always_okay(_: &V) -> bool {
+    fn always_okay(_: &T) -> bool {
         false
     }
 
