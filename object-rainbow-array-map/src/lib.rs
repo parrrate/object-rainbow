@@ -159,6 +159,12 @@ impl<T> ArrayMap<T> {
             inner: self.map.iter_mut(),
         }
     }
+
+    pub async fn append(&mut self, other: &mut Self) {
+        while let Some((key, value)) = other.pop_first() {
+            self.insert(key, value);
+        }
+    }
 }
 
 pub struct Range<'a, T> {
