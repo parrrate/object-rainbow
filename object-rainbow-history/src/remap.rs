@@ -122,7 +122,7 @@ impl<K: Send, V: Send> Collision<(Option<V>, K)> for Option<V> {
     }
 }
 
-impl<V: Send> Collision<V> for Option<V> {
+impl<V: Send> Collision<V> for bool {
     type Output = ();
 
     fn always_okay(_: &V) -> bool {
@@ -130,11 +130,11 @@ impl<V: Send> Collision<V> for Option<V> {
     }
 
     fn okay(self) -> Self::Output {
-        assert!(self.is_none());
+        assert!(self);
     }
 
     fn check(self) -> object_rainbow::Result<Self::Output> {
-        if self.is_none() {
+        if self {
             Ok(())
         } else {
             Err(object_rainbow::Error::consistency(NotUnique))
