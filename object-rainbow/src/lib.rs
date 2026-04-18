@@ -664,6 +664,8 @@ pub trait DefaultHash: FullHash + Default {
     }
 }
 
+impl<T: FullHash + Default> DefaultHash for T {}
+
 pub trait Traversible: 'static + Sized + Send + Sync + FullHash + Topological {
     fn to_resolve(&self) -> Arc<dyn Resolve> {
         let topology = self.topology();
