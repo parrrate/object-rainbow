@@ -728,6 +728,10 @@ impl HamtSet {
             .intersect(&other.0.0.fetch().await?)
             .await
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
 }
 
 #[cfg(test)]
