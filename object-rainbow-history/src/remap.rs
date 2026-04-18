@@ -64,10 +64,10 @@ pub trait Collision<Diff: Send, State>: Send + Sized {
 
 pub struct ExposedState;
 
-pub struct CheckUnique<T>(pub T);
+pub struct KeepUnique<T>(pub T);
 
 impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, ExposedState, Output = O>, O: Send> Apply<D>
-    for CheckUnique<T>
+    for KeepUnique<T>
 {
     type Output = O;
 
