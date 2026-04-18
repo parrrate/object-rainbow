@@ -15,6 +15,7 @@ type OptionFuture<'a, T> = ActionFuture<'a, Option<T>>;
 
 trait Amt<K>: Sized {
     type V: Send + Sync;
+    fn is_empty(&self) -> bool;
     fn insert(&mut self, key: K, value: Self::V) -> OptionFuture<'_, Self::V>;
     fn remove(&mut self, key: K) -> OptionFuture<'_, Self::V>;
     fn extract_only(&mut self) -> OptionFuture<'_, (K, Self::V)>;
@@ -33,6 +34,10 @@ struct DeepestLeaf<V = ()>(ArrayMap<V>);
 
 impl<V: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V> {
     type V = V;
+
+    fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
 
     fn insert(&mut self, key: u8, value: Self::V) -> OptionFuture<'_, Self::V> {
         Box::pin(async move { Ok(self.0.insert(key, value)) })
@@ -96,6 +101,10 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
     for SubTree<T, K>
 {
     type V = T::V;
+
+    fn is_empty(&self) -> bool {
+        matches!(self, Self::Empty)
+    }
 
     fn insert(&mut self, key: K, value: Self::V) -> OptionFuture<'_, Self::V> {
         Box::pin(async move {
@@ -193,6 +202,7 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
             }
             match (&mut *self, &mut *other) {
                 (_, Self::Empty) => {}
+                (Self::Empty, _) => std::mem::swap(self, other),
                 (Self::Leaf(kl, vl), Self::Leaf(kr, vr)) if kl == kr => {
                     std::mem::swap(vl, vr);
                     *other = Self::Empty;
@@ -219,7 +229,6 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
                         .await?;
                     *other = Self::Empty;
                 }
-                (Self::Empty, _) => std::mem::swap(self, other),
             }
             Ok(())
         })
@@ -246,6 +255,10 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
 {
     type V = T::V;
 
+    fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
     fn insert(&mut self, (key, rest): (u8, K), value: Self::V) -> OptionFuture<'_, Self::V> {
         Box::pin(async move {
             if let Some(sub) = self.0.get_mut(key) {
@@ -261,7 +274,7 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
         Box::pin(async move {
             if let Some(sub) = self.0.get_mut(key) {
                 let value = sub.remove(rest).await?;
-                if matches!(sub, SubTree::Empty) {
+                if sub.is_empty() {
                     self.0.remove(key);
                 }
                 Ok(value)
@@ -327,7 +340,7 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
                         futures.push(async move {
                             sub.append(&mut other)
                                 .await
-                                .map(|_| assert!(matches!(other, SubTree::Empty)))
+                                .map(|_| assert!(other.is_empty()))
                         });
                     }
                 }
@@ -423,6 +436,10 @@ mod private {
 
             impl<V: Traversible + InlineOutput + Clone> Amt<$k> for $next<V> {
                 type V = V;
+
+                fn is_empty(&self) -> bool {
+                    self.0.is_empty()
+                }
 
                 fn insert(&mut self, key: $k, value: Self::V) -> OptionFuture<'_, Self::V> {
                     self.0.insert(key, value)
