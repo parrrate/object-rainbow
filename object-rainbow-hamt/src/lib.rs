@@ -9,9 +9,9 @@ use object_rainbow::{
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
 
-type ActionFuture<'a> = Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<()>>>>;
-type OptionFuture<'a, T> =
-    Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<Option<T>>>>>;
+type ActionFuture<'a, T = ()> =
+    Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<T>>>>;
+type OptionFuture<'a, T> = ActionFuture<'a, Option<T>>;
 
 trait Amt<K> {
     type V: Send + Sync;
