@@ -672,6 +672,10 @@ impl<V: Traversible + InlineOutput + Clone> HamtMap<V> {
             .append(&mut *other.0.fetch_mut().await?)
             .await
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_default()
+    }
 }
 
 #[derive(
