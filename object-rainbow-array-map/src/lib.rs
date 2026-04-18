@@ -165,6 +165,18 @@ impl<T> ArrayMap<T> {
             self.insert(key, value);
         }
     }
+
+    pub fn retain(&mut self, mut f: impl FnMut(u8, &mut T) -> bool) {
+        let mut remove = Vec::new();
+        for (key, value) in self.iter_mut() {
+            if !f(key, value) {
+                remove.push(key);
+            }
+        }
+        for key in remove {
+            self.remove(key);
+        }
+    }
 }
 
 pub struct Range<'a, T> {
