@@ -745,10 +745,10 @@ impl HamtSet {
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
-    use object_rainbow::{Fetch, FullHash, numeric::Le};
+    use object_rainbow::{FullHash, numeric::Le};
     use smol_macros::test;
 
-    use crate::{Amt, HamtMap, HamtSet};
+    use crate::{HamtMap, HamtSet};
 
     #[apply(test!)]
     async fn test() -> object_rainbow::Result<()> {
@@ -791,7 +791,7 @@ mod test {
             r.insert((i, 2u8).full_hash()).await?;
         }
         l.intersect(&r).await?;
-        assert!(l.0.0.fetch().await?.is_empty());
+        assert!(l.is_empty());
         Ok(())
     }
 }
