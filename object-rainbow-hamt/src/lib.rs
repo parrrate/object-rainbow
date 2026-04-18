@@ -13,7 +13,7 @@ type ActionFuture<'a, T = ()> =
     Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<T>>>>;
 type OptionFuture<'a, T> = ActionFuture<'a, Option<T>>;
 
-trait Amt<K> {
+trait Amt<K>: Sized {
     type V: Send + Sync;
     fn insert(&mut self, key: K, value: Self::V) -> OptionFuture<'_, Self::V>;
     fn remove(&mut self, key: K) -> OptionFuture<'_, Self::V>;
