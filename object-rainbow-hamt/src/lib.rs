@@ -280,6 +280,9 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
                 }
                 (Self::Sub(_), Self::Leaf(_, _)) => *self = Self::Empty,
                 (Self::Sub(sub), Self::Sub(other)) => {
+                    if sub.hash() == other.hash() {
+                        return Ok(());
+                    }
                     let (is_empty, extracted) = {
                         let sub = &mut *sub.fetch_mut().await?;
                         let other = &other.fetch().await?;
