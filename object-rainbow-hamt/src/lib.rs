@@ -735,12 +735,16 @@ impl HamtSet {
     }
 
     pub async fn intersect(&mut self, other: &Self) -> object_rainbow::Result<()> {
-        self.0
-            .0
-            .fetch_mut()
-            .await?
-            .intersect(&other.0.0.fetch().await?)
-            .await
+        if self.0.0.hash() == other.0.0.hash() {
+            Ok(())
+        } else {
+            self.0
+                .0
+                .fetch_mut()
+                .await?
+                .intersect(&other.0.0.fetch().await?)
+                .await
+        }
     }
 
     pub fn is_empty(&self) -> bool {
