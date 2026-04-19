@@ -846,6 +846,55 @@ impl PointVisitor for TopoVec {
     }
 }
 
+impl Resolve for TopoVec {
+    fn resolve<'a>(
+        &'a self,
+        address: Address,
+        _: &'a Arc<dyn Resolve>,
+    ) -> FailFuture<'a, ByteNode> {
+        Box::pin(async move {
+            let singular = self.get(address.index).ok_or(Error::AddressOutOfBounds)?;
+            if singular.hash() != address.hash {
+                Err(Error::FullHashMismatch)
+            } else {
+                singular.fetch_bytes().await
+            }
+        })
+    }
+
+    fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>> {
+        Box::pin(async move {
+            let singular = self.get(address.index).ok_or(Error::AddressOutOfBounds)?;
+            if singular.hash() != address.hash {
+                Err(Error::FullHashMismatch)
+            } else {
+                singular.fetch_data().await
+            }
+        })
+    }
+
+    fn try_resolve_local(
+        &self,
+        address: Address,
+        _: &Arc<dyn Resolve>,
+    ) -> Result<Option<ByteNode>> {
+        let singular = self.get(address.index).ok_or(Error::AddressOutOfBounds)?;
+        if singular.hash() != address.hash {
+            Err(Error::FullHashMismatch)
+        } else {
+            singular.fetch_bytes_local()
+        }
+    }
+
+    fn topology_hash(&self) -> Option<Hash> {
+        Some(self.data_hash())
+    }
+
+    fn into_topovec(self: Arc<Self>) -> Option<TopoVec> {
+        Some((*self).clone())
+    }
+}
+
 impl Topology for TopoVec {
     fn len(&self) -> usize {
         self.len()
