@@ -1,3 +1,5 @@
+use object_rainbow::{InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological};
+
 use crate::Apply;
 
 pub trait Collision<Diff: Send, State>: Send + Sized {
@@ -10,6 +12,19 @@ pub trait Collision<Diff: Send, State>: Send + Sized {
 pub struct ExposedState;
 pub struct ConcealedState;
 
+#[derive(
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Clone,
+    PartialEq,
+    Eq,
+    Default,
+)]
 pub struct NoOverwrites<T>(pub T);
 
 impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, ExposedState, Output = O>, O: Send> Apply<D>
