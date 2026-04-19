@@ -671,11 +671,16 @@ impl<V: Traversible + InlineOutput + Clone> HamtMap<V> {
     }
 
     pub async fn append(&mut self, other: &mut Self) -> object_rainbow::Result<()> {
-        self.0
-            .fetch_mut()
-            .await?
-            .append(&mut *other.0.fetch_mut().await?)
-            .await
+        if self.0.hash() == other.0.hash() {
+            other.clear();
+            Ok(())
+        } else {
+            self.0
+                .fetch_mut()
+                .await?
+                .append(&mut *other.0.fetch_mut().await?)
+                .await
+        }
     }
 
     pub fn is_empty(&self) -> bool {
