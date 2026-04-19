@@ -3,8 +3,8 @@ use std::pin::Pin;
 use futures_util::TryStreamExt;
 use object_rainbow::{
     Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseInline,
-    PointInput, PointVisitor, Size, SizeExt, Tagged, Tags, ToOutput, Topological, Traversible,
-    assert_impl,
+    PointInput, PointVisitor, Singular, Size, SizeExt, Tagged, Tags, ToOutput, Topological,
+    Traversible, assert_impl,
 };
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
@@ -237,10 +237,12 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
                     _ => unreachable!(),
                 },
                 (Self::Sub(l), Self::Sub(r)) => {
-                    l.fetch_mut()
-                        .await?
-                        .append(&mut *r.fetch_mut().await?)
-                        .await?;
+                    if l.hash() != r.hash() {
+                        l.fetch_mut()
+                            .await?
+                            .append(&mut *r.fetch_mut().await?)
+                            .await?;
+                    }
                     *other = Self::Empty;
                 }
             }
