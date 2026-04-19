@@ -803,7 +803,7 @@ impl<T: Object<Extra> + InlineOutput + for<'a> ParseInline<Input<'a, Extra>>, Ex
 {
 }
 
-pub trait Topology: Send + Sync {
+pub trait Topology: Resolve {
     fn len(&self) -> usize;
     fn get(&self, index: usize) -> Option<&Arc<dyn Singular>>;
 
