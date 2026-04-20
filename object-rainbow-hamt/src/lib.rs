@@ -29,6 +29,9 @@ trait Amt<K>: Sized {
     fn intersect<'a>(&'a mut self, other: &'a Self) -> ActionFuture<'a>
     where
         Self::V: PartialEq;
+    fn subtract<'a>(&'a mut self, other: &'a Self) -> ActionFuture<'a>
+    where
+        Self::V: PartialEq;
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
@@ -86,6 +89,17 @@ impl<V: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V> {
         Box::pin(async move {
             self.0
                 .retain(|key, value| other.0.get(key).is_some_and(|other| other == value));
+            Ok(())
+        })
+    }
+
+    fn subtract<'a>(&'a mut self, other: &'a Self) -> ActionFuture<'a>
+    where
+        Self::V: PartialEq,
+    {
+        Box::pin(async move {
+            self.0
+                .retain(|key, value| other.0.get(key).is_none_or(|other| other != value));
             Ok(())
         })
     }
@@ -302,6 +316,73 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
             Ok(())
         })
     }
+
+    fn subtract<'a>(&'a mut self, other: &'a Self) -> ActionFuture<'a>
+    where
+        Self::V: PartialEq,
+    {
+        Box::pin(async move {
+            match (&mut *self, other) {
+                (Self::Empty, _) => {}
+                (_, Self::Empty) => {}
+                (Self::Leaf(kl, vl), Self::Leaf(kr, vr)) if kl == kr && vl == vr => {
+                    *self = Self::Empty;
+                }
+                (Self::Leaf(_, _), Self::Leaf(_, _)) => {}
+                (Self::Leaf(key, value), Self::Sub(sub))
+                    if sub
+                        .fetch()
+                        .await?
+                        .get(key.clone(), |existing| value == existing)
+                        .await?
+                        .unwrap_or_default() =>
+                {
+                    *self = Self::Empty;
+                }
+                (Self::Leaf(_, _), Self::Sub(_)) => {}
+                (Self::Sub(sub), Self::Leaf(key, value))
+                    if sub
+                        .fetch()
+                        .await?
+                        .get(key.clone(), |existing| value == existing)
+                        .await?
+                        .unwrap_or_default() =>
+                {
+                    let extracted = {
+                        let sub = &mut *sub.fetch_mut().await?;
+                        sub.remove(key.clone()).await?;
+                        assert!(!sub.is_empty());
+                        sub.extract_only().await?
+                    };
+                    if let Some((k, v)) = extracted {
+                        *self = Self::Leaf(k, v);
+                    }
+                }
+                (Self::Sub(_), Self::Leaf(_, _)) => {}
+                (Self::Sub(sub), Self::Sub(other)) => {
+                    if sub.hash() == other.hash() {
+                        *self = Self::Empty;
+                        return Ok(());
+                    }
+                    let (is_empty, extracted) = {
+                        let sub = &mut *sub.fetch_mut().await?;
+                        let other = &other.fetch().await?;
+                        sub.subtract(other).await?;
+                        (sub.is_empty(), sub.extract_only().await?)
+                    };
+                    if is_empty {
+                        assert!(extracted.is_none());
+                        *self = Self::Empty;
+                    }
+                    if let Some((k, v)) = extracted {
+                        assert!(!is_empty);
+                        *self = Self::Leaf(k, v);
+                    }
+                }
+            }
+            Ok(())
+        })
+    }
 }
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse)]
@@ -444,6 +525,25 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
             Ok(())
         })
     }
+
+    fn subtract<'a>(&'a mut self, other: &'a Self) -> ActionFuture<'a>
+    where
+        Self::V: PartialEq,
+    {
+        Box::pin(async move {
+            {
+                let mut futures = futures_util::stream::FuturesUnordered::new();
+                for (key, sub) in self.0.iter_mut() {
+                    if let Some(other) = other.0.get(key) {
+                        futures.push(sub.subtract(other));
+                    }
+                }
+                while futures.try_next().await?.is_some() {}
+            }
+            self.0.retain(|_, sub| !sub.is_empty());
+            Ok(())
+        })
+    }
 }
 
 type K1 = u8;
@@ -564,6 +664,13 @@ mod private {
                     Self::V: PartialEq,
                 {
                     self.0.intersect(&other.0)
+                }
+
+                fn subtract<'a>(&'a mut self, other: &'a Self) -> ActionFuture<'a>
+                where
+                    Self::V: PartialEq,
+                {
+                    self.0.subtract(&other.0)
                 }
             }
         };
@@ -747,6 +854,20 @@ impl HamtSet {
         }
     }
 
+    pub async fn subtract(&mut self, other: &Self) -> object_rainbow::Result<()> {
+        if self.0.0.hash() == other.0.0.hash() {
+            self.clear();
+            Ok(())
+        } else {
+            self.0
+                .0
+                .fetch_mut()
+                .await?
+                .subtract(&other.0.0.fetch().await?)
+                .await
+        }
+    }
+
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
@@ -805,6 +926,34 @@ mod test {
             r.insert((i, 2u8).full_hash()).await?;
         }
         l.intersect(&r).await?;
+        assert!(l.is_empty());
+        Ok(())
+    }
+
+    #[apply(test!)]
+    async fn subtract() -> object_rainbow::Result<()> {
+        let mut l = HamtSet::new();
+        for i in 0u8..=254 {
+            l.insert((i, 1u8).full_hash()).await?;
+            l.insert((i, 3u8).full_hash()).await?;
+        }
+        let mut r = HamtSet::new();
+        for i in 0u8..=254 {
+            r.insert((i, 2u8).full_hash()).await?;
+            r.insert((i, 3u8).full_hash()).await?;
+        }
+        l.subtract(&r).await?;
+        for i in 0u8..=254 {
+            assert!(l.contains((i, 1u8).full_hash()).await?);
+            assert!(!l.contains((i, 2u8).full_hash()).await?);
+            assert!(!l.contains((i, 3u8).full_hash()).await?);
+        }
+        let mut r = HamtSet::new();
+        for i in 0u8..=254 {
+            r.insert((i, 1u8).full_hash()).await?;
+            r.insert((i, 2u8).full_hash()).await?;
+        }
+        l.subtract(&r).await?;
         assert!(l.is_empty());
         Ok(())
     }
