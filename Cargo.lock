@@ -1192,7 +1192,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.60"
+version = "0.0.0-a.61"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1291,7 +1291,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-hamt"
-version = "0.0.0-a.7"
+version = "0.0.0-a.8"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1304,7 +1304,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.24"
+version = "0.0.0-a.25"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
