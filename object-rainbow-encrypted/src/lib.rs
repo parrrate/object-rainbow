@@ -2,7 +2,7 @@ use std::{ops::Deref, sync::Arc};
 
 use object_rainbow::{
     Address, ByteNode, Error, ExtraFor, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node,
-    Object, Parse, ParseInline, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular,
+    Parse, ParseInline, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Tagged, ToOutput, TopoVec, Topological, Traversible, derive_for_wrapped,
     length_prefixed::Lp, map_extra::MappedExtra, tuple_extra::Extra0,
 };
@@ -460,8 +460,8 @@ impl<K: 'static + Send + Sync + Clone> EncryptedExtra<K> for K {
 
 impl<
     K: Key,
-    T: Object<Extra>,
-    Extra: 'static + Send + Sync + Clone,
+    T: Topological + Tagged,
+    Extra: 'static + Send + Sync + Clone + ExtraFor<T>,
     I: PointInput<Extra: EncryptedExtra<K, Extra = Extra>>,
 > Parse<I> for Encrypted<K, T>
 {
