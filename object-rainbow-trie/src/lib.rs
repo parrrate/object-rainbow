@@ -249,6 +249,14 @@ where
         self.c_empty() && self.value.is_none()
     }
 
+    fn pop_only(&mut self) -> Option<(u8, TriePoint<Self>)> {
+        if self.value.is_none() && self.c_len() < 2 {
+            self.c_pop_first()
+        } else {
+            None
+        }
+    }
+
     pub async fn remove(&mut self, key: &[u8]) -> object_rainbow::Result<Option<T>> {
         let Some((first, key)) = key.split_first() else {
             return Ok(self.value.take());
@@ -262,10 +270,7 @@ where
                 return Ok(None);
             };
             let item = Box::pin(trie.remove(key)).await?;
-            if trie.value.is_none()
-                && trie.c_len() < 2
-                && let Some((first, point)) = trie.c_pop_first()
-            {
+            if let Some((first, point)) = trie.pop_only() {
                 let (child, suffix) = point.fetch().await?;
                 prefix.push(first);
                 prefix.extend_from_slice(&suffix);
