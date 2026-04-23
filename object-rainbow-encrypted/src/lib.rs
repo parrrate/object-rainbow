@@ -1,10 +1,10 @@
 use std::{ops::Deref, sync::Arc};
 
 use object_rainbow::{
-    Address, ByteNode, Error, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node, Object, Parse,
-    ParseInline, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular, SingularFetch,
-    Tagged, ToOutput, TopoVec, Topological, Traversible, derive_for_wrapped, length_prefixed::Lp,
-    map_extra::MappedExtra, tuple_extra::Extra0,
+    Address, ByteNode, Error, ExtraFor, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node,
+    Object, Parse, ParseInline, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular,
+    SingularFetch, Tagged, ToOutput, TopoVec, Topological, Traversible, derive_for_wrapped,
+    length_prefixed::Lp, map_extra::MappedExtra, tuple_extra::Extra0,
 };
 use object_rainbow_point::{ExtractResolve, Extras, IntoPoint, Point};
 
@@ -222,8 +222,8 @@ impl<'a, K: Key, V: PointVisitor> PointVisitor for RawVisit<'a, K, V> {
 
 impl<
     K: Key,
-    T: Object<Extra>,
-    Extra: 'static + Send + Sync + Clone,
+    T: Topological + Tagged,
+    Extra: 'static + Send + Sync + Clone + ExtraFor<T>,
     I: PointInput<Extra = (K, Extra)>,
 > Parse<I> for Inner<K, T>
 {
@@ -232,10 +232,9 @@ impl<
             .parse_inline::<MappedExtra<InnerHeader<K>, Extra0>>()?
             .1;
         let extra = input.extra().1.clone();
-        let decrypted = T::parse_slice_extra(
+        let decrypted = extra.parse(
             &input.parse_all()?,
             &(Arc::new(header.resolve.clone()) as _),
-            &extra,
         )?;
         header.with(decrypted)
     }
