@@ -320,29 +320,16 @@ impl<Diff: Send, First: Apply<Diff>, Second: Apply<First::Output>> Apply<Diff>
     Eq,
     Default,
 )]
-pub struct Parallel<A, B> {
-    a: A,
-    b: B,
-}
+pub struct ToTuple2;
 
-impl<A, B> Parallel<A, B> {
-    pub fn a(&self) -> &A {
-        &self.a
-    }
-
-    pub fn b(&self) -> &B {
-        &self.b
-    }
-}
-
-impl<Diff: Send + Clone, A: Apply<Diff>, B: Apply<Diff>> Apply<Diff> for Parallel<A, B> {
-    type Output = (A::Output, B::Output);
+impl<D: Send + Clone> Apply<D> for ToTuple2 {
+    type Output = (D, D);
 
     fn apply(
         &mut self,
-        diff: Diff,
+        diff: D,
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        futures_util::future::try_join(self.a.apply(diff.clone()), self.b.apply(diff))
+        futures_util::future::ready(Ok((diff.clone(), diff)))
     }
 }
 
@@ -462,3 +449,5 @@ impl<A: Send, B: Send> Apply<(A, B)> for Swap {
         futures_util::future::ready(Ok((b, a)))
     }
 }
+
+pub type Parallel<A, B> = Sequential<ToTuple2, (A, B)>;

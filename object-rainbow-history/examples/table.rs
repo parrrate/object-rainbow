@@ -238,13 +238,13 @@ impl Table for History {
     fn messages_by_channels(
         &self,
     ) -> impl Send + Future<Output = object_rainbow::Result<TrieSet<MessageByChannel>>> {
-        async move { Ok(self.tree().await?.second().a().second().0.clone()) }
+        async move { Ok(self.tree().await?.second().second().0.second().0.clone()) }
     }
 
     fn messages_by_users(
         &self,
     ) -> impl Send + Future<Output = object_rainbow::Result<TrieSet<MessageByUser>>> {
-        async move { Ok(self.tree().await?.second().b().second().0.clone()) }
+        async move { Ok(self.tree().await?.second().second().1.second().0.clone()) }
     }
 
     fn insert(
