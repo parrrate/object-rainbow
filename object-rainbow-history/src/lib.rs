@@ -363,9 +363,9 @@ impl<Diff: Send + Clone, A: Apply<Diff>, B: Apply<Diff>> Apply<Diff> for Paralle
     Eq,
     Default,
 )]
-pub struct Discard;
+pub struct ToTuple0;
 
-impl<D: Send> Apply<D> for Discard {
+impl<D: Send> Apply<D> for ToTuple0 {
     type Output = ();
 
     fn apply(&mut self, _: D) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
