@@ -71,14 +71,14 @@ pub trait Apply<Diff: Send>: Send {
 impl<T: Clone + Traversible + InlineOutput + Default + Apply<D>, D: Clone + Traversible>
     History<T, D>
 {
-    pub async fn commit(&mut self, diff: D) -> object_rainbow::Result<()> {
+    pub async fn commit(&mut self, diff: D) -> object_rainbow::Result<T::Output> {
         let mut tree = self.tree().await?;
         let hash = tree.full_hash();
-        tree.apply(diff.clone()).await?;
+        let o = tree.apply(diff.clone()).await?;
         if hash != tree.full_hash() {
             self.0.push((tree, diff)).await?;
         }
-        Ok(())
+        Ok(o)
     }
 
     pub async fn check_forward(&self, other: &Self) -> object_rainbow::Result<()> {
