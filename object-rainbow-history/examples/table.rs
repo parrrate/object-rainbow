@@ -252,14 +252,20 @@ impl Table for History {
         message: MessageId,
         contents: Message,
     ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
-        self.commit((Some(contents), message))
+        async move {
+            self.commit((Some(contents), message)).await?;
+            Ok(())
+        }
     }
 
     fn delete(
         &mut self,
         message: MessageId,
     ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
-        self.commit((None, message))
+        async move {
+            self.commit((None, message)).await?;
+            Ok(())
+        }
     }
 }
 
