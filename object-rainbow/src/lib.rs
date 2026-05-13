@@ -372,6 +372,10 @@ impl<'a> ReflessInput<'a> {
         self.data.as_ref().ok_or(Error::EndOfInput)
     }
 
+    fn data_mut(&mut self) -> crate::Result<&mut ReflessData<'a>> {
+        self.data.as_mut().ok_or(Error::EndOfInput)
+    }
+
     fn make_error<T>(&mut self, e: crate::Error) -> crate::Result<T> {
         self.data = None;
         Err(e)
@@ -384,6 +388,11 @@ impl<'a> ReflessInput<'a> {
 
 impl<'d> ParseInput for ReflessInput<'d> {
     type Data = Cow<'d, [u8]>;
+
+    fn push_front(&mut self, data: impl Into<Vec<u8>>) -> crate::Result<()> {
+        self.data_mut()?.prefix.push(data.into());
+        Ok(())
+    }
 
     fn read(&mut self, data: &mut [u8]) -> crate::Result<()> {
         match self.data()?.split_at_checked(data.len()) {
@@ -463,6 +472,10 @@ impl<'d> ParseInput for ReflessInput<'d> {
 
 impl<'d, Extra: Clone> ParseInput for Input<'d, Extra> {
     type Data = Cow<'d, [u8]>;
+
+    fn push_front(&mut self, data: impl Into<Vec<u8>>) -> crate::Result<()> {
+        (**self).push_front(data)
+    }
 
     fn read(&mut self, data: &mut [u8]) -> crate::Result<()> {
         (**self).read(data)
@@ -1272,6 +1285,7 @@ pub trait RainbowIterator: Sized + IntoIterator {
 
 pub trait ParseInput: Sized {
     type Data: AsRef<[u8]> + Deref<Target = [u8]> + Into<Vec<u8>>;
+    fn push_front(&mut self, data: impl Into<Vec<u8>>) -> crate::Result<()>;
     fn read(&mut self, data: &mut [u8]) -> crate::Result<()>;
     fn parse_chunk<const N: usize>(&mut self) -> crate::Result<[u8; N]> {
         let mut chunk = [0; _];
