@@ -306,7 +306,7 @@ impl<'a> ReflessData<'a> {
     }
 
     fn is_empty(&self) -> bool {
-        self.slice.is_empty()
+        self.slice.is_empty() && self.prefix.iter().all(|v| v.is_empty())
     }
 
     fn starts_with(&self, prefix: &[u8]) -> bool {
