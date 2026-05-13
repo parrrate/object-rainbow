@@ -1167,6 +1167,10 @@ pub trait ParseInput: Clone {
         self.split_n(n)?.parse_all()
     }
     fn parse_until_zero(&mut self) -> crate::Result<Self::Data>;
+    fn compare_ahead(&mut self, c: &[u8]) -> crate::Result<bool> {
+        let mut alt = self.clone();
+        Ok(alt.parse_n(c.len())?.as_ref() == c)
+    }
     fn parse_n_compare(&mut self, c: &[u8]) -> crate::Result<Option<Self::Data>> {
         let data = self.parse_n(c.len())?;
         if *data == *c {
