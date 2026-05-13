@@ -266,10 +266,12 @@ pub trait PointVisitor {
     fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone));
 }
 
+#[derive(Clone)]
 pub struct ReflessInput<'d> {
     data: Option<&'d [u8]>,
 }
 
+#[derive(Clone)]
 pub struct Input<'d, Extra: Clone = ()> {
     refless: ReflessInput<'d>,
     resolve: &'d Arc<dyn Resolve>,
@@ -319,6 +321,16 @@ impl<'d> ParseInput for ReflessInput<'d> {
         }
     }
 
+    fn split_n(&mut self, n: usize) -> crate::Result<Self> {
+        match self.data()?.split_at_checked(n) {
+            Some((chunk, rest)) => {
+                self.data = Some(rest);
+                Ok(Self { data: Some(chunk) })
+            }
+            None => self.end_of_input(),
+        }
+    }
+
     fn parse_n(&mut self, n: usize) -> crate::Result<Self::Data> {
         match self.data()?.split_at_checked(n) {
             Some((chunk, data)) => {
@@ -339,11 +351,6 @@ impl<'d> ParseInput for ReflessInput<'d> {
             }
             None => self.end_of_input(),
         }
-    }
-
-    fn reparse<T: Parse<Self>>(&mut self, data: Self::Data) -> crate::Result<T> {
-        let input = Self { data: Some(data) };
-        T::parse(input)
     }
 
     fn parse_all(self) -> crate::Result<Self::Data> {
@@ -374,22 +381,21 @@ impl<'d, Extra: Clone> ParseInput for Input<'d, Extra> {
         (**self).parse_chunk()
     }
 
+    fn split_n(&mut self, n: usize) -> crate::Result<Self> {
+        Ok(Self {
+            refless: self.refless.split_n(n)?,
+            resolve: self.resolve,
+            index: self.index,
+            extra: self.extra.clone(),
+        })
+    }
+
     fn parse_n(&mut self, n: usize) -> crate::Result<Self::Data> {
         (**self).parse_n(n)
     }
 
     fn parse_until_zero(&mut self) -> crate::Result<Self::Data> {
         (**self).parse_until_zero()
-    }
-
-    fn reparse<T: Parse<Self>>(&mut self, data: Self::Data) -> crate::Result<T> {
-        let input = Self {
-            refless: ReflessInput { data: Some(data) },
-            resolve: self.resolve,
-            index: self.index,
-            extra: self.extra.clone(),
-        };
-        T::parse(input)
     }
 
     fn parse_all(self) -> crate::Result<Self::Data> {
@@ -1159,10 +1165,13 @@ pub trait RainbowIterator: Sized + IntoIterator {
     }
 }
 
-pub trait ParseInput: Sized {
-    type Data: AsRef<[u8]> + Deref<Target = [u8]> + Into<Vec<u8>> + Copy;
+pub trait ParseInput: Clone {
+    type Data: AsRef<[u8]> + Deref<Target = [u8]> + Into<Vec<u8>> + Clone;
     fn parse_chunk<const N: usize>(&mut self) -> crate::Result<[u8; N]>;
-    fn parse_n(&mut self, n: usize) -> crate::Result<Self::Data>;
+    fn split_n(&mut self, n: usize) -> crate::Result<Self>;
+    fn parse_n(&mut self, n: usize) -> crate::Result<Self::Data> {
+        self.split_n(n)?.parse_all()
+    }
     fn parse_until_zero(&mut self) -> crate::Result<Self::Data>;
     fn parse_n_compare(&mut self, n: usize, c: &[u8]) -> crate::Result<Option<Self::Data>> {
         let data = self.parse_n(n)?;
@@ -1172,19 +1181,23 @@ pub trait ParseInput: Sized {
             Ok(Some(data))
         }
     }
-    fn reparse<T: Parse<Self>>(&mut self, data: Self::Data) -> crate::Result<T>;
     fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
-        let data = self.parse_n(n)?;
-        self.reparse(data)
+        let head = self.split_n(n)?;
+        head.parse()
     }
-    fn parse_zero_terminated<T: Parse<Self>>(&mut self) -> crate::Result<T> {
+    fn parse_zero_terminated<T: Parse<Self>>(&mut self) -> crate::Result<(Self::Data, T)> {
+        let mut old = self.clone();
         let data = self.parse_until_zero()?;
-        self.reparse(data)
+        let value = old.parse_ahead(data.len())?;
+        Ok((data, value))
     }
     fn parse_compare<T: Parse<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
-        self.parse_n_compare(n, c)?
-            .map(|data| self.reparse(data))
-            .transpose()
+        let mut old = self.clone();
+        let Some(data) = self.parse_n_compare(n, c)? else {
+            return Ok(None);
+        };
+        let value = old.parse_ahead(data.len())?;
+        Ok(Some(value))
     }
     fn parse_all(self) -> crate::Result<Self::Data>;
     fn empty(self) -> crate::Result<()>;
