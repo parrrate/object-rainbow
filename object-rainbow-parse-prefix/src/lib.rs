@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
-use object_rainbow::{ListHashes, Output, Parse, PointInput, Tagged, ToOutput, Topological};
+use object_rainbow::{
+    ListHashes, Output, Parse, ParseInline, PointInput, Tagged, ToOutput, Topological,
+};
 
 #[derive(Clone, Default)]
 pub struct Prefix(Option<Arc<(Vec<u8>, Self)>>);
@@ -107,6 +109,21 @@ impl<
         let prefix = input.extra().0.clone();
         input.push_front(prefix.clone())?;
         let value = input.map_extra(|(_, e)| e).parse()?;
+        Ok(Self { prefix, value })
+    }
+}
+
+impl<
+    T: ParseInline<J>,
+    I: PointInput<Extra = (Prefix, E), WithExtra<E> = J>,
+    J: PointInput<Extra = E>,
+    E: 'static + Send + Sync + Clone,
+> ParseInline<I> for WithPrefix<T>
+{
+    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
+        let prefix = input.extra().0.clone();
+        input.push_front(prefix.clone())?;
+        let value = input.parse_inline_extra(input.extra().1.clone())?;
         Ok(Self { prefix, value })
     }
 }
