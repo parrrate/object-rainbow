@@ -343,6 +343,10 @@ impl<'d> ParseInput for ReflessInput<'d> {
         }
     }
 
+    fn compare_ahead(&mut self, c: &[u8]) -> crate::Result<bool> {
+        Ok(self.data()?.starts_with(c))
+    }
+
     fn parse_all(self) -> crate::Result<Self::Data> {
         self.data()
     }
@@ -382,6 +386,10 @@ impl<'d, Extra: Clone> ParseInput for Input<'d, Extra> {
 
     fn parse_until_zero(&mut self) -> crate::Result<Self::Data> {
         (**self).parse_until_zero()
+    }
+
+    fn compare_ahead(&mut self, c: &[u8]) -> crate::Result<bool> {
+        (**self).compare_ahead(c)
     }
 
     fn parse_all(self) -> crate::Result<Self::Data> {
@@ -1167,10 +1175,7 @@ pub trait ParseInput: Clone {
         self.split_n(n)?.parse_all()
     }
     fn parse_until_zero(&mut self) -> crate::Result<Self::Data>;
-    fn compare_ahead(&mut self, c: &[u8]) -> crate::Result<bool> {
-        let mut alt = self.clone();
-        Ok(alt.parse_n(c.len())?.as_ref() == c)
-    }
+    fn compare_ahead(&mut self, c: &[u8]) -> crate::Result<bool>;
     fn parse_n_compare(&mut self, c: &[u8]) -> crate::Result<Option<Self::Data>> {
         let data = self.parse_n(c.len())?;
         if *data == *c {
