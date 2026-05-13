@@ -266,12 +266,10 @@ pub trait PointVisitor {
     fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone));
 }
 
-#[derive(Clone)]
 pub struct ReflessInput<'d> {
     data: Option<&'d [u8]>,
 }
 
-#[derive(Clone)]
 pub struct Input<'d, Extra: Clone = ()> {
     refless: ReflessInput<'d>,
     resolve: &'d Arc<dyn Resolve>,
