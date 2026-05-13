@@ -394,10 +394,15 @@ impl<'d> ParseInput for ReflessInput<'d> {
         Ok(())
     }
 
-    fn read(&mut self, data: &mut [u8]) -> crate::Result<()> {
+    fn read(&mut self, mut data: &mut [u8]) -> crate::Result<()> {
         match self.data()?.split_at_checked(data.len()) {
             Some((chunk, rest)) => {
                 self.data = Some(rest);
+                for v in chunk.prefix.iter().rev() {
+                    let part;
+                    (part, data) = data.split_at_mut(v.len());
+                    part.copy_from_slice(v);
+                }
                 data.copy_from_slice(chunk.slice);
                 Ok(())
             }
