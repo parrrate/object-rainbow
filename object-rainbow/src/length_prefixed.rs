@@ -116,7 +116,9 @@ impl<I: ParseInput> ParseInline<I> for LpBytes {
         let prefix: Le<u64> = input.parse_inline()?;
         let len = prefix.0;
         let len = len.try_into().map_err(|_| Error::UnsupportedLength)?;
-        Ok(Self(input.parse_n(len)?.into()))
+        let mut data = vec![0; len];
+        input.read(&mut data)?;
+        Ok(Self(data))
     }
 }
 
