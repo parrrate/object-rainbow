@@ -325,7 +325,16 @@ impl<'a> ReflessData<'a> {
     }
 
     fn cow(&self) -> Cow<'a, [u8]> {
-        Cow::from(self.slice)
+        if self.prefix.iter().all(|v| v.is_empty()) {
+            Cow::from(self.slice)
+        } else {
+            let mut vec = Vec::with_capacity(self.len());
+            for v in self.prefix.iter().rev() {
+                vec.extend_from_slice(v);
+            }
+            vec.extend_from_slice(self.slice);
+            Cow::from(vec)
+        }
     }
 }
 
