@@ -311,6 +311,17 @@ impl<'a> ReflessInput<'a> {
 impl<'d> ParseInput for ReflessInput<'d> {
     type Data = &'d [u8];
 
+    fn read(&mut self, data: &mut [u8]) -> crate::Result<()> {
+        match self.data()?.split_at_checked(data.len()) {
+            Some((chunk, rest)) => {
+                self.data = Some(rest);
+                data.copy_from_slice(chunk);
+                Ok(())
+            }
+            None => self.end_of_input(),
+        }
+    }
+
     fn split_n(&mut self, n: usize) -> crate::Result<Self> {
         match self.data()?.split_at_checked(n) {
             Some((chunk, rest)) => {
@@ -378,6 +389,10 @@ impl<'d> ParseInput for ReflessInput<'d> {
 
 impl<'d, Extra: Clone> ParseInput for Input<'d, Extra> {
     type Data = &'d [u8];
+
+    fn read(&mut self, data: &mut [u8]) -> crate::Result<()> {
+        (**self).read(data)
+    }
 
     fn split_n(&mut self, n: usize) -> crate::Result<Self> {
         Ok(Self {
@@ -1173,10 +1188,7 @@ pub trait RainbowIterator: Sized + IntoIterator {
 
 pub trait ParseInput: Sized {
     type Data: AsRef<[u8]> + Deref<Target = [u8]> + Into<Vec<u8>> + Clone;
-    fn read(&mut self, data: &mut [u8]) -> crate::Result<()> {
-        data.copy_from_slice(&self.parse_n(data.len())?);
-        Ok(())
-    }
+    fn read(&mut self, data: &mut [u8]) -> crate::Result<()>;
     fn parse_chunk<const N: usize>(&mut self) -> crate::Result<[u8; N]> {
         let mut chunk = [0; _];
         self.read(&mut chunk)?;
