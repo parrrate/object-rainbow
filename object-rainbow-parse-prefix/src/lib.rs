@@ -64,8 +64,17 @@ pub struct WithPrefix<T> {
 }
 
 impl<T> WithPrefix<T> {
-    pub fn new(prefix: Prefix, value: T) -> Self {
-        Self { prefix, value }
+    pub fn new(prefix: Prefix, value: T) -> object_rainbow::Result<Self>
+    where
+        T: ToOutput,
+    {
+        if value.vec().starts_with(&Vec::from(prefix.clone())) {
+            Err(object_rainbow::error_consistency!(
+                "`value` doesn't start with `prefix`",
+            ))
+        } else {
+            Ok(Self { prefix, value })
+        }
     }
 
     pub fn value(&self) -> &T {
