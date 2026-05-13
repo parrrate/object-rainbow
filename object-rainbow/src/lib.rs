@@ -310,7 +310,17 @@ impl<'a> ReflessData<'a> {
         self.slice.is_empty() && self.prefix.iter().all(|v| v.is_empty())
     }
 
-    fn starts_with(&self, prefix: &[u8]) -> bool {
+    fn starts_with(&self, mut prefix: &[u8]) -> bool {
+        for chunk in self.prefix.iter().rev() {
+            if chunk.starts_with(prefix) {
+                return true;
+            }
+            if let Some(rest) = prefix.strip_prefix(&**chunk) {
+                prefix = rest;
+            } else {
+                return false;
+            }
+        }
         self.slice.starts_with(prefix)
     }
 
