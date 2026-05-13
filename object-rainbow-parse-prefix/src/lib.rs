@@ -44,6 +44,20 @@ impl Prefix {
         }
         assert!(dest.is_empty());
     }
+
+    pub fn pop_n(&mut self, mut n: usize) {
+        while n > 0 && let Some((mut v, rest)) = self.0.take().map(Arc::unwrap_or_clone) {
+            if n >= v.len() {
+                n -= v.len();
+                *self = rest;
+            } else {
+                v.drain(v.len() - n..);
+                n = 0;
+                self.0 = Some((v, rest).into());
+            }
+        }
+        assert_eq!(n, 0);
+    }
 }
 
 impl Tagged for Prefix {}
