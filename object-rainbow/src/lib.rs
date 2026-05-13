@@ -332,11 +332,11 @@ impl<'d> ParseInput for ReflessInput<'d> {
         }
     }
 
-    fn parse_n(&mut self, n: usize) -> crate::Result<Self::Data> {
+    fn skip_n(&mut self, n: usize) -> crate::Result<()> {
         match self.data()?.split_at_checked(n) {
-            Some((chunk, data)) => {
-                self.data = Some(data);
-                Ok(chunk)
+            Some((_, rest)) => {
+                self.data = Some(rest);
+                Ok(())
             }
             None => self.end_of_input(),
         }
@@ -403,8 +403,8 @@ impl<'d, Extra: Clone> ParseInput for Input<'d, Extra> {
         })
     }
 
-    fn parse_n(&mut self, n: usize) -> crate::Result<Self::Data> {
-        (**self).parse_n(n)
+    fn skip_n(&mut self, n: usize) -> crate::Result<()> {
+        (**self).skip_n(n)
     }
 
     fn find_zero(&mut self) -> crate::Result<usize> {
@@ -1195,13 +1195,7 @@ pub trait ParseInput: Sized {
         Ok(chunk)
     }
     fn split_n(&mut self, n: usize) -> crate::Result<Self>;
-    fn parse_n(&mut self, n: usize) -> crate::Result<Self::Data> {
-        self.split_n(n)?.parse_all()
-    }
-    fn skip_n(&mut self, n: usize) -> crate::Result<()> {
-        self.parse_n(n)?;
-        Ok(())
-    }
+    fn skip_n(&mut self, n: usize) -> crate::Result<()>;
     fn find_zero(&mut self) -> crate::Result<usize>;
     fn parse_n_ahead(&mut self, n: usize) -> crate::Result<Vec<u8>>;
     fn compare_ahead(&mut self, c: &[u8]) -> crate::Result<bool>;
