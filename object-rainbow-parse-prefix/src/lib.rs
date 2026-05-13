@@ -100,6 +100,10 @@ impl<T> WithPrefix<T> {
         }
     }
 
+    pub fn prefix(&self) -> &Prefix {
+        &self.prefix
+    }
+
     pub fn value(&self) -> &T {
         &self.value
     }
