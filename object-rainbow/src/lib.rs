@@ -1171,7 +1171,7 @@ pub trait RainbowIterator: Sized + IntoIterator {
     }
 }
 
-pub trait ParseInput: Clone {
+pub trait ParseInput: Sized {
     type Data: AsRef<[u8]> + Deref<Target = [u8]> + Into<Vec<u8>> + Clone;
     fn read(&mut self, data: &mut [u8]) -> crate::Result<()> {
         data.copy_from_slice(&self.parse_n(data.len())?);
