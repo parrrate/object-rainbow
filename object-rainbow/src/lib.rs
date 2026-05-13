@@ -1199,12 +1199,12 @@ pub trait ParseInput: Clone {
         Ok((data, value))
     }
     fn parse_compare<T: Parse<Self>>(&mut self, c: &[u8]) -> Result<Option<T>> {
-        let mut old = self.clone();
-        let Some(data) = self.parse_n_compare(c)? else {
-            return Ok(None);
-        };
-        let value = old.parse_ahead(data.len())?;
-        Ok(Some(value))
+        if self.compare_ahead(c)? {
+            self.parse_n(c.len())?;
+            Ok(None)
+        } else {
+            Ok(Some(self.parse_ahead(c.len())?))
+        }
     }
     fn parse_all(self) -> crate::Result<Self::Data>;
     fn empty(self) -> crate::Result<()>;
