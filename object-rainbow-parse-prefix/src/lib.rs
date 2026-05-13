@@ -28,4 +28,29 @@ impl Prefix {
     pub fn with(&self, suffix: impl Into<Vec<u8>>) -> Self {
         Self(Some(Arc::new((suffix.into(), self.clone()))))
     }
+
+    fn write_to(&self, mut dest: &mut [u8]) {
+        let mut this = self;
+        while let Some((v, rest)) = this.0.as_deref() {
+            let part;
+            (dest, part) = dest.split_at_mut(dest.len() - v.len());
+            part.copy_from_slice(v);
+            this = rest;
+        }
+        assert!(dest.is_empty());
+    }
+}
+
+impl From<Prefix> for Vec<u8> {
+    fn from(prefix: Prefix) -> Self {
+        let mut vec = vec![0; prefix.len()];
+        prefix.write_to(&mut vec);
+        vec
+    }
+}
+
+#[test]
+fn abc() {
+    let v = Vec::from(Prefix::default().with(b"a").with(b"bc"));
+    assert_eq!(v, b"abc");
 }
