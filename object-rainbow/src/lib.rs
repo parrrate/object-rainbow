@@ -331,14 +331,10 @@ impl<'d> ParseInput for ReflessInput<'d> {
         }
     }
 
-    fn parse_until_zero(&mut self) -> crate::Result<Self::Data> {
+    fn find_zero(&mut self) -> crate::Result<usize> {
         let data = self.data()?;
         match data.iter().enumerate().find(|(_, x)| **x == 0) {
-            Some((at, _)) => {
-                let (chunk, data) = data.split_at(at);
-                self.data = Some(&data[1..]);
-                Ok(chunk)
-            }
+            Some((at, _)) => Ok(at),
             None => self.end_of_input(),
         }
     }
@@ -389,8 +385,8 @@ impl<'d, Extra: Clone> ParseInput for Input<'d, Extra> {
         (**self).parse_n(n)
     }
 
-    fn parse_until_zero(&mut self) -> crate::Result<Self::Data> {
-        (**self).parse_until_zero()
+    fn find_zero(&mut self) -> crate::Result<usize> {
+        (**self).find_zero()
     }
 
     fn compare_ahead(&mut self, c: &[u8]) -> crate::Result<bool> {
@@ -1179,7 +1175,13 @@ pub trait ParseInput: Clone {
     fn parse_n(&mut self, n: usize) -> crate::Result<Self::Data> {
         self.split_n(n)?.parse_all()
     }
-    fn parse_until_zero(&mut self) -> crate::Result<Self::Data>;
+    fn find_zero(&mut self) -> crate::Result<usize>;
+    fn parse_until_zero(&mut self) -> crate::Result<Self::Data> {
+        let n = self.find_zero()?;
+        let data = self.parse_n(n)?;
+        self.parse_n(1)?;
+        Ok(data)
+    }
     fn compare_ahead(&mut self, c: &[u8]) -> crate::Result<bool>;
     fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
         self.split_n(n)?.parse()
