@@ -268,13 +268,37 @@ pub trait PointVisitor {
 
 struct ReflessData<'d> {
     slice: &'d [u8],
+    prefix: Vec<Vec<u8>>,
 }
 
 impl<'a> ReflessData<'a> {
-    fn split_at_checked(&self, n: usize) -> Option<(Self, Self)> {
-        self.slice
-            .split_at_checked(n)
-            .map(|(a, b)| (Self { slice: a }, Self { slice: b }))
+    fn split_at_checked(&self, mut n: usize) -> Option<(Self, Self)> {
+        let mut prefix_l = Vec::new();
+        let mut prefix_r = self.prefix.clone();
+        while n > 0
+            && let Some(last) = prefix_r.last_mut()
+        {
+            if n < last.len() {
+                n = 0;
+                prefix_l.push(Vec::from(&last[..n]));
+                last.drain(..n);
+            } else {
+                n -= last.len();
+                prefix_l.push(prefix_r.pop().expect("last element is known to exist"));
+            }
+        }
+        self.slice.split_at_checked(n).map(|(slice_l, slice_r)| {
+            (
+                Self {
+                    slice: slice_l,
+                    prefix: prefix_l,
+                },
+                Self {
+                    slice: slice_r,
+                    prefix: prefix_r,
+                },
+            )
+        })
     }
 
     fn len(&self) -> usize {
@@ -651,7 +675,10 @@ pub trait ParseSliceExtra<Extra: Clone>: for<'a> Parse<Input<'a, Extra>> {
     ) -> crate::Result<Self> {
         let input = Input {
             refless: ReflessInput {
-                data: Some(ReflessData { slice }),
+                data: Some(ReflessData {
+                    slice,
+                    prefix: Vec::new(),
+                }),
             },
             resolve,
             index: &Cell::new(0),
@@ -957,7 +984,10 @@ impl Topology for TopoVec {
 pub trait ParseSliceRefless: for<'a> Parse<ReflessInput<'a>> {
     fn parse_slice_refless(slice: &[u8]) -> crate::Result<Self> {
         let input = ReflessInput {
-            data: Some(ReflessData { slice }),
+            data: Some(ReflessData {
+                slice,
+                prefix: Vec::new(),
+            }),
         };
         let object = Self::parse(input)?;
         Ok(object)
