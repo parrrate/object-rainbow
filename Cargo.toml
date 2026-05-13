@@ -12,7 +12,7 @@ members = [
     "object-rainbow-history-store",
     "object-rainbow-json",
     "object-rainbow-local-map",
-    "object-rainbow-marshall",
+    "object-rainbow-marshall", "object-rainbow-parse-prefix",
     "object-rainbow-point",
     "object-rainbow-sled",
     "object-rainbow-store",

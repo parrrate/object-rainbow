@@ -1426,6 +1426,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "object-rainbow-parse-prefix"
+version = "0.0.0-a.0"
+dependencies = [
+ "object-rainbow",
+]
+
+[[package]]
 name = "object-rainbow-point"
 version = "0.0.0-a.11"
 dependencies = [
