@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    InlineOutput, ListHashes, Output, Parse, ParseInline, PointInput, Tagged, ToOutput, Topological,
+    InlineOutput, ListHashes, Output, Parse, ParseInline, PointInput, Tagged, ToOutput,
+    Topological, map_extra::MapExtra,
 };
 
 #[derive(Clone, Default)]
@@ -146,6 +147,29 @@ impl<
         input.push_front(prefix.clone())?;
         let value = input.parse_inline_extra(input.extra().1.clone())?;
         Ok(Self { prefix, value })
+    }
+}
+
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Clone,
+    Copy,
+    Default,
+)]
+pub struct WithByte;
+
+impl<E: 'static + Clone> MapExtra<(u8, (Prefix, E))> for WithByte {
+    type Mapped = (Prefix, E);
+
+    fn map_extra(&self, (byte, (prefix, e)): (u8, (Prefix, E))) -> Self::Mapped {
+        (prefix.with(vec![byte]), e)
     }
 }
 
