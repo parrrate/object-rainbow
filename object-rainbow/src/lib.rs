@@ -1186,6 +1186,10 @@ pub trait ParseInput: Sized {
     fn parse_n(&mut self, n: usize) -> crate::Result<Self::Data> {
         self.split_n(n)?.parse_all()
     }
+    fn skip_n(&mut self, n: usize) -> crate::Result<()> {
+        self.parse_n(n)?;
+        Ok(())
+    }
     fn find_zero(&mut self) -> crate::Result<usize>;
     fn parse_n_ahead(&mut self, n: usize) -> crate::Result<Vec<u8>>;
     fn compare_ahead(&mut self, c: &[u8]) -> crate::Result<bool>;
@@ -1196,12 +1200,12 @@ pub trait ParseInput: Sized {
         let n = self.find_zero()?;
         let data = self.parse_n_ahead(n)?;
         let value = self.split_parse(n)?;
-        self.parse_n(1)?;
+        self.skip_n(1)?;
         Ok((data, value))
     }
     fn parse_compare<T: Parse<Self>>(&mut self, c: &[u8]) -> Result<Option<T>> {
         if self.compare_ahead(c)? {
-            self.parse_n(c.len())?;
+            self.skip_n(c.len())?;
             Ok(None)
         } else {
             Ok(Some(self.split_parse(c.len())?))
