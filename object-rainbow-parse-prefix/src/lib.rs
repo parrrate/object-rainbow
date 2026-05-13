@@ -211,7 +211,7 @@ impl<E: 'static + Clone> MapExtra<(u8, (Prefix, E))> for WithByte {
     Clone,
     Default,
 )]
-pub struct WithBytes(LpBytes);
+pub struct WithBytes(pub LpBytes);
 
 impl<E: 'static + Clone> MapExtra<(Prefix, E)> for WithBytes {
     type Mapped = (Prefix, E);
