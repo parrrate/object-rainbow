@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use object_rainbow::Tagged;
+
 #[derive(Clone, Default)]
 pub struct Prefix(Option<Arc<(Vec<u8>, Self)>>);
 
@@ -40,6 +42,8 @@ impl Prefix {
         assert!(dest.is_empty());
     }
 }
+
+impl Tagged for Prefix {}
 
 impl From<Prefix> for Vec<u8> {
     fn from(prefix: Prefix) -> Self {
