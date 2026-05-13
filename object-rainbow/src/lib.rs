@@ -287,6 +287,7 @@ impl<'a> ReflessData<'a> {
                 prefix_l.push(prefix_r.pop().expect("last element is known to exist"));
             }
         }
+        prefix_l.reverse();
         self.slice.split_at_checked(n).map(|(slice_l, slice_r)| {
             (
                 Self {
