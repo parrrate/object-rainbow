@@ -1183,13 +1183,13 @@ pub trait ParseInput: Clone {
         Ok(data)
     }
     fn compare_ahead(&mut self, c: &[u8]) -> crate::Result<bool>;
-    fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
+    fn split_parse<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
         self.split_n(n)?.parse()
     }
     fn parse_zero_terminated<T: Parse<Self>>(&mut self) -> crate::Result<(Self::Data, T)> {
         let mut old = self.clone();
         let data = self.parse_until_zero()?;
-        let value = old.parse_ahead(data.len())?;
+        let value = old.split_parse(data.len())?;
         Ok((data, value))
     }
     fn parse_compare<T: Parse<Self>>(&mut self, c: &[u8]) -> Result<Option<T>> {
@@ -1197,7 +1197,7 @@ pub trait ParseInput: Clone {
             self.parse_n(c.len())?;
             Ok(None)
         } else {
-            Ok(Some(self.parse_ahead(c.len())?))
+            Ok(Some(self.split_parse(c.len())?))
         }
     }
     fn parse_all(self) -> crate::Result<Self::Data>;
