@@ -309,14 +309,11 @@ impl<'a> ReflessInput<'a> {
 impl<'d> ParseInput for ReflessInput<'d> {
     type Data = &'d [u8];
 
-    fn parse_chunk<'a, const N: usize>(&mut self) -> crate::Result<&'a [u8; N]>
-    where
-        Self: 'a,
-    {
+    fn parse_chunk<const N: usize>(&mut self) -> crate::Result<[u8; N]> {
         match self.data()?.split_first_chunk() {
             Some((chunk, data)) => {
                 self.data = Some(data);
-                Ok(chunk)
+                Ok(*chunk)
             }
             None => self.end_of_input(),
         }
@@ -373,10 +370,7 @@ impl<'d> ParseInput for ReflessInput<'d> {
 impl<'d, Extra: Clone> ParseInput for Input<'d, Extra> {
     type Data = &'d [u8];
 
-    fn parse_chunk<'a, const N: usize>(&mut self) -> crate::Result<&'a [u8; N]>
-    where
-        Self: 'a,
-    {
+    fn parse_chunk<const N: usize>(&mut self) -> crate::Result<[u8; N]> {
         (**self).parse_chunk()
     }
 
@@ -1167,9 +1161,7 @@ pub trait RainbowIterator: Sized + IntoIterator {
 
 pub trait ParseInput: Sized {
     type Data: AsRef<[u8]> + Deref<Target = [u8]> + Into<Vec<u8>> + Copy;
-    fn parse_chunk<'a, const N: usize>(&mut self) -> crate::Result<&'a [u8; N]>
-    where
-        Self: 'a;
+    fn parse_chunk<const N: usize>(&mut self) -> crate::Result<[u8; N]>;
     fn parse_n(&mut self, n: usize) -> crate::Result<Self::Data>;
     fn parse_until_zero(&mut self) -> crate::Result<Self::Data>;
     fn parse_n_compare(&mut self, n: usize, c: &[u8]) -> crate::Result<Option<Self::Data>> {

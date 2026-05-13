@@ -318,13 +318,13 @@ macro_rules! lebe {
 
         impl<I: ParseInput> ParseInline<I> for Le<$n> {
             fn parse_inline(input: &mut I) -> crate::Result<Self> {
-                Ok(Self(<$n>::from_le_bytes(*input.parse_chunk()?)))
+                Ok(Self(<$n>::from_le_bytes(input.parse_chunk()?)))
             }
         }
 
         impl<I: ParseInput> ParseInline<I> for Be<$n> {
             fn parse_inline(input: &mut I) -> crate::Result<Self> {
-                Ok(Self(<$n>::from_be_bytes(*input.parse_chunk()?)))
+                Ok(Self(<$n>::from_be_bytes(input.parse_chunk()?)))
             }
         }
 
@@ -486,13 +486,13 @@ macro_rules! float {
 
         impl<I: ParseInput> ParseInline<I> for Le<$n> {
             fn parse_inline(input: &mut I) -> crate::Result<Self> {
-                Ok(Self(<$n>::from_le_bytes(*input.parse_chunk()?)))
+                Ok(Self(<$n>::from_le_bytes(input.parse_chunk()?)))
             }
         }
 
         impl<I: ParseInput> ParseInline<I> for Be<$n> {
             fn parse_inline(input: &mut I) -> crate::Result<Self> {
-                Ok(Self(<$n>::from_be_bytes(*input.parse_chunk()?)))
+                Ok(Self(<$n>::from_be_bytes(input.parse_chunk()?)))
             }
         }
 
