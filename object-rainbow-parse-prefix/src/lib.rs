@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Prefix(Option<Arc<(Vec<u8>, Self)>>);
 
 impl Prefix {
