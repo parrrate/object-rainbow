@@ -146,6 +146,19 @@ impl<T: Clone + Traversible + InlineOutput + Default + Apply<D>, D: Clone + Trav
     }
 }
 
+impl<T: Clone + Traversible + InlineOutput + Default + Apply<D>, D: Clone + Traversible> Apply<D>
+    for History<T, D>
+{
+    type Output = T::Output;
+
+    fn apply(
+        &mut self,
+        diff: D,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        self.commit(diff)
+    }
+}
+
 #[derive(
     Debug,
     ToOutput,
