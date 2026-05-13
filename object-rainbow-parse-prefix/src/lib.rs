@@ -58,6 +58,12 @@ impl From<Prefix> for Vec<u8> {
     }
 }
 
+impl From<&[u8]> for Prefix {
+    fn from(slice: &[u8]) -> Self {
+        Self::default().with(slice)
+    }
+}
+
 #[derive(Tagged, ListHashes, Topological, Clone)]
 pub struct WithPrefix<T> {
     prefix: Prefix,
