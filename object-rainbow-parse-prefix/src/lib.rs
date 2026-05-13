@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    ListHashes, Output, Parse, ParseInline, PointInput, Tagged, ToOutput, Topological,
+    InlineOutput, ListHashes, Output, Parse, ParseInline, PointInput, Tagged, ToOutput, Topological,
 };
 
 #[derive(Clone, Default)]
@@ -107,6 +107,8 @@ impl<T: ToOutput> ToOutput for WithPrefix<T> {
         });
     }
 }
+
+impl<T: InlineOutput> InlineOutput for WithPrefix<T> {}
 
 impl<
     T: Parse<J>,
