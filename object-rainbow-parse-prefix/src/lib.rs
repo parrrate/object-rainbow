@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use object_rainbow::{ListHashes, Tagged, Topological};
+use object_rainbow::{ListHashes, Output, Tagged, ToOutput, Topological};
 
 #[derive(Clone, Default)]
 pub struct Prefix(Option<Arc<(Vec<u8>, Self)>>);
@@ -59,6 +59,41 @@ impl From<Prefix> for Vec<u8> {
 pub struct WithPrefix<T> {
     prefix: Prefix,
     value: T,
+}
+
+struct PrefixOutput<'a, O> {
+    len: usize,
+    output: &'a mut O,
+}
+
+impl<O: Output> Output for PrefixOutput<'_, O> {
+    fn write(&mut self, data: &[u8]) {
+        if self.output.is_real() {
+            let n = self.len.min(data.len());
+            self.len -= n;
+            self.output.write(&data[n..]);
+        }
+        if self.output.is_mangling() {
+            self.output.write(data);
+        }
+    }
+
+    fn is_mangling(&self) -> bool {
+        self.output.is_mangling()
+    }
+
+    fn is_real(&self) -> bool {
+        self.output.is_real()
+    }
+}
+
+impl<T: ToOutput> ToOutput for WithPrefix<T> {
+    fn to_output(&self, output: &mut impl Output) {
+        self.value.to_output(&mut PrefixOutput {
+            len: self.prefix.len(),
+            output,
+        });
+    }
 }
 
 #[test]
