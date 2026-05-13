@@ -344,7 +344,12 @@ impl<'d> ParseInput for ReflessInput<'d> {
     }
 
     fn compare_ahead(&mut self, c: &[u8]) -> crate::Result<bool> {
-        Ok(self.data()?.starts_with(c))
+        let data = self.data()?;
+        if data.len() < c.len() {
+            self.end_of_input()
+        } else {
+            Ok(data.starts_with(c))
+        }
     }
 
     fn parse_all(self) -> crate::Result<Self::Data> {
