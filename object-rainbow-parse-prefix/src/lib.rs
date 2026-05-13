@@ -55,6 +55,12 @@ impl From<Prefix> for Vec<u8> {
     }
 }
 
+#[derive(Tagged, ListHashes, Topological)]
+pub struct WithPrefix<T> {
+    prefix: Prefix,
+    value: T,
+}
+
 #[test]
 fn abc() {
     let v = Vec::from(Prefix::default().with(b"a").with(b"bc"));
