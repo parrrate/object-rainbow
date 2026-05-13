@@ -1167,8 +1167,8 @@ pub trait ParseInput: Clone {
         self.split_n(n)?.parse_all()
     }
     fn parse_until_zero(&mut self) -> crate::Result<Self::Data>;
-    fn parse_n_compare(&mut self, n: usize, c: &[u8]) -> crate::Result<Option<Self::Data>> {
-        let data = self.parse_n(n)?;
+    fn parse_n_compare(&mut self, c: &[u8]) -> crate::Result<Option<Self::Data>> {
+        let data = self.parse_n(c.len())?;
         if *data == *c {
             Ok(None)
         } else {
@@ -1185,9 +1185,9 @@ pub trait ParseInput: Clone {
         let value = old.parse_ahead(data.len())?;
         Ok((data, value))
     }
-    fn parse_compare<T: Parse<Self>>(&mut self, n: usize, c: &[u8]) -> Result<Option<T>> {
+    fn parse_compare<T: Parse<Self>>(&mut self, c: &[u8]) -> Result<Option<T>> {
         let mut old = self.clone();
-        let Some(data) = self.parse_n_compare(n, c)? else {
+        let Some(data) = self.parse_n_compare(c)? else {
             return Ok(None);
         };
         let value = old.parse_ahead(data.len())?;
