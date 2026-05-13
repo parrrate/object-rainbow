@@ -55,7 +55,7 @@ impl From<Prefix> for Vec<u8> {
     }
 }
 
-#[derive(Tagged, ListHashes, Topological)]
+#[derive(Tagged, ListHashes, Topological, Clone)]
 pub struct WithPrefix<T> {
     prefix: Prefix,
     value: T,
