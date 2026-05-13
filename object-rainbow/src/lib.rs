@@ -266,8 +266,36 @@ pub trait PointVisitor {
     fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone));
 }
 
+struct ReflessData<'d> {
+    slice: &'d [u8],
+}
+
+impl<'a> ReflessData<'a> {
+    fn split_at_checked(&self, n: usize) -> Option<(Self, Self)> {
+        self.slice
+            .split_at_checked(n)
+            .map(|(a, b)| (Self { slice: a }, Self { slice: b }))
+    }
+
+    fn len(&self) -> usize {
+        self.slice.len()
+    }
+
+    fn is_empty(&self) -> bool {
+        self.slice.is_empty()
+    }
+
+    fn starts_with(&self, prefix: &[u8]) -> bool {
+        self.slice.starts_with(prefix)
+    }
+
+    fn cow(&self) -> Cow<'a, [u8]> {
+        Cow::from(self.slice)
+    }
+}
+
 pub struct ReflessInput<'d> {
-    data: Option<&'d [u8]>,
+    data: Option<ReflessData<'d>>,
 }
 
 pub struct Input<'d, Extra: Clone = ()> {
@@ -292,8 +320,8 @@ impl<Extra: Clone> DerefMut for Input<'_, Extra> {
 }
 
 impl<'a> ReflessInput<'a> {
-    fn data(&self) -> crate::Result<&'a [u8]> {
-        self.data.ok_or(Error::EndOfInput)
+    fn data(&self) -> crate::Result<&ReflessData<'a>> {
+        self.data.as_ref().ok_or(Error::EndOfInput)
     }
 
     fn make_error<T>(&mut self, e: crate::Error) -> crate::Result<T> {
@@ -313,7 +341,7 @@ impl<'d> ParseInput for ReflessInput<'d> {
         match self.data()?.split_at_checked(data.len()) {
             Some((chunk, rest)) => {
                 self.data = Some(rest);
-                data.copy_from_slice(chunk);
+                data.copy_from_slice(chunk.slice);
                 Ok(())
             }
             None => self.end_of_input(),
@@ -342,7 +370,7 @@ impl<'d> ParseInput for ReflessInput<'d> {
 
     fn find_zero(&mut self) -> crate::Result<usize> {
         let data = self.data()?;
-        match data.iter().enumerate().find(|(_, x)| **x == 0) {
+        match data.slice.iter().enumerate().find(|(_, x)| **x == 0) {
             Some((at, _)) => Ok(at),
             None => self.end_of_input(),
         }
@@ -350,7 +378,7 @@ impl<'d> ParseInput for ReflessInput<'d> {
 
     fn parse_n_ahead(&mut self, n: usize) -> crate::Result<Vec<u8>> {
         match self.data()?.split_at_checked(n) {
-            Some((data, _)) => Ok(data.to_vec()),
+            Some((data, _)) => Ok(data.slice.to_vec()),
             None => self.end_of_input(),
         }
     }
@@ -365,7 +393,7 @@ impl<'d> ParseInput for ReflessInput<'d> {
     }
 
     fn parse_all(self) -> crate::Result<Self::Data> {
-        self.data().map(From::from)
+        self.data().map(|data| data.cow())
     }
 
     fn empty(self) -> crate::Result<()> {
@@ -601,8 +629,8 @@ pub trait Tagged {
 }
 
 pub trait ParseSlice: for<'a> Parse<Input<'a>> {
-    fn parse_slice(data: &[u8], resolve: &Arc<dyn Resolve>) -> crate::Result<Self> {
-        Self::parse_slice_extra(data, resolve, &())
+    fn parse_slice(slice: &[u8], resolve: &Arc<dyn Resolve>) -> crate::Result<Self> {
+        Self::parse_slice_extra(slice, resolve, &())
     }
 
     fn reparse(&self) -> crate::Result<Self>
@@ -617,12 +645,14 @@ impl<T: for<'a> Parse<Input<'a>>> ParseSlice for T {}
 
 pub trait ParseSliceExtra<Extra: Clone>: for<'a> Parse<Input<'a, Extra>> {
     fn parse_slice_extra(
-        data: &[u8],
+        slice: &[u8],
         resolve: &Arc<dyn Resolve>,
         extra: &Extra,
     ) -> crate::Result<Self> {
         let input = Input {
-            refless: ReflessInput { data: Some(data) },
+            refless: ReflessInput {
+                data: Some(ReflessData { slice }),
+            },
             resolve,
             index: &Cell::new(0),
             extra: Cow::Borrowed(extra),
@@ -925,8 +955,10 @@ impl Topology for TopoVec {
 }
 
 pub trait ParseSliceRefless: for<'a> Parse<ReflessInput<'a>> {
-    fn parse_slice_refless(data: &[u8]) -> crate::Result<Self> {
-        let input = ReflessInput { data: Some(data) };
+    fn parse_slice_refless(slice: &[u8]) -> crate::Result<Self> {
+        let input = ReflessInput {
+            data: Some(ReflessData { slice }),
+        };
         let object = Self::parse(input)?;
         Ok(object)
     }
