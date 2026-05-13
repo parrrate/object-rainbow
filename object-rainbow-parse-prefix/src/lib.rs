@@ -108,6 +108,10 @@ impl<T> WithPrefix<T> {
         &self.value
     }
 
+    pub fn into_value(self) -> T {
+        self.value
+    }
+
     pub fn pop_n(&mut self, n: usize) {
         self.prefix.pop_n(n);
     }
