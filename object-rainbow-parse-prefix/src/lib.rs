@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use object_rainbow::Tagged;
+use object_rainbow::{ListHashes, Tagged};
 
 #[derive(Clone, Default)]
 pub struct Prefix(Option<Arc<(Vec<u8>, Self)>>);
@@ -44,6 +44,7 @@ impl Prefix {
 }
 
 impl Tagged for Prefix {}
+impl ListHashes for Prefix {}
 
 impl From<Prefix> for Vec<u8> {
     fn from(prefix: Prefix) -> Self {
