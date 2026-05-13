@@ -338,7 +338,7 @@ impl<'a> ReflessData<'a> {
     }
 
     fn iter(&self) -> impl Iterator<Item = &u8> {
-        self.prefix.iter().flatten().chain(self.slice)
+        self.prefix.iter().rev().flatten().chain(self.slice)
     }
 }
 
