@@ -92,11 +92,11 @@ impl<T> WithPrefix<T> {
         T: ToOutput,
     {
         if value.vec().starts_with(&Vec::from(prefix.clone())) {
+            Ok(Self { prefix, value })
+        } else {
             Err(object_rainbow::error_consistency!(
                 "`value` doesn't start with `prefix`",
             ))
-        } else {
-            Ok(Self { prefix, value })
         }
     }
 
