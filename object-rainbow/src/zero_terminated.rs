@@ -65,7 +65,6 @@ impl<T: ToOutput> InlineOutput for Zt<T> {}
 impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Zt<T> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         let (data, object) = input.parse_zero_terminated()?;
-        let data = data.into();
         let inner = Arc::new(ZtInner { object, data });
         Ok(Self { inner })
     }
