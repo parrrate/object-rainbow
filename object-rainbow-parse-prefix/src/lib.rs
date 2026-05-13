@@ -46,7 +46,9 @@ impl Prefix {
     }
 
     pub fn pop_n(&mut self, mut n: usize) {
-        while n > 0 && let Some((mut v, rest)) = self.0.take().map(Arc::unwrap_or_clone) {
+        while n > 0
+            && let Some((mut v, rest)) = self.0.take().map(Arc::unwrap_or_clone)
+        {
             if n >= v.len() {
                 n -= v.len();
                 *self = rest;
@@ -100,6 +102,10 @@ impl<T> WithPrefix<T> {
 
     pub fn value(&self) -> &T {
         &self.value
+    }
+
+    pub fn pop_n(&mut self, n: usize) {
+        self.prefix.pop_n(n);
     }
 }
 
