@@ -302,7 +302,7 @@ impl<'a> ReflessData<'a> {
     }
 
     fn len(&self) -> usize {
-        self.slice.len()
+        self.slice.len() + self.prefix.iter().map(|v| v.len()).sum::<usize>()
     }
 
     fn is_empty(&self) -> bool {
