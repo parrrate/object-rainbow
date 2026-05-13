@@ -336,6 +336,10 @@ impl<'a> ReflessData<'a> {
             Cow::from(vec)
         }
     }
+
+    fn iter(&self) -> impl Iterator<Item = &u8> {
+        self.prefix.iter().flatten().chain(self.slice)
+    }
 }
 
 pub struct ReflessInput<'d> {
@@ -413,8 +417,8 @@ impl<'d> ParseInput for ReflessInput<'d> {
     }
 
     fn find_zero(&mut self) -> crate::Result<usize> {
-        let data = self.data()?;
-        match data.slice.iter().enumerate().find(|(_, x)| **x == 0) {
+        let found = self.data()?.iter().enumerate().find(|(_, x)| **x == 0);
+        match found {
             Some((at, _)) => Ok(at),
             None => self.end_of_input(),
         }
