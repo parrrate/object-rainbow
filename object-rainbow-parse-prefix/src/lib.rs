@@ -135,7 +135,7 @@ fn abc() {
 }
 
 #[test]
-fn parse_extra() -> object_rainbow::Result<()> {
+fn parse_then_output() -> object_rainbow::Result<()> {
     use object_rainbow::ParseSliceExtra;
     let data = WithPrefix::<Vec<u8>>::parse_slice_extra(
         b"cd",
@@ -143,5 +143,6 @@ fn parse_extra() -> object_rainbow::Result<()> {
         &(Prefix::default().with(b"a").with(b"b"), ()),
     )?;
     assert_eq!(data.value, b"abcd");
+    assert_eq!(data.vec(), b"cd");
     Ok(())
 }
