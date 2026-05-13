@@ -422,7 +422,7 @@ impl<'d> ParseInput for ReflessInput<'d> {
 
     fn parse_n_ahead(&mut self, n: usize) -> crate::Result<Vec<u8>> {
         match self.data()?.split_at_checked(n) {
-            Some((data, _)) => Ok(data.slice.to_vec()),
+            Some((data, _)) => Ok(data.cow().into_owned()),
             None => self.end_of_input(),
         }
     }
