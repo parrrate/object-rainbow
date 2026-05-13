@@ -307,7 +307,7 @@ impl<'a> ReflessInput<'a> {
 }
 
 impl<'d> ParseInput for ReflessInput<'d> {
-    type Data = &'d [u8];
+    type Data = Cow<'d, [u8]>;
 
     fn read(&mut self, data: &mut [u8]) -> crate::Result<()> {
         match self.data()?.split_at_checked(data.len()) {
@@ -365,7 +365,7 @@ impl<'d> ParseInput for ReflessInput<'d> {
     }
 
     fn parse_all(self) -> crate::Result<Self::Data> {
-        self.data()
+        self.data().map(From::from)
     }
 
     fn empty(self) -> crate::Result<()> {
@@ -386,7 +386,7 @@ impl<'d> ParseInput for ReflessInput<'d> {
 }
 
 impl<'d, Extra: Clone> ParseInput for Input<'d, Extra> {
-    type Data = &'d [u8];
+    type Data = Cow<'d, [u8]>;
 
     fn read(&mut self, data: &mut [u8]) -> crate::Result<()> {
         (**self).read(data)
