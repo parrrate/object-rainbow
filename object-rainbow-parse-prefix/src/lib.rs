@@ -67,6 +67,10 @@ impl<T> WithPrefix<T> {
     pub fn new(prefix: Prefix, value: T) -> Self {
         Self { prefix, value }
     }
+
+    pub fn value(&self) -> &T {
+        &self.value
+    }
 }
 
 struct PrefixOutput<'a, O> {
