@@ -1176,8 +1176,7 @@ pub trait ParseInput: Clone {
         }
     }
     fn parse_ahead<T: Parse<Self>>(&mut self, n: usize) -> crate::Result<T> {
-        let head = self.split_n(n)?;
-        head.parse()
+        self.split_n(n)?.parse()
     }
     fn parse_zero_terminated<T: Parse<Self>>(&mut self) -> crate::Result<(Self::Data, T)> {
         let mut old = self.clone();
