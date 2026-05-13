@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use object_rainbow::{ListHashes, Output, Tagged, ToOutput, Topological};
+use object_rainbow::{ListHashes, Output, Parse, PointInput, Tagged, ToOutput, Topological};
 
 #[derive(Clone, Default)]
 pub struct Prefix(Option<Arc<(Vec<u8>, Self)>>);
@@ -96,8 +96,35 @@ impl<T: ToOutput> ToOutput for WithPrefix<T> {
     }
 }
 
+impl<
+    T: Parse<J>,
+    I: PointInput<Extra = (Prefix, E), WithExtra<E> = J>,
+    J: PointInput<Extra = E>,
+    E: 'static + Send + Sync + Clone,
+> Parse<I> for WithPrefix<T>
+{
+    fn parse(mut input: I) -> object_rainbow::Result<Self> {
+        let prefix = input.extra().0.clone();
+        input.push_front(prefix.clone())?;
+        let value = input.map_extra(|(_, e)| e).parse()?;
+        Ok(Self { prefix, value })
+    }
+}
+
 #[test]
 fn abc() {
     let v = Vec::from(Prefix::default().with(b"a").with(b"bc"));
     assert_eq!(v, b"abc");
+}
+
+#[test]
+fn parse_extra() -> object_rainbow::Result<()> {
+    use object_rainbow::ParseSliceExtra;
+    let data = WithPrefix::<Vec<u8>>::parse_slice_extra(
+        b"cd",
+        &(Arc::new(Vec::new()) as _),
+        &(Prefix::default().with(b"a").with(b"b"), ()),
+    )?;
+    assert_eq!(data.value, b"abcd");
+    Ok(())
 }
