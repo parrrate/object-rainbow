@@ -1185,7 +1185,7 @@ pub trait RainbowIterator: Sized + IntoIterator {
 }
 
 pub trait ParseInput: Sized {
-    type Data: AsRef<[u8]> + Deref<Target = [u8]> + Into<Vec<u8>> + Clone;
+    type Data: AsRef<[u8]> + Deref<Target = [u8]> + Into<Vec<u8>>;
     fn read(&mut self, data: &mut [u8]) -> crate::Result<()>;
     fn parse_chunk<const N: usize>(&mut self) -> crate::Result<[u8; N]> {
         let mut chunk = [0; _];
