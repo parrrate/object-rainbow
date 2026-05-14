@@ -35,12 +35,10 @@ enum Node<K, V> {
     #[default]
     Empty,
     Leaf(WithPrefix<K>, MappedExtra<V, WithoutHeader>),
-    Sub(
-        #[tags(skip)]
-        #[allow(clippy::type_complexity, reason = "no hope")]
-        Point<MappedExtra<KeyedArrayMap<MappedExtra<Self, WithByte>>, WithBytes>>,
-    ),
+    Sub(#[tags(skip)] Point<Subs<K, V>>),
 }
+
+type Subs<K, V> = MappedExtra<KeyedArrayMap<MappedExtra<Node<K, V>, WithByte>>, WithBytes>;
 
 trait _PrefixInline<E>: Inline<(Prefix, E)> {}
 
