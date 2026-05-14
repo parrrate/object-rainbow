@@ -1272,6 +1272,26 @@ pub fn derive_parse(input: TokenStream) -> TokenStream {
 
 #[derive(Debug, FromMeta)]
 #[darling(derive_syn_parse)]
+struct ContainerParseArgs {
+    #[darling(default)]
+    bound: Option<LitStr>,
+}
+
+fn parse_parse_args(attrs: &[Attribute]) -> syn::Result<Vec<WherePredicate>> {
+    let mut wheres = Vec::new();
+    for attr in attrs {
+        if attr_str(attr).as_deref() == Some("parse") {
+            let ContainerParseArgs { bound } = attr.parse_args()?;
+            if let Some(bound) = bound {
+                wheres.push(bound.parse()?);
+            }
+        }
+    }
+    Ok(wheres)
+}
+
+#[derive(Debug, FromMeta)]
+#[darling(derive_syn_parse)]
 struct ParseArgs {
     bound: Option<Type>,
     #[darling(default)]
@@ -1281,6 +1301,7 @@ struct ParseArgs {
 
 fn bounds_parse(mut generics: Generics, data: &Data, attrs: &[Attribute]) -> syn::Result<Generics> {
     let (recursive, _, _) = parse_recursive_inline(attrs)?;
+    let wheres = parse_parse_args(attrs)?;
     let tr = |last| match (last, recursive) {
         (true, true) => {
             quote!(::object_rainbow::Parse<__I> + ::object_rainbow::Object<__I::Extra>)
@@ -1382,6 +1403,9 @@ fn bounds_parse(mut generics: Generics, data: &Data, attrs: &[Attribute]) -> syn
     } else {
         parse_quote!(__I: ::object_rainbow::ParseInput)
     });
+    for bound in wheres {
+        generics.make_where_clause().predicates.push(bound);
+    }
     Ok(generics)
 }
 
@@ -1587,6 +1611,7 @@ fn bounds_parse_inline(
     attrs: &[Attribute],
 ) -> syn::Result<Generics> {
     let (recursive, _, _) = parse_recursive_inline(attrs)?;
+    let wheres = parse_parse_args(attrs)?;
     let tr = if recursive {
         quote!(::object_rainbow::ParseInline<__I> + ::object_rainbow::Inline<__I::Extra>)
     } else {
@@ -1673,6 +1698,9 @@ fn bounds_parse_inline(
     } else {
         parse_quote!(__I: ::object_rainbow::ParseInput)
     });
+    for bound in wheres {
+        generics.make_where_clause().predicates.push(bound);
+    }
     Ok(generics)
 }
 
