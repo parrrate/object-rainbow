@@ -455,7 +455,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     }
 }
 
-#[derive(Debug, Clone, ToOutput, InlineOutput)]
+#[derive(Debug, Clone, ToOutput, InlineOutput, Tagged)]
 pub struct AmtSet<T>(AmtMap<T, ()>);
 
 impl<T> Default for AmtSet<T> {
