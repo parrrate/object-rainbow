@@ -216,6 +216,65 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         }
     }
 
+    async fn remove(&mut self, key: &[u8]) -> object_rainbow::Result<Option<(K, V)>> {
+        match &mut *self {
+            Self::Leaf(k, mapped_extra) if k.vec() == key => {
+                let Self::Leaf(k, MappedExtra(_, v)) = std::mem::take(self) else {
+                    unreachable!()
+                };
+                Ok(Some((k.into_value(), v)))
+            }
+            Self::Sub(point) => {
+                let (kv, is_empty, only_entry) = {
+                    let MappedExtra(prefix, children) = &mut *point.fetch_mut().await?;
+                    let kv = if let Some(key) = key.strip_prefix(&*prefix.0.0)
+                        && let Some((&first, key)) = key.split_first()
+                        && let Some(sub) = children.get_mut(first)
+                    {
+                        let kv = Box::pin(sub.remove(key)).await?;
+                        if sub.is_empty() {
+                            children.remove(first);
+                        }
+                        kv
+                    } else {
+                        return Ok(None);
+                    };
+                    (
+                        kv,
+                        children.is_empty(),
+                        if children.len() < 2 {
+                            children
+                                .pop_first()
+                                .map(|entry| (std::mem::take(prefix), entry.0, entry.1.1))
+                        } else {
+                            None
+                        },
+                    )
+                };
+                if is_empty {
+                    *self = Self::Empty;
+                }
+                if let Some((mut prefix, first, mut child)) = only_entry {
+                    match &mut child {
+                        Self::Leaf(k, _) => {
+                            k.pop_n(prefix.0.len() + 1);
+                        }
+                        Self::Sub(point) => {
+                            let suffix = &mut point.fetch_mut().await?.0.0.0;
+                            prefix.0.0.push(first);
+                            prefix.0.0.append(suffix);
+                            *suffix = prefix.0.0;
+                        }
+                        Self::Empty => {}
+                    }
+                    *self = child;
+                }
+                Ok(kv)
+            }
+            _ => Ok(None),
+        }
+    }
+
     fn clear(&mut self) {
         std::mem::take(self);
     }
@@ -257,6 +316,10 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         self.0.insert(&k.vec(), k, v).await
     }
 
+    pub async fn remove(&mut self, k: &K) -> object_rainbow::Result<Option<V>> {
+        self.0.remove(&k.vec()).await.map(|r| r.map(|(_, v)| v))
+    }
+
     pub fn clear(&mut self) {
         self.0.clear();
     }
@@ -276,31 +339,54 @@ mod test {
 
     #[apply(test!)]
     async fn test() -> object_rainbow::Result<()> {
-        let mut node = Amt::<[u8; 4], ()>::new();
-        node.insert(*b"abcd", ()).await?;
-        assert_eq!(node.get(b"abcd").await?, Some(()));
-        node.insert(*b"abce", ()).await?;
-        assert_eq!(node.get(b"abcd").await?, Some(()));
-        assert_eq!(node.get(b"abce").await?, Some(()));
-        node.insert(*b"abff", ()).await?;
-        assert_eq!(node.get(b"abcd").await?, Some(()));
-        assert_eq!(node.get(b"abce").await?, Some(()));
-        assert_eq!(node.get(b"abff").await?, Some(()));
-        node.insert(*b"abfg", ()).await?;
-        assert_eq!(node.get(b"abcd").await?, Some(()));
-        assert_eq!(node.get(b"abce").await?, Some(()));
-        assert_eq!(node.get(b"abff").await?, Some(()));
-        assert_eq!(node.get(b"abfg").await?, Some(()));
+        let mut amt = Amt::<[u8; 4], ()>::new();
+        amt.insert(*b"abcd", ()).await?;
+        assert_eq!(amt.get(b"abcd").await?, Some(()));
+        amt.insert(*b"abce", ()).await?;
+        assert_eq!(amt.get(b"abcd").await?, Some(()));
+        assert_eq!(amt.get(b"abce").await?, Some(()));
+        amt.insert(*b"abff", ()).await?;
+        assert_eq!(amt.get(b"abcd").await?, Some(()));
+        assert_eq!(amt.get(b"abce").await?, Some(()));
+        assert_eq!(amt.get(b"abff").await?, Some(()));
+        amt.insert(*b"abfg", ()).await?;
+        assert_eq!(amt.get(b"abcd").await?, Some(()));
+        assert_eq!(amt.get(b"abce").await?, Some(()));
+        assert_eq!(amt.get(b"abff").await?, Some(()));
+        assert_eq!(amt.get(b"abfg").await?, Some(()));
         Ok(())
     }
 
     #[apply(test!)]
     async fn test_apple_apricot() -> object_rainbow::Result<()> {
-        let mut node = Amt::<Zt<String>, ()>::default();
-        node.insert(Zt::new("apple".into())?, ()).await?;
-        node.insert(Zt::new("apricot".into())?, ()).await?;
-        assert_eq!(node.get(&Zt::new("apple".into())?).await?, Some(()));
-        assert_eq!(node.get(&Zt::new("apricot".into())?).await?, Some(()));
+        let mut amt = Amt::<Zt<String>, ()>::default();
+        amt.insert(Zt::new("apple".into())?, ()).await?;
+        amt.insert(Zt::new("apricot".into())?, ()).await?;
+        assert_eq!(amt.get(&Zt::new("apple".into())?).await?, Some(()));
+        assert_eq!(amt.get(&Zt::new("apricot".into())?).await?, Some(()));
+        Ok(())
+    }
+
+    #[apply(test!)]
+    async fn remove() -> object_rainbow::Result<()> {
+        let mut amt = Amt::<[u8; 4], ()>::new();
+        amt.insert(*b"abcd", ()).await?;
+        amt.insert(*b"abce", ()).await?;
+        amt.insert(*b"abff", ()).await?;
+        amt.insert(*b"abfg", ()).await?;
+        assert_eq!(amt.get(b"abcd").await?, Some(()));
+        assert_eq!(amt.get(b"abce").await?, Some(()));
+        assert_eq!(amt.get(b"abff").await?, Some(()));
+        assert_eq!(amt.get(b"abfg").await?, Some(()));
+        amt.remove(b"abce").await?;
+        amt.remove(b"abff").await?;
+        assert_eq!(amt.get(b"abcd").await?, Some(()));
+        assert_eq!(amt.get(b"abce").await?, None);
+        assert_eq!(amt.get(b"abff").await?, None);
+        assert_eq!(amt.get(b"abfg").await?, Some(()));
+        amt.remove(b"abcd").await?;
+        amt.remove(b"abfg").await?;
+        assert!(amt.is_empty());
         Ok(())
     }
 }
