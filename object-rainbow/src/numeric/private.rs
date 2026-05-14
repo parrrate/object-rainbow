@@ -395,6 +395,37 @@ macro_rules! float {
     };
 }
 
+macro_rules! byte_ordered {
+    ($n:ty) => {
+        impl ToOutput for $n {
+            fn to_output(&self, output: &mut impl Output) {
+                if output.is_real() {
+                    output.write(&(self ^ Self::MIN).to_be_bytes());
+                }
+            }
+        }
+
+        impl InlineOutput for $n {}
+
+        impl<I: ParseInput> Parse<I> for $n {
+            fn parse(input: I) -> crate::Result<Self> {
+                ParseInline::parse_as_inline(input)
+            }
+        }
+
+        impl<I: ParseInput> ParseInline<I> for $n {
+            fn parse_inline(input: &mut I) -> crate::Result<Self> {
+                Ok(Self::from_be_bytes(input.parse_chunk()?) ^ Self::MIN)
+            }
+        }
+
+        impl Size for $n {
+            const SIZE: usize = std::mem::size_of::<$n>();
+            type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
+        }
+    };
+}
+
 signs!(u8, i8);
 signs!(u16, i16);
 signs!(u32, i32);
@@ -404,6 +435,8 @@ signs!(u128, i128);
 unsigned_niche!(u8);
 nz_any_sign!(u8);
 nz_any_sign!(i8);
+
+byte_ordered!(i8);
 
 lebe!(u8);
 lebe!(i8);
