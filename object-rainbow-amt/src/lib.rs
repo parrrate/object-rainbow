@@ -493,6 +493,10 @@ impl<T: InlineOutput + Traversible + Clone> AmtSet<T> {
         Ok(self.0.remove(value).await?.is_some())
     }
 
+    pub fn clear(&mut self) {
+        self.0.clear();
+    }
+
     pub async fn append(&mut self, other: &mut Self) -> object_rainbow::Result<()> {
         self.0.append(&mut other.0).await
     }
