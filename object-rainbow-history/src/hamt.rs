@@ -8,16 +8,14 @@ impl<V: 'static + Send + Sync + Clone + Traversible + InlineOutput> Apply<(Optio
 {
     type Output = Option<V>;
 
-    fn apply(
+    async fn apply(
         &mut self,
         (value, hash): (Option<V>, Hash),
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        async move {
-            if let Some(value) = value {
-                self.insert(hash, value).await
-            } else {
-                self.remove(hash).await
-            }
+    ) -> object_rainbow::Result<Self::Output> {
+        if let Some(value) = value {
+            self.insert(hash, value).await
+        } else {
+            self.remove(hash).await
         }
     }
 }
@@ -27,11 +25,8 @@ impl<V: 'static + Send + Sync + Clone + Traversible + InlineOutput> Apply<(V, Ha
 {
     type Output = Option<V>;
 
-    fn apply(
-        &mut self,
-        (value, hash): (V, Hash),
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        self.insert(hash, value)
+    async fn apply(&mut self, (value, hash): (V, Hash)) -> object_rainbow::Result<Self::Output> {
+        self.insert(hash, value).await
     }
 }
 
