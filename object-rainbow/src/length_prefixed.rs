@@ -1,7 +1,4 @@
-use std::ops::{Add, Deref, DerefMut};
-
-use generic_array::ArrayLength;
-use typenum::{Sum, U8, Unsigned, tarr};
+use std::ops::{Deref, DerefMut};
 
 use crate::{numeric::Le, *};
 
@@ -44,20 +41,6 @@ impl<T: ToOutput> ToOutput for Lp<T> {
 }
 
 impl<T: ToOutput> InlineOutput for Lp<T> {}
-
-impl<T: Size> Size for Lp<T>
-where
-    U8: Add<T::Size, Output: Unsigned>,
-{
-    type Size = Sum<U8, T::Size>;
-}
-
-impl<T: Size> MaybeHasNiche for Lp<T>
-where
-    U8: Add<T::Size, Output: ArrayLength>,
-{
-    type MnArray = tarr![SomeNiche<OneNiche<U8>>, NoNiche<ZeroNoNiche<T::Size>>];
-}
 
 impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Lp<T> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
