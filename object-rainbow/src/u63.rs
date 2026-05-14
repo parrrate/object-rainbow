@@ -11,6 +11,10 @@ impl U63 {
             Err(Error::UnsupportedLength)
         }
     }
+
+    pub fn as_usize(self) -> crate::Result<usize> {
+        self.0.try_into().map_err(|_| Error::UnsupportedLength)
+    }
 }
 
 impl ToOutput for U63 {
