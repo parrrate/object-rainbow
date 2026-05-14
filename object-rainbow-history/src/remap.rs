@@ -38,19 +38,17 @@ impl<K: Send + Clone, V: Send, M: MapToSet<K, V>> Apply<(Option<V>, (Option<V>, 
 {
     type Output = Vec<(bool, M::T)>;
 
-    fn apply(
+    async fn apply(
         &mut self,
         (old, (new, key)): (Option<V>, (Option<V>, K)),
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        async move {
-            let mut diff = Vec::new();
-            if let Some(value) = old {
-                diff.push((true, self.0.map(key.clone(), value).await?));
-            }
-            if let Some(value) = new {
-                diff.push((false, self.0.map(key, value).await?));
-            }
-            Ok(diff)
+    ) -> object_rainbow::Result<Self::Output> {
+        let mut diff = Vec::new();
+        if let Some(value) = old {
+            diff.push((true, self.0.map(key.clone(), value).await?));
         }
+        if let Some(value) = new {
+            diff.push((false, self.0.map(key, value).await?));
+        }
+        Ok(diff)
     }
 }
