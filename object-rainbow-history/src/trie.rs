@@ -36,28 +36,20 @@ where
 impl<T: ReflessObject> Apply<(bool, T)> for TrieSet<T> {
     type Output = bool;
 
-    fn apply(
-        &mut self,
-        (remove, value): (bool, T),
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        async move {
-            Ok(if remove {
-                !self.remove(&value).await?
-            } else {
-                self.insert(&value).await?
-            })
-        }
+    async fn apply(&mut self, (remove, value): (bool, T)) -> object_rainbow::Result<Self::Output> {
+        Ok(if remove {
+            !self.remove(&value).await?
+        } else {
+            self.insert(&value).await?
+        })
     }
 }
 
 impl<T: ReflessObject> Apply<T> for TrieSet<T> {
     type Output = bool;
 
-    fn apply(
-        &mut self,
-        value: T,
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        async move { self.insert(&value).await }
+    async fn apply(&mut self, value: T) -> object_rainbow::Result<Self::Output> {
+        self.insert(&value).await
     }
 }
 
