@@ -313,9 +313,31 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
 
     async fn collapse(subs: &mut Subs<K, V>) -> object_rainbow::Result<Option<Node<K, V>>> {
         Ok(if let Some(collapse_ctx) = collapse_ctx(subs) {
-            Some(from_ctx(collapse_ctx).await?)
+            Some(Self::from_ctx(collapse_ctx).await?)
         } else {
             None
+        })
+    }
+
+    async fn from_ctx(
+        collapse_ctx: Option<(Vec<u8>, u8, Node<K, V>)>,
+    ) -> object_rainbow::Result<Node<K, V>> {
+        Ok(if let Some((mut prefix, first, mut child)) = collapse_ctx {
+            match &mut child {
+                Node::Empty => {}
+                Node::Leaf(k, _) => {
+                    k.pop_n(prefix.len() + 1);
+                }
+                Node::Sub(point) => {
+                    let suffix = &mut point.fetch_mut().await?.0.0.0;
+                    prefix.push(first);
+                    prefix.append(suffix);
+                    *suffix = prefix;
+                }
+            }
+            child
+        } else {
+            Node::Empty
         })
     }
 }
@@ -332,28 +354,6 @@ fn collapse_ctx<K, V>(subs: &mut Subs<K, V>) -> CollapseCtx<K, V> {
     } else {
         None
     }
-}
-
-async fn from_ctx<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone>(
-    collapse_ctx: Option<(Vec<u8>, u8, Node<K, V>)>,
-) -> object_rainbow::Result<Node<K, V>> {
-    Ok(if let Some((mut prefix, first, mut child)) = collapse_ctx {
-        match &mut child {
-            Node::Empty => {}
-            Node::Leaf(k, _) => {
-                k.pop_n(prefix.len() + 1);
-            }
-            Node::Sub(point) => {
-                let suffix = &mut point.fetch_mut().await?.0.0.0;
-                prefix.push(first);
-                prefix.append(suffix);
-                *suffix = prefix;
-            }
-        }
-        child
-    } else {
-        Node::Empty
-    })
 }
 
 fn common_length(a: &[u8], b: &[u8]) -> object_rainbow::Result<usize> {
