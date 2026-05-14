@@ -480,6 +480,10 @@ impl<T: InlineOutput + Traversible + Clone> AmtSet<T> {
     pub fn new() -> Self {
         Self::default()
     }
+
+    pub async fn contains(&self, value: &T) -> object_rainbow::Result<bool> {
+        Ok(self.0.get(value).await?.is_some())
+    }
 }
 
 #[cfg(test)]
