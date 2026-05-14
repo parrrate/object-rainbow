@@ -392,15 +392,15 @@ fn common_length(a: &[u8], b: &[u8]) -> object_rainbow::Result<usize> {
     }
 }
 
-pub struct Amt<K, V>(Node<K, V>);
+pub struct AmtMap<K, V>(Node<K, V>);
 
-impl<K, V> Default for Amt<K, V> {
+impl<K, V> Default for AmtMap<K, V> {
     fn default() -> Self {
         Self(Default::default())
     }
 }
 
-impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone> Amt<K, V> {
+impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone> AmtMap<K, V> {
     pub fn new() -> Self {
         Self::default()
     }
@@ -436,11 +436,11 @@ mod test {
     use object_rainbow::zero_terminated::Zt;
     use smol_macros::test;
 
-    use crate::Amt;
+    use crate::AmtMap;
 
     #[apply(test!)]
     async fn test() -> object_rainbow::Result<()> {
-        let mut amt = Amt::<[u8; 4], ()>::new();
+        let mut amt = AmtMap::<[u8; 4], ()>::new();
         amt.insert(*b"abcd", ()).await?;
         assert_eq!(amt.get(b"abcd").await?, Some(()));
         amt.insert(*b"abce", ()).await?;
@@ -460,7 +460,7 @@ mod test {
 
     #[apply(test!)]
     async fn test_apple_apricot() -> object_rainbow::Result<()> {
-        let mut amt = Amt::<Zt<String>, ()>::default();
+        let mut amt = AmtMap::<Zt<String>, ()>::default();
         amt.insert(Zt::new("apple".into())?, ()).await?;
         amt.insert(Zt::new("apricot".into())?, ()).await?;
         assert_eq!(amt.get(&Zt::new("apple".into())?).await?, Some(()));
@@ -470,7 +470,7 @@ mod test {
 
     #[apply(test!)]
     async fn remove() -> object_rainbow::Result<()> {
-        let mut amt = Amt::<[u8; 4], ()>::new();
+        let mut amt = AmtMap::<[u8; 4], ()>::new();
         amt.insert(*b"abcd", ()).await?;
         amt.insert(*b"abce", ()).await?;
         amt.insert(*b"abff", ()).await?;
@@ -493,10 +493,10 @@ mod test {
 
     #[apply(test!)]
     async fn append_1() -> object_rainbow::Result<()> {
-        let mut a = Amt::<[u8; 4], ()>::new();
+        let mut a = AmtMap::<[u8; 4], ()>::new();
         a.insert(*b"abcd", ()).await?;
         a.insert(*b"abff", ()).await?;
-        let mut b = Amt::<[u8; 4], ()>::new();
+        let mut b = AmtMap::<[u8; 4], ()>::new();
         b.insert(*b"abce", ()).await?;
         b.insert(*b"abfg", ()).await?;
         a.append(&mut b).await?;
@@ -510,11 +510,11 @@ mod test {
 
     #[apply(test!)]
     async fn append_2() -> object_rainbow::Result<()> {
-        let mut a = Amt::<[u8; 4], ()>::new();
+        let mut a = AmtMap::<[u8; 4], ()>::new();
         a.insert(*b"abcd", ()).await?;
         a.insert(*b"abff", ()).await?;
         a.insert(*b"abce", ()).await?;
-        let mut b = Amt::<[u8; 4], ()>::new();
+        let mut b = AmtMap::<[u8; 4], ()>::new();
         b.insert(*b"abfg", ()).await?;
         a.append(&mut b).await?;
         assert!(b.is_empty());
@@ -527,10 +527,10 @@ mod test {
 
     #[apply(test!)]
     async fn append_3() -> object_rainbow::Result<()> {
-        let mut a = Amt::<[u8; 4], ()>::new();
+        let mut a = AmtMap::<[u8; 4], ()>::new();
         a.insert(*b"abcd", ()).await?;
         a.insert(*b"abce", ()).await?;
-        let mut b = Amt::<[u8; 4], ()>::new();
+        let mut b = AmtMap::<[u8; 4], ()>::new();
         b.insert(*b"abff", ()).await?;
         b.insert(*b"abfg", ()).await?;
         a.append(&mut b).await?;
