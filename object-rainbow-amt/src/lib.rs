@@ -216,6 +216,10 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
             }
         }
     }
+
+    fn clear(&mut self) {
+        std::mem::take(self);
+    }
 }
 
 fn common_length(a: &[u8], b: &[u8]) -> object_rainbow::Result<usize> {
@@ -248,6 +252,10 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
 
     pub async fn insert(&mut self, k: K, v: V) -> object_rainbow::Result<Option<V>> {
         self.0.insert(&k.vec(), k, v).await
+    }
+
+    pub async fn clear(&mut self) {
+        self.0.clear();
     }
 }
 
