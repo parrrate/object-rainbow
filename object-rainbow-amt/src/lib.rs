@@ -311,7 +311,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         }
     }
 
-    async fn collapse(subs: &mut Subs<K, V>) -> object_rainbow::Result<Option<Node<K, V>>> {
+    async fn collapse(subs: &mut Subs<K, V>) -> object_rainbow::Result<Option<Self>> {
         Ok(if let Some(collapse_ctx) = Self::collapse_ctx(subs) {
             Some(Self::from_ctx(collapse_ctx).await?)
         } else {
