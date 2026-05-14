@@ -491,18 +491,24 @@ struct ContainerTopologyArgs {
     #[darling(default)]
     inline: bool,
     #[darling(default)]
+    unchecked: bool,
+    #[darling(default)]
     bound: Option<LitStr>,
 }
 
-fn parse_recursive_inline(attrs: &[Attribute]) -> syn::Result<(bool, bool, Vec<WherePredicate>)> {
+fn parse_recursive_inline(
+    attrs: &[Attribute],
+) -> syn::Result<(bool, bool, bool, Vec<WherePredicate>)> {
     let mut r = false;
     let mut i = false;
+    let mut u = false;
     let mut wheres = Vec::new();
     for attr in attrs {
         if attr_str(attr).as_deref() == Some("topology") {
             let ContainerTopologyArgs {
                 recursive,
                 inline,
+                unchecked,
                 bound,
             } = attr.parse_args()?;
             if recursive {
@@ -511,12 +517,15 @@ fn parse_recursive_inline(attrs: &[Attribute]) -> syn::Result<(bool, bool, Vec<W
             if inline {
                 i = true;
             }
+            if unchecked {
+                u = true;
+            }
             if let Some(bound) = bound {
                 wheres.push(bound.parse()?);
             }
         }
     }
-    Ok((r, i, wheres))
+    Ok((r, i, u, wheres))
 }
 
 #[derive(Debug, FromMeta)]
@@ -534,7 +543,7 @@ fn bounds_topological(
     attrs: &[Attribute],
     name: &Ident,
 ) -> syn::Result<Generics> {
-    let (recursive, inline, wheres) = parse_recursive_inline(attrs)?;
+    let (recursive, inline, u, wheres) = parse_recursive_inline(attrs)?;
     let g = &bounds_g(&generics);
     let bound = if recursive {
         quote! { ::object_rainbow::Traversible }
@@ -562,6 +571,9 @@ fn bounds_topological(
                 let bound = if let Some(bound) = b {
                     quote! { #bound }
                 } else {
+                    if u {
+                        continue 'field;
+                    }
                     bound.clone()
                 };
                 if type_contains_generics(GContext { g, always: false }, ty) {
@@ -594,6 +606,9 @@ fn bounds_topological(
                     let bound = if let Some(bound) = b {
                         quote! { #bound }
                     } else {
+                        if u {
+                            continue 'field;
+                        }
                         bound.clone()
                     };
                     if type_contains_generics(GContext { g, always: false }, ty) {
@@ -1322,7 +1337,7 @@ fn bounds_parse(
     data: &Data,
     attrs: &[Attribute],
 ) -> syn::Result<(Ident, Generics)> {
-    let (recursive, _, _) = parse_recursive_inline(attrs)?;
+    let (recursive, _, _, _) = parse_recursive_inline(attrs)?;
     let (inp, wheres, ig) = parse_parse_args(attrs)?;
     let tr = |last| match (last, recursive) {
         (true, true) => {
@@ -1636,7 +1651,7 @@ fn bounds_parse_inline(
     data: &Data,
     attrs: &[Attribute],
 ) -> syn::Result<(Ident, Generics)> {
-    let (recursive, _, _) = parse_recursive_inline(attrs)?;
+    let (recursive, _, _, _) = parse_recursive_inline(attrs)?;
     let (inp, wheres, ig) = parse_parse_args(attrs)?;
     let tr = if recursive {
         quote!(::object_rainbow::ParseInline<#inp> + ::object_rainbow::Inline<#inp::Extra>)

@@ -23,7 +23,7 @@ use object_rainbow_point::{IntoPoint, Point};
     PartialEq,
     Eq,
 )]
-#[topology(recursive)]
+#[topology(recursive, unchecked)]
 #[topology(bound = "K: InlineOutput + Traversible")]
 #[topology(bound = "V: InlineOutput + Traversible")]
 #[parse(bound = "K: ParseInline<I::WithExtra<E>> + InlineOutput + Traversible + Inline<E>")]
@@ -35,16 +35,11 @@ enum Node<K, V> {
     #[default]
     Empty,
     Leaf(
-        #[topology(unchecked)]
-        #[parse(unchecked)]
-        WithPrefix<K>,
-        #[topology(unchecked)]
-        #[parse(unchecked)]
-        MappedExtra<V, WithoutHeader>,
+        #[parse(unchecked)] WithPrefix<K>,
+        #[parse(unchecked)] MappedExtra<V, WithoutHeader>,
     ),
     Sub(
         #[tags(skip)]
-        #[topology(unchecked)]
         #[parse(unchecked)]
         #[allow(clippy::type_complexity, reason = "no hope")]
         Point<MappedExtra<KeyedArrayMap<MappedExtra<Self, WithByte>>, WithBytes>>,
