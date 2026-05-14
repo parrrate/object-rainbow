@@ -67,16 +67,6 @@ impl<T> Deref for Be<T> {
     }
 }
 
-pub trait AsLe {
-    type Le;
-    fn construct(self) -> Self::Le;
-}
-
-pub trait AsBe {
-    type Be;
-    fn construct(self) -> Self::Be;
-}
-
 macro_rules! signs {
     ($u:ty, $i:ty) => {
         impl HasOtherSign for $u {
@@ -90,67 +80,6 @@ macro_rules! signs {
 
 macro_rules! ae {
     ($n:ty) => {
-        impl UsizeTag for $n {
-            fn from_usize(n: usize) -> Self {
-                n.try_into().expect("discriminant out of range")
-            }
-            fn to_usize(&self) -> usize {
-                (*self).try_into().expect("discriminant out of range")
-            }
-            fn try_to_usize(&self) -> Option<usize> {
-                (*self).try_into().ok()
-            }
-        }
-
-        impl UsizeTag for NonZero<$n> {
-            fn from_usize(n: usize) -> Self {
-                Self::new(
-                    n.checked_add(1)
-                        .expect("discriminant out of range")
-                        .try_into()
-                        .expect("discriminant out of range"),
-                )
-                .unwrap()
-            }
-            fn to_usize(&self) -> usize {
-                usize::try_from(self.get())
-                    .expect("discriminant out of range")
-                    .checked_sub(1)
-                    .unwrap()
-            }
-            fn try_to_usize(&self) -> Option<usize> {
-                usize::try_from(self.get()).ok()?.checked_sub(1)
-            }
-        }
-
-        impl AsLe for $n {
-            type Le = Self;
-            fn construct(self) -> Self::Le {
-                self
-            }
-        }
-
-        impl AsLe for NonZero<$n> {
-            type Le = Self;
-            fn construct(self) -> Self::Le {
-                self
-            }
-        }
-
-        impl AsBe for $n {
-            type Be = Self;
-            fn construct(self) -> Self::Be {
-                self
-            }
-        }
-
-        impl AsBe for NonZero<$n> {
-            type Be = Self;
-            fn construct(self) -> Self::Be {
-                self
-            }
-        }
-
         impl ToOutput for NonZero<$n> {
             fn to_output(&self, output: &mut impl Output) {
                 self.get().to_output(output);
@@ -181,13 +110,6 @@ macro_rules! ae {
         impl MaybeHasNiche for NonZero<$n> {
             type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
         }
-
-        impl Tagged for $n {}
-        impl Tagged for NonZero<$n> {}
-        impl ListHashes for $n {}
-        impl ListHashes for NonZero<$n> {}
-        impl Topological for $n {}
-        impl Topological for NonZero<$n> {}
 
         impl Equivalent<$n> for Option<NonZero<$n>> {
             fn into_equivalent(self) -> $n {
@@ -250,34 +172,6 @@ macro_rules! lebe {
             }
             fn try_to_usize(&self) -> Option<usize> {
                 usize::try_from(self.get()).ok()?.checked_sub(1)
-            }
-        }
-
-        impl AsLe for $n {
-            type Le = Le<$n>;
-            fn construct(self) -> Self::Le {
-                Le(self)
-            }
-        }
-
-        impl AsLe for NonZero<$n> {
-            type Le = Le<NonZero<$n>>;
-            fn construct(self) -> Self::Le {
-                Le(self)
-            }
-        }
-
-        impl AsBe for $n {
-            type Be = Be<$n>;
-            fn construct(self) -> Self::Be {
-                Be(self)
-            }
-        }
-
-        impl AsBe for NonZero<$n> {
-            type Be = Be<NonZero<$n>>;
-            fn construct(self) -> Self::Be {
-                Be(self)
             }
         }
 
@@ -370,14 +264,20 @@ macro_rules! lebe {
             type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
         }
 
+        impl Tagged for $n {}
+        impl Tagged for NonZero<$n> {}
         impl Tagged for Le<$n> {}
         impl Tagged for Le<NonZero<$n>> {}
         impl Tagged for Be<$n> {}
         impl Tagged for Be<NonZero<$n>> {}
+        impl ListHashes for $n {}
+        impl ListHashes for NonZero<$n> {}
         impl ListHashes for Le<$n> {}
         impl ListHashes for Le<NonZero<$n>> {}
         impl ListHashes for Be<$n> {}
         impl ListHashes for Be<NonZero<$n>> {}
+        impl Topological for $n {}
+        impl Topological for NonZero<$n> {}
         impl Topological for Le<$n> {}
         impl Topological for Le<NonZero<$n>> {}
         impl Topological for Be<$n> {}
@@ -451,20 +351,6 @@ macro_rules! lebe {
 
 macro_rules! float {
     ($n:ty) => {
-        impl AsLe for $n {
-            type Le = Le<$n>;
-            fn construct(self) -> Self::Le {
-                Le(self)
-            }
-        }
-
-        impl AsBe for $n {
-            type Be = Be<$n>;
-            fn construct(self) -> Self::Be {
-                Be(self)
-            }
-        }
-
         impl ToOutput for Le<$n> {
             fn to_output(&self, output: &mut impl Output) {
                 if output.is_real() {
@@ -531,6 +417,9 @@ signs!(u128, i128);
 
 ae!(u8);
 ae!(i8);
+
+lebe!(u8);
+lebe!(i8);
 
 lebe!(u16);
 lebe!(i16);
