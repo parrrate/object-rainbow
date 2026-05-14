@@ -7,8 +7,8 @@ use proc_macro::TokenStream;
 use quote::{ToTokens, quote, quote_spanned};
 use syn::{
     Attribute, Data, DeriveInput, Error, Expr, FnArg, GenericParam, Generics, Ident, ImplItem,
-    ItemTrait, LitStr, Path, TraitItem, Type, parse::Parse, parse_macro_input, parse_quote,
-    parse_quote_spanned, spanned::Spanned, token::Comma,
+    ItemTrait, LitStr, Path, TraitItem, Type, WherePredicate, parse::Parse, parse_macro_input,
+    parse_quote, parse_quote_spanned, spanned::Spanned, token::Comma,
 };
 
 use self::contains_generics::{GContext, type_contains_generics};
@@ -490,23 +490,33 @@ struct ContainerTopologyArgs {
     recursive: bool,
     #[darling(default)]
     inline: bool,
+    #[darling(default)]
+    bound: Option<LitStr>,
 }
 
-fn parse_recursive_inline(attrs: &[Attribute]) -> syn::Result<(bool, bool)> {
+fn parse_recursive_inline(attrs: &[Attribute]) -> syn::Result<(bool, bool, Vec<WherePredicate>)> {
     let mut r = false;
     let mut i = false;
+    let mut wheres = Vec::new();
     for attr in attrs {
         if attr_str(attr).as_deref() == Some("topology") {
-            let ContainerTopologyArgs { recursive, inline } = attr.parse_args()?;
+            let ContainerTopologyArgs {
+                recursive,
+                inline,
+                bound,
+            } = attr.parse_args()?;
             if recursive {
                 r = true;
             }
             if inline {
                 i = true;
             }
+            if let Some(bound) = bound {
+                wheres.push(bound.parse()?);
+            }
         }
     }
-    Ok((r, i))
+    Ok((r, i, wheres))
 }
 
 #[derive(Debug, FromMeta)]
@@ -524,7 +534,7 @@ fn bounds_topological(
     attrs: &[Attribute],
     name: &Ident,
 ) -> syn::Result<Generics> {
-    let (recursive, inline) = parse_recursive_inline(attrs)?;
+    let (recursive, inline, wheres) = parse_recursive_inline(attrs)?;
     let g = &bounds_g(&generics);
     let bound = if recursive {
         quote! { ::object_rainbow::Traversible }
@@ -619,6 +629,9 @@ fn bounds_topological(
             .push(parse_quote_spanned! { name.span() =>
                 Self: #output_bound + ::object_rainbow::Tagged
             });
+    }
+    for bound in wheres {
+        generics.make_where_clause().predicates.push(bound);
     }
     Ok(generics)
 }
@@ -1267,7 +1280,7 @@ struct ParseArgs {
 }
 
 fn bounds_parse(mut generics: Generics, data: &Data, attrs: &[Attribute]) -> syn::Result<Generics> {
-    let (recursive, _) = parse_recursive_inline(attrs)?;
+    let (recursive, _, _) = parse_recursive_inline(attrs)?;
     let tr = |last| match (last, recursive) {
         (true, true) => {
             quote!(::object_rainbow::Parse<__I> + ::object_rainbow::Object<__I::Extra>)
@@ -1573,7 +1586,7 @@ fn bounds_parse_inline(
     data: &Data,
     attrs: &[Attribute],
 ) -> syn::Result<Generics> {
-    let (recursive, _) = parse_recursive_inline(attrs)?;
+    let (recursive, _, _) = parse_recursive_inline(attrs)?;
     let tr = if recursive {
         quote!(::object_rainbow::ParseInline<__I> + ::object_rainbow::Inline<__I::Extra>)
     } else {

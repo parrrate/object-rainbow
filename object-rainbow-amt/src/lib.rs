@@ -1,11 +1,8 @@
 use futures_util::{TryStreamExt, future::try_join};
 use object_rainbow::{
     Enum, Fetch, Inline, InlineOutput, ListHashes, Parse, ParseAsInline, ParseInline, PointInput,
-    PointVisitor, Singular, Tagged, ToOutput, Topological, Traversible,
-    enumkind::{EnumKind, EnumParseInline},
-    length_prefixed::LpBytes,
-    map_extra::MappedExtra,
-    without_header::WithoutHeader,
+    Singular, Tagged, ToOutput, Topological, Traversible, enumkind::EnumParseInline,
+    length_prefixed::LpBytes, map_extra::MappedExtra, without_header::WithoutHeader,
 };
 use object_rainbow_array_map::KeyedArrayMap;
 use object_rainbow_parse_prefix::{Prefix, WithByte, WithBytes, WithPrefix};
@@ -18,6 +15,7 @@ use object_rainbow_point::{IntoPoint, Point};
     InlineOutput,
     Tagged,
     ListHashes,
+    Topological,
     ParseAsInline,
     Clone,
     Default,
@@ -25,35 +23,21 @@ use object_rainbow_point::{IntoPoint, Point};
     Eq,
 )]
 #[topology(recursive)]
+#[topology(bound = "K: InlineOutput + Traversible")]
+#[topology(bound = "V: InlineOutput + Traversible")]
 enum Node<K, V> {
     #[default]
     Empty,
-    Leaf(WithPrefix<K>, MappedExtra<V, WithoutHeader>),
+    Leaf(
+        #[topology(unchecked)] WithPrefix<K>,
+        #[topology(unchecked)] MappedExtra<V, WithoutHeader>,
+    ),
     Sub(
         #[tags(skip)]
+        #[topology(unchecked)]
         #[allow(clippy::type_complexity, reason = "no hope")]
         Point<MappedExtra<KeyedArrayMap<MappedExtra<Self, WithByte>>, WithBytes>>,
     ),
-}
-
-impl<K, V> Topological for Node<K, V>
-where
-    K: InlineOutput + Traversible,
-    V: InlineOutput + Traversible,
-{
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
-        let kind = self.kind();
-        let tag = kind.to_tag();
-        tag.traverse(visitor);
-        match self {
-            Self::Empty => {}
-            Self::Leaf(k, v) => {
-                k.traverse(visitor);
-                v.traverse(visitor)
-            }
-            Self::Sub(point) => point.traverse(visitor),
-        }
-    }
 }
 
 impl<
