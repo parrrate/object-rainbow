@@ -78,7 +78,19 @@ macro_rules! signs {
     };
 }
 
-macro_rules! ae {
+macro_rules! unsigned_niche {
+    ($n:ty) => {
+        impl MaybeHasNiche for $n {
+            type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
+        }
+
+        impl MaybeHasNiche for NonZero<$n> {
+            type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
+        }
+    };
+}
+
+macro_rules! nz_any_sign {
     ($n:ty) => {
         impl ToOutput for NonZero<$n> {
             fn to_output(&self, output: &mut impl Output) {
@@ -103,38 +115,12 @@ macro_rules! ae {
             type Size = <$n as Size>::Size;
         }
 
-        impl MaybeHasNiche for $n {
-            type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
-        }
-
-        impl MaybeHasNiche for NonZero<$n> {
-            type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
-        }
-
         impl Equivalent<$n> for Option<NonZero<$n>> {
             fn into_equivalent(self) -> $n {
                 self.map(NonZero::get).unwrap_or_default()
             }
             fn from_equivalent(object: $n) -> Self {
                 NonZero::new(object)
-            }
-        }
-
-        impl Equivalent<Os<$n>> for $n {
-            fn into_equivalent(self) -> Os<$n> {
-                self as _
-            }
-            fn from_equivalent(object: Os<$n>) -> Self {
-                object as _
-            }
-        }
-
-        impl Equivalent<NonZero<Os<$n>>> for NonZero<$n> {
-            fn into_equivalent(self) -> NonZero<Os<$n>> {
-                NonZero::new(self.get() as _).unwrap()
-            }
-            fn from_equivalent(object: NonZero<Os<$n>>) -> Self {
-                NonZero::new(object.get() as _).unwrap()
             }
         }
     };
@@ -415,8 +401,9 @@ signs!(u32, i32);
 signs!(u64, i64);
 signs!(u128, i128);
 
-ae!(u8);
-ae!(i8);
+unsigned_niche!(u8);
+nz_any_sign!(u8);
+nz_any_sign!(i8);
 
 lebe!(u8);
 lebe!(i8);
