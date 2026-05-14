@@ -80,7 +80,7 @@ impl From<&[u8]> for Prefix {
     }
 }
 
-#[derive(Tagged, ListHashes, Topological, Clone)]
+#[derive(Debug, Tagged, ListHashes, Topological, Clone)]
 pub struct WithPrefix<T> {
     prefix: Prefix,
     value: T,
