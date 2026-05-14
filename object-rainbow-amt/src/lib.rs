@@ -190,12 +190,11 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                                 .insert(key, k_new, v_new),
                         )
                         .await;
-                    } else {
-                        let n = common_length(key, key_a)?;
-                        let first_a = key_a[n];
-                        prefix.0.0.drain(..n + 1);
-                        (first_a, n)
                     }
+                    let n = common_length(key, key_a)?;
+                    let first_a = key_a[n];
+                    prefix.0.0.drain(..n + 1);
+                    (first_a, n)
                 };
                 let common = &key[..n];
                 let (&first_b, key_b) = key[n..].split_first().expect("must have 1 different");
