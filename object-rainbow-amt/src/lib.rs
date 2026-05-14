@@ -225,49 +225,24 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                 Ok(Some((k.into_value(), v)))
             }
             Self::Sub(point) => {
-                let (kv, is_empty, only_entry) = {
-                    let MappedExtra(prefix, children) = &mut *point.fetch_mut().await?;
-                    let kv = if let Some(key) = key.strip_prefix(&*prefix.0.0)
+                let (kv, collapse_ctx) = {
+                    let subs = &mut *point.fetch_mut().await?;
+                    let kv = if let Some(key) = key.strip_prefix(&*subs.0.0.0)
                         && let Some((&first, key)) = key.split_first()
-                        && let Some(sub) = children.get_mut(first)
+                        && let Some(sub) = subs.1.get_mut(first)
                     {
                         let kv = Box::pin(sub.remove(key)).await?;
                         if sub.is_empty() {
-                            children.remove(first);
+                            subs.1.remove(first);
                         }
                         kv
                     } else {
                         return Ok(None);
                     };
-                    (
-                        kv,
-                        children.is_empty(),
-                        if children.len() < 2 {
-                            children
-                                .pop_first()
-                                .map(|entry| (std::mem::take(prefix), entry.0, entry.1.1))
-                        } else {
-                            None
-                        },
-                    )
+                    (kv, collapse_ctx(subs))
                 };
-                if is_empty {
-                    *self = Self::Empty;
-                }
-                if let Some((mut prefix, first, mut child)) = only_entry {
-                    match &mut child {
-                        Self::Leaf(k, _) => {
-                            k.pop_n(prefix.0.len() + 1);
-                        }
-                        Self::Sub(point) => {
-                            let suffix = &mut point.fetch_mut().await?.0.0.0;
-                            prefix.0.0.push(first);
-                            prefix.0.0.append(suffix);
-                            *suffix = prefix.0.0;
-                        }
-                        Self::Empty => {}
-                    }
-                    *self = child;
+                if let Some(collapse_ctx) = collapse_ctx {
+                    *self = from_ctx(collapse_ctx).await?;
                 }
                 Ok(kv)
             }
@@ -282,6 +257,43 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     fn is_empty(&self) -> bool {
         matches!(self, Self::Empty)
     }
+}
+
+#[allow(clippy::type_complexity)]
+fn collapse_ctx<K, V>(
+    subs: &mut MappedExtra<KeyedArrayMap<MappedExtra<Node<K, V>, WithByte>>, WithBytes>,
+) -> Option<Option<(Vec<u8>, u8, Node<K, V>)>> {
+    if subs.1.len() < 2 {
+        Some(
+            subs.1
+                .pop_first()
+                .map(|entry| (std::mem::take(&mut subs.0.0.0), entry.0, entry.1.1)),
+        )
+    } else {
+        None
+    }
+}
+
+async fn from_ctx<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone>(
+    collapse_ctx: Option<(Vec<u8>, u8, Node<K, V>)>,
+) -> object_rainbow::Result<Node<K, V>> {
+    Ok(if let Some((mut prefix, first, mut child)) = collapse_ctx {
+        match &mut child {
+            Node::Leaf(k, _) => {
+                k.pop_n(prefix.len() + 1);
+            }
+            Node::Sub(point) => {
+                let suffix = &mut point.fetch_mut().await?.0.0.0;
+                prefix.push(first);
+                prefix.append(suffix);
+                *suffix = prefix;
+            }
+            Node::Empty => {}
+        }
+        child
+    } else {
+        Node::Empty
+    })
 }
 
 fn common_length(a: &[u8], b: &[u8]) -> object_rainbow::Result<usize> {
