@@ -1273,7 +1273,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-amt"
-version = "0.0.0-a.0"
+version = "0.0.0-a.1"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1378,7 +1378,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.26"
+version = "0.0.0-a.27"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1442,7 +1442,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-parse-prefix"
-version = "0.0.0-a.0"
+version = "0.0.0-a.1"
 dependencies = [
  "object-rainbow",
 ]
