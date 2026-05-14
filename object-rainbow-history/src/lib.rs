@@ -4,8 +4,8 @@
 
 use futures_util::TryStreamExt;
 use object_rainbow::{
-    Equivalent, Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline,
-    Size, Tagged, ToOutput, Topological, Traversible, assert_impl, derive_for_wrapped,
+    Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline, Size,
+    Tagged, ToOutput, Topological, Traversible, assert_impl, derive_for_wrapped,
 };
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
@@ -222,55 +222,6 @@ impl<T: Apply<D>, D: Send + Traversible> Apply<Point<D>> for Points<T> {
 
     async fn apply(&mut self, diff: Point<D>) -> object_rainbow::Result<Self::Output> {
         self.0.apply(diff.fetch().await?).await
-    }
-}
-
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Default,
-)]
-pub struct DiscardHeader<T>(pub T);
-
-assert_impl!(
-    impl<T, E> Inline<E> for DiscardHeader<T>
-    where
-        T: Inline<E>,
-        E: 'static + Send + Sync + Clone,
-    {
-    }
-);
-
-impl<T: Apply<D>, D: Send, H: Send> Apply<(H, D)> for DiscardHeader<T> {
-    type Output = T::Output;
-
-    fn apply(
-        &mut self,
-        (_, diff): (H, D),
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        self.0.apply(diff)
-    }
-}
-
-impl<T> Equivalent<T> for DiscardHeader<T> {
-    fn into_equivalent(self) -> T {
-        self.0
-    }
-
-    fn from_equivalent(tree: T) -> Self {
-        Self(tree)
     }
 }
 
