@@ -5,7 +5,7 @@ use object_rainbow::{
     map_extra::MappedExtra, without_header::WithoutHeader,
 };
 use object_rainbow_array_map::KeyedArrayMap;
-use object_rainbow_parse_prefix::{Prefix, WithByte, WithBytes, WithPrefix};
+use object_rainbow_parse_prefix::{Prefix, PrefixRoot, WithByte, WithBytes, WithPrefix};
 use object_rainbow_point::{IntoPoint, Point};
 
 #[derive(
@@ -386,7 +386,17 @@ fn common_length(a: &[u8], b: &[u8]) -> object_rainbow::Result<usize> {
     PartialEq,
     Eq,
 )]
-pub struct AmtMap<K, V>(Node<K, V>);
+pub struct AmtMap<K, V>(MappedExtra<Node<K, V>, PrefixRoot>);
+
+assert_impl!(
+    impl<K, V, E> Inline<E> for AmtMap<K, V>
+    where
+        E: 'static + Send + Sync + Clone,
+        K: Inline<E>,
+        V: Inline<E>,
+    {
+    }
+);
 
 impl<K, V> Default for AmtMap<K, V> {
     fn default() -> Self {
