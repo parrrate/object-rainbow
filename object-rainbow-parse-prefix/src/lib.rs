@@ -94,6 +94,12 @@ pub struct WithPrefix<T> {
     value: T,
 }
 
+impl<T: PartialEq> PartialEq for WithPrefix<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.prefix.len() == other.prefix.len() && self.value == other.value
+    }
+}
+
 impl<T> WithPrefix<T> {
     pub fn new(prefix: Prefix, value: T) -> object_rainbow::Result<Self>
     where
