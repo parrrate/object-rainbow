@@ -13,14 +13,14 @@ use object_rainbow_point::{IntoPoint, Point};
 #[derive(Enum, ToOutput, InlineOutput, Tagged, ListHashes, ParseAsInline, Clone, Default)]
 #[topology(recursive)]
 enum Node<K, V> {
+    #[default]
+    Empty,
     Leaf(WithPrefix<K>, MappedExtra<V, WithoutHeader>),
     Sub(
         #[tags(skip)]
         #[allow(clippy::type_complexity, reason = "no hope")]
         Point<MappedExtra<KeyedArrayMap<MappedExtra<Self, WithByte>>, WithBytes>>,
     ),
-    #[default]
-    Empty,
 }
 
 impl<K, V> ::object_rainbow::Topological for Node<K, V>
@@ -33,12 +33,12 @@ where
         let tag = kind.to_tag();
         tag.traverse(visitor);
         match self {
+            Self::Empty => {}
             Self::Leaf(k, v) => {
                 k.traverse(visitor);
                 v.traverse(visitor)
             }
             Self::Sub(point) => point.traverse(visitor),
-            Self::Empty => {}
         }
     }
 }
@@ -290,6 +290,7 @@ async fn from_ctx<K: InlineOutput + Traversible + Clone, V: InlineOutput + Trave
 ) -> object_rainbow::Result<Node<K, V>> {
     Ok(if let Some((mut prefix, first, mut child)) = collapse_ctx {
         match &mut child {
+            Node::Empty => {}
             Node::Leaf(k, _) => {
                 k.pop_n(prefix.len() + 1);
             }
@@ -299,7 +300,6 @@ async fn from_ctx<K: InlineOutput + Traversible + Clone, V: InlineOutput + Trave
                 prefix.append(suffix);
                 *suffix = prefix;
             }
-            Node::Empty => {}
         }
         child
     } else {
