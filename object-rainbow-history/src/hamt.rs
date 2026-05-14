@@ -62,3 +62,14 @@ impl Apply<Hash> for HamtSet {
         self.insert(hash)
     }
 }
+
+impl Apply<((), Hash)> for HamtSet {
+    type Output = bool;
+
+    fn apply(
+        &mut self,
+        ((), hash): ((), Hash),
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        self.insert(hash)
+    }
+}
