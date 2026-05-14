@@ -5,7 +5,7 @@ pub struct U63(u64);
 
 impl U63 {
     pub fn from_u64(n: u64) -> crate::Result<Self> {
-        if n < (1 << 63) {
+        if n < ((1 << 63) + 128) {
             Ok(Self(n))
         } else {
             Err(Error::UnsupportedLength)
