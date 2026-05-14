@@ -484,6 +484,10 @@ impl<T: InlineOutput + Traversible + Clone> AmtSet<T> {
     pub async fn contains(&self, value: &T) -> object_rainbow::Result<bool> {
         Ok(self.0.get(value).await?.is_some())
     }
+
+    pub async fn insert(&mut self, value: T) -> object_rainbow::Result<bool> {
+        Ok(self.0.insert(value, ()).await?.is_none())
+    }
 }
 
 #[cfg(test)]
