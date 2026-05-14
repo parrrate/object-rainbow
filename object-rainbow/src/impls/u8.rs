@@ -29,7 +29,7 @@ impl<I: ParseInput> Parse<I> for u8 {
 
 impl<I: ParseInput> ParseInline<I> for u8 {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        Ok(Self::from_le_bytes(input.parse_chunk::<1>()?))
+        Ok(Self::from_be_bytes(input.parse_chunk::<1>()?))
     }
 
     fn parse_vec(input: I) -> crate::Result<Vec<Self>> {
