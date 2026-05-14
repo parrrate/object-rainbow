@@ -15,6 +15,10 @@ impl U63 {
     pub fn as_usize(self) -> crate::Result<usize> {
         self.0.try_into().map_err(|_| Error::UnsupportedLength)
     }
+
+    pub fn len_of<T>(v: &[T]) -> Self {
+        Self::from_u64(v.len() as _).unwrap()
+    }
 }
 
 impl ToOutput for U63 {
