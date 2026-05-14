@@ -100,6 +100,8 @@ impl<T: PartialEq> PartialEq for WithPrefix<T> {
     }
 }
 
+impl<T: Eq> Eq for WithPrefix<T> {}
+
 impl<T> WithPrefix<T> {
     pub fn new(prefix: Prefix, value: T) -> object_rainbow::Result<Self>
     where
