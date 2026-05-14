@@ -456,7 +456,16 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
 }
 
 #[derive(
-    Debug, Clone, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline,
+    Debug,
+    Clone,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    PartialEq,
 )]
 pub struct AmtSet<T>(AmtMap<T, ()>);
 
