@@ -324,9 +324,7 @@ async fn collapse<K: InlineOutput + Traversible + Clone, V: InlineOutput + Trave
 }
 
 #[allow(clippy::type_complexity)]
-fn collapse_ctx<K, V>(
-    subs: &mut MappedExtra<KeyedArrayMap<MappedExtra<Node<K, V>, WithByte>>, WithBytes>,
-) -> Option<Option<(Vec<u8>, u8, Node<K, V>)>> {
+fn collapse_ctx<K, V>(subs: &mut Subs<K, V>) -> Option<Option<(Vec<u8>, u8, Node<K, V>)>> {
     if subs.1.len() < 2 {
         Some(
             subs.1
