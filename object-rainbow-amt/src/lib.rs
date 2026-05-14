@@ -1,8 +1,8 @@
 use futures_util::{TryStreamExt, future::try_join};
 use object_rainbow::{
-    Enum, Fetch, Inline, InlineOutput, ListHashes, Parse, ParseAsInline, ParseInline, PointInput,
-    Singular, Tagged, ToOutput, Topological, Traversible, enumkind::EnumParseInline,
-    length_prefixed::LpBytes, map_extra::MappedExtra, without_header::WithoutHeader,
+    Enum, Fetch, Inline, InlineOutput, ListHashes, Parse, ParseInline, PointInput, Singular,
+    Tagged, ToOutput, Topological, Traversible, assert_impl, length_prefixed::LpBytes,
+    map_extra::MappedExtra, without_header::WithoutHeader,
 };
 use object_rainbow_array_map::KeyedArrayMap;
 use object_rainbow_parse_prefix::{Prefix, WithByte, WithBytes, WithPrefix};
@@ -16,7 +16,8 @@ use object_rainbow_point::{IntoPoint, Point};
     Tagged,
     ListHashes,
     Topological,
-    ParseAsInline,
+    Parse,
+    ParseInline,
     Clone,
     Default,
     PartialEq,
@@ -25,51 +26,43 @@ use object_rainbow_point::{IntoPoint, Point};
 #[topology(recursive)]
 #[topology(bound = "K: InlineOutput + Traversible")]
 #[topology(bound = "V: InlineOutput + Traversible")]
+#[parse(bound = "K: ParseInline<__I::WithExtra<E>> + InlineOutput + Traversible + Inline<E>")]
+#[parse(bound = "V: ParseInline<__I::WithExtra<E>> + InlineOutput + Traversible + Inline<E>")]
+#[parse(bound = "__I: PointInput<Extra = (Prefix, E)>")]
+#[parse(generic = "E: 'static + Send + Sync + Clone")]
 enum Node<K, V> {
     #[default]
     Empty,
     Leaf(
-        #[topology(unchecked)] WithPrefix<K>,
-        #[topology(unchecked)] MappedExtra<V, WithoutHeader>,
+        #[topology(unchecked)]
+        #[parse(unchecked)]
+        WithPrefix<K>,
+        #[topology(unchecked)]
+        #[parse(unchecked)]
+        MappedExtra<V, WithoutHeader>,
     ),
     Sub(
         #[tags(skip)]
         #[topology(unchecked)]
+        #[parse(unchecked)]
         #[allow(clippy::type_complexity, reason = "no hope")]
         Point<MappedExtra<KeyedArrayMap<MappedExtra<Self, WithByte>>, WithBytes>>,
     ),
 }
 
-impl<
-    K: ParseInline<I::WithExtra<E>> + InlineOutput + Traversible + Inline<E>,
-    V: ParseInline<I::WithExtra<E>> + InlineOutput + Traversible + Inline<E>,
-    I: PointInput<Extra = (Prefix, E)>,
-    E: 'static + Send + Sync + Clone,
-> ParseInline<I> for Node<K, V>
-{
-    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        EnumParseInline::parse_as_inline_enum(input)
-    }
-}
+trait _PrefixInline<E>: Inline<(Prefix, E)> {}
 
-impl<
-    K: ParseInline<I::WithExtra<E>> + InlineOutput + Traversible + Inline<E>,
-    V: ParseInline<I::WithExtra<E>> + InlineOutput + Traversible + Inline<E>,
-    I: PointInput<Extra = (Prefix, E)>,
-    E: 'static + Send + Sync + Clone,
-> EnumParseInline<I> for Node<K, V>
-{
-    fn enum_parse_inline(
-        kind: <Self as Enum>::Kind,
-        input: &mut I,
-    ) -> object_rainbow::Result<Self> {
-        Ok(match kind {
-            <Self as Enum>::Kind::Leaf => Self::Leaf(input.parse_inline()?, input.parse_inline()?),
-            <Self as Enum>::Kind::Sub => Self::Sub(input.parse_inline()?),
-            <Self as Enum>::Kind::Empty => Self::Empty,
-        })
+impl<T: Inline<(Prefix, E)>, E> _PrefixInline<E> for T {}
+
+assert_impl!(
+    impl<K, V, E> _PrefixInline<E> for Node<K, V>
+    where
+        E: 'static + Send + Sync + Clone,
+        K: Inline<E>,
+        V: Inline<E>,
+    {
     }
-}
+);
 
 impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone> Node<K, V> {
     async fn get(&self, key: &[u8]) -> object_rainbow::Result<Option<V>> {

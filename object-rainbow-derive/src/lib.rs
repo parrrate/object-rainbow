@@ -1275,19 +1275,25 @@ pub fn derive_parse(input: TokenStream) -> TokenStream {
 struct ContainerParseArgs {
     #[darling(default)]
     bound: Option<LitStr>,
+    #[darling(default)]
+    generic: Option<LitStr>,
 }
 
-fn parse_parse_args(attrs: &[Attribute]) -> syn::Result<Vec<WherePredicate>> {
+fn parse_parse_args(attrs: &[Attribute]) -> syn::Result<(Vec<WherePredicate>, Vec<GenericParam>)> {
     let mut wheres = Vec::new();
+    let mut ig = Vec::new();
     for attr in attrs {
         if attr_str(attr).as_deref() == Some("parse") {
-            let ContainerParseArgs { bound } = attr.parse_args()?;
+            let ContainerParseArgs { bound , generic} = attr.parse_args()?;
             if let Some(bound) = bound {
                 wheres.push(bound.parse()?);
             }
+            if let Some(generic) = generic {
+                ig.push(generic.parse()?);
+            }
         }
     }
-    Ok(wheres)
+    Ok((wheres, ig))
 }
 
 #[derive(Debug, FromMeta)]
@@ -1301,7 +1307,7 @@ struct ParseArgs {
 
 fn bounds_parse(mut generics: Generics, data: &Data, attrs: &[Attribute]) -> syn::Result<Generics> {
     let (recursive, _, _) = parse_recursive_inline(attrs)?;
-    let wheres = parse_parse_args(attrs)?;
+    let (wheres, ig) = parse_parse_args(attrs)?;
     let tr = |last| match (last, recursive) {
         (true, true) => {
             quote!(::object_rainbow::Parse<__I> + ::object_rainbow::Object<__I::Extra>)
@@ -1406,6 +1412,7 @@ fn bounds_parse(mut generics: Generics, data: &Data, attrs: &[Attribute]) -> syn
     for bound in wheres {
         generics.make_where_clause().predicates.push(bound);
     }
+    generics.params.extend(ig);
     Ok(generics)
 }
 
@@ -1611,7 +1618,7 @@ fn bounds_parse_inline(
     attrs: &[Attribute],
 ) -> syn::Result<Generics> {
     let (recursive, _, _) = parse_recursive_inline(attrs)?;
-    let wheres = parse_parse_args(attrs)?;
+    let (wheres, ig) = parse_parse_args(attrs)?;
     let tr = if recursive {
         quote!(::object_rainbow::ParseInline<__I> + ::object_rainbow::Inline<__I::Extra>)
     } else {
@@ -1700,6 +1707,9 @@ fn bounds_parse_inline(
     });
     for bound in wheres {
         generics.make_where_clause().predicates.push(bound);
+    }
+    for generic in ig {
+        generics.params.push(parse_quote!(#generic));
     }
     Ok(generics)
 }
