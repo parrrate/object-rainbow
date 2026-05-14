@@ -466,6 +466,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     Parse,
     ParseInline,
     PartialEq,
+    Eq,
 )]
 pub struct AmtSet<T>(AmtMap<T, ()>);
 
