@@ -1,7 +1,7 @@
 use futures_util::{TryStreamExt, future::try_join};
 use object_rainbow::{
     Enum, Fetch, Inline, InlineOutput, ListHashes, ParseAsInline, ParseInline, PointInput,
-    Singular, Tagged, ToOutput, Traversible,
+    PointVisitor, Singular, Tagged, ToOutput, Topological, Traversible,
     enumkind::{EnumKind, EnumParseInline},
     length_prefixed::LpBytes,
     map_extra::MappedExtra,
@@ -26,12 +26,12 @@ enum Node<K, V> {
     ),
 }
 
-impl<K, V> ::object_rainbow::Topological for Node<K, V>
+impl<K, V> Topological for Node<K, V>
 where
     K: InlineOutput + Traversible,
     V: InlineOutput + Traversible,
 {
-    fn traverse(&self, visitor: &mut impl ::object_rainbow::PointVisitor) {
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
         let kind = self.kind();
         let tag = kind.to_tag();
         tag.traverse(visitor);
