@@ -26,21 +26,17 @@ use object_rainbow_point::{IntoPoint, Point};
 #[topology(recursive, unchecked)]
 #[topology(bound = "K: InlineOutput + Traversible")]
 #[topology(bound = "V: InlineOutput + Traversible")]
+#[parse(input = "I", unchecked)]
+#[parse(generic = "E: 'static + Send + Sync + Clone")]
 #[parse(bound = "K: ParseInline<I::WithExtra<E>> + InlineOutput + Traversible + Inline<E>")]
 #[parse(bound = "V: ParseInline<I::WithExtra<E>> + InlineOutput + Traversible + Inline<E>")]
 #[parse(bound = "I: PointInput<Extra = (Prefix, E)>")]
-#[parse(generic = "E: 'static + Send + Sync + Clone")]
-#[parse(input = "I")]
 enum Node<K, V> {
     #[default]
     Empty,
-    Leaf(
-        #[parse(unchecked)] WithPrefix<K>,
-        #[parse(unchecked)] MappedExtra<V, WithoutHeader>,
-    ),
+    Leaf(WithPrefix<K>, MappedExtra<V, WithoutHeader>),
     Sub(
         #[tags(skip)]
-        #[parse(unchecked)]
         #[allow(clippy::type_complexity, reason = "no hope")]
         Point<MappedExtra<KeyedArrayMap<MappedExtra<Self, WithByte>>, WithBytes>>,
     ),

@@ -1289,6 +1289,8 @@ pub fn derive_parse(input: TokenStream) -> TokenStream {
 #[darling(derive_syn_parse)]
 struct ContainerParseArgs {
     #[darling(default)]
+    unchecked: bool,
+    #[darling(default)]
     bound: Option<LitStr>,
     #[darling(default)]
     generic: Option<LitStr>,
@@ -1298,29 +1300,34 @@ struct ContainerParseArgs {
 
 fn parse_parse_args(
     attrs: &[Attribute],
-) -> syn::Result<(Ident, Vec<WherePredicate>, Vec<GenericParam>)> {
+) -> syn::Result<(bool, Ident, Vec<WherePredicate>, Vec<GenericParam>)> {
+    let mut u = false;
+    let mut inp = parse_quote!(__I);
     let mut wheres = Vec::new();
     let mut ig = Vec::new();
-    let mut i = parse_quote!(__I);
     for attr in attrs {
         if attr_str(attr).as_deref() == Some("parse") {
             let ContainerParseArgs {
+                unchecked,
                 input,
                 bound,
                 generic,
             } = attr.parse_args()?;
+            if unchecked {
+                u = true;
+            }
+            if let Some(input) = input {
+                inp = input.parse()?;
+            }
             if let Some(bound) = bound {
                 wheres.push(bound.parse()?);
             }
             if let Some(generic) = generic {
                 ig.push(generic.parse()?);
             }
-            if let Some(input) = input {
-                i = input.parse()?;
-            }
         }
     }
-    Ok((i, wheres, ig))
+    Ok((u, inp, wheres, ig))
 }
 
 #[derive(Debug, FromMeta)]
@@ -1338,7 +1345,7 @@ fn bounds_parse(
     attrs: &[Attribute],
 ) -> syn::Result<(Ident, Generics)> {
     let (recursive, _, _, _) = parse_recursive_inline(attrs)?;
-    let (inp, wheres, ig) = parse_parse_args(attrs)?;
+    let (u, inp, wheres, ig) = parse_parse_args(attrs)?;
     let tr = |last| match (last, recursive) {
         (true, true) => {
             quote!(::object_rainbow::Parse<#inp> + ::object_rainbow::Object<#inp::Extra>)
@@ -1378,6 +1385,9 @@ fn bounds_parse(
                         },
                     );
                 } else {
+                    if u {
+                        continue 'field;
+                    }
                     let tr = tr(last);
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
@@ -1415,6 +1425,9 @@ fn bounds_parse(
                             },
                         );
                     } else {
+                        if u {
+                            continue 'field;
+                        }
                         let last = i == last_at;
                         let tr = tr(last);
                         generics.make_where_clause().predicates.push(
@@ -1652,7 +1665,7 @@ fn bounds_parse_inline(
     attrs: &[Attribute],
 ) -> syn::Result<(Ident, Generics)> {
     let (recursive, _, _, _) = parse_recursive_inline(attrs)?;
-    let (inp, wheres, ig) = parse_parse_args(attrs)?;
+    let (u, inp, wheres, ig) = parse_parse_args(attrs)?;
     let tr = if recursive {
         quote!(::object_rainbow::ParseInline<#inp> + ::object_rainbow::Inline<#inp::Extra>)
     } else {
@@ -1683,6 +1696,9 @@ fn bounds_parse_inline(
                         },
                     );
                 } else {
+                    if u {
+                        continue 'field;
+                    }
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
                             #ty: #tr
@@ -1716,6 +1732,9 @@ fn bounds_parse_inline(
                             },
                         );
                     } else {
+                        if u {
+                            continue 'field;
+                        }
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
                                 #ty: #tr
