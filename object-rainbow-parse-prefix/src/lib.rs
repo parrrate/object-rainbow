@@ -14,6 +14,8 @@ impl PartialEq for Prefix {
     }
 }
 
+impl Eq for Prefix {}
+
 impl Prefix {
     pub fn len(&self) -> usize {
         let mut total = 0;
