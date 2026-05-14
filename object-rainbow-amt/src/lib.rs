@@ -12,7 +12,16 @@ use object_rainbow_parse_prefix::{Prefix, WithByte, WithBytes, WithPrefix};
 use object_rainbow_point::{IntoPoint, Point};
 
 #[derive(
-    Debug, Enum, ToOutput, InlineOutput, Tagged, ListHashes, ParseAsInline, Clone, Default,
+    Debug,
+    Enum,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    ParseAsInline,
+    Clone,
+    Default,
+    PartialEq,
 )]
 #[topology(recursive)]
 enum Node<K, V> {
