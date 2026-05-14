@@ -312,7 +312,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     }
 
     async fn collapse(subs: &mut Subs<K, V>) -> object_rainbow::Result<Option<Node<K, V>>> {
-        Ok(if let Some(collapse_ctx) = collapse_ctx(subs) {
+        Ok(if let Some(collapse_ctx) = Self::collapse_ctx(subs) {
             Some(Self::from_ctx(collapse_ctx).await?)
         } else {
             None
@@ -340,21 +340,21 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
             Node::Empty
         })
     }
+
+    fn collapse_ctx(subs: &mut Subs<K, V>) -> CollapseCtx<K, V> {
+        if subs.1.len() < 2 {
+            Some(
+                subs.1
+                    .pop_first()
+                    .map(|entry| (std::mem::take(&mut subs.0.0.0), entry.0, entry.1.1)),
+            )
+        } else {
+            None
+        }
+    }
 }
 
 type CollapseCtx<K, V> = Option<Option<(Vec<u8>, u8, Node<K, V>)>>;
-
-fn collapse_ctx<K, V>(subs: &mut Subs<K, V>) -> CollapseCtx<K, V> {
-    if subs.1.len() < 2 {
-        Some(
-            subs.1
-                .pop_first()
-                .map(|entry| (std::mem::take(&mut subs.0.0.0), entry.0, entry.1.1)),
-        )
-    } else {
-        None
-    }
-}
 
 fn common_length(a: &[u8], b: &[u8]) -> object_rainbow::Result<usize> {
     let n = a.iter().zip(b).take_while(|(a, b)| a == b).count();
