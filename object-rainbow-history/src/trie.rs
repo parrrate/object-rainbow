@@ -53,6 +53,14 @@ impl<T: ReflessObject> Apply<T> for TrieSet<T> {
     }
 }
 
+impl<T: ReflessObject> Apply<((), T)> for TrieSet<T> {
+    type Output = bool;
+
+    async fn apply(&mut self, ((), value): ((), T)) -> object_rainbow::Result<Self::Output> {
+        self.insert(&value).await
+    }
+}
+
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
