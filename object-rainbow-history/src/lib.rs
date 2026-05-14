@@ -310,11 +310,9 @@ impl<Diff: Send, First: Apply<Diff>, Second: Apply<First::Output>> Apply<Diff>
     for Sequential<First, Second>
 {
     type Output = Second::Output;
-    fn apply(
-        &mut self,
-        diff: Diff,
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        async move { self.second.apply(self.first.apply(diff).await?).await }
+
+    async fn apply(&mut self, diff: Diff) -> object_rainbow::Result<Self::Output> {
+        self.second.apply(self.first.apply(diff).await?).await
     }
 }
 
