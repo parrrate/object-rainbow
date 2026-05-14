@@ -415,6 +415,7 @@ fn common_length(a: &[u8], b: &[u8]) -> object_rainbow::Result<usize> {
     Parse,
     ParseInline,
     PartialEq,
+    Eq,
 )]
 pub struct AmtMap<K, V>(Node<K, V>);
 
