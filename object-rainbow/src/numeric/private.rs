@@ -438,6 +438,18 @@ nz_any_sign!(i8);
 
 byte_ordered!(i8);
 
+byte_ordered!(u16);
+byte_ordered!(i16);
+
+byte_ordered!(u32);
+byte_ordered!(i32);
+
+byte_ordered!(u64);
+byte_ordered!(i64);
+
+byte_ordered!(u128);
+byte_ordered!(i128);
+
 lebe!(u8);
 lebe!(i8);
 
