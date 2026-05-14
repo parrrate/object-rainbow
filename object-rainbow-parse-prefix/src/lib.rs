@@ -245,6 +245,31 @@ impl<E: 'static + Clone> MapExtra<(Prefix, E)> for WithBytes {
     }
 }
 
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Clone,
+    Copy,
+    Default,
+    PartialEq,
+    Eq,
+)]
+pub struct PrefixRoot;
+
+impl<E: 'static + Clone> MapExtra<E> for PrefixRoot {
+    type Mapped = (Prefix, E);
+
+    fn map_extra(&self, e: E) -> Self::Mapped {
+        (Prefix::default(), e)
+    }
+}
+
 #[test]
 fn abc() {
     let v = Vec::from(Prefix::default().with(b"a").with(b"bc"));
