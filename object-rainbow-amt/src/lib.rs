@@ -225,7 +225,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                 Ok(Some((k.into_value(), v)))
             }
             Self::Sub(point) => {
-                let (kv, collapse_ctx) = {
+                let (kv, node) = {
                     let subs = &mut *point.fetch_mut().await?;
                     let kv = if let Some(key) = key.strip_prefix(&*subs.0.0.0)
                         && let Some((&first, key)) = key.split_first()
@@ -239,10 +239,10 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                     } else {
                         return Ok(None);
                     };
-                    (kv, collapse_ctx(subs))
+                    (kv, collapse(subs).await?)
                 };
-                if let Some(collapse_ctx) = collapse_ctx {
-                    *self = from_ctx(collapse_ctx).await?;
+                if let Some(node) = node {
+                    *self = node;
                 }
                 Ok(kv)
             }
@@ -257,6 +257,17 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     fn is_empty(&self) -> bool {
         matches!(self, Self::Empty)
     }
+}
+
+#[allow(clippy::type_complexity)]
+async fn collapse<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone>(
+    subs: &mut MappedExtra<KeyedArrayMap<MappedExtra<Node<K, V>, WithByte>>, WithBytes>,
+) -> object_rainbow::Result<Option<Node<K, V>>> {
+    Ok(if let Some(collapse_ctx) = collapse_ctx(subs) {
+        Some(from_ctx(collapse_ctx).await?)
+    } else {
+        None
+    })
 }
 
 #[allow(clippy::type_complexity)]
