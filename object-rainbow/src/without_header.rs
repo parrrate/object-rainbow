@@ -12,6 +12,7 @@ use crate::{map_extra::MapExtra, *};
     Parse,
     ParseInline,
     Default,
+    PartialEq,
 )]
 pub struct WithoutHeader;
 
