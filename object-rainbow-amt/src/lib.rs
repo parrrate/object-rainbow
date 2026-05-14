@@ -394,7 +394,7 @@ fn common_length(a: &[u8], b: &[u8]) -> object_rainbow::Result<usize> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, ToOutput)]
 pub struct AmtMap<K, V>(Node<K, V>);
 
 impl<K, V> Default for AmtMap<K, V> {
