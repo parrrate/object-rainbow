@@ -78,12 +78,8 @@ macro_rules! signs {
     };
 }
 
-macro_rules! unsigned_niche {
+macro_rules! nz_unsigned_niche {
     ($n:ty) => {
-        impl MaybeHasNiche for $n {
-            type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
-        }
-
         impl MaybeHasNiche for NonZero<$n> {
             type MnArray = SomeNiche<ZeroNiche<<Self as Size>::Size>>;
         }
@@ -92,6 +88,10 @@ macro_rules! unsigned_niche {
 
 macro_rules! nz_any_sign {
     ($n:ty) => {
+        impl MaybeHasNiche for $n {
+            type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
+        }
+
         impl ToOutput for NonZero<$n> {
             fn to_output(&self, output: &mut impl Output) {
                 self.get().to_output(output);
@@ -432,9 +432,25 @@ signs!(u32, i32);
 signs!(u64, i64);
 signs!(u128, i128);
 
-unsigned_niche!(u8);
+nz_unsigned_niche!(u8);
 nz_any_sign!(u8);
 nz_any_sign!(i8);
+
+nz_unsigned_niche!(u16);
+nz_any_sign!(u16);
+nz_any_sign!(i16);
+
+nz_unsigned_niche!(u32);
+nz_any_sign!(u32);
+nz_any_sign!(i32);
+
+nz_unsigned_niche!(u64);
+nz_any_sign!(u64);
+nz_any_sign!(i64);
+
+nz_unsigned_niche!(u128);
+nz_any_sign!(u128);
+nz_any_sign!(i128);
 
 byte_ordered!(i8);
 
