@@ -1252,7 +1252,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.61"
+version = "0.0.0-a.62"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1334,7 +1334,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-encrypted"
-version = "0.0.0-a.16"
+version = "0.0.0-a.17"
 dependencies = [
  "anyhow",
  "chacha20poly1305",
@@ -1378,7 +1378,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.25"
+version = "0.0.0-a.26"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1421,7 +1421,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-local-map"
-version = "0.0.0-a.4"
+version = "0.0.0-a.5"
 dependencies = [
  "imbl",
  "object-rainbow",
@@ -1486,7 +1486,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-trie"
-version = "0.0.0-a.16"
+version = "0.0.0-a.17"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
