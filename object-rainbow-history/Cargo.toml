@@ -10,6 +10,7 @@ description = "Git-ish diff-by-diff change history"
 
 [dependencies]
 object-rainbow.workspace = true
+object-rainbow-amt = { workspace = true, optional = true }
 object-rainbow-chain-tree.workspace = true
 object-rainbow-hamt = { workspace = true, optional = true }
 object-rainbow-point.workspace = true
@@ -19,6 +20,7 @@ futures-util = { version = "0.3.31", default-features = false }
 thiserror = "2.0.17"
 
 [features]
+amt = ["dep:object-rainbow-amt"]
 hamt = ["dep:object-rainbow-hamt"]
 trie = ["dep:object-rainbow-trie"]
 unique-diffs = ["hamt"]

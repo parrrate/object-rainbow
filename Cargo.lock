@@ -1383,6 +1383,7 @@ dependencies = [
  "futures-util",
  "macro_rules_attribute",
  "object-rainbow",
+ "object-rainbow-amt",
  "object-rainbow-chain-tree",
  "object-rainbow-hamt",
  "object-rainbow-point",
