@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use crate::{numeric::Le, *};
+use crate::{u63::U63, *};
 
 /// Length-prefixed value. Used to make [`Inline`]s out of arbitrary [`Object`]s.
 ///
@@ -30,10 +30,7 @@ impl<T: ToOutput> ToOutput for Lp<T> {
         }
         if output.is_real() {
             let data = self.0.vec();
-            let len = data.len();
-            let len = len as u64;
-            assert_ne!(len, u64::MAX);
-            let prefix = Le::<u64>(len);
+            let prefix = U63::len_of(&data);
             prefix.to_output(output);
             data.to_output(output);
         }
@@ -44,10 +41,8 @@ impl<T: ToOutput> InlineOutput for Lp<T> {}
 
 impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Lp<T> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        let prefix: Le<u64> = input.parse_inline()?;
-        let len = prefix.0;
-        let len = len.try_into().map_err(|_| Error::UnsupportedLength)?;
-        Ok(Self(input.split_parse(len)?))
+        let prefix: U63 = input.parse_inline()?;
+        Ok(Self(input.split_parse(prefix.as_usize()?)?))
     }
 }
 
@@ -82,10 +77,7 @@ impl ToOutput for LpBytes {
     fn to_output(&self, output: &mut impl Output) {
         if output.is_real() {
             let data = &self.0;
-            let len = data.len();
-            let len = len as u64;
-            assert_ne!(len, u64::MAX);
-            let prefix = Le::<u64>(len);
+            let prefix = U63::len_of(data);
             prefix.to_output(output);
             data.to_output(output);
         }
@@ -96,10 +88,8 @@ impl InlineOutput for LpBytes {}
 
 impl<I: ParseInput> ParseInline<I> for LpBytes {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        let prefix: Le<u64> = input.parse_inline()?;
-        let len = prefix.0;
-        let len = len.try_into().map_err(|_| Error::UnsupportedLength)?;
-        let mut data = vec![0; len];
+        let prefix: U63 = input.parse_inline()?;
+        let mut data = vec![0; prefix.as_usize()?];
         input.read(&mut data)?;
         Ok(Self(data))
     }
@@ -131,11 +121,8 @@ impl DerefMut for LpString {
 impl ToOutput for LpString {
     fn to_output(&self, output: &mut impl Output) {
         if output.is_real() {
-            let data = self.0.as_bytes();
-            let len = data.len();
-            let len = len as u64;
-            assert_ne!(len, u64::MAX);
-            let prefix = Le::<u64>(len);
+            let data = &self.0;
+            let prefix = U63::len_of(data.as_bytes());
             prefix.to_output(output);
             data.to_output(output);
         }
