@@ -254,7 +254,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         self.0.insert(&k.vec(), k, v).await
     }
 
-    pub async fn clear(&mut self) {
+    pub fn clear(&mut self) {
         self.0.clear();
     }
 }
