@@ -26,10 +26,11 @@ use object_rainbow_point::{IntoPoint, Point};
 #[topology(recursive)]
 #[topology(bound = "K: InlineOutput + Traversible")]
 #[topology(bound = "V: InlineOutput + Traversible")]
-#[parse(bound = "K: ParseInline<__I::WithExtra<E>> + InlineOutput + Traversible + Inline<E>")]
-#[parse(bound = "V: ParseInline<__I::WithExtra<E>> + InlineOutput + Traversible + Inline<E>")]
-#[parse(bound = "__I: PointInput<Extra = (Prefix, E)>")]
+#[parse(bound = "K: ParseInline<I::WithExtra<E>> + InlineOutput + Traversible + Inline<E>")]
+#[parse(bound = "V: ParseInline<I::WithExtra<E>> + InlineOutput + Traversible + Inline<E>")]
+#[parse(bound = "I: PointInput<Extra = (Prefix, E)>")]
 #[parse(generic = "E: 'static + Send + Sync + Clone")]
+#[parse(input = "I")]
 enum Node<K, V> {
     #[default]
     Empty,

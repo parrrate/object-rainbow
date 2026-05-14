@@ -1232,21 +1232,21 @@ pub fn derive_parse(input: TokenStream) -> TokenStream {
     let name = input.ident;
     let generics = input.generics.clone();
     let (_, ty_generics, _) = generics.split_for_impl();
-    let generics = match bounds_parse(input.generics, &input.data, &input.attrs) {
+    let (inp, generics) = match bounds_parse(input.generics, &input.data, &input.attrs) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let (parse, enum_parse) = gen_parse(&input.data);
+    let (parse, enum_parse) = gen_parse(&input.data, &inp);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
     let target = parse_for(&name, &input.attrs);
     let enum_parse = enum_parse.map(|enum_parse| {
         quote! {
             #[automatically_derived]
-            impl #impl_generics ::object_rainbow::enumkind::EnumParse<__I> for #target #ty_generics
+            impl #impl_generics ::object_rainbow::enumkind::EnumParse<#inp> for #target #ty_generics
             #where_clause
             {
                 fn enum_parse(
-                    kind: <Self as ::object_rainbow::Enum>::Kind, mut input: __I,
+                    kind: <Self as ::object_rainbow::Enum>::Kind, mut input: #inp,
                 ) -> ::object_rainbow::Result<Self> {
                     #enum_parse
                 }
@@ -1256,10 +1256,10 @@ pub fn derive_parse(input: TokenStream) -> TokenStream {
     let output = quote! {
         const _: () = {
             #[automatically_derived]
-            impl #impl_generics ::object_rainbow::Parse<__I> for #target #ty_generics
+            impl #impl_generics ::object_rainbow::Parse<#inp> for #target #ty_generics
             #where_clause
             {
-                fn parse(mut input: __I) -> ::object_rainbow::Result<Self> {
+                fn parse(mut input: #inp) -> ::object_rainbow::Result<Self> {
                     #parse
                 }
             }
@@ -1277,23 +1277,35 @@ struct ContainerParseArgs {
     bound: Option<LitStr>,
     #[darling(default)]
     generic: Option<LitStr>,
+    #[darling(default)]
+    input: Option<LitStr>,
 }
 
-fn parse_parse_args(attrs: &[Attribute]) -> syn::Result<(Vec<WherePredicate>, Vec<GenericParam>)> {
+fn parse_parse_args(
+    attrs: &[Attribute],
+) -> syn::Result<(Ident, Vec<WherePredicate>, Vec<GenericParam>)> {
     let mut wheres = Vec::new();
     let mut ig = Vec::new();
+    let mut i = parse_quote!(__I);
     for attr in attrs {
         if attr_str(attr).as_deref() == Some("parse") {
-            let ContainerParseArgs { bound, generic } = attr.parse_args()?;
+            let ContainerParseArgs {
+                input,
+                bound,
+                generic,
+            } = attr.parse_args()?;
             if let Some(bound) = bound {
                 wheres.push(bound.parse()?);
             }
             if let Some(generic) = generic {
                 ig.push(generic.parse()?);
             }
+            if let Some(input) = input {
+                i = input.parse()?;
+            }
         }
     }
-    Ok((wheres, ig))
+    Ok((i, wheres, ig))
 }
 
 #[derive(Debug, FromMeta)]
@@ -1305,18 +1317,22 @@ struct ParseArgs {
     with: Option<Expr>,
 }
 
-fn bounds_parse(mut generics: Generics, data: &Data, attrs: &[Attribute]) -> syn::Result<Generics> {
+fn bounds_parse(
+    mut generics: Generics,
+    data: &Data,
+    attrs: &[Attribute],
+) -> syn::Result<(Ident, Generics)> {
     let (recursive, _, _) = parse_recursive_inline(attrs)?;
-    let (wheres, ig) = parse_parse_args(attrs)?;
+    let (inp, wheres, ig) = parse_parse_args(attrs)?;
     let tr = |last| match (last, recursive) {
         (true, true) => {
-            quote!(::object_rainbow::Parse<__I> + ::object_rainbow::Object<__I::Extra>)
+            quote!(::object_rainbow::Parse<#inp> + ::object_rainbow::Object<#inp::Extra>)
         }
-        (true, false) => quote!(::object_rainbow::Parse<__I>),
+        (true, false) => quote!(::object_rainbow::Parse<#inp>),
         (false, true) => {
-            quote!(::object_rainbow::ParseInline<__I> + ::object_rainbow::Inline<__I::Extra>)
+            quote!(::object_rainbow::ParseInline<#inp> + ::object_rainbow::Inline<#inp::Extra>)
         }
-        (false, false) => quote!(::object_rainbow::ParseInline<__I>),
+        (false, false) => quote!(::object_rainbow::ParseInline<#inp>),
     };
     match data {
         Data::Struct(data) => {
@@ -1341,8 +1357,8 @@ fn bounds_parse(mut generics: Generics, data: &Data, attrs: &[Attribute]) -> syn
                 if let Some(bound) = b {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
-                            (#ty, __I::Extra): ::object_rainbow::BoundPair<
-                                T = #ty, E = __I::Extra
+                            (#ty, #inp::Extra): ::object_rainbow::BoundPair<
+                                T = #ty, E = #inp::Extra
                             > + #bound
                         },
                     );
@@ -1378,8 +1394,8 @@ fn bounds_parse(mut generics: Generics, data: &Data, attrs: &[Attribute]) -> syn
                     if let Some(bound) = b {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
-                                (#ty, __I::Extra): ::object_rainbow::BoundPair<
-                                    T = #ty, E = __I::Extra
+                                (#ty, #inp::Extra): ::object_rainbow::BoundPair<
+                                    T = #ty, E = #inp::Extra
                                 > + #bound
                             },
                         );
@@ -1403,29 +1419,32 @@ fn bounds_parse(mut generics: Generics, data: &Data, attrs: &[Attribute]) -> syn
         }
     }
     generics.params.push(if recursive {
-        parse_quote!(__I: ::object_rainbow::PointInput<
+        parse_quote!(#inp: ::object_rainbow::PointInput<
             Extra: ::core::marker::Send + ::core::marker::Sync + ::core::clone::Clone
         >)
     } else {
-        parse_quote!(__I: ::object_rainbow::ParseInput)
+        parse_quote!(#inp: ::object_rainbow::ParseInput)
     });
     for bound in wheres {
         generics.make_where_clause().predicates.push(bound);
     }
     generics.params.extend(ig);
-    Ok(generics)
+    Ok((inp, generics))
 }
 
-fn gen_parse(data: &Data) -> (proc_macro2::TokenStream, Option<proc_macro2::TokenStream>) {
+fn gen_parse(
+    data: &Data,
+    inp: &Ident,
+) -> (proc_macro2::TokenStream, Option<proc_macro2::TokenStream>) {
     match data {
         Data::Struct(data) => {
-            let arm = fields_parse(&data.fields);
+            let arm = fields_parse(&data.fields, inp);
             (quote! { Ok(Self #arm)}, None)
         }
         Data::Enum(data) => {
             let parse = data.variants.iter().map(|v| {
                 let ident = &v.ident;
-                let arm = fields_parse(&v.fields);
+                let arm = fields_parse(&v.fields, inp);
                 quote! {
                     <Self as ::object_rainbow::Enum>::Kind::#ident => Self::#ident #arm,
                 }
@@ -1448,7 +1467,7 @@ fn gen_parse(data: &Data) -> (proc_macro2::TokenStream, Option<proc_macro2::Toke
     }
 }
 
-fn fields_parse(fields: &syn::Fields) -> proc_macro2::TokenStream {
+fn fields_parse(fields: &syn::Fields, inp: &Ident) -> proc_macro2::TokenStream {
     let last_at = fields.len().saturating_sub(1);
     match fields {
         syn::Fields::Named(fields) => {
@@ -1480,7 +1499,7 @@ fn fields_parse(fields: &syn::Fields) -> proc_macro2::TokenStream {
                     };
                     if let Some(bound) = b {
                         quote_spanned! { f.ty.span() =>
-                            #i: <(#ty, __I::Extra) as #bound>::#with(#arg)?
+                            #i: <(#ty, #inp::Extra) as #bound>::#with(#arg)?
                         }
                     } else {
                         quote_spanned! { f.ty.span() =>
@@ -1528,7 +1547,7 @@ fn fields_parse(fields: &syn::Fields) -> proc_macro2::TokenStream {
                     };
                     if let Some(bound) = b {
                         quote_spanned! { f.ty.span() =>
-                            <(#ty, __I::Extra) as #bound>::#with(#arg)?
+                            <(#ty, #inp::Extra) as #bound>::#with(#arg)?
                         }
                     } else {
                         quote_spanned! { f.ty.span() =>
@@ -1578,7 +1597,7 @@ pub fn derive_parse_inline(input: TokenStream) -> TokenStream {
     let name = input.ident;
     let generics = input.generics.clone();
     let (_, ty_generics, _) = generics.split_for_impl();
-    let generics = match bounds_parse_inline(input.generics, &input.data, &input.attrs) {
+    let (inp, generics) = match bounds_parse_inline(input.generics, &input.data, &input.attrs) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
@@ -1588,10 +1607,10 @@ pub fn derive_parse_inline(input: TokenStream) -> TokenStream {
     let enum_parse_inline = enum_parse_inline.map(|enum_parse_inline| {
         quote! {
             #[automatically_derived]
-            impl #impl_generics ::object_rainbow::enumkind::EnumParseInline<__I>
+            impl #impl_generics ::object_rainbow::enumkind::EnumParseInline<#inp>
             for #target #ty_generics #where_clause {
                 fn enum_parse_inline(
-                    kind: <Self as ::object_rainbow::Enum>::Kind, input: &mut __I,
+                    kind: <Self as ::object_rainbow::Enum>::Kind, input: &mut #inp,
                 ) -> ::object_rainbow::Result<Self> {
                     #enum_parse_inline
                 }
@@ -1600,9 +1619,9 @@ pub fn derive_parse_inline(input: TokenStream) -> TokenStream {
     });
     let output = quote! {
         #[automatically_derived]
-        impl #impl_generics ::object_rainbow::ParseInline<__I>
+        impl #impl_generics ::object_rainbow::ParseInline<#inp>
         for #target #ty_generics #where_clause {
-            fn parse_inline(input: &mut __I) -> ::object_rainbow::Result<Self> {
+            fn parse_inline(input: &mut #inp) -> ::object_rainbow::Result<Self> {
                 #parse_inline
             }
         }
@@ -1616,13 +1635,13 @@ fn bounds_parse_inline(
     mut generics: Generics,
     data: &Data,
     attrs: &[Attribute],
-) -> syn::Result<Generics> {
+) -> syn::Result<(Ident, Generics)> {
     let (recursive, _, _) = parse_recursive_inline(attrs)?;
-    let (wheres, ig) = parse_parse_args(attrs)?;
+    let (inp, wheres, ig) = parse_parse_args(attrs)?;
     let tr = if recursive {
-        quote!(::object_rainbow::ParseInline<__I> + ::object_rainbow::Inline<__I::Extra>)
+        quote!(::object_rainbow::ParseInline<#inp> + ::object_rainbow::Inline<#inp::Extra>)
     } else {
-        quote!(::object_rainbow::ParseInline<__I>)
+        quote!(::object_rainbow::ParseInline<#inp>)
     };
     match data {
         Data::Struct(data) => {
@@ -1645,7 +1664,7 @@ fn bounds_parse_inline(
                 if let Some(bound) = b {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
-                            (#ty, __I::Extra): #bound
+                            (#ty, #inp::Extra): #bound
                         },
                     );
                 } else {
@@ -1678,7 +1697,7 @@ fn bounds_parse_inline(
                     if let Some(bound) = b {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
-                                (#ty, __I::Extra): #bound
+                                (#ty, #inp::Extra): #bound
                             },
                         );
                     } else {
@@ -1699,11 +1718,11 @@ fn bounds_parse_inline(
         }
     }
     generics.params.push(if recursive {
-        parse_quote!(__I: ::object_rainbow::PointInput<
+        parse_quote!(#inp: ::object_rainbow::PointInput<
             Extra: ::core::marker::Send + ::core::marker::Sync
         >)
     } else {
-        parse_quote!(__I: ::object_rainbow::ParseInput)
+        parse_quote!(#inp: ::object_rainbow::ParseInput)
     });
     for bound in wheres {
         generics.make_where_clause().predicates.push(bound);
@@ -1711,7 +1730,7 @@ fn bounds_parse_inline(
     for generic in ig {
         generics.params.push(parse_quote!(#generic));
     }
-    Ok(generics)
+    Ok((inp, generics))
 }
 
 fn fields_parse_inline(fields: &syn::Fields) -> proc_macro2::TokenStream {
