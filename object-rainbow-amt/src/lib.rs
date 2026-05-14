@@ -458,6 +458,12 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
 #[derive(Debug, Clone)]
 pub struct AmtSet<T>(AmtMap<T, ()>);
 
+impl<T> Default for AmtSet<T> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
