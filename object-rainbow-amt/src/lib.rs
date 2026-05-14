@@ -22,6 +22,7 @@ use object_rainbow_point::{IntoPoint, Point};
     Clone,
     Default,
     PartialEq,
+    Eq,
 )]
 #[topology(recursive)]
 enum Node<K, V> {
