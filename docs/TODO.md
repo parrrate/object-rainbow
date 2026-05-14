@@ -1,4 +1,3 @@
 # planned for inclusion
 
-- 7-bit/63-bit int
-- better `Lp`
+- byte-ordered default serialisation for numbers
