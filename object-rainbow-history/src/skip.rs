@@ -29,16 +29,11 @@ pub struct FilterDiffs<T>(pub T);
 impl<T: Apply<D>, D: Send> Apply<(bool, D)> for FilterDiffs<T> {
     type Output = Option<T::Output>;
 
-    fn apply(
-        &mut self,
-        (include, diff): (bool, D),
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        async move {
-            Ok(if include {
-                Some(self.0.apply(diff).await?)
-            } else {
-                None
-            })
-        }
+    async fn apply(&mut self, (include, diff): (bool, D)) -> object_rainbow::Result<Self::Output> {
+        Ok(if include {
+            Some(self.0.apply(diff).await?)
+        } else {
+            None
+        })
     }
 }
