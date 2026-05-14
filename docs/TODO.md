@@ -1,3 +1,3 @@
 # planned for inclusion
 
-- byte-ordered default serialisation for numbers
+- byte-ordered default serialisation for floats
