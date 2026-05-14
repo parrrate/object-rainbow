@@ -1,6 +1,6 @@
 use futures_util::{TryStreamExt, future::try_join};
 use object_rainbow::{
-    Enum, Fetch, Inline, InlineOutput, ListHashes, ParseAsInline, ParseInline, PointInput,
+    Enum, Fetch, Inline, InlineOutput, ListHashes, Parse, ParseAsInline, ParseInline, PointInput,
     PointVisitor, Singular, Tagged, ToOutput, Topological, Traversible,
     enumkind::{EnumKind, EnumParseInline},
     length_prefixed::LpBytes,
@@ -394,7 +394,7 @@ fn common_length(a: &[u8], b: &[u8]) -> object_rainbow::Result<usize> {
     }
 }
 
-#[derive(Debug, Clone, ToOutput, InlineOutput, Tagged, ListHashes, Topological)]
+#[derive(Debug, Clone, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse)]
 pub struct AmtMap<K, V>(Node<K, V>);
 
 impl<K, V> Default for AmtMap<K, V> {
