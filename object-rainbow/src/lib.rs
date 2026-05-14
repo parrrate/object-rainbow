@@ -390,7 +390,10 @@ impl<'d> ParseInput for ReflessInput<'d> {
     type Data = Cow<'d, [u8]>;
 
     fn push_front(&mut self, data: impl Into<Vec<u8>>) -> crate::Result<()> {
-        self.data_mut()?.prefix.push(data.into());
+        let data = data.into();
+        if !data.is_empty() {
+            self.data_mut()?.prefix.push(data);
+        }
         Ok(())
     }
 
