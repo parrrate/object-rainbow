@@ -140,6 +140,26 @@ impl<T: Send> Collision<T, ConcealedState> for bool {
     }
 }
 
+impl<T: Send> Collision<((), T), ExposedState> for bool {
+    type Output = ();
+
+    fn always_okay(((), _): &((), T)) -> bool {
+        false
+    }
+
+    fn okay(self) -> Self::Output {
+        assert!(self);
+    }
+
+    fn check(self) -> object_rainbow::Result<Self::Output> {
+        if self {
+            Ok(())
+        } else {
+            Err(object_rainbow::Error::consistency(NotUnique))
+        }
+    }
+}
+
 impl<T: Send> Collision<(bool, T), ExposedState> for bool {
     type Output = bool;
 
