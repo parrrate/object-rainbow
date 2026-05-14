@@ -8,6 +8,12 @@ use object_rainbow::{
 #[derive(Debug, Clone, Default)]
 pub struct Prefix(Option<Arc<(Vec<u8>, Self)>>);
 
+impl PartialEq for Prefix {
+    fn eq(&self, other: &Self) -> bool {
+        Vec::from(self.clone()) == Vec::from(other.clone())
+    }
+}
+
 impl Prefix {
     pub fn len(&self) -> usize {
         let mut total = 0;
