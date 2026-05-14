@@ -488,6 +488,10 @@ impl<T: InlineOutput + Traversible + Clone> AmtSet<T> {
     pub async fn insert(&mut self, value: T) -> object_rainbow::Result<bool> {
         Ok(self.0.insert(value, ()).await?.is_none())
     }
+
+    pub async fn remove(&mut self, value: &T) -> object_rainbow::Result<bool> {
+        Ok(self.0.remove(value).await?.is_some())
+    }
 }
 
 #[cfg(test)]
