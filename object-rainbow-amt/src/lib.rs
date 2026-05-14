@@ -1,6 +1,7 @@
+use futures_util::{TryStreamExt, future::try_join};
 use object_rainbow::{
-    Enum, Fetch, Inline, InlineOutput, ListHashes, ParseAsInline, ParseInline, PointInput, Tagged,
-    ToOutput, Traversible,
+    Enum, Fetch, Inline, InlineOutput, ListHashes, ParseAsInline, ParseInline, PointInput,
+    Singular, Tagged, ToOutput, Traversible,
     enumkind::{EnumKind, EnumParseInline},
     length_prefixed::LpBytes,
     map_extra::MappedExtra,
@@ -101,14 +102,8 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         ))
     }
 
-    fn from_pair(
-        common: &[u8],
-        first_a: u8,
-        first_b: u8,
-        node_a: Self,
-        node_b: Self,
-    ) -> object_rainbow::Result<Self> {
-        Ok(Self::Sub(
+    fn from_pair(common: &[u8], first_a: u8, first_b: u8, node_a: Self, node_b: Self) -> Self {
+        Self::Sub(
             MappedExtra(
                 WithBytes(LpBytes(common.into())),
                 KeyedArrayMap(
@@ -120,7 +115,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                 ),
             )
             .point(),
-        ))
+        )
     }
 
     fn from_kv_pairs(
@@ -143,7 +138,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         let wp_b = WithPrefix::new(prefix.with(vec![first_b]), k_b)?;
         assert_eq!(wp_b.vec(), key_b);
         let node_b = Self::Leaf(wp_b, MappedExtra(WithoutHeader, v_b));
-        Self::from_pair(common, first_a, first_b, node_a, node_b)
+        Ok(Self::from_pair(common, first_a, first_b, node_a, node_b))
     }
 
     async fn insert(
@@ -206,7 +201,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                     )?,
                     MappedExtra(WithoutHeader, v_new),
                 );
-                *self = Self::from_pair(common, first_a, first_b, node_a, node_b)?;
+                *self = Self::from_pair(common, first_a, first_b, node_a, node_b);
                 Ok(None)
             }
             Self::Empty => {
@@ -256,6 +251,85 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
 
     fn is_empty(&self) -> bool {
         matches!(self, Self::Empty)
+    }
+
+    fn append(
+        &mut self,
+        other: &mut Self,
+    ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+        async move {
+            if matches!((&*self, &*other), (Self::Leaf(_, _), Self::Sub(_))) {
+                std::mem::swap(self, other);
+            }
+            match (&mut *self, &mut *other) {
+                (_, Self::Empty) => {}
+                (Self::Empty, _) => std::mem::swap(self, other),
+                (this, Self::Leaf(_, _)) => {
+                    let Self::Leaf(k, MappedExtra(_, v)) = std::mem::take(other) else {
+                        unreachable!()
+                    };
+                    this.insert(&k.vec(), k.into_value(), v).await?;
+                }
+                (Self::Sub(this), Self::Sub(o_point)) => {
+                    if this.hash() == o_point.hash() {
+                        *other = Self::Empty;
+                        return Ok(());
+                    }
+                    let (mut s, mut o) = try_join(this.fetch_mut(), o_point.fetch_mut()).await?;
+                    if s.0.0.0.len() > o.0.0.0.len() {
+                        std::mem::swap(&mut *s, &mut *o);
+                    }
+                    if let Some(suffix) = o.0.0.0.strip_prefix(&*s.0.0.0) {
+                        if let Some((&first, _)) = suffix.split_first() {
+                            o.0.0.0.drain(..s.0.0.0.len() + 1);
+                            if let Some(node) = s.1.get_mut(first) {
+                                drop(o);
+                                Box::pin(node.append(other)).await?;
+                            } else {
+                                drop(o);
+                                s.1.insert(first, MappedExtra(WithByte, std::mem::take(other)));
+                            }
+                        } else {
+                            {
+                                let mut futures = futures_util::stream::FuturesUnordered::new();
+                                for (key, node) in s.1.iter_mut() {
+                                    if let Some(mut other) = o.1.remove(key) {
+                                        futures.push(async move { node.append(&mut other).await });
+                                    }
+                                }
+                                while futures.try_next().await?.is_some() {}
+                            }
+                            while let Some((key, sub)) = o.1.pop_first() {
+                                assert!(!s.1.contains(key));
+                                s.1.insert(key, sub);
+                            }
+                            assert!(o.is_empty());
+                            drop(o);
+                            *other = Self::Empty;
+                        }
+                    } else {
+                        let n = common_length(&s.0.0.0, &o.0.0.0)?;
+                        let common = &*s.0.0.0[..n].to_vec();
+                        let first_s = s.0.0.0[n];
+                        let first_o = o.0.0.0[n];
+                        s.0.0.0.drain(..n + 1);
+                        o.0.0.0.drain(..n + 1);
+                        drop(s);
+                        drop(o);
+                        *self = Self::from_pair(
+                            common,
+                            first_s,
+                            first_o,
+                            std::mem::take(self),
+                            std::mem::take(other),
+                        );
+                    }
+                }
+                (Self::Leaf(_, _), Self::Sub(_)) => unreachable!(),
+            }
+            assert!(other.is_empty());
+            Ok(())
+        }
     }
 }
 
@@ -350,6 +424,10 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
+
+    pub async fn append(&mut self, other: &mut Self) -> object_rainbow::Result<()> {
+        self.0.append(&mut other.0).await
+    }
 }
 
 #[cfg(test)]
@@ -410,6 +488,57 @@ mod test {
         amt.remove(b"abcd").await?;
         amt.remove(b"abfg").await?;
         assert!(amt.is_empty());
+        Ok(())
+    }
+
+    #[apply(test!)]
+    async fn append_1() -> object_rainbow::Result<()> {
+        let mut a = Amt::<[u8; 4], ()>::new();
+        a.insert(*b"abcd", ()).await?;
+        a.insert(*b"abff", ()).await?;
+        let mut b = Amt::<[u8; 4], ()>::new();
+        b.insert(*b"abce", ()).await?;
+        b.insert(*b"abfg", ()).await?;
+        a.append(&mut b).await?;
+        assert!(b.is_empty());
+        assert_eq!(a.get(b"abcd").await?, Some(()));
+        assert_eq!(a.get(b"abce").await?, Some(()));
+        assert_eq!(a.get(b"abff").await?, Some(()));
+        assert_eq!(a.get(b"abfg").await?, Some(()));
+        Ok(())
+    }
+
+    #[apply(test!)]
+    async fn append_2() -> object_rainbow::Result<()> {
+        let mut a = Amt::<[u8; 4], ()>::new();
+        a.insert(*b"abcd", ()).await?;
+        a.insert(*b"abff", ()).await?;
+        a.insert(*b"abce", ()).await?;
+        let mut b = Amt::<[u8; 4], ()>::new();
+        b.insert(*b"abfg", ()).await?;
+        a.append(&mut b).await?;
+        assert!(b.is_empty());
+        assert_eq!(a.get(b"abcd").await?, Some(()));
+        assert_eq!(a.get(b"abce").await?, Some(()));
+        assert_eq!(a.get(b"abff").await?, Some(()));
+        assert_eq!(a.get(b"abfg").await?, Some(()));
+        Ok(())
+    }
+
+    #[apply(test!)]
+    async fn append_3() -> object_rainbow::Result<()> {
+        let mut a = Amt::<[u8; 4], ()>::new();
+        a.insert(*b"abcd", ()).await?;
+        a.insert(*b"abce", ()).await?;
+        let mut b = Amt::<[u8; 4], ()>::new();
+        b.insert(*b"abff", ()).await?;
+        b.insert(*b"abfg", ()).await?;
+        a.append(&mut b).await?;
+        assert!(b.is_empty());
+        assert_eq!(a.get(b"abcd").await?, Some(()));
+        assert_eq!(a.get(b"abce").await?, Some(()));
+        assert_eq!(a.get(b"abff").await?, Some(()));
+        assert_eq!(a.get(b"abfg").await?, Some(()));
         Ok(())
     }
 }

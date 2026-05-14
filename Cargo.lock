@@ -1275,6 +1275,7 @@ dependencies = [
 name = "object-rainbow-amt"
 version = "0.1.0"
 dependencies = [
+ "futures-util",
  "macro_rules_attribute",
  "object-rainbow",
  "object-rainbow-array-map",
