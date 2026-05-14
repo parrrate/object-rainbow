@@ -1284,7 +1284,7 @@ fn parse_parse_args(attrs: &[Attribute]) -> syn::Result<(Vec<WherePredicate>, Ve
     let mut ig = Vec::new();
     for attr in attrs {
         if attr_str(attr).as_deref() == Some("parse") {
-            let ContainerParseArgs { bound , generic} = attr.parse_args()?;
+            let ContainerParseArgs { bound, generic } = attr.parse_args()?;
             if let Some(bound) = bound {
                 wheres.push(bound.parse()?);
             }
