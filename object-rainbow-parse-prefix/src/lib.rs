@@ -5,7 +5,7 @@ use object_rainbow::{
     Topological, length_prefixed::LpBytes, map_extra::MapExtra,
 };
 
-#[derive(Clone, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Prefix(Option<Arc<(Vec<u8>, Self)>>);
 
 impl Prefix {
