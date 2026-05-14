@@ -476,6 +476,12 @@ impl<T> Default for AmtSet<T> {
     }
 }
 
+impl<T: InlineOutput + Traversible + Clone> AmtSet<T> {
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
