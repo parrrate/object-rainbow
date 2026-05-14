@@ -53,6 +53,7 @@ pub mod object_marker;
 pub mod parse_extra;
 pub mod partial_byte_tag;
 pub mod tuple_extra;
+pub mod u63;
 pub mod without_header;
 pub mod zero_terminated;
 
