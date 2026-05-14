@@ -9,16 +9,14 @@ where
 {
     type Output = Option<V>;
 
-    fn apply(
+    async fn apply(
         &mut self,
         (value, key): (Option<V>, K),
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        async move {
-            if let Some(value) = value {
-                self.insert(&key, value).await
-            } else {
-                self.remove(&key).await
-            }
+    ) -> object_rainbow::Result<Self::Output> {
+        if let Some(value) = value {
+            self.insert(&key, value).await
+        } else {
+            self.remove(&key).await
         }
     }
 }
@@ -29,11 +27,8 @@ where
 {
     type Output = Option<V>;
 
-    fn apply(
-        &mut self,
-        (value, key): (V, K),
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        async move { self.insert(&key, value).await }
+    async fn apply(&mut self, (value, key): (V, K)) -> object_rainbow::Result<Self::Output> {
+        self.insert(&key, value).await
     }
 }
 
