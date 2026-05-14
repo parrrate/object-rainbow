@@ -220,6 +220,10 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     fn clear(&mut self) {
         std::mem::take(self);
     }
+
+    fn is_empty(&self) -> bool {
+        matches!(self, Self::Empty)
+    }
 }
 
 fn common_length(a: &[u8], b: &[u8]) -> object_rainbow::Result<usize> {
@@ -256,6 +260,10 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
 
     pub fn clear(&mut self) {
         self.0.clear();
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
 }
 
