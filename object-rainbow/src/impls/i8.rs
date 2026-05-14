@@ -5,7 +5,7 @@ use crate::*;
 impl ToOutput for i8 {
     fn to_output(&self, output: &mut impl Output) {
         if output.is_real() {
-            output.write(&(self ^ -0x80).to_le_bytes());
+            output.write(&(self ^ Self::MIN).to_le_bytes());
         }
     }
 }
@@ -20,7 +20,7 @@ impl<I: ParseInput> Parse<I> for i8 {
 
 impl<I: ParseInput> ParseInline<I> for i8 {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        Ok(Self::from_le_bytes(input.parse_chunk::<1>()?) ^ -0x80)
+        Ok(Self::from_le_bytes(input.parse_chunk::<1>()?) ^ Self::MIN)
     }
 }
 
