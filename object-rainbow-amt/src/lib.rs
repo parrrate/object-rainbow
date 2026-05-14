@@ -213,7 +213,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                     } else {
                         return Ok(None);
                     };
-                    (kv, collapse(subs).await?)
+                    (kv, Self::collapse(subs).await?)
                 };
                 if let Some(node) = node {
                     *self = node;
@@ -310,16 +310,14 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
             Ok(())
         }
     }
-}
 
-async fn collapse<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone>(
-    subs: &mut Subs<K, V>,
-) -> object_rainbow::Result<Option<Node<K, V>>> {
-    Ok(if let Some(collapse_ctx) = collapse_ctx(subs) {
-        Some(from_ctx(collapse_ctx).await?)
-    } else {
-        None
-    })
+    async fn collapse(subs: &mut Subs<K, V>) -> object_rainbow::Result<Option<Node<K, V>>> {
+        Ok(if let Some(collapse_ctx) = collapse_ctx(subs) {
+            Some(from_ctx(collapse_ctx).await?)
+        } else {
+            None
+        })
+    }
 }
 
 type CollapseCtx<K, V> = Option<Option<(Vec<u8>, u8, Node<K, V>)>>;
