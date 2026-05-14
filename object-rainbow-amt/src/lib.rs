@@ -312,7 +312,6 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     }
 }
 
-#[allow(clippy::type_complexity)]
 async fn collapse<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone>(
     subs: &mut Subs<K, V>,
 ) -> object_rainbow::Result<Option<Node<K, V>>> {
