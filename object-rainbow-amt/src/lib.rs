@@ -319,16 +319,14 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         })
     }
 
-    async fn from_ctx(
-        collapse_ctx: Option<(Vec<u8>, u8, Node<K, V>)>,
-    ) -> object_rainbow::Result<Node<K, V>> {
+    async fn from_ctx(collapse_ctx: Option<(Vec<u8>, u8, Self)>) -> object_rainbow::Result<Self> {
         Ok(if let Some((mut prefix, first, mut child)) = collapse_ctx {
             match &mut child {
-                Node::Empty => {}
-                Node::Leaf(k, _) => {
+                Self::Empty => {}
+                Self::Leaf(k, _) => {
                     k.pop_n(prefix.len() + 1);
                 }
-                Node::Sub(point) => {
+                Self::Sub(point) => {
                     let suffix = &mut point.fetch_mut().await?.0.0.0;
                     prefix.push(first);
                     prefix.append(suffix);
@@ -337,7 +335,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
             }
             child
         } else {
-            Node::Empty
+            Self::Empty
         })
     }
 
