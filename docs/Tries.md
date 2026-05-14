@@ -6,8 +6,8 @@ all implementations presently use HAMT-style array maps
 
 all require `V: Inline`
 
-| Trie   | key                  | iteration    | `append` | subtractive set ops |
-| ------ | -------------------- | ------------ | -------- | ------------------- |
-| `Amt`  | `impl Inline`        | TODO: sorted |          |                     |
-| `Hamt` | `Hash`               | N/A          | &check;  | &check;             |
-| `Trie` | `impl ReflessObject` | sorted       | &check;  |                     |
+| Trie   | key                  | iteration    | subtractive set ops |
+| ------ | -------------------- | ------------ | ------------------- |
+| `Amt`  | `impl Inline`        | TODO: sorted |                     |
+| `Hamt` | `Hash`               | N/A          | &check;             |
+| `Trie` | `impl ReflessObject` | sorted       |                     |
