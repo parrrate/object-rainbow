@@ -10,7 +10,7 @@ fn main() -> anyhow::Result<()> {
             OpendalStore::from_operator(Operator::new(Memory::default())?.finish()),
         );
         store.commit((Some(123), b"abc".into())).await?;
-        assert_eq!(store.load().await?.get(&b"abc".into()).await?.unwrap(), 123);
+        assert_eq!(store.load().await?.get(&b"abc".into()).await?, Some(123));
         store.commit((None, b"abc".into())).await?;
         assert!(store.load().await?.get(&b"abc".into()).await?.is_none());
         Ok(())
