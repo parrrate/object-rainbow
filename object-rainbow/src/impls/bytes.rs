@@ -19,3 +19,4 @@ impl Tagged for BytesMut {}
 impl ListHashes for Bytes {}
 impl ListHashes for BytesMut {}
 impl Topological for Bytes {}
+impl Topological for BytesMut {}
