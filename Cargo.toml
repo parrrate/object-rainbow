@@ -51,6 +51,7 @@ object-rainbow-trie = { version = "0.0.0-a.17", path = "object-rainbow-trie" }
 
 anyhow = "1.0.102"
 bitvec = { version = "1.0.1", default-features = false }
+chacha20poly1305 = { version = "0.10.1", features = ["std"] }
 darling = "0.23.0"
 futures-util = { version = "0.3.32", default-features = false }
 genawaiter-try-stream = "0.1.0"
