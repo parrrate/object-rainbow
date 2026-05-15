@@ -112,10 +112,14 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         let (&first_a, key_a) = key_a[n..].split_first().expect("must have 1 different");
         let (&first_b, key_b) = key_b[n..].split_first().expect("must have 1 different");
         let wp_a = WithPrefix::new(prefix.with(vec![first_a]), k_a)?;
-        assert_eq!(wp_a.vec(), key_a);
+        if wp_a.vec() != key_a {
+            return Err(object_rainbow::error_consistency!("suffix mismatch"));
+        }
         let node_a = Self::Leaf(wp_a, MappedExtra(WithoutHeader, v_a));
         let wp_b = WithPrefix::new(prefix.with(vec![first_b]), k_b)?;
-        assert_eq!(wp_b.vec(), key_b);
+        if wp_b.vec() != key_b {
+            return Err(object_rainbow::error_consistency!("suffix mismatch"));
+        }
         let node_b = Self::Leaf(wp_b, MappedExtra(WithoutHeader, v_b));
         Ok(Self::from_pair(common, first_a, first_b, node_a, node_b))
     }
