@@ -13,7 +13,7 @@ object-rainbow.workspace = true
 object-rainbow-store.workspace = true
 
 hex.workspace = true
-opendal = "0.55.0"
+opendal.workspace = true
 
 [dev-dependencies]
 object-rainbow-point.workspace = true

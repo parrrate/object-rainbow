@@ -19,5 +19,5 @@ object-rainbow-store-opendal.workspace = true
 object-rainbow-trie.workspace = true
 
 anyhow.workspace = true
-opendal = "0.55.0"
+opendal.workspace = true
 smol.workspace = true
