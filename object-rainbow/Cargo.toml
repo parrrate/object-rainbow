@@ -15,6 +15,7 @@ object-rainbow-derive = { version = "=0.0.0-a.20", path = "../object-rainbow-der
 
 anyhow.workspace = true
 bitvec = { workspace = true, optional = true }
+bytes = { workspace = true, optional = true }
 futures-util.workspace = true
 generic-array.workspace = true
 hex = { workspace = true, optional = true }
@@ -27,6 +28,7 @@ ulid = { workspace = true, optional = true }
 
 [features]
 bitvec = ["dep:bitvec"]
+bytes = ["dep:bytes"]
 hex = ["dep:hex"]
 serde = ["dep:serde"]
 ulid = ["dep:ulid"]

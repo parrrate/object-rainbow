@@ -1398,6 +1398,7 @@ version = "0.0.0-a.63"
 dependencies = [
  "anyhow",
  "bitvec",
+ "bytes",
  "futures-util",
  "generic-array 1.4.1",
  "hex",
