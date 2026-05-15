@@ -312,15 +312,16 @@ impl<'a, T> Entry<'a, T> {
     where
         T: Default,
     {
-        match self {
-            Self::Vacant(e) => e.insert(Default::default()),
-            Self::Occupied(e) => e.into_mut(),
-        }
+        self.or_insert_with(Default::default)
     }
 
     pub fn or_insert(self, default: T) -> &'a mut T {
+        self.or_insert_with(|| default)
+    }
+
+    pub fn or_insert_with(self, default: impl FnOnce() -> T) -> &'a mut T {
         match self {
-            Self::Vacant(e) => e.insert(default),
+            Self::Vacant(e) => e.insert(default()),
             Self::Occupied(e) => e.into_mut(),
         }
     }
