@@ -679,7 +679,7 @@ impl<T: Traversible + Clone> Point<T> {
 
     pub async fn fetch_ref(&mut self) -> object_rainbow::Result<&T> {
         self.prepare_yolo_fetch().await?;
-        Ok(self.fetch.get().unwrap())
+        Ok(self.fetch.get().expect("non-local fetch"))
     }
 }
 
