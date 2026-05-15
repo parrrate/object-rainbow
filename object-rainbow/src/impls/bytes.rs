@@ -20,3 +20,6 @@ impl ListHashes for Bytes {}
 impl ListHashes for BytesMut {}
 impl Topological for Bytes {}
 impl Topological for BytesMut {}
+impl MaybeHasNiche for Bytes {
+    type MnArray = NoNiche<NicheForUnsized>;
+}
