@@ -34,7 +34,7 @@ ulid = ["dep:ulid"]
 [dev-dependencies]
 hex.workspace = true
 smol.workspace = true
-tracing = "0.1.41"
+tracing.workspace = true
 tracing-subscriber = "0.3.19"
 
 [package.metadata.docs.rs]
