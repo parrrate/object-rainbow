@@ -154,7 +154,7 @@ macro_rules! lebe {
                 usize::try_from(self.get())
                     .expect("discriminant out of range")
                     .checked_sub(1)
-                    .unwrap()
+                    .expect("at least 1 (positive and non-zero)")
             }
             fn try_to_usize(&self) -> Option<usize> {
                 usize::try_from(self.get()).ok()?.checked_sub(1)
