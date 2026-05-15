@@ -17,7 +17,7 @@ object-rainbow-point = { workspace = true, features = [
 futures-util = { workspace = true, features = ["std"], optional = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = "1.0.140"
-thiserror = { version = "2.0.17", optional = true }
+thiserror = { workspace = true, optional = true }
 
 [features]
 distributed = ["dep:object-rainbow-point", "dep:futures-util", "dep:thiserror"]

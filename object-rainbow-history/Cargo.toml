@@ -17,7 +17,7 @@ object-rainbow-point.workspace = true
 object-rainbow-trie = { workspace = true, optional = true }
 
 futures-util.workspace = true
-thiserror = "2.0.17"
+thiserror.workspace = true
 
 [features]
 amt = ["dep:object-rainbow-amt"]
