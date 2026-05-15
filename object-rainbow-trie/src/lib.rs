@@ -725,15 +725,15 @@ mod test {
     async fn test() -> object_rainbow::Result<()> {
         let mut trie = Trie::<u8>::default();
         trie.insert(b"abc", 1).await?;
-        assert_eq!(trie.get(b"abc").await?.unwrap(), 1);
+        assert_eq!(trie.get(b"abc").await?, Some(1));
         trie.insert(b"abd", 2).await?;
-        assert_eq!(trie.get(b"abd").await?.unwrap(), 2);
+        assert_eq!(trie.get(b"abd").await?, Some(2));
         trie.insert(b"ab", 3).await?;
-        assert_eq!(trie.get(b"ab").await?.unwrap(), 3);
+        assert_eq!(trie.get(b"ab").await?, Some(3));
         trie.insert(b"a", 4).await?;
-        assert_eq!(trie.get(b"a").await?.unwrap(), 4);
+        assert_eq!(trie.get(b"a").await?, Some(4));
         trie.insert(b"abce", 5).await?;
-        assert_eq!(trie.get(b"abce").await?.unwrap(), 5);
+        assert_eq!(trie.get(b"abce").await?, Some(5));
         assert_eq!(
             trie.prefix_stream(b"")
                 .try_collect::<_, _, Vec<_>>()
@@ -810,11 +810,11 @@ mod test {
                 .await?,
             [(b"ab".into(), 3), (b"abc".into(), 1), (b"abce".into(), 5)],
         );
-        assert_eq!(trie.remove(b"a").await?.unwrap(), 4);
-        assert_eq!(trie.remove(b"ab").await?.unwrap(), 3);
-        assert_eq!(trie.remove(b"abc").await?.unwrap(), 1);
-        assert_eq!(trie.remove(b"abce").await?.unwrap(), 5);
-        assert_eq!(trie.remove(b"abd").await?.unwrap(), 2);
+        assert_eq!(trie.remove(b"a").await?, Some(4));
+        assert_eq!(trie.remove(b"ab").await?, Some(3));
+        assert_eq!(trie.remove(b"abc").await?, Some(1));
+        assert_eq!(trie.remove(b"abce").await?, Some(5));
+        assert_eq!(trie.remove(b"abd").await?, Some(2));
         assert!(trie.is_empty());
         Ok(())
     }
@@ -824,7 +824,7 @@ mod test {
         let mut trie = Trie::<u8>::default();
         trie.insert(b"abc", 123).await?;
         trie = trie.reparse()?;
-        assert_eq!(trie.get(b"abc").await?.unwrap(), 123);
+        assert_eq!(trie.get(b"abc").await?, Some(123));
         Ok(())
     }
 
