@@ -105,7 +105,7 @@ impl Error {
     }
 
     /// Construct [`Error::Operation`] from another error.
-    pub fn operation(e: impl Into<anyhow::Error>) -> Self {
+    pub fn operation(e: impl 'static + Send + Sync + std::error::Error) -> Self {
         Self::Operation(e.into())
     }
 
