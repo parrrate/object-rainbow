@@ -6,7 +6,7 @@ use futures_util::TryStreamExt;
 use object_rainbow::{
     Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline, Size,
     Tagged, ToOutput, Topological, Traversible, assert_impl, derive_for_wrapped,
-    without_header::WithoutHeader,
+    tuple_extra::Extra1,
 };
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
@@ -417,7 +417,7 @@ impl<A: Send, B: Send> Apply<(A, B)> for Swap {
 
 pub type Parallel<A, B> = Sequential<ToTuple2, (A, B)>;
 
-impl<H: Send, D: Send> Apply<(H, D)> for WithoutHeader {
+impl<H: Send, D: Send> Apply<(H, D)> for Extra1 {
     type Output = D;
 
     fn apply(

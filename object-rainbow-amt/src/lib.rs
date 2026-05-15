@@ -2,7 +2,7 @@ use futures_util::{TryStreamExt, future::try_join};
 use object_rainbow::{
     Enum, Fetch, Inline, InlineOutput, ListHashes, Parse, ParseInline, PointInput, Singular,
     Tagged, ToOutput, Topological, Traversible, assert_impl, length_prefixed::LpBytes,
-    map_extra::MappedExtra, without_header::WithoutHeader,
+    map_extra::MappedExtra, tuple_extra::Extra1,
 };
 use object_rainbow_array_map::KeyedArrayMap;
 use object_rainbow_parse_prefix::{Prefix, PrefixRoot, WithByte, WithBytes, WithPrefix};
@@ -34,7 +34,7 @@ use object_rainbow_point::{IntoPoint, Point};
 enum Node<K, V> {
     #[default]
     Empty,
-    Leaf(WithPrefix<K>, MappedExtra<V, WithoutHeader>),
+    Leaf(WithPrefix<K>, MappedExtra<V, Extra1>),
     Sub(#[tags(skip)] Point<Subs<K, V>>),
 }
 
@@ -77,7 +77,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         };
         Ok(Self::Leaf(
             WithPrefix::new(Prefix::from(prefix), k)?,
-            MappedExtra(WithoutHeader, v),
+            MappedExtra(Extra1, v),
         ))
     }
 
@@ -115,12 +115,12 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         if wp_a.vec() != key_a {
             return Err(object_rainbow::error_consistency!("suffix mismatch"));
         }
-        let node_a = Self::Leaf(wp_a, MappedExtra(WithoutHeader, v_a));
+        let node_a = Self::Leaf(wp_a, MappedExtra(Extra1, v_a));
         let wp_b = WithPrefix::new(prefix.with(vec![first_b]), k_b)?;
         if wp_b.vec() != key_b {
             return Err(object_rainbow::error_consistency!("suffix mismatch"));
         }
-        let node_b = Self::Leaf(wp_b, MappedExtra(WithoutHeader, v_b));
+        let node_b = Self::Leaf(wp_b, MappedExtra(Extra1, v_b));
         Ok(Self::from_pair(common, first_a, first_b, node_a, node_b))
     }
 
@@ -178,7 +178,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                         })?),
                         k_new,
                     )?,
-                    MappedExtra(WithoutHeader, v_new),
+                    MappedExtra(Extra1, v_new),
                 );
                 *self = Self::from_pair(common, first_a, first_b, node_a, node_b);
                 Ok(None)
