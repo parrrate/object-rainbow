@@ -337,87 +337,108 @@ macro_rules! lebe {
 
 macro_rules! float {
     ($n:ty, $i:ty, $u:ty) => {
-        impl ToOutput for $n {
-            fn to_output(&self, output: &mut impl Output) {
-                let mut n = self.to_bits();
-                const BIT: $u = (<$i>::MIN) as $u;
-                if n & BIT == 0 {
-                    n ^= BIT;
-                } else {
-                    n ^= <$u>::MAX;
-                }
-                n.to_output(output);
-            }
-        }
+        const _: () = {
+            const BIT: $u = (<$i>::MIN) as $u;
 
-        impl ToOutput for Le<$n> {
-            fn to_output(&self, output: &mut impl Output) {
-                if output.is_real() {
-                    output.write(&self.0.to_le_bytes());
+            impl ToOutput for $n {
+                fn to_output(&self, output: &mut impl Output) {
+                    let mut n = self.to_bits();
+                    if n & BIT == 0 {
+                        n ^= BIT;
+                    } else {
+                        n ^= <$u>::MAX;
+                    }
+                    n.to_output(output);
                 }
             }
-        }
 
-        impl ToOutput for Be<$n> {
-            fn to_output(&self, output: &mut impl Output) {
-                if output.is_real() {
-                    output.write(&self.0.to_be_bytes());
+            impl ToOutput for Le<$n> {
+                fn to_output(&self, output: &mut impl Output) {
+                    if output.is_real() {
+                        output.write(&self.0.to_le_bytes());
+                    }
                 }
             }
-        }
 
-        impl InlineOutput for $n {}
-        impl InlineOutput for Le<$n> {}
-        impl InlineOutput for Be<$n> {}
-
-        impl<I: ParseInput> ParseInline<I> for Le<$n> {
-            fn parse_inline(input: &mut I) -> crate::Result<Self> {
-                Ok(Self(<$n>::from_le_bytes(input.parse_chunk()?)))
+            impl ToOutput for Be<$n> {
+                fn to_output(&self, output: &mut impl Output) {
+                    if output.is_real() {
+                        output.write(&self.0.to_be_bytes());
+                    }
+                }
             }
-        }
 
-        impl<I: ParseInput> ParseInline<I> for Be<$n> {
-            fn parse_inline(input: &mut I) -> crate::Result<Self> {
-                Ok(Self(<$n>::from_be_bytes(input.parse_chunk()?)))
+            impl InlineOutput for $n {}
+            impl InlineOutput for Le<$n> {}
+            impl InlineOutput for Be<$n> {}
+
+            impl<I: ParseInput> Parse<I> for $n {
+                fn parse(input: I) -> crate::Result<Self> {
+                    Self::parse_as_inline(input)
+                }
             }
-        }
 
-        impl Size for $n {
-            const SIZE: usize = std::mem::size_of::<$n>();
-            type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
-        }
+            impl<I: ParseInput> ParseInline<I> for $n {
+                fn parse_inline(input: &mut I) -> crate::Result<Self> {
+                    let mut n: $u = input.parse_inline()?;
+                    if n & BIT == 0 {
+                        n ^= <$u>::MAX;
+                    } else {
+                        n ^= BIT;
+                    }
+                    Ok(Self::from_bits(n))
+                }
+            }
 
-        impl Size for Le<$n> {
-            const SIZE: usize = std::mem::size_of::<$n>();
-            type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
-        }
+            impl<I: ParseInput> ParseInline<I> for Le<$n> {
+                fn parse_inline(input: &mut I) -> crate::Result<Self> {
+                    Ok(Self(<$n>::from_le_bytes(input.parse_chunk()?)))
+                }
+            }
 
-        impl Size for Be<$n> {
-            const SIZE: usize = std::mem::size_of::<$n>();
-            type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
-        }
+            impl<I: ParseInput> ParseInline<I> for Be<$n> {
+                fn parse_inline(input: &mut I) -> crate::Result<Self> {
+                    Ok(Self(<$n>::from_be_bytes(input.parse_chunk()?)))
+                }
+            }
 
-        impl MaybeHasNiche for $n {
-            type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
-        }
+            impl Size for $n {
+                const SIZE: usize = std::mem::size_of::<$n>();
+                type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
+            }
 
-        impl MaybeHasNiche for Le<$n> {
-            type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
-        }
+            impl Size for Le<$n> {
+                const SIZE: usize = std::mem::size_of::<$n>();
+                type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
+            }
 
-        impl MaybeHasNiche for Be<$n> {
-            type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
-        }
+            impl Size for Be<$n> {
+                const SIZE: usize = std::mem::size_of::<$n>();
+                type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
+            }
 
-        impl ListHashes for $n {}
-        impl ListHashes for Le<$n> {}
-        impl ListHashes for Be<$n> {}
-        impl Topological for $n {}
-        impl Topological for Le<$n> {}
-        impl Topological for Be<$n> {}
-        impl Tagged for $n {}
-        impl Tagged for Le<$n> {}
-        impl Tagged for Be<$n> {}
+            impl MaybeHasNiche for $n {
+                type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
+            }
+
+            impl MaybeHasNiche for Le<$n> {
+                type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
+            }
+
+            impl MaybeHasNiche for Be<$n> {
+                type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
+            }
+
+            impl ListHashes for $n {}
+            impl ListHashes for Le<$n> {}
+            impl ListHashes for Be<$n> {}
+            impl Topological for $n {}
+            impl Topological for Le<$n> {}
+            impl Topological for Be<$n> {}
+            impl Tagged for $n {}
+            impl Tagged for Le<$n> {}
+            impl Tagged for Be<$n> {}
+        };
     };
 }
 
