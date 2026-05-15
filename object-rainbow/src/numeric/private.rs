@@ -397,6 +397,10 @@ macro_rules! float {
             type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
         }
 
+        impl MaybeHasNiche for $n {
+            type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
+        }
+
         impl MaybeHasNiche for Le<$n> {
             type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
         }
