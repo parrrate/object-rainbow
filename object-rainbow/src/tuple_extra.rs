@@ -1,7 +1,17 @@
 use crate::{map_extra::MapExtra, *};
 
 #[derive(
-    Debug, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Clone, Copy, Parse, ParseInline,
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
 )]
 pub struct Extra0;
 
