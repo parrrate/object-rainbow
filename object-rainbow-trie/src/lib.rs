@@ -379,7 +379,7 @@ where
         range_end: Bound<&[u8]>,
         co: &Co<(Vec<u8>, T), object_rainbow::Error>,
     ) -> object_rainbow::Result<()> {
-        if (range_start, range_end).contains(b"".as_slice())
+        if <_ as RangeBounds<[u8]>>::contains(&(range_start, range_end), b"".as_slice())
             && let Some(value) = self.value.clone()
         {
             co.yield_((context.clone(), value)).await;
