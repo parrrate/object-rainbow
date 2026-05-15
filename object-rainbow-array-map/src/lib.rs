@@ -177,6 +177,15 @@ impl<T> ArrayMap<T> {
             self.remove(key);
         }
     }
+
+    pub fn entry(&mut self, key: u8) -> Entry<'_, T> {
+        let map = self;
+        if map.contains(key) {
+            Entry::Occupied(OccupiedEntry { map, key })
+        } else {
+            Entry::Vacant(VacantEntry { map, key })
+        }
+    }
 }
 
 pub struct Range<'a, T> {
@@ -273,6 +282,34 @@ impl<'a, T> IntoIterator for &'a mut ArrayMap<T> {
 
     fn into_iter(self) -> Self::IntoIter {
         self.iter_mut()
+    }
+}
+
+pub enum Entry<'a, T> {
+    Vacant(VacantEntry<'a, T>),
+    Occupied(OccupiedEntry<'a, T>),
+}
+
+pub struct VacantEntry<'a, T> {
+    map: &'a mut ArrayMap<T>,
+    key: u8,
+}
+
+impl<'a, T> VacantEntry<'a, T> {
+    pub fn insert(self, value: T) -> &'a mut T {
+        assert!(self.map.insert(self.key, value).is_none());
+        self.map.get_mut(self.key).unwrap()
+    }
+}
+
+pub struct OccupiedEntry<'a, T> {
+    map: &'a mut ArrayMap<T>,
+    key: u8,
+}
+
+impl<'a, T> OccupiedEntry<'a, T> {
+    pub fn into_mut(self) -> &'a mut T {
+        self.map.get_mut(self.key).unwrap()
     }
 }
 
