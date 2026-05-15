@@ -323,6 +323,10 @@ impl<'a, T> OccupiedEntry<'a, T> {
         self.map.get_mut(self.key).unwrap()
     }
 
+    pub fn insert(&mut self, value: T) -> T {
+        std::mem::replace(self.get_mut(), value)
+    }
+
     pub fn into_mut(self) -> &'a mut T {
         self.map.get_mut(self.key).unwrap()
     }
