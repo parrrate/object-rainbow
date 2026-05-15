@@ -297,6 +297,16 @@ impl<'a, T> Entry<'a, T> {
         }
         self
     }
+
+    pub fn insert_entry(self, value: T) -> OccupiedEntry<'a, T> {
+        match self {
+            Self::Vacant(e) => e.insert_entry(value),
+            Self::Occupied(mut e) => {
+                e.insert(value);
+                e
+            }
+        }
+    }
 }
 
 pub struct VacantEntry<'a, T> {
