@@ -712,7 +712,7 @@ impl<T: FullHash> Fetch for Point<T> {
     }
 
     fn get_mut_finalize(&mut self) {
-        let fetch = Arc::get_mut(&mut self.fetch).unwrap();
+        let fetch = Arc::get_mut(&mut self.fetch).expect("shared fetch?");
         fetch.get_mut_finalize();
         self.hash = fetch.get().expect("non-local fetch").full_hash().into();
     }
