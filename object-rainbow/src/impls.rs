@@ -5,7 +5,7 @@ mod bitvec;
 mod bool;
 mod boxed;
 mod btree;
-mod bytes;
+mod byte_array;
 mod char;
 mod cow;
 mod cstr;
