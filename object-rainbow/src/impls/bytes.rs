@@ -13,3 +13,5 @@ impl ToOutput for BytesMut {
         (**self).to_output(output);
     }
 }
+
+impl Tagged for Bytes {}
