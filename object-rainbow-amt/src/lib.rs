@@ -352,7 +352,7 @@ fn common_length(a: &[u8], b: &[u8]) -> object_rainbow::Result<usize> {
     let n = a.iter().zip(b).take_while(|(a, b)| a == b).count();
     if a.len() == n || b.len() == n {
         Err(object_rainbow::error_consistency!(
-            "key is prefix of another key"
+            "path is prefix of another path",
         ))
     } else {
         Ok(n)
