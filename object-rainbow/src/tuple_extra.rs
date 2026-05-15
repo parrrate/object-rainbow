@@ -13,6 +13,7 @@ use crate::{map_extra::MapExtra, *};
     ParseInline,
     Default,
     PartialEq,
+    Eq,
 )]
 pub struct Extra0;
 
