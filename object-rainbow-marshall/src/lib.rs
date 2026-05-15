@@ -191,7 +191,12 @@ pub fn marshall(map: &LocalMap, root: Hash) -> MarshalledRoot {
     while let Some(action) = stack.pop() {
         match action {
             Action::WriteLocation { at, of } => {
-                data[at..at + 8].copy_from_slice(&locations.get(&of).unwrap().to_bytes());
+                data[at..at + 8].copy_from_slice(
+                    &locations
+                        .get(&of)
+                        .expect("marshalling for this hash wasn't started?")
+                        .to_bytes(),
+                );
             }
             Action::SaveFull { hash } => {
                 if locations.contains_key(&hash) {
