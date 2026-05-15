@@ -12,7 +12,7 @@ description = "encryption for object-rainbow"
 object-rainbow.workspace = true
 object-rainbow-point.workspace = true
 
-anyhow = "1.0.96"
+anyhow.workspace = true
 futures-util = { version = "0.3.31" }
 
 [dev-dependencies]

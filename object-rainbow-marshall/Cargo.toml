@@ -16,5 +16,5 @@ object-rainbow-local-map.workspace = true
 [dev-dependencies]
 object-rainbow-point.workspace = true
 
-anyhow = "1.0.96"
+anyhow.workspace = true
 smol = "2.0.2"

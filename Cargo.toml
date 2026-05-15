@@ -48,3 +48,5 @@ object-rainbow-point = { version = "0.0.0-a.11", path = "object-rainbow-point" }
 object-rainbow-store = { version = "0.0.0-a.10", path = "object-rainbow-store" }
 object-rainbow-store-opendal = { version = "0.0.0-a.5", path = "object-rainbow-store-opendal" }
 object-rainbow-trie = { version = "0.0.0-a.17", path = "object-rainbow-trie" }
+
+anyhow = "1.0.102"

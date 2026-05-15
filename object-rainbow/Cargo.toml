@@ -13,7 +13,7 @@ exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 [dependencies]
 object-rainbow-derive = { version = "=0.0.0-a.20", path = "../object-rainbow-derive" }
 
-anyhow = "1.0.96"
+anyhow.workspace = true
 bitvec = { version = "1.0.1", default-features = false, optional = true }
 futures-util = { version = "0.3.31", default-features = false }
 generic-array = { version = "1.2.0" }
