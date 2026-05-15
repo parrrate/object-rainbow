@@ -261,7 +261,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                 }
                 (Self::Sub(this), Self::Sub(o_point)) => {
                     if this.hash() == o_point.hash() {
-                        *other = Self::Empty;
+                        *self = std::mem::take(other);
                         return Ok(());
                     }
                     let (mut s, mut o) = try_join(this.fetch_mut(), o_point.fetch_mut()).await?;
