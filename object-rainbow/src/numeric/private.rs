@@ -415,6 +415,7 @@ macro_rules! float {
         impl Topological for $n {}
         impl Topological for Le<$n> {}
         impl Topological for Be<$n> {}
+        impl Tagged for $n {}
         impl Tagged for Le<$n> {}
         impl Tagged for Be<$n> {}
     };
