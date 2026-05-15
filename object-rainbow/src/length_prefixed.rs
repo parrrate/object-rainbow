@@ -47,11 +47,12 @@ impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Lp<T> {
 }
 
 #[test]
-fn prefixed() {
+fn prefixed() -> crate::Result<()> {
     let a = Lp(vec![0, 1, 2]);
     let data = a.vec();
-    let b = Lp::<Vec<u8>>::parse_slice_refless(&data).unwrap();
+    let b = Lp::<Vec<u8>>::parse_slice_refless(&data)?;
     assert_eq!(*a, *b);
+    Ok(())
 }
 
 /// Length-prefixed [`Vec<u8>`]
