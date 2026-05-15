@@ -23,7 +23,7 @@ impl<I: ParseInput> ParseInline<I> for char {
                 .map_err(crate::Error::parse)?
                 .chars()
                 .next()
-                .unwrap();
+                .expect("this string is not empty");
             return Ok(c);
         }
         let c1 = input.parse_inline::<u8>()?;
@@ -32,7 +32,7 @@ impl<I: ParseInput> ParseInline<I> for char {
                 .map_err(crate::Error::parse)?
                 .chars()
                 .next()
-                .unwrap();
+                .expect("this string is not empty");
             return Ok(c);
         }
         let c2 = input.parse_inline::<u8>()?;
@@ -41,7 +41,7 @@ impl<I: ParseInput> ParseInline<I> for char {
                 .map_err(crate::Error::parse)?
                 .chars()
                 .next()
-                .unwrap();
+                .expect("this string is not empty");
             return Ok(c);
         }
         let c3 = input.parse_inline::<u8>()?;
@@ -49,7 +49,7 @@ impl<I: ParseInput> ParseInline<I> for char {
             .map_err(crate::Error::parse)?
             .chars()
             .next()
-            .unwrap();
+            .expect("this string is not empty");
         Ok(c)
     }
 }
