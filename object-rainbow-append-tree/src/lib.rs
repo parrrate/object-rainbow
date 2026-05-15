@@ -614,7 +614,7 @@ mod test {
             let new = tree.reparse()?;
             assert_eq!(new, tree);
             tree = new;
-            assert_eq!(tree.get(i).await?.unwrap(), i);
+            assert_eq!(tree.get(i).await?, Some(i));
         }
         Ok(())
     }
@@ -624,11 +624,11 @@ mod test {
         let mut tree = AppendTree::<u64>::new();
         for i in 0..100_000u64 {
             tree.push(i)?;
-            assert_eq!(tree.get(i).await?.unwrap(), i);
-            assert_eq!(tree.get(i / 2).await?.unwrap(), i / 2);
-            assert_eq!(tree.get(i / 3).await?.unwrap(), i / 3);
-            assert_eq!(tree.get(i / 17).await?.unwrap(), i / 17);
-            assert_eq!(tree.get(i / 101).await?.unwrap(), i / 101);
+            assert_eq!(tree.get(i).await?, Some(i));
+            assert_eq!(tree.get(i / 2).await?, Some(i / 2));
+            assert_eq!(tree.get(i / 3).await?, Some(i / 3));
+            assert_eq!(tree.get(i / 17).await?, Some(i / 17));
+            assert_eq!(tree.get(i / 101).await?, Some(i / 101));
         }
         Ok(())
     }
