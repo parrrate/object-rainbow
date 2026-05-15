@@ -100,7 +100,7 @@ impl Error {
     }
 
     /// Construct [`Error::Fetch`] from another error.
-    pub fn fetch(e: impl Into<anyhow::Error>) -> Self {
+    pub fn fetch(e: impl 'static + Send + Sync + std::error::Error) -> Self {
         Self::Fetch(e.into())
     }
 
