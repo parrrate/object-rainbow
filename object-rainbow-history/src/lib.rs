@@ -6,7 +6,7 @@ use futures_util::TryStreamExt;
 use object_rainbow::{
     Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline, Size,
     Tagged, ToOutput, Topological, Traversible, assert_impl, derive_for_wrapped,
-    tuple_extra::Extra1,
+    tuple_extra::{Extra1, Swap},
 };
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
@@ -384,25 +384,6 @@ impl<D: Send> Apply<D> for Return {
         futures_util::future::ready(Ok(diff))
     }
 }
-
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Default,
-)]
-pub struct Swap;
 
 impl<A: Send, B: Send> Apply<(A, B)> for Swap {
     type Output = (B, A);
