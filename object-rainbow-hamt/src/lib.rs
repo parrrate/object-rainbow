@@ -880,22 +880,22 @@ impl HamtSet {
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
-    use object_rainbow::{FullHash, numeric::Le};
+    use object_rainbow::FullHash;
     use smol_macros::test;
 
     use crate::{HamtMap, HamtSet};
 
     #[apply(test!)]
     async fn test() -> object_rainbow::Result<()> {
-        let mut map = HamtMap::<Le<u16>>::new();
+        let mut map = HamtMap::<u16>::new();
         let empty_hash = map.full_hash();
-        for i in (0u16..=10_000).map(Le) {
+        for i in 0u16..=10_000 {
             map.insert(i.full_hash(), i).await?;
         }
-        for i in (0u16..=10_000).map(Le) {
+        for i in 0u16..=10_000 {
             assert_eq!(map.get(i.full_hash()).await?, Some(i));
         }
-        for i in (0u16..=10_000).map(Le) {
+        for i in 0u16..=10_000 {
             map.remove(i.full_hash()).await?;
         }
         assert_eq!(map.full_hash(), empty_hash);
