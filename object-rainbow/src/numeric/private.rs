@@ -366,6 +366,7 @@ macro_rules! float {
             }
         }
 
+        impl InlineOutput for $n {}
         impl InlineOutput for Le<$n> {}
         impl InlineOutput for Be<$n> {}
 
