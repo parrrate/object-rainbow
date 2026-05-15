@@ -39,7 +39,7 @@ impl MarshalledInner {
                 )
                 .ok_or(object_rainbow::Error::UnsupportedLength)?
                 .try_into()
-                .unwrap(),
+                .expect("we should've read exactly 8 bytes"),
         )
         .try_into()
         .map_err(|_| object_rainbow::Error::UnsupportedLength)
