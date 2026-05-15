@@ -369,7 +369,7 @@ impl<'a, T> OccupiedEntry<'a, T> {
     }
 
     pub fn remove(self) -> T {
-        self.map.remove(self.key).unwrap()
+        self.map.remove(self.key).expect("occupied")
     }
 }
 
