@@ -917,7 +917,7 @@ impl<T: FullHash> Deref for PointMut<'_, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        self.fetch.get().unwrap()
+        self.fetch.get().expect("non-local fetch")
     }
 }
 
