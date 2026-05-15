@@ -409,6 +409,7 @@ macro_rules! float {
             type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
         }
 
+        impl ListHashes for $n {}
         impl ListHashes for Le<$n> {}
         impl ListHashes for Be<$n> {}
         impl Topological for Le<$n> {}
