@@ -454,6 +454,6 @@ fn reparse() -> object_rainbow::Result<()> {
     let mut map = ArrayMap::<u8>::new();
     map.insert(12, 34);
     map = map.reparse()?;
-    assert_eq!(*map.get(12).unwrap(), 34);
+    assert_eq!(map.get(12), Some(&34));
     Ok(())
 }
