@@ -129,12 +129,17 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         key: &[u8],
         k_new: K,
         v_new: V,
+        replace: bool,
     ) -> object_rainbow::Result<Option<V>> {
         match &mut *self {
             Self::Leaf(k, MappedExtra(_, v)) => {
                 let vec = k.vec();
                 if vec == key {
-                    Ok(Some(std::mem::replace(v, v_new)))
+                    if replace {
+                        Ok(Some(std::mem::replace(v, v_new)))
+                    } else {
+                        Ok(None)
+                    }
                 } else {
                     let Self::Leaf(k, MappedExtra(_, v)) = std::mem::take(self) else {
                         unreachable!()
@@ -159,7 +164,10 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                             ));
                         };
                         return Box::pin(
-                            children.entry(first).or_default().insert(key, k_new, v_new),
+                            children
+                                .entry(first)
+                                .or_default()
+                                .insert(key, k_new, v_new, replace),
                         )
                         .await;
                     }
@@ -235,10 +243,12 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     fn append(
         &mut self,
         other: &mut Self,
+        mut replace: bool,
     ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
         async move {
             if matches!((&*self, &*other), (Self::Leaf(_, _), Self::Sub(_))) {
                 std::mem::swap(self, other);
+                replace = !replace;
             }
             match (&mut *self, &mut *other) {
                 (_, Self::Empty) => {}
@@ -247,7 +257,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                     let Self::Leaf(k, MappedExtra(_, v)) = std::mem::take(other) else {
                         unreachable!()
                     };
-                    this.insert(&k.vec(), k.into_value(), v).await?;
+                    this.insert(&k.vec(), k.into_value(), v, replace).await?;
                 }
                 (Self::Sub(this), Self::Sub(o_point)) => {
                     if this.hash() == o_point.hash() {
@@ -257,13 +267,14 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                     let (mut s, mut o) = try_join(this.fetch_mut(), o_point.fetch_mut()).await?;
                     if s.0.0.0.len() > o.0.0.0.len() {
                         std::mem::swap(&mut *s, &mut *o);
+                        replace = !replace;
                     }
                     if let Some(suffix) = o.0.0.0.strip_prefix(&*s.0.0.0) {
                         if let Some((&first, _)) = suffix.split_first() {
                             o.0.0.0.drain(..s.0.0.0.len() + 1);
                             if let Some(node) = s.1.get_mut(first) {
                                 drop(o);
-                                Box::pin(node.append(other)).await?;
+                                Box::pin(node.append(other, replace)).await?;
                             } else {
                                 drop(o);
                                 s.1.insert(first, MappedExtra(WithByte, std::mem::take(other)));
@@ -273,7 +284,9 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                                 let mut futures = futures_util::stream::FuturesUnordered::new();
                                 for (key, node) in s.1.iter_mut() {
                                     if let Some(mut other) = o.1.remove(key) {
-                                        futures.push(async move { node.append(&mut other).await });
+                                        futures.push(async move {
+                                            node.append(&mut other, replace).await
+                                        });
                                     }
                                 }
                                 while futures.try_next().await?.is_some() {}
@@ -406,7 +419,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     }
 
     pub async fn insert(&mut self, k: K, v: V) -> object_rainbow::Result<Option<V>> {
-        self.0.insert(&k.vec(), k, v).await
+        self.0.insert(&k.vec(), k, v, true).await
     }
 
     pub async fn remove(&mut self, k: &K) -> object_rainbow::Result<Option<V>> {
@@ -422,7 +435,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     }
 
     pub async fn append(&mut self, other: &mut Self) -> object_rainbow::Result<()> {
-        self.0.append(&mut other.0).await
+        self.0.append(&mut other.0, true).await
     }
 }
 
