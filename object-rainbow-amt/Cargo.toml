@@ -18,5 +18,5 @@ futures-util = { workspace = true, features = ["std"] }
 
 [dev-dependencies]
 macro_rules_attribute = "0.2.2"
-smol = "2.0.2"
+smol.workspace = true
 smol-macros = "0.1.1"

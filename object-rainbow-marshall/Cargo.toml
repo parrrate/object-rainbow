@@ -17,4 +17,4 @@ object-rainbow-local-map.workspace = true
 object-rainbow-point.workspace = true
 
 anyhow.workspace = true
-smol = "2.0.2"
+smol.workspace = true

@@ -20,4 +20,4 @@ object-rainbow-trie.workspace = true
 
 anyhow.workspace = true
 opendal = "0.55.0"
-smol = "2.0.2"
+smol.workspace = true
