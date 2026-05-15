@@ -14,6 +14,12 @@ impl ToOutput for BytesMut {
     }
 }
 
+impl<I: ParseInput> Parse<I> for Bytes {
+    fn parse(input: I) -> crate::Result<Self> {
+        input.parse_all().map(Into::into).map(Vec::into)
+    }
+}
+
 impl Tagged for Bytes {}
 impl Tagged for BytesMut {}
 impl ListHashes for Bytes {}
