@@ -329,7 +329,7 @@ macro_rules! lebe {
                 Be(NonZero::new(self.0.get() as _).expect("non-zero"))
             }
             fn from_equivalent(object: Be<NonZero<Os<$n>>>) -> Self {
-                Be(NonZero::new(object.0.get() as _).unwrap())
+                Be(NonZero::new(object.0.get() as _).expect("non-zero"))
             }
         }
     };
