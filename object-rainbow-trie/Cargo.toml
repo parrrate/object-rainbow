@@ -15,7 +15,7 @@ object-rainbow-point.workspace = true
 
 futures-util = { workspace = true, features = ["std"] }
 genawaiter-try-stream = "0.1.0"
-serde = { version = "1.0.218", optional = true, features = ["derive"] }
+serde = { workspace = true, features = ["derive"], optional = true }
 
 [features]
 serde = ["dep:serde"]

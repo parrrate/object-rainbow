@@ -12,7 +12,7 @@ description = "default pointer type for object-rainbow"
 object-rainbow.workspace = true
 
 futures-util.workspace = true
-serde = { version = "1.0.218", optional = true }
+serde = { workspace = true, optional = true }
 
 [features]
 serde = ["dep:serde"]

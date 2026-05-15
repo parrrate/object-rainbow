@@ -18,9 +18,9 @@ bitvec = { workspace = true, optional = true }
 futures-util.workspace = true
 generic-array.workspace = true
 hex = { workspace = true, optional = true }
+serde = { workspace = true, features = ["derive"], optional = true }
 sha2.workspace = true
 sha2-const.workspace = true
-serde = { version = "1.0.218", optional = true, features = ["derive"] }
 thiserror = "2.0.11"
 typenum = { version = "1.18.0", features = ["const-generics"] }
 ulid = { version = "1.2.1", default-features = false, optional = true }
