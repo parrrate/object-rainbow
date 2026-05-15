@@ -668,7 +668,7 @@ impl<T: Traversible + Clone> Point<T> {
 
     pub async fn fetch_mut(&'_ mut self) -> object_rainbow::Result<PointMut<'_, T>> {
         self.prepare_yolo_fetch().await?;
-        let fetch = Arc::get_mut(&mut self.fetch).unwrap();
+        let fetch = Arc::get_mut(&mut self.fetch).expect("shared fetch?");
         assert!(fetch.get_mut().is_some());
         self.hash.clear();
         Ok(PointMut {
