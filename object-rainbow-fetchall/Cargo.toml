@@ -14,7 +14,7 @@ object-rainbow-local-map.workspace = true
 
 async-executor.workspace = true
 flume.workspace = true
-futures-channel = "0.3.31"
+futures-channel.workspace = true
 
 [dev-dependencies]
 object-rainbow-point.workspace = true
