@@ -75,10 +75,7 @@ mod test {
         let mut history = History::<TrieMap<Vec<u8>, u8>, (Option<u8>, Vec<u8>)>::new();
         history.commit((Some(123), b"abc".into())).await?;
         history = history.reparse()?;
-        assert_eq!(
-            history.tree().await?.get(&b"abc".into()).await?.unwrap(),
-            123,
-        );
+        assert_eq!(history.tree().await?.get(&b"abc".into()).await?, Some(123));
         Ok(())
     }
 }
