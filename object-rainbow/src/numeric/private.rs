@@ -382,6 +382,11 @@ macro_rules! float {
             }
         }
 
+        impl Size for $n {
+            const SIZE: usize = std::mem::size_of::<$n>();
+            type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
+        }
+
         impl Size for Le<$n> {
             const SIZE: usize = std::mem::size_of::<$n>();
             type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
