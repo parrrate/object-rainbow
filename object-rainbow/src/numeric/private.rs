@@ -148,7 +148,7 @@ macro_rules! lebe {
                         .try_into()
                         .expect("discriminant out of range"),
                 )
-                .unwrap()
+                .expect("at least 1")
             }
             fn to_usize(&self) -> usize {
                 usize::try_from(self.get())
