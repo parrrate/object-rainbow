@@ -365,7 +365,7 @@ impl<'a, T> OccupiedEntry<'a, T> {
     }
 
     pub fn into_mut(self) -> &'a mut T {
-        self.map.get_mut(self.key).unwrap()
+        self.map.get_mut(self.key).expect("occupied")
     }
 
     pub fn remove(self) -> T {
