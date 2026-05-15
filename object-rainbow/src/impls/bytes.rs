@@ -20,6 +20,16 @@ impl<I: ParseInput> Parse<I> for Bytes {
     }
 }
 
+impl<I: ParseInput> Parse<I> for BytesMut {
+    fn parse(input: I) -> crate::Result<Self> {
+        input
+            .parse_all()
+            .map(Into::into)
+            .map(Vec::into)
+            .map(Bytes::into)
+    }
+}
+
 impl Tagged for Bytes {}
 impl Tagged for BytesMut {}
 impl ListHashes for Bytes {}
