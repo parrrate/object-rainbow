@@ -154,14 +154,8 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                                 "key is prefix of another key"
                             ));
                         };
-                        if !children.contains(first) {
-                            children.insert(first, Default::default());
-                        }
                         return Box::pin(
-                            children
-                                .get_mut(first)
-                                .expect("just inserted")
-                                .insert(key, k_new, v_new),
+                            children.entry(first).or_default().insert(key, k_new, v_new),
                         )
                         .await;
                     }
