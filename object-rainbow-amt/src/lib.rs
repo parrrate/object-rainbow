@@ -138,7 +138,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                     if replace {
                         Ok(Some(std::mem::replace(v, v_new)))
                     } else {
-                        Ok(None)
+                        Ok(Some(v_new))
                     }
                 } else {
                     let Self::Leaf(k, MappedExtra(_, v)) = std::mem::take(self) else {
