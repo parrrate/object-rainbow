@@ -18,4 +18,4 @@ typenum.workspace = true
 [dev-dependencies]
 macro_rules_attribute = "0.2.2"
 smol.workspace = true
-smol-macros = "0.1.1"
+smol-macros.workspace = true
