@@ -50,7 +50,7 @@ impl<V: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V> {
             if replace || !self.0.contains(key) {
                 Ok(self.0.insert(key, value))
             } else {
-                Ok(None)
+                Ok(Some(value))
             }
         })
     }
@@ -146,8 +146,10 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
                 Self::Leaf(xkey, xvalue) => Ok(if *xkey != key {
                     *self = Self::from_pair((xkey.clone(), xvalue.clone()), (key, value));
                     None
-                } else {
+                } else if replace {
                     Some(std::mem::replace(xvalue, value))
+                } else {
+                    Some(value)
                 }),
                 Self::Sub(sub) => sub.fetch_mut().await?.insert(key, value, replace).await,
                 Self::Empty => Err(object_rainbow::error_consistency!(
