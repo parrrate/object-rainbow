@@ -6,7 +6,7 @@ use futures_util::TryStreamExt;
 use object_rainbow::{
     Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline, Size,
     Tagged, ToOutput, Topological, Traversible, assert_impl, derive_for_wrapped,
-    tuple_extra::{Extra1, Swap},
+    tuple_extra::{Extra0, Extra1, Swap},
 };
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
@@ -385,6 +385,28 @@ impl<D: Send> Apply<D> for Return {
     }
 }
 
+impl<A: Send, B: Send> Apply<(A, B)> for Extra0 {
+    type Output = A;
+
+    fn apply(
+        &mut self,
+        (diff, _): (A, B),
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        futures_util::future::ready(Ok(diff))
+    }
+}
+
+impl<A: Send, B: Send> Apply<(A, B)> for Extra1 {
+    type Output = B;
+
+    fn apply(
+        &mut self,
+        (_, diff): (A, B),
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        futures_util::future::ready(Ok(diff))
+    }
+}
+
 impl<A: Send, B: Send> Apply<(A, B)> for Swap {
     type Output = (B, A);
 
@@ -397,14 +419,3 @@ impl<A: Send, B: Send> Apply<(A, B)> for Swap {
 }
 
 pub type Parallel<A, B> = Sequential<ToTuple2, (A, B)>;
-
-impl<H: Send, D: Send> Apply<(H, D)> for Extra1 {
-    type Output = D;
-
-    fn apply(
-        &mut self,
-        (_, diff): (H, D),
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        futures_util::future::ready(Ok(diff))
-    }
-}
