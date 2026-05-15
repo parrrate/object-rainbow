@@ -11,4 +11,4 @@ description = "local storage for object-rainbow"
 [dependencies]
 object-rainbow.workspace = true
 
-imbl = "7.0.0"
+imbl.workspace = true
