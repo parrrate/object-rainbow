@@ -23,3 +23,6 @@ impl Topological for BytesMut {}
 impl MaybeHasNiche for Bytes {
     type MnArray = NoNiche<NicheForUnsized>;
 }
+impl MaybeHasNiche for BytesMut {
+    type MnArray = NoNiche<NicheForUnsized>;
+}
