@@ -315,6 +315,10 @@ pub struct OccupiedEntry<'a, T> {
 }
 
 impl<'a, T> OccupiedEntry<'a, T> {
+    pub fn get(&self) -> &T {
+        self.map.get(self.key).unwrap()
+    }
+
     pub fn into_mut(self) -> &'a mut T {
         self.map.get_mut(self.key).unwrap()
     }
