@@ -17,3 +17,4 @@ impl ToOutput for BytesMut {
 impl Tagged for Bytes {}
 impl Tagged for BytesMut {}
 impl ListHashes for Bytes {}
+impl ListHashes for BytesMut {}
