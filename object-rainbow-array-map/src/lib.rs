@@ -290,6 +290,15 @@ pub enum Entry<'a, T> {
     Occupied(OccupiedEntry<'a, T>),
 }
 
+impl<'a, T> Entry<'a, T> {
+    pub fn and_modify(mut self, f: impl FnOnce(&mut T)) -> Self {
+        if let Self::Occupied(e) = &mut self {
+            f(e.get_mut());
+        }
+        self
+    }
+}
+
 pub struct VacantEntry<'a, T> {
     map: &'a mut ArrayMap<T>,
     key: u8,
