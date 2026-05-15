@@ -19,7 +19,7 @@ futures-util.workspace = true
 generic-array.workspace = true
 hex = { workspace = true, optional = true }
 sha2.workspace = true
-sha2-const = "0.1.3"
+sha2-const.workspace = true
 serde = { version = "1.0.218", optional = true, features = ["derive"] }
 thiserror = "2.0.11"
 typenum = { version = "1.18.0", features = ["const-generics"] }
