@@ -12,7 +12,7 @@ description = "recursively walk object-rainbow trees"
 object-rainbow.workspace = true
 object-rainbow-local-map.workspace = true
 
-async-executor = "1.13.3"
+async-executor.workspace = true
 flume = "0.12.0"
 futures-channel = "0.3.31"
 
