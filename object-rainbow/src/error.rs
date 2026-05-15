@@ -110,7 +110,7 @@ impl Error {
     }
 
     /// Construct [`Error::Consistency`] from another error.
-    pub fn consistency(e: impl Into<anyhow::Error>) -> Self {
+    pub fn consistency(e: impl 'static + Send + Sync + std::error::Error) -> Self {
         Self::Consistency(e.into())
     }
 
