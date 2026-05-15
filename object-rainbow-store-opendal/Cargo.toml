@@ -12,7 +12,7 @@ description = "Apache OpenDAL™ storage for object-rainbow"
 object-rainbow.workspace = true
 object-rainbow-store.workspace = true
 
-hex = "0.4.3"
+hex.workspace = true
 opendal = "0.55.0"
 
 [dev-dependencies]

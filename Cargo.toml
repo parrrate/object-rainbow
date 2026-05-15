@@ -53,3 +53,4 @@ anyhow = "1.0.102"
 bitvec = { version = "1.0.1", default-features = false }
 futures-util = { version = "0.3.32", default-features = false }
 generic-array = "1.4.1"
+hex = "0.4.3"
