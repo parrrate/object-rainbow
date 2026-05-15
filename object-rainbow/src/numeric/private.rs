@@ -336,7 +336,20 @@ macro_rules! lebe {
 }
 
 macro_rules! float {
-    ($n:ty) => {
+    ($n:ty, $i:ty, $u:ty) => {
+        impl ToOutput for $n {
+            fn to_output(&self, output: &mut impl Output) {
+                let mut n = self.to_bits();
+                const BIT: $u = (<$i>::MIN) as $u;
+                if n & BIT == 0 {
+                    n ^= BIT;
+                } else {
+                    n ^= <$u>::MAX;
+                }
+                n.to_output(output);
+            }
+        }
+
         impl ToOutput for Le<$n> {
             fn to_output(&self, output: &mut impl Output) {
                 if output.is_real() {
@@ -481,8 +494,8 @@ lebe!(i64);
 lebe!(u128);
 lebe!(i128);
 
-float!(f32);
-float!(f64);
+float!(f32, i32, u32);
+float!(f64, i64, u64);
 
 #[test]
 fn nonzero() {
