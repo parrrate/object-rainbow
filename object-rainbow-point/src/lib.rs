@@ -923,7 +923,7 @@ impl<T: FullHash> Deref for PointMut<'_, T> {
 
 impl<T: FullHash> DerefMut for PointMut<'_, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        self.fetch.get_mut().unwrap()
+        self.fetch.get_mut().expect("non-local fetch")
     }
 }
 
