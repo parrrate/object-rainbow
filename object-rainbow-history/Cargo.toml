@@ -28,7 +28,7 @@ unique-diffs = ["hamt"]
 [dev-dependencies]
 object-rainbow = { workspace = true, features = ["ulid"] }
 
-macro_rules_attribute = "0.2.2"
+macro_rules_attribute.workspace = true
 smol.workspace = true
 smol-macros.workspace = true
 ulid = { workspace = true, default-features = true }

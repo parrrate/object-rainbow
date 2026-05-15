@@ -16,6 +16,6 @@ object-rainbow-point.workspace = true
 futures-util = { workspace = true, features = ["std"] }
 
 [dev-dependencies]
-macro_rules_attribute = "0.2.2"
+macro_rules_attribute.workspace = true
 smol.workspace = true
 smol-macros.workspace = true

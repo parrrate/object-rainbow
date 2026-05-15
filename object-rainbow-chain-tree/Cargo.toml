@@ -17,6 +17,6 @@ futures-util = { workspace = true, features = ["async-await-macro"] }
 genawaiter-try-stream = "0.1.0"
 
 [dev-dependencies]
-macro_rules_attribute = "0.2.2"
+macro_rules_attribute.workspace = true
 smol.workspace = true
 smol-macros.workspace = true
