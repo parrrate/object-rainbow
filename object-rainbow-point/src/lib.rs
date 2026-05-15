@@ -714,7 +714,7 @@ impl<T: FullHash> Fetch for Point<T> {
     fn get_mut_finalize(&mut self) {
         let fetch = Arc::get_mut(&mut self.fetch).unwrap();
         fetch.get_mut_finalize();
-        self.hash = fetch.get().unwrap().full_hash().into();
+        self.hash = fetch.get().expect("non-local fetch").full_hash().into();
     }
 
     fn try_unwrap(self: Arc<Self>) -> Option<Self::T> {
