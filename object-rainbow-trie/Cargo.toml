@@ -14,7 +14,7 @@ object-rainbow-array-map.workspace = true
 object-rainbow-point.workspace = true
 
 futures-util = { workspace = true, features = ["std"] }
-genawaiter-try-stream = "0.1.0"
+genawaiter-try-stream.workspace = true
 serde = { workspace = true, features = ["derive"], optional = true }
 
 [features]

@@ -14,7 +14,7 @@ object-rainbow-append-tree.workspace = true
 object-rainbow-point.workspace = true
 
 futures-util = { workspace = true, features = ["async-await-macro"] }
-genawaiter-try-stream = "0.1.0"
+genawaiter-try-stream.workspace = true
 
 [dev-dependencies]
 macro_rules_attribute.workspace = true

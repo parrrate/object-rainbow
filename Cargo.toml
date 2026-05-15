@@ -52,6 +52,7 @@ object-rainbow-trie = { version = "0.0.0-a.17", path = "object-rainbow-trie" }
 anyhow = "1.0.102"
 bitvec = { version = "1.0.1", default-features = false }
 futures-util = { version = "0.3.32", default-features = false }
+genawaiter-try-stream = "0.1.0"
 generic-array = "1.4.1"
 hex = "0.4.3"
 macro_rules_attribute = "0.2.2"
