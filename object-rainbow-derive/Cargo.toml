@@ -19,4 +19,4 @@ syn = { version = "2.0.98", features = ["full"] }
 
 [dev-dependencies]
 object-rainbow = { version = "0.0.0-a.0", path = "../object-rainbow" }
-typenum = { version = "1.18.0" }
+typenum.workspace = true

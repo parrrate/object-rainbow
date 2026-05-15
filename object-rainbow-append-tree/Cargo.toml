@@ -13,7 +13,7 @@ object-rainbow.workspace = true
 object-rainbow-point.workspace = true
 
 thiserror.workspace = true
-typenum = { version = "1.18.0", features = ["const-generics"] }
+typenum.workspace = true
 
 [dev-dependencies]
 macro_rules_attribute = "0.2.2"
