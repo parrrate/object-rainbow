@@ -297,8 +297,15 @@ pub struct VacantEntry<'a, T> {
 
 impl<'a, T> VacantEntry<'a, T> {
     pub fn insert(self, value: T) -> &'a mut T {
+        self.insert_entry(value).into_mut()
+    }
+
+    pub fn insert_entry(self, value: T) -> OccupiedEntry<'a, T> {
         assert!(self.map.insert(self.key, value).is_none());
-        self.map.get_mut(self.key).unwrap()
+        OccupiedEntry {
+            map: self.map,
+            key: self.key,
+        }
     }
 }
 
