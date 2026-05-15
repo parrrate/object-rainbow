@@ -10,7 +10,7 @@ use object_rainbow_point::{ExtractResolve, Extras, IntoPoint, Point};
 
 #[derive_for_wrapped]
 pub trait Key: 'static + Sized + Send + Sync + Clone + PartialEq + Eq {
-    type Error: Into<anyhow::Error>;
+    type Error: 'static + Send + Sync + std::error::Error;
     fn encrypt(&self, data: &[u8]) -> Vec<u8>;
     fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>, Self::Error>;
 }
