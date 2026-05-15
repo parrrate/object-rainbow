@@ -601,34 +601,34 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> Default for AppendTree
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
-    use object_rainbow::{ParseSlice, numeric::Le};
+    use object_rainbow::ParseSlice;
     use smol_macros::test;
 
     use crate::AppendTree;
 
     #[apply(test!)]
     async fn reparse() -> object_rainbow::Result<()> {
-        let mut tree = AppendTree::<Le<u64>>::new();
+        let mut tree = AppendTree::<u64>::new();
         for i in 0..100_000u64 {
-            tree.push(Le(i))?;
+            tree.push(i)?;
             let new = tree.reparse()?;
             assert_eq!(new, tree);
             tree = new;
-            assert_eq!(tree.get(i).await?.unwrap().0, i);
+            assert_eq!(tree.get(i).await?.unwrap(), i);
         }
         Ok(())
     }
 
     #[apply(test!)]
     async fn get() -> object_rainbow::Result<()> {
-        let mut tree = AppendTree::<Le<u64>>::new();
+        let mut tree = AppendTree::<u64>::new();
         for i in 0..100_000u64 {
-            tree.push(Le(i))?;
-            assert_eq!(tree.get(i).await?.unwrap().0, i);
-            assert_eq!(tree.get(i / 2).await?.unwrap().0, i / 2);
-            assert_eq!(tree.get(i / 3).await?.unwrap().0, i / 3);
-            assert_eq!(tree.get(i / 17).await?.unwrap().0, i / 17);
-            assert_eq!(tree.get(i / 101).await?.unwrap().0, i / 101);
+            tree.push(i)?;
+            assert_eq!(tree.get(i).await?.unwrap(), i);
+            assert_eq!(tree.get(i / 2).await?.unwrap(), i / 2);
+            assert_eq!(tree.get(i / 3).await?.unwrap(), i / 3);
+            assert_eq!(tree.get(i / 17).await?.unwrap(), i / 17);
+            assert_eq!(tree.get(i / 101).await?.unwrap(), i / 101);
         }
         Ok(())
     }
