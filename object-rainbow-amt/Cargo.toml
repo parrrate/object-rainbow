@@ -14,9 +14,7 @@ object-rainbow-array-map.workspace = true
 object-rainbow-parse-prefix.workspace = true
 object-rainbow-point.workspace = true
 
-futures-util = { version = "0.3.31", default-features = false, features = [
-    "std",
-] }
+futures-util = { workspace = true, features = ["std"] }
 
 [dev-dependencies]
 macro_rules_attribute = "0.2.2"

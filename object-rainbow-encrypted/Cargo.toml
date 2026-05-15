@@ -13,7 +13,7 @@ object-rainbow.workspace = true
 object-rainbow-point.workspace = true
 
 anyhow.workspace = true
-futures-util = { version = "0.3.31" }
+futures-util = { workspace = true, features = ["std"] }
 
 [dev-dependencies]
 object-rainbow-fetchall.workspace = true
