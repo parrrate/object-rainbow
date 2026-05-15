@@ -318,7 +318,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
             match &mut child {
                 Self::Empty => {}
                 Self::Leaf(k, _) => {
-                    k.pop_n(prefix.len() + 1);
+                    k.pop_n(prefix.len() + 1)?;
                 }
                 Self::Sub(point) => {
                     let suffix = &mut point.fetch_mut().await?.0.0.0;

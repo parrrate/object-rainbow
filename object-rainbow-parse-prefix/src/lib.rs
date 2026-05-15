@@ -53,7 +53,12 @@ impl Prefix {
         assert!(dest.is_empty());
     }
 
-    pub fn pop_n(&mut self, mut n: usize) {
+    pub fn pop_n(&mut self, mut n: usize) -> object_rainbow::Result<()> {
+        if n > self.len() {
+            return Err(object_rainbow::error_operation!(
+                "Prefix isn't at least {n} bytes long"
+            ));
+        }
         while n > 0
             && let Some((mut v, rest)) = self.0.take().map(Arc::unwrap_or_clone)
         {
@@ -67,6 +72,7 @@ impl Prefix {
             }
         }
         assert_eq!(n, 0);
+        Ok(())
     }
 }
 
@@ -128,8 +134,8 @@ impl<T> WithPrefix<T> {
         self.value
     }
 
-    pub fn pop_n(&mut self, n: usize) {
-        self.prefix.pop_n(n);
+    pub fn pop_n(&mut self, n: usize) -> object_rainbow::Result<()> {
+        self.prefix.pop_n(n)
     }
 }
 
