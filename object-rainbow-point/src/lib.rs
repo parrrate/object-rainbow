@@ -487,7 +487,7 @@ impl<T> Point<T> {
             }
         }
         RawPointInner {
-            hash: self.hash.unwrap(),
+            hash: self.hash(),
             fetch: self.fetch,
         }
         .cast(extra)
