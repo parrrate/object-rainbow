@@ -11,4 +11,4 @@ description = "AMT-style bitmap-indexed map"
 [dependencies]
 object-rainbow = { workspace = true, features = ["bitvec"] }
 
-bitvec.version = "1.0.1"
+bitvec.workspace = true

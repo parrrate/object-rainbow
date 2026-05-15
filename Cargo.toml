@@ -50,3 +50,4 @@ object-rainbow-store-opendal = { version = "0.0.0-a.5", path = "object-rainbow-s
 object-rainbow-trie = { version = "0.0.0-a.17", path = "object-rainbow-trie" }
 
 anyhow = "1.0.102"
+bitvec = { version = "1.0.1", default-features = false }
