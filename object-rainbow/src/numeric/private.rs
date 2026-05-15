@@ -412,6 +412,7 @@ macro_rules! float {
         impl ListHashes for $n {}
         impl ListHashes for Le<$n> {}
         impl ListHashes for Be<$n> {}
+        impl Topological for $n {}
         impl Topological for Le<$n> {}
         impl Topological for Be<$n> {}
         impl Tagged for Le<$n> {}
