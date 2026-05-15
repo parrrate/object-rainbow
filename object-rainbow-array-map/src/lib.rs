@@ -307,6 +307,16 @@ impl<'a, T> Entry<'a, T> {
             }
         }
     }
+
+    pub fn or_default(self) -> &'a mut T
+    where
+        T: Default,
+    {
+        match self {
+            Self::Vacant(e) => e.insert(Default::default()),
+            Self::Occupied(e) => e.into_mut(),
+        }
+    }
 }
 
 pub struct VacantEntry<'a, T> {
