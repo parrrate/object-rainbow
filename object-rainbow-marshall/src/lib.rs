@@ -198,7 +198,7 @@ pub fn marshall(map: &LocalMap, root: Hash) -> MarshalledRoot {
                     continue;
                 }
                 assert!(started.insert(hash));
-                let (references, d) = map.get(hash).unwrap();
+                let (references, d) = map.get(hash).expect("hash not in the map");
                 stack.push(Action::FinishLocation {
                     at: data.len(),
                     of: hash,
