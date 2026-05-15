@@ -173,7 +173,9 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                 let node_a = std::mem::take(self);
                 let node_b = Self::Leaf(
                     WithPrefix::new(
-                        Prefix::from(k_new.vec().strip_suffix(key_b).expect("key mismatch")),
+                        Prefix::from(k_new.vec().strip_suffix(key_b).ok_or_else(|| {
+                            object_rainbow::error_consistency!("suffix mismatch")
+                        })?),
                         k_new,
                     )?,
                     MappedExtra(WithoutHeader, v_new),
