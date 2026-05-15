@@ -95,7 +95,7 @@ pub enum Error {
 
 impl Error {
     /// Construct [`Error::Parse`] from another error.
-    pub fn parse(e: impl Into<anyhow::Error>) -> Self {
+    pub fn parse(e: impl 'static + Send + Sync + std::error::Error) -> Self {
         Self::Parse(e.into())
     }
 
