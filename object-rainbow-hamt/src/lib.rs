@@ -16,7 +16,7 @@ type OptionFuture<'a, T> = ActionFuture<'a, Option<T>>;
 trait Amt<K>: Sized {
     type V: Send + Sync;
     fn is_empty(&self) -> bool;
-    fn insert(&mut self, key: K, value: Self::V) -> OptionFuture<'_, Self::V>;
+    fn insert(&mut self, key: K, value: Self::V, replace: bool) -> OptionFuture<'_, Self::V>;
     fn remove(&mut self, key: K) -> OptionFuture<'_, Self::V>;
     fn extract_only(&mut self) -> OptionFuture<'_, (K, Self::V)>;
     fn from_pair(a: (K, Self::V), b: (K, Self::V)) -> Self;
@@ -45,8 +45,14 @@ impl<V: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V> {
         self.0.is_empty()
     }
 
-    fn insert(&mut self, key: u8, value: Self::V) -> OptionFuture<'_, Self::V> {
-        Box::pin(async move { Ok(self.0.insert(key, value)) })
+    fn insert(&mut self, key: u8, value: Self::V, replace: bool) -> OptionFuture<'_, Self::V> {
+        Box::pin(async move {
+            if replace || !self.0.contains(key) {
+                Ok(self.0.insert(key, value))
+            } else {
+                Ok(None)
+            }
+        })
     }
 
     fn remove(&mut self, key: u8) -> OptionFuture<'_, Self::V> {
@@ -134,7 +140,7 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
         matches!(self, Self::Empty)
     }
 
-    fn insert(&mut self, key: K, value: Self::V) -> OptionFuture<'_, Self::V> {
+    fn insert(&mut self, key: K, value: Self::V, replace: bool) -> OptionFuture<'_, Self::V> {
         Box::pin(async move {
             match self {
                 Self::Leaf(xkey, xvalue) => Ok(if *xkey != key {
@@ -143,7 +149,7 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
                 } else {
                     Some(std::mem::replace(xvalue, value))
                 }),
-                Self::Sub(sub) => sub.fetch_mut().await?.insert(key, value).await,
+                Self::Sub(sub) => sub.fetch_mut().await?.insert(key, value, replace).await,
                 Self::Empty => Err(object_rainbow::error_consistency!(
                     "empty subtree? (invalid state)",
                 )),
@@ -225,8 +231,10 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
 
     fn append<'a>(&'a mut self, other: &'a mut Self) -> ActionFuture<'a> {
         Box::pin(async move {
+            let mut replace = true;
             if matches!((&*self, &*other), (Self::Leaf(_, _), Self::Sub(_))) {
                 std::mem::swap(self, other);
+                replace = false;
             }
             match (&mut *self, &mut *other) {
                 (_, Self::Empty) => {}
@@ -246,7 +254,7 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
                 (Self::Leaf(_, _), Self::Sub(_)) => unreachable!(),
                 (Self::Sub(point), Self::Leaf(_, _)) => match std::mem::take(other) {
                     Self::Leaf(key, value) => {
-                        point.fetch_mut().await?.insert(key, value).await?;
+                        point.fetch_mut().await?.insert(key, value, replace).await?;
                     }
                     _ => unreachable!(),
                 },
@@ -409,10 +417,15 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
         self.0.is_empty()
     }
 
-    fn insert(&mut self, (key, rest): (u8, K), value: Self::V) -> OptionFuture<'_, Self::V> {
+    fn insert(
+        &mut self,
+        (key, rest): (u8, K),
+        value: Self::V,
+        replace: bool,
+    ) -> OptionFuture<'_, Self::V> {
         Box::pin(async move {
             if let Some(sub) = self.0.get_mut(key) {
-                sub.insert(rest, value).await
+                sub.insert(rest, value, replace).await
             } else {
                 assert!(self.0.insert(key, SubTree::Leaf(rest, value)).is_none());
                 Ok(None)
@@ -631,8 +644,13 @@ mod private {
                     self.0.is_empty()
                 }
 
-                fn insert(&mut self, key: $k, value: Self::V) -> OptionFuture<'_, Self::V> {
-                    self.0.insert(key, value)
+                fn insert(
+                    &mut self,
+                    key: $k,
+                    value: Self::V,
+                    replace: bool,
+                ) -> OptionFuture<'_, Self::V> {
+                    self.0.insert(key, value, replace)
                 }
 
                 fn remove(&mut self, key: $k) -> OptionFuture<'_, Self::V> {
@@ -752,7 +770,7 @@ impl<V: Traversible + InlineOutput + Clone> HamtMap<V> {
         self.0
             .fetch_mut()
             .await?
-            .insert(hash.reinterpret(), value)
+            .insert(hash.reinterpret(), value, true)
             .await
     }
 
