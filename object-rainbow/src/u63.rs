@@ -17,7 +17,7 @@ impl U63 {
     }
 
     pub fn len_of<T>(v: &[T]) -> Self {
-        Self::from_u64(v.len() as _).unwrap()
+        Self::from_u64(v.len() as _).expect("this is unreasonable to store in memory")
     }
 }
 
