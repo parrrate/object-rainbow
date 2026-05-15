@@ -49,3 +49,28 @@ impl<A: 'static + Clone, B: 'static + Clone> MapExtra<(A, B)> for Extra1 {
         extra
     }
 }
+
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Clone,
+    Copy,
+    Parse,
+    ParseInline,
+    Default,
+    PartialEq,
+    Eq,
+)]
+pub struct Swap;
+
+impl<A: 'static + Clone, B: 'static + Clone> MapExtra<(A, B)> for Swap {
+    type Mapped = (B, A);
+
+    fn map_extra(&self, (a, b): (A, B)) -> Self::Mapped {
+        (b, a)
+    }
+}
