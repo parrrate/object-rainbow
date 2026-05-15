@@ -35,7 +35,7 @@ ulid = ["dep:ulid"]
 hex.workspace = true
 smol.workspace = true
 tracing.workspace = true
-tracing-subscriber = "0.3.19"
+tracing-subscriber.workspace = true
 
 [package.metadata.docs.rs]
 all-features = true
