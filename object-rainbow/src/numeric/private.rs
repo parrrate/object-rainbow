@@ -326,7 +326,7 @@ macro_rules! lebe {
 
         impl Equivalent<Be<NonZero<Os<$n>>>> for Be<NonZero<$n>> {
             fn into_equivalent(self) -> Be<NonZero<Os<$n>>> {
-                Be(NonZero::new(self.0.get() as _).unwrap())
+                Be(NonZero::new(self.0.get() as _).expect("non-zero"))
             }
             fn from_equivalent(object: Be<NonZero<Os<$n>>>) -> Self {
                 Be(NonZero::new(object.0.get() as _).unwrap())
