@@ -34,3 +34,7 @@ impl<const S: usize, I: ParseInput> ParseInline<I> for CidGeneric<S> {
 impl<const S: usize> InlineOutput for CidGeneric<S> {}
 
 impl<const S: usize> Tagged for CidGeneric<S> {}
+/// We can't directly interpret this as our pointers, treating [`Cid`] as just data.
+///
+/// [`Cid`]: cid::Cid
+impl<const S: usize> ListHashes for CidGeneric<S> {}
