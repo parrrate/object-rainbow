@@ -152,20 +152,20 @@ pub async fn load_extra<
     T: ParseSliceExtra<E> + Tagged,
     E: 'static + Send + Sync + Clone,
 >(
-    store: S,
+    store: &S,
     id: &S::Id,
     extra: E,
 ) -> object_rainbow::Result<T> {
     let ExternallyStored { object, .. } = ExternallyStored::parse_slice_extra(
         store.fetch(id).await?.as_ref(),
         &(Arc::new(Vec::new()) as _),
-        &(store, extra),
+        &(store.clone(), extra),
     )?;
     Ok(object)
 }
 
 pub async fn load<S: ExternalStore, T: ParseSlice + Tagged>(
-    store: S,
+    store: &S,
     id: &S::Id,
 ) -> object_rainbow::Result<T> {
     load_extra(store, id, ()).await
