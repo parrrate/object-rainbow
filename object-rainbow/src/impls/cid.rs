@@ -17,3 +17,15 @@ impl<const S: usize> ToOutput for CidGeneric<S> {
             .expect("unserialisable Cid is considered a bug");
     }
 }
+
+impl<const S: usize, I: ParseInput> Parse<I> for CidGeneric<S> {
+    fn parse(input: I) -> crate::Result<Self> {
+        Self::parse_as_inline(input)
+    }
+}
+
+impl<const S: usize, I: ParseInput> ParseInline<I> for CidGeneric<S> {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        Self::read_bytes(input.as_read()).map_err(From::from)
+    }
+}
