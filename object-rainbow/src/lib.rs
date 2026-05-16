@@ -565,6 +565,10 @@ impl<'d, Extra: 'static + Clone> PointInput for Input<'d, Extra> {
         &self.resolve
     }
 
+    fn set_resolve(&mut self, resolve: Arc<dyn Resolve>) {
+        self.resolve = Cow::Owned(resolve);
+    }
+
     fn extra(&self) -> &Self::Extra {
         &self.extra
     }
@@ -1477,6 +1481,7 @@ pub trait PointInput: ParseInput {
     fn resolve_ref(&self) -> &dyn Resolve {
         self.resolve_arc_ref().as_ref()
     }
+    fn set_resolve(&mut self, resolve: Arc<dyn Resolve>);
     /// Get [`Self::Extra`].
     fn extra(&self) -> &Self::Extra;
     /// Project the `Extra`. Under some circumstances, prevents an extra [`Clone::clone`].
