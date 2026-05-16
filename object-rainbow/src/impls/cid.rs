@@ -26,7 +26,7 @@ impl<const S: usize, I: ParseInput> Parse<I> for CidGeneric<S> {
 
 impl<const S: usize, I: ParseInput> ParseInline<I> for CidGeneric<S> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        Self::read_bytes(input.as_read()).map_err(From::from)
+        input.as_read(|r| Self::read_bytes(r))
     }
 }
 

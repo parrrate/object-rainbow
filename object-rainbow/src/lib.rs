@@ -1402,8 +1402,16 @@ pub trait ParseInput: Sized {
         T::parse_generic_array(self)
     }
 
-    fn as_read(&mut self) -> AsRead<'_, Self> {
-        AsRead { input: self }
+    fn as_read<T, E>(
+        &mut self,
+        f: impl FnOnce(AsRead<'_, Self>) -> std::result::Result<T, E>,
+    ) -> crate::Result<T>
+    where
+        Error: From<E>,
+    {
+        let result = f(AsRead { input: self })?;
+        self.noop()?;
+        Ok(result)
     }
 
     fn noop(&mut self) -> crate::Result<()> {
