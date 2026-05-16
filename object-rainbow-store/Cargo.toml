@@ -11,3 +11,5 @@ description = "storage abstraction for object-rainbow"
 [dependencies]
 object-rainbow.workspace = true
 object-rainbow-point.workspace = true
+
+futures-util.workspace = true

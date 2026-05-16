@@ -1695,6 +1695,7 @@ dependencies = [
 name = "object-rainbow-store"
 version = "0.0.0-a.10"
 dependencies = [
+ "futures-util",
  "object-rainbow",
  "object-rainbow-point",
 ]

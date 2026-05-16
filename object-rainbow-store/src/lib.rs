@@ -12,6 +12,8 @@ use object_rainbow::{
 };
 use object_rainbow_point::{Extras, Point};
 
+pub mod externally_stored;
+
 pub trait RainbowFuture: Send + Future<Output = object_rainbow::Result<Self::T>> {
     type T;
 }
