@@ -7,4 +7,3 @@
 - encrypted IPLD storage
 - `Ipld`
 - external storage where we don't control IDs
-- `with_resolve` instead of `set_resolve`
