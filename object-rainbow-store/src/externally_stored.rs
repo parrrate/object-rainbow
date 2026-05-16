@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    Address, Error, Hash, InlineOutput, Parse, ParseInline, ParseSlice, ParseSliceExtra,
-    ParseSliceRefless, PointInput, PointVisitor, Resolve, SingularFetch, Tagged, ToOutput,
-    Traversible, length_prefixed::Lp,
+    Address, Error, Hash, InlineOutput, Parse, ParseInline, ParseInput, ParseSlice,
+    ParseSliceExtra, ParseSliceRefless, PointInput, PointVisitor, Resolve, SingularFetch, Tagged,
+    ToOutput, Traversible, length_prefixed::Lp,
 };
 use object_rainbow_point::ExtractResolve;
 
@@ -33,7 +33,16 @@ impl<
         if header.tags != T::HASH {
             return Err(object_rainbow::error_consistency!("tags mismatch"));
         }
-        todo!()
+        let resolve = ExternalResolve {
+            store: input.extra().0.clone(),
+            topology: header.topology.clone(),
+        };
+        let extra = input.extra().1.clone();
+        let object = input
+            .with_extra(extra)
+            .with_resolve(Arc::new(resolve))
+            .parse()?;
+        Ok(Self { header, object })
     }
 }
 
