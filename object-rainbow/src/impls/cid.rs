@@ -42,3 +42,7 @@ impl<const S: usize> ListHashes for CidGeneric<S> {}
 ///
 /// [`Cid`]: cid::Cid
 impl<const S: usize> Topological for CidGeneric<S> {}
+/// `varint` inside.
+impl<const S: usize> MaybeHasNiche for CidGeneric<S> {
+    type MnArray = NoNiche<NicheForUnsized>;
+}
