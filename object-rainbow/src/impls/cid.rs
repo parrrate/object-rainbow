@@ -30,5 +30,7 @@ impl<const S: usize, I: ParseInput> ParseInline<I> for CidGeneric<S> {
     }
 }
 
-/// We don't run into prefix issues because `S` is `const`
+/// We don't run into prefix issues because `S` is `const`.
 impl<const S: usize> InlineOutput for CidGeneric<S> {}
+
+impl<const S: usize> Tagged for CidGeneric<S> {}
