@@ -1405,6 +1405,10 @@ pub trait ParseInput: Sized {
     fn as_read(&mut self) -> AsRead<'_, Self> {
         AsRead { input: self }
     }
+
+    fn noop(&mut self) -> crate::Result<()> {
+        self.read(&mut [])
+    }
 }
 
 pub struct AsRead<'a, I> {
