@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    Address, Error, Hash, InlineOutput, Parse, ParseInline, ParseSliceExtra, ParseSliceRefless,
-    PointInput, PointVisitor, Resolve, SingularFetch, Tagged, ToOutput, Traversible,
-    length_prefixed::Lp,
+    Address, Error, Hash, InlineOutput, Parse, ParseInline, ParseSlice, ParseSliceExtra,
+    ParseSliceRefless, PointInput, PointVisitor, Resolve, SingularFetch, Tagged, ToOutput,
+    Traversible, length_prefixed::Lp,
 };
 use object_rainbow_point::ExtractResolve;
 
@@ -162,4 +162,11 @@ pub async fn load_extra<
         &(store, extra),
     )?;
     Ok(object)
+}
+
+pub async fn load<S: ExternalStore, T: ParseSlice + Tagged>(
+    store: S,
+    id: &S::Id,
+) -> object_rainbow::Result<T> {
+    load_extra(store, id, ()).await
 }
