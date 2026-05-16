@@ -1413,8 +1413,13 @@ pub struct AsRead<'a, I> {
 
 impl<I: ParseInput> std::io::Read for AsRead<'_, I> {
     fn read(&mut self, data: &mut [u8]) -> std::io::Result<usize> {
-        self.input.read(data)?;
+        self.read_exact(data)?;
         Ok(data.len())
+    }
+
+    fn read_exact(&mut self, data: &mut [u8]) -> std::io::Result<()> {
+        self.input.read(data)?;
+        Ok(())
     }
 }
 
