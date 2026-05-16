@@ -1066,6 +1066,24 @@ pub trait Output {
     fn is_real(&self) -> bool {
         !self.is_mangling()
     }
+    fn as_write(&mut self) -> AsWrite<'_, Self> {
+        AsWrite { output: self }
+    }
+}
+
+pub struct AsWrite<'a, O: ?Sized> {
+    output: &'a mut O,
+}
+
+impl<O: ?Sized + Output> std::io::Write for AsWrite<'_, O> {
+    fn write(&mut self, data: &[u8]) -> std::io::Result<usize> {
+        self.output.write(data);
+        Ok(data.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
+    }
 }
 
 impl Output for Vec<u8> {
