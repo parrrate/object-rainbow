@@ -406,3 +406,7 @@ impl<S: RainbowStore, T: Traversible> Stored<S, T> {
         Ok(Self { point, store })
     }
 }
+
+pub trait ExternalStore {
+    type Id;
+}
