@@ -1433,6 +1433,10 @@ impl<I: ParseInput> std::io::Read for AsRead<'_, I> {
         self.input.read(data)?;
         Ok(())
     }
+
+    fn read_to_end(&mut self, _: &mut Vec<u8>) -> std::io::Result<usize> {
+        Err(std::io::ErrorKind::Unsupported.into())
+    }
 }
 
 pub trait PointInput: ParseInput {
