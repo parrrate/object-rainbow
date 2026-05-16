@@ -6,9 +6,9 @@ use std::{
 
 use object_rainbow::{
     Address, ExtraFor, FullHash, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object,
-    ObjectHashes, OptionalHash, Parse, ParseInline, PointInput, PointVisitor, Resolve, Singular,
-    SingularFetch, Size, Tagged, ToOutput, Topological, Traversible, assert_impl,
-    derive_for_wrapped,
+    ObjectHashes, OptionalHash, Parse, ParseInline, PointInput, PointVisitor, ReflessInline,
+    Resolve, Singular, SingularFetch, Size, Tagged, ToOutput, Topological, Traversible,
+    assert_impl, derive_for_wrapped,
 };
 use object_rainbow_point::{Extras, Point};
 
@@ -408,7 +408,7 @@ impl<S: RainbowStore, T: Traversible> Stored<S, T> {
 }
 
 pub trait ExternalStore {
-    type Id;
+    type Id: ReflessInline;
     fn save_data(&self, data: &[u8]) -> impl RainbowFuture<T = Self::Id>;
     fn contains_data(&self, data: &[u8]) -> impl RainbowFuture<T = bool>;
     fn contains(&self, id: &Self::Id) -> impl RainbowFuture<T = bool>;
