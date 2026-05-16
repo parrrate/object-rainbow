@@ -51,7 +51,7 @@ pub enum Error {
     Consistency(anyhow::Error),
     /// Plain [`std::io::Error`], possibly converted from some other error.
     #[error(transparent)]
-    Io(#[from] std::io::Error),
+    Io(std::io::Error),
     /// Data left after an [`Inline`] got parsed.
     #[error("extra input left")]
     ExtraInputLeft,
@@ -140,6 +140,15 @@ impl Error {
             Error::Unimplemented => ErrorKind::Unsupported,
             Error::HashNotFound => ErrorKind::NotFound,
             Error::Interrupted => ErrorKind::Interrupted,
+        }
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(error: std::io::Error) -> Self {
+        match error.downcast() {
+            Ok(e) => e,
+            Err(e) => Self::Io(e),
         }
     }
 }
