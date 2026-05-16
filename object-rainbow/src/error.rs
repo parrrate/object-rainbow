@@ -145,8 +145,8 @@ impl Error {
 }
 
 impl From<Error> for std::io::Error {
-    fn from(value: Error) -> Self {
-        match value {
+    fn from(error: Error) -> Self {
+        match error {
             Error::Io(e) => e,
             e => Self::new(e.io_kind(), e),
         }
