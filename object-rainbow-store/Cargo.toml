@@ -13,3 +13,7 @@ object-rainbow.workspace = true
 object-rainbow-point.workspace = true
 
 futures-util = { workspace = true, features = ["std"] }
+
+[dev-dependencies]
+dashmap.workspace = true
+smol.workspace = true
