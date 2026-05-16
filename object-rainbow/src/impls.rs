@@ -9,6 +9,8 @@ mod byte_array;
 #[cfg(feature = "bytes")]
 mod bytes;
 mod char;
+#[cfg(feature = "cid")]
+mod cid;
 mod cow;
 mod cstr;
 mod cstring;
