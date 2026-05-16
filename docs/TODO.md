@@ -5,3 +5,4 @@
 - `append` but leaves old items in `other`
 - IPLD storage
 - encrypted IPLD storage
+- `Cid`
