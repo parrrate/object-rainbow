@@ -476,6 +476,12 @@ impl<'d> ParseInput for ReflessInput<'d> {
             Some(self)
         })
     }
+
+    fn parse_refless_inline<T: for<'r> ParseInline<ReflessInput<'r>>>(
+        &mut self,
+    ) -> crate::Result<T> {
+        self.parse_inline()
+    }
 }
 
 impl<'d, Extra: Clone> ParseInput for Input<'d, Extra> {
@@ -528,6 +534,12 @@ impl<'d, Extra: Clone> ParseInput for Input<'d, Extra> {
             None => return Ok(None),
         };
         Ok(Some(self))
+    }
+
+    fn parse_refless_inline<T: for<'r> ParseInline<ReflessInput<'r>>>(
+        &mut self,
+    ) -> crate::Result<T> {
+        (**self).parse_refless_inline()
     }
 }
 
@@ -1417,6 +1429,10 @@ pub trait ParseInput: Sized {
     fn noop(&mut self) -> crate::Result<()> {
         self.read(&mut [])
     }
+
+    fn parse_refless_inline<T: for<'r> ParseInline<ReflessInput<'r>>>(
+        &mut self,
+    ) -> crate::Result<T>;
 }
 
 pub struct AsRead<'a, I> {
