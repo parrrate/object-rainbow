@@ -1401,6 +1401,21 @@ pub trait ParseInput: Sized {
     ) -> crate::Result<GenericArray<T, N>> {
         T::parse_generic_array(self)
     }
+
+    fn as_read(&mut self) -> AsRead<'_, Self> {
+        AsRead { input: self }
+    }
+}
+
+pub struct AsRead<'a, I> {
+    input: &'a mut I,
+}
+
+impl<I: ParseInput> std::io::Read for AsRead<'_, I> {
+    fn read(&mut self, data: &mut [u8]) -> std::io::Result<usize> {
+        self.input.read(data)?;
+        Ok(data.len())
+    }
 }
 
 pub trait PointInput: ParseInput {
