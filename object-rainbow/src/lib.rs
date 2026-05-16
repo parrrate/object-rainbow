@@ -348,7 +348,7 @@ pub struct ReflessInput<'d> {
 
 pub struct Input<'d, Extra: Clone = ()> {
     refless: ReflessInput<'d>,
-    resolve: &'d Arc<dyn Resolve>,
+    resolve: Cow<'d, Arc<dyn Resolve>>,
     index: &'d Cell<usize>,
     extra: Cow<'d, Extra>,
 }
@@ -502,7 +502,7 @@ impl<'d, Extra: Clone> ParseInput for Input<'d, Extra> {
     fn split_n(&mut self, n: usize) -> crate::Result<Self> {
         Ok(Self {
             refless: self.refless.split_n(n)?,
-            resolve: self.resolve,
+            resolve: self.resolve.clone(),
             index: self.index,
             extra: self.extra.clone(),
         })
@@ -562,7 +562,7 @@ impl<'d, Extra: 'static + Clone> PointInput for Input<'d, Extra> {
     }
 
     fn resolve_arc_ref(&self) -> &Arc<dyn Resolve> {
-        self.resolve
+        &self.resolve
     }
 
     fn extra(&self) -> &Self::Extra {
@@ -634,6 +634,7 @@ impl<'d, Extra: 'static + Clone> PointInput for Input<'d, Extra> {
             ..
         } = self;
         let data = refless.data.take();
+        let resolve = resolve.clone();
         let mut input = Input {
             refless: ReflessInput { data },
             resolve,
@@ -745,7 +746,7 @@ pub trait ParseSliceExtra<Extra: Clone>: for<'a> Parse<Input<'a, Extra>> {
                     prefix: Vec::new(),
                 }),
             },
-            resolve,
+            resolve: Cow::Borrowed(resolve),
             index: &Cell::new(0),
             extra: Cow::Borrowed(extra),
         };
