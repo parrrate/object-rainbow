@@ -409,4 +409,5 @@ impl<S: RainbowStore, T: Traversible> Stored<S, T> {
 
 pub trait ExternalStore {
     type Id;
+    fn save_data(&self, data: &[u8]) -> impl RainbowFuture<T = Self::Id>;
 }
