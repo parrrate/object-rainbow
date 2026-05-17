@@ -173,3 +173,5 @@ impl<T: InlineOutput> ToOutput for LpVec<T> {
         }
     }
 }
+
+impl<T: InlineOutput> InlineOutput for LpVec<T> {}
