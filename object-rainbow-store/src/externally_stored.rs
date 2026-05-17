@@ -3,7 +3,7 @@ use std::sync::Arc;
 use object_rainbow::{
     Address, Error, Hash, InlineOutput, Parse, ParseInline, ParseInput, ParseSlice,
     ParseSliceExtra, ParseSliceRefless, PointInput, PointVisitor, Resolve, SingularFetch, Tagged,
-    ToOutput, Traversible, length_prefixed::Lp,
+    ToOutput, Traversible, length_prefixed::LpVec,
 };
 use object_rainbow_point::ExtractResolve;
 
@@ -12,7 +12,7 @@ use crate::ExternalStore;
 #[derive(ToOutput, InlineOutput, Parse, ParseInline)]
 struct Header<Id> {
     tags: Hash,
-    topology: Arc<Lp<Vec<Id>>>,
+    topology: Arc<LpVec<Id>>,
 }
 
 #[derive(ToOutput)]
@@ -48,7 +48,7 @@ impl<
 
 struct ExternalResolve<S, Id = <S as ExternalStore>::Id> {
     store: S,
-    topology: Arc<Lp<Vec<Id>>>,
+    topology: Arc<LpVec<Id>>,
 }
 
 #[derive(Parse, ParseInline)]
@@ -147,7 +147,7 @@ pub async fn store_object<S: ExternalStore + PartialEq, T: Traversible>(
         store,
     });
     let topology = futures_util::future::try_join_all(futures).await?;
-    let topology = Arc::new(Lp(topology));
+    let topology = Arc::new(LpVec(topology));
     let header = Header {
         tags: T::HASH,
         topology,
