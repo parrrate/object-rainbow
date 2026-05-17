@@ -144,7 +144,7 @@ impl Tagged for LpString {}
 impl ListHashes for LpString {}
 impl Topological for LpString {}
 
-#[derive(ListHashes, Topological, Tagged, Clone, PartialEq, Eq)]
+#[derive(ListHashes, Topological, Tagged, ParseAsInline, Clone, PartialEq, Eq)]
 pub struct LpVec<T>(pub Vec<T>);
 
 impl<T> Deref for LpVec<T> {
@@ -175,3 +175,10 @@ impl<T: InlineOutput> ToOutput for LpVec<T> {
 }
 
 impl<T: InlineOutput> InlineOutput for LpVec<T> {}
+
+impl<T: ParseInline<I>, I: ParseInput> ParseInline<I> for LpVec<T> {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        let prefix: U63 = input.parse_inline()?;
+        Ok(Self(input.parse_vec_n(prefix.as_usize()?)?))
+    }
+}
