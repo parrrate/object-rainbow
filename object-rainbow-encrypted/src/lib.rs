@@ -4,7 +4,9 @@ use object_rainbow::{
     Address, ByteNode, Error, ExtraFor, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node,
     Parse, ParseInline, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Tagged, ToOutput, TopoVec, Topological, Traversible, derive_for_wrapped,
-    length_prefixed::Lp, map_extra::MappedExtra, tuple_extra::Extra0,
+    length_prefixed::{Lp, LpVec},
+    map_extra::MappedExtra,
+    tuple_extra::Extra0,
 };
 use object_rainbow_point::{ExtractResolve, Extras, IntoPoint, Point};
 
@@ -19,7 +21,7 @@ pub trait Key: 'static + Sized + Send + Sync + Clone + PartialEq + Eq {
 struct RawResolve<K> {
     key: Extras<K>,
     resolve: Arc<dyn Resolve>,
-    addresses: Arc<Lp<Vec<Address>>>,
+    addresses: Arc<LpVec<Address>>,
 }
 
 impl<K> RawResolve<K> {
