@@ -6,4 +6,3 @@
 - IPLD storage
 - encrypted IPLD storage
 - `Ipld`
-- `LpVec`
