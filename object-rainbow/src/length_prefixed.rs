@@ -143,3 +143,5 @@ impl<I: ParseInput> ParseInline<I> for LpString {
 impl Tagged for LpString {}
 impl ListHashes for LpString {}
 impl Topological for LpString {}
+
+pub struct LpVec<T>(pub Vec<T>);
