@@ -6,4 +6,4 @@
 - IPLD storage
 - encrypted IPLD storage
 - `Ipld`
-- external storage where we don't control IDs
+- `LpVec`
