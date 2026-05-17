@@ -144,5 +144,5 @@ impl Tagged for LpString {}
 impl ListHashes for LpString {}
 impl Topological for LpString {}
 
-#[derive(ListHashes, Topological, Tagged, Clone, PartialEq)]
+#[derive(ListHashes, Topological, Tagged, Clone, PartialEq, Eq)]
 pub struct LpVec<T>(pub Vec<T>);
