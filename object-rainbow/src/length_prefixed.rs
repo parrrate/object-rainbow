@@ -154,3 +154,9 @@ impl<T> Deref for LpVec<T> {
         &self.0
     }
 }
+
+impl<T> DerefMut for LpVec<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
