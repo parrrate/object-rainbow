@@ -160,3 +160,16 @@ impl<T> DerefMut for LpVec<T> {
         &mut self.0
     }
 }
+
+impl<T: InlineOutput> ToOutput for LpVec<T> {
+    fn to_output(&self, output: &mut impl Output) {
+        if output.is_mangling() {
+            self.0.to_output(output);
+        }
+        if output.is_real() {
+            let prefix = U63::len_of(&self.0);
+            prefix.to_output(output);
+            self.0.to_output(output);
+        }
+    }
+}
