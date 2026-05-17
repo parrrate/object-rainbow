@@ -146,3 +146,11 @@ impl Topological for LpString {}
 
 #[derive(ListHashes, Topological, Tagged, Clone, PartialEq, Eq)]
 pub struct LpVec<T>(pub Vec<T>);
+
+impl<T> Deref for LpVec<T> {
+    type Target = Vec<T>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
