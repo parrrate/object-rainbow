@@ -26,7 +26,7 @@ impl ToOutput for U63 {
         if self.0 < 128 {
             (self.0 as u8).to_output(output);
         } else {
-            let mut bytes = (self.0 - 128).to_be_bytes();
+            let mut bytes = self.0.to_be_bytes();
             bytes[0] ^= 128;
             bytes.to_output(output);
         }
@@ -47,7 +47,11 @@ impl<I: ParseInput> ParseInline<I> for U63 {
         } else {
             bytes[0] ^= 128;
             input.read(&mut bytes[1..])?;
-            u64::from_be_bytes(bytes) + 128
+            let n = u64::from_be_bytes(bytes);
+            if n < 128 {
+                return Err(Error::OutOfBounds);
+            }
+            n
         }))
     }
 }
