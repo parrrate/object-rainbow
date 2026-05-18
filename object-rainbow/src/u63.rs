@@ -51,3 +51,11 @@ impl<I: ParseInput> ParseInline<I> for U63 {
         }))
     }
 }
+
+#[test]
+fn reparse_u63_100_000() -> crate::Result<()> {
+    (0..100_000).try_for_each(|n| {
+        assert_eq!(U63::from_u64(n)?.reparse()?.0, n);
+        Ok(())
+    })
+}
