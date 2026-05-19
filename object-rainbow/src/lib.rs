@@ -1261,6 +1261,24 @@ pub trait Size {
 
 pub trait SizeExt: Size<Size: ArrayLength> + ToOutput {
     fn to_array(&self) -> GenericArray<u8, Self::Size> {
+        struct ArrayOutput<'a> {
+            data: &'a mut [u8],
+            offset: usize,
+        }
+
+        impl ArrayOutput<'_> {
+            fn finalize(self) {
+                assert_eq!(self.offset, self.data.len());
+            }
+        }
+
+        impl Output for ArrayOutput<'_> {
+            fn write(&mut self, data: &[u8]) {
+                self.data[self.offset..][..data.len()].copy_from_slice(data);
+                self.offset += data.len();
+            }
+        }
+
         let mut array = GenericArray::default();
         let mut output = ArrayOutput {
             data: &mut array,
@@ -1277,24 +1295,6 @@ pub trait SizeExt: Size<Size: ArrayLength> + ToOutput {
 }
 
 impl<T: Size<Size: ArrayLength> + ToOutput> SizeExt for T {}
-
-struct ArrayOutput<'a> {
-    data: &'a mut [u8],
-    offset: usize,
-}
-
-impl ArrayOutput<'_> {
-    fn finalize(self) {
-        assert_eq!(self.offset, self.data.len());
-    }
-}
-
-impl Output for ArrayOutput<'_> {
-    fn write(&mut self, data: &[u8]) {
-        self.data[self.offset..][..data.len()].copy_from_slice(data);
-        self.offset += data.len();
-    }
-}
 
 pub trait FromSized: Size<Size: ArrayLength> {
     fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self;
