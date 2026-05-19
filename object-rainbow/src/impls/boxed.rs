@@ -67,3 +67,9 @@ impl<T> Equivalent<T> for Box<T> {
         Box::new(object)
     }
 }
+
+impl<T: ?Sized + ByteOrdered> ByteOrdered for Box<T> {
+    fn bytes_cmp(&self, other: &Self) -> std::cmp::Ordering {
+        (**self).bytes_cmp(other)
+    }
+}
