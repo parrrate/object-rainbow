@@ -1,39 +1,11 @@
-use object_rainbow_derive::{ParseAsInline, Tagged, Topological};
-
-use crate::*;
-
-#[derive(Tagged, ListHashes, Topological)]
-struct ZtInner<T> {
-    object: T,
-    data: Vec<u8>,
-}
-
-impl<T> PartialEq for ZtInner<T> {
-    fn eq(&self, other: &Self) -> bool {
-        self.data == other.data
-    }
-}
-
-impl<T> Eq for ZtInner<T> {}
-
-impl<T> PartialOrd for ZtInner<T> {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl<T> Ord for ZtInner<T> {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.data.cmp(&other.data)
-    }
-}
+use crate::{with_repr::WithRepr, *};
 
 /// Zero-terminated value. Used to make [`Inline`]s out of [`Object`]s which don't contain zeroes.
 ///
 /// If you can't guarantee absence of zeroes, see [`length_prefixed::Lp`].
 #[derive(Tagged, ListHashes, Topological, ParseAsInline)]
 pub struct Zt<T> {
-    inner: Arc<ZtInner<T>>,
+    inner: Arc<WithRepr<T>>,
 }
 
 impl<T: ToOutput> Zt<T> {
@@ -41,12 +13,12 @@ impl<T: ToOutput> Zt<T> {
     ///
     /// Pre-computes the output, errors if it contains a zero.
     pub fn new(object: T) -> crate::Result<Self> {
-        let data = object.vec();
-        if data.contains(&0) {
+        let inner = WithRepr::new(object);
+        if inner.data().contains(&0) {
             Err(Error::Zero)
         } else {
             Ok(Self {
-                inner: Arc::new(ZtInner { object, data }),
+                inner: Arc::new(inner),
             })
         }
     }
@@ -64,17 +36,14 @@ impl<T> Deref for Zt<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        &self.inner.object
+        self.inner.object()
     }
 }
 
 impl<T: ToOutput> ToOutput for Zt<T> {
     fn to_output(&self, output: &mut impl Output) {
-        if output.is_mangling() {
-            self.inner.object.to_output(output);
-        }
+        self.inner.to_output(output);
         if output.is_real() {
-            self.inner.data.to_output(output);
             output.write(&[0]);
         }
     }
@@ -84,8 +53,7 @@ impl<T: ToOutput> InlineOutput for Zt<T> {}
 
 impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Zt<T> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        let (data, object) = input.parse_zero_terminated()?;
-        let inner = Arc::new(ZtInner { object, data });
+        let inner = Arc::new(WithRepr::parse_zero_terminated(input)?);
         Ok(Self { inner })
     }
 }

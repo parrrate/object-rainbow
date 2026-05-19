@@ -54,6 +54,7 @@ pub mod parse_extra;
 pub mod partial_byte_tag;
 pub mod tuple_extra;
 pub mod u63;
+pub mod with_repr;
 pub mod zero_terminated;
 
 /// SHA-256 hash size in bytes.
