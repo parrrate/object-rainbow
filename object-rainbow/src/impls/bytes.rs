@@ -48,3 +48,9 @@ impl ByteOrdered for Bytes {
         self.cmp(other)
     }
 }
+
+impl ByteOrdered for BytesMut {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.cmp(other)
+    }
+}
