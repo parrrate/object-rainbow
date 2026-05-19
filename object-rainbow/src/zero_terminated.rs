@@ -8,6 +8,12 @@ struct ZtInner<T> {
     data: Vec<u8>,
 }
 
+impl<T> PartialEq for ZtInner<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.data == other.data
+    }
+}
+
 /// Zero-terminated value. Used to make [`Inline`]s out of [`Object`]s which don't contain zeroes.
 ///
 /// If you can't guarantee absence of zeroes, see [`length_prefixed::Lp`].
