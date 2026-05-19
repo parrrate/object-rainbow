@@ -74,3 +74,8 @@ impl<T: ParseInline<I> + ToOutput, I: ParseInput> ParseInline<I> for WithRepr<T>
         Ok(Self::new(input.parse_inline()?))
     }
 }
+
+impl<T: Size> Size for WithRepr<T> {
+    type Size = T::Size;
+    const SIZE: usize = T::SIZE;
+}
