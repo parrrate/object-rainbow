@@ -1,2 +1,2 @@
-cargo xtask > ./src/impls/tuple.rs
+cargo xtask > ./object-rainbow/src/impls/tuple.rs
 cargo fmt --all
