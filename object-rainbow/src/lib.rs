@@ -658,6 +658,25 @@ pub trait ToOutput {
     fn to_output(&self, output: &mut impl Output);
 
     fn data_hash(&self) -> Hash {
+        #[derive(Default)]
+        struct HashOutput {
+            hasher: Sha256,
+            at: usize,
+        }
+
+        impl Output for HashOutput {
+            fn write(&mut self, data: &[u8]) {
+                self.hasher.update(data);
+                self.at += data.len();
+            }
+        }
+
+        impl HashOutput {
+            fn hash(self) -> Hash {
+                Hash::from_sha256(self.hasher.finalize().into())
+            }
+        }
+
         let mut output = HashOutput::default();
         self.to_output(&mut output);
         output.hash()
@@ -1236,25 +1255,6 @@ pub struct Mangled<T: ?Sized>(T);
 impl<T: ?Sized + ToOutput> ToOutput for Mangled<T> {
     fn to_output(&self, output: &mut impl Output) {
         self.0.to_output(&mut MangleOutput::new(output));
-    }
-}
-
-#[derive(Default)]
-struct HashOutput {
-    hasher: Sha256,
-    at: usize,
-}
-
-impl Output for HashOutput {
-    fn write(&mut self, data: &[u8]) {
-        self.hasher.update(data);
-        self.at += data.len();
-    }
-}
-
-impl HashOutput {
-    fn hash(self) -> Hash {
-        Hash::from_sha256(self.hasher.finalize().into())
     }
 }
 
