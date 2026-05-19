@@ -8,6 +8,7 @@ use std::{
     any::Any,
     borrow::Cow,
     cell::Cell,
+    cmp::Ordering,
     convert::Infallible,
     future::ready,
     marker::PhantomData,
@@ -1341,6 +1342,14 @@ pub trait RainbowIterator: Sized + IntoIterator {
         Self::Item: Topological,
     {
         self.into_iter().for_each(|item| item.traverse(visitor));
+    }
+
+    fn bytes_cmp(self, other: impl IntoIterator<Item = <Self as Iterator>::Item>) -> Ordering
+    where
+        Self: Iterator<Item: ByteOrdered>,
+    {
+        self.map(OrderedByBytes)
+            .cmp(other.into_iter().map(OrderedByBytes))
     }
 }
 
