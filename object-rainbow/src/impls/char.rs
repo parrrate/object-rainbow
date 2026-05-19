@@ -65,6 +65,8 @@ impl ByteOrdered for char {
     }
 }
 
+impl SignificantLength for char {}
+
 #[test]
 fn reparse() -> crate::Result<()> {
     assert_eq!('x'.reparse()?, 'x');
