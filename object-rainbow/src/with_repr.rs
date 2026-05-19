@@ -79,3 +79,7 @@ impl<T: Size> Size for WithRepr<T> {
     type Size = T::Size;
     const SIZE: usize = T::SIZE;
 }
+
+impl<T: MaybeHasNiche> MaybeHasNiche for WithRepr<T> {
+    type MnArray = WithRepr<T>;
+}
