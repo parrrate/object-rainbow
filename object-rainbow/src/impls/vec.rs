@@ -30,6 +30,12 @@ impl<T: Tagged> Tagged for Vec<T> {
     const TAGS: Tags = T::TAGS;
 }
 
+impl<T: ByteOrdered + InlineOutput> ByteOrdered for Vec<T> {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.iter_bytes_cmp(other)
+    }
+}
+
 impl<T: InlineOutput> ToOutput for VecDeque<T> {
     fn to_output(&self, output: &mut impl Output) {
         let (l, r) = self.as_slices();
