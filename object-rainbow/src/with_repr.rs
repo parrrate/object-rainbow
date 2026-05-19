@@ -68,3 +68,9 @@ impl<T: Parse<I> + ToOutput, I: ParseInput> Parse<I> for WithRepr<T> {
         Ok(Self::new(input.parse()?))
     }
 }
+
+impl<T: ParseInline<I> + ToOutput, I: ParseInput> ParseInline<I> for WithRepr<T> {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        Ok(Self::new(input.parse_inline()?))
+    }
+}
