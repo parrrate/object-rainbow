@@ -816,6 +816,98 @@ impl<T: FullHash + Default> DefaultHash for T {}
 
 pub trait Traversible: 'static + Sized + Send + Sync + FullHash + Topological {
     fn to_resolve(&self) -> Arc<dyn Resolve> {
+        struct ByTopology {
+            topology: TopoVec,
+            topology_hash: Hash,
+        }
+
+        impl Drop for ByTopology {
+            fn drop(&mut self) {
+                while let Some(singular) = self.topology.pop() {
+                    if let Some(resolve) = singular.try_unwrap_resolve()
+                        && let Some(topology) = &mut resolve.into_topovec()
+                    {
+                        self.topology.append(topology);
+                    }
+                }
+            }
+        }
+
+        impl ByTopology {
+            fn try_resolve(&'_ self, address: Address) -> Result<FailFuture<'_, ByteNode>> {
+                let point = self
+                    .topology
+                    .get(address.index)
+                    .ok_or(Error::AddressOutOfBounds)?;
+                if point.hash() != address.hash {
+                    Err(Error::ResolutionMismatch)
+                } else {
+                    Ok(point.fetch_bytes())
+                }
+            }
+
+            fn try_resolve_data(&'_ self, address: Address) -> Result<FailFuture<'_, Vec<u8>>> {
+                let point = self
+                    .topology
+                    .get(address.index)
+                    .ok_or(Error::AddressOutOfBounds)?;
+                if point.hash() != address.hash {
+                    Err(Error::ResolutionMismatch)
+                } else {
+                    Ok(point.fetch_data())
+                }
+            }
+        }
+
+        impl Resolve for ByTopology {
+            fn resolve(
+                &'_ self,
+                address: Address,
+                _: &Arc<dyn Resolve>,
+            ) -> FailFuture<'_, ByteNode> {
+                self.try_resolve(address)
+                    .map_err(Err)
+                    .map_err(ready)
+                    .map_err(Box::pin)
+                    .unwrap_or_else(|x| x)
+            }
+
+            fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>> {
+                self.try_resolve_data(address)
+                    .map_err(Err)
+                    .map_err(ready)
+                    .map_err(Box::pin)
+                    .unwrap_or_else(|x| x)
+            }
+
+            fn try_resolve_local(
+                &self,
+                address: Address,
+                _: &Arc<dyn Resolve>,
+            ) -> Result<Option<ByteNode>> {
+                let point = self
+                    .topology
+                    .get(address.index)
+                    .ok_or(Error::AddressOutOfBounds)?;
+                if point.hash() != address.hash {
+                    Err(Error::ResolutionMismatch)
+                } else {
+                    point.fetch_bytes_local()
+                }
+            }
+
+            fn topology_hash(&self) -> Option<Hash> {
+                Some(self.topology_hash)
+            }
+
+            fn into_topovec(self: Arc<Self>) -> Option<TopoVec> {
+                Arc::try_unwrap(self)
+                    .ok()
+                    .as_mut()
+                    .map(|Self { topology, .. }| std::mem::take(topology))
+            }
+        }
+
         let topology = self.topology();
         let topology_hash = topology.data_hash();
         for singular in &topology {
@@ -1163,94 +1255,6 @@ impl Output for HashOutput {
 impl HashOutput {
     fn hash(self) -> Hash {
         Hash::from_sha256(self.hasher.finalize().into())
-    }
-}
-
-struct ByTopology {
-    topology: TopoVec,
-    topology_hash: Hash,
-}
-
-impl Drop for ByTopology {
-    fn drop(&mut self) {
-        while let Some(singular) = self.topology.pop() {
-            if let Some(resolve) = singular.try_unwrap_resolve()
-                && let Some(topology) = &mut resolve.into_topovec()
-            {
-                self.topology.append(topology);
-            }
-        }
-    }
-}
-
-impl ByTopology {
-    fn try_resolve(&'_ self, address: Address) -> Result<FailFuture<'_, ByteNode>> {
-        let point = self
-            .topology
-            .get(address.index)
-            .ok_or(Error::AddressOutOfBounds)?;
-        if point.hash() != address.hash {
-            Err(Error::ResolutionMismatch)
-        } else {
-            Ok(point.fetch_bytes())
-        }
-    }
-
-    fn try_resolve_data(&'_ self, address: Address) -> Result<FailFuture<'_, Vec<u8>>> {
-        let point = self
-            .topology
-            .get(address.index)
-            .ok_or(Error::AddressOutOfBounds)?;
-        if point.hash() != address.hash {
-            Err(Error::ResolutionMismatch)
-        } else {
-            Ok(point.fetch_data())
-        }
-    }
-}
-
-impl Resolve for ByTopology {
-    fn resolve(&'_ self, address: Address, _: &Arc<dyn Resolve>) -> FailFuture<'_, ByteNode> {
-        self.try_resolve(address)
-            .map_err(Err)
-            .map_err(ready)
-            .map_err(Box::pin)
-            .unwrap_or_else(|x| x)
-    }
-
-    fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>> {
-        self.try_resolve_data(address)
-            .map_err(Err)
-            .map_err(ready)
-            .map_err(Box::pin)
-            .unwrap_or_else(|x| x)
-    }
-
-    fn try_resolve_local(
-        &self,
-        address: Address,
-        _: &Arc<dyn Resolve>,
-    ) -> Result<Option<ByteNode>> {
-        let point = self
-            .topology
-            .get(address.index)
-            .ok_or(Error::AddressOutOfBounds)?;
-        if point.hash() != address.hash {
-            Err(Error::ResolutionMismatch)
-        } else {
-            point.fetch_bytes_local()
-        }
-    }
-
-    fn topology_hash(&self) -> Option<Hash> {
-        Some(self.topology_hash)
-    }
-
-    fn into_topovec(self: Arc<Self>) -> Option<TopoVec> {
-        Arc::try_unwrap(self)
-            .ok()
-            .as_mut()
-            .map(|Self { topology, .. }| std::mem::take(topology))
     }
 }
 
