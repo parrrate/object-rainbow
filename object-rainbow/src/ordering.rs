@@ -30,3 +30,5 @@ impl<T: ByteOrdered> Ord for OrderedByBytes<T> {
         self.0.bytes_cmp(&other.0)
     }
 }
+
+pub trait SignificantLength {}
