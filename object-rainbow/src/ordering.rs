@@ -18,3 +18,15 @@ impl<T: ByteOrdered> PartialEq for OrderedByBytes<T> {
 }
 
 impl<T: ByteOrdered> Eq for OrderedByBytes<T> {}
+
+impl<T: ByteOrdered> PartialOrd for OrderedByBytes<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<T: ByteOrdered> Ord for OrderedByBytes<T> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0.bytes_cmp(&other.0)
+    }
+}
