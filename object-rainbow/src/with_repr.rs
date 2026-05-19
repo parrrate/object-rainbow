@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(Tagged, ListHashes, Topological, ParseAsInline)]
+#[derive(Tagged, ListHashes, Topological)]
 pub struct WithRepr<T> {
     object: T,
     data: Vec<u8>,
@@ -60,5 +60,11 @@ impl<T> PartialOrd for WithRepr<T> {
 impl<T> Ord for WithRepr<T> {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.data.cmp(&other.data)
+    }
+}
+
+impl<T: Parse<I> + ToOutput, I: ParseInput> Parse<I> for WithRepr<T> {
+    fn parse(input: I) -> crate::Result<Self> {
+        Ok(Self::new(input.parse()?))
     }
 }
