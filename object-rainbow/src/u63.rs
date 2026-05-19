@@ -56,6 +56,12 @@ impl<I: ParseInput> ParseInline<I> for U63 {
     }
 }
 
+impl ByteOrdered for U63 {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.cmp(other)
+    }
+}
+
 #[test]
 fn reparse_u63_100_000() -> crate::Result<()> {
     (0..100_000).try_for_each(|n| {
