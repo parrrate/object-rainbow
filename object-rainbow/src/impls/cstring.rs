@@ -35,3 +35,9 @@ impl<I: ParseInput> ParseInline<I> for CString {
 impl MaybeHasNiche for CString {
     type MnArray = NoNiche<NicheForUnsized>;
 }
+
+impl ByteOrdered for CString {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.cmp(other)
+    }
+}
