@@ -16,3 +16,5 @@ impl<T: ByteOrdered> PartialEq for OrderedByBytes<T> {
         self.0.bytes_cmp(&other.0).is_eq()
     }
 }
+
+impl<T: ByteOrdered> Eq for OrderedByBytes<T> {}
