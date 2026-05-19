@@ -21,3 +21,9 @@ impl<T: Topological> Topological for [T] {
 impl<T: Tagged> Tagged for [T] {
     const TAGS: Tags = T::TAGS;
 }
+
+impl<T: ByteOrdered + InlineOutput> ByteOrdered for [T] {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.iter_bytes_cmp(other)
+    }
+}
