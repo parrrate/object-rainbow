@@ -62,6 +62,8 @@ impl ByteOrdered for U63 {
     }
 }
 
+impl SignificantLength for U63 {}
+
 #[test]
 fn reparse_u63_100_000() -> crate::Result<()> {
     (0..100_000).try_for_each(|n| {
