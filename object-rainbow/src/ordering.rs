@@ -8,3 +8,5 @@ pub trait ByteOrdered: ToOutput + PartialOrd {
         self.vec().cmp(&other.vec())
     }
 }
+
+pub struct OrderedByBytes<T>(pub T);

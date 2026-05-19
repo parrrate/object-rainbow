@@ -37,7 +37,7 @@ pub use self::{
         AutoEnumNiche, AutoNiche, HackNiche, MaybeHasNiche, Niche, NicheForUnsized, NoNiche,
         OneNiche, SomeNiche, ZeroNiche, ZeroNoNiche,
     },
-    ordering::ByteOrdered,
+    ordering::{ByteOrdered, OrderedByBytes},
 };
 
 mod assert_impl;
