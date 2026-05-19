@@ -32,3 +32,9 @@ impl<T: ?Sized + Topological> Topological for &T {
         (**self).traverse(visitor);
     }
 }
+
+impl<T: ?Sized + ByteOrdered> ByteOrdered for &T {
+    fn bytes_cmp(&self, other: &Self) -> std::cmp::Ordering {
+        (**self).bytes_cmp(other)
+    }
+}
