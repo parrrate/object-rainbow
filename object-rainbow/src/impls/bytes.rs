@@ -42,3 +42,9 @@ impl MaybeHasNiche for Bytes {
 impl MaybeHasNiche for BytesMut {
     type MnArray = NoNiche<NicheForUnsized>;
 }
+
+impl ByteOrdered for Bytes {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.cmp(other)
+    }
+}
