@@ -50,6 +50,7 @@ pub mod map_extra;
 mod niche;
 pub mod numeric;
 pub mod object_marker;
+pub mod ordering;
 pub mod parse_extra;
 pub mod partial_byte_tag;
 pub mod tuple_extra;
