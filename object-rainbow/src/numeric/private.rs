@@ -438,6 +438,12 @@ macro_rules! float {
             impl Tagged for $n {}
             impl Tagged for Le<$n> {}
             impl Tagged for Be<$n> {}
+
+            impl ByteOrdered for $n {
+                fn bytes_cmp(&self, right: &Self) -> Ordering {
+                    self.total_cmp(right)
+                }
+            }
         };
     };
 }
