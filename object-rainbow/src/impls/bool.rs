@@ -40,6 +40,12 @@ impl Tagged for bool {}
 impl ListHashes for bool {}
 impl Topological for bool {}
 
+impl ByteOrdered for bool {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.cmp(other)
+    }
+}
+
 #[test]
 fn none_is_2() {
     assert_eq!(None::<bool>.vec(), [2]);
