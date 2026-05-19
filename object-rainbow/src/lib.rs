@@ -1344,11 +1344,12 @@ pub trait RainbowIterator: Sized + IntoIterator {
         self.into_iter().for_each(|item| item.traverse(visitor));
     }
 
-    fn bytes_cmp(self, other: impl IntoIterator<Item = <Self as Iterator>::Item>) -> Ordering
+    fn iter_bytes_cmp(self, other: impl IntoIterator<Item = Self::Item>) -> Ordering
     where
-        Self: Iterator<Item: ByteOrdered>,
+        Self::Item: ByteOrdered,
     {
-        self.map(OrderedByBytes)
+        self.into_iter()
+            .map(OrderedByBytes)
             .cmp(other.into_iter().map(OrderedByBytes))
     }
 }
