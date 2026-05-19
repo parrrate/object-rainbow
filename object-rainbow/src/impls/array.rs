@@ -49,3 +49,9 @@ impl<T: ParseInline<I>, const N: usize, I: ParseInput> ParseInline<I> for [T; N]
         input.parse_array()
     }
 }
+
+impl<T: ByteOrdered + InlineOutput, const N: usize> ByteOrdered for [T; N] {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.iter_bytes_cmp(other)
+    }
+}
