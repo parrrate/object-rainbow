@@ -65,3 +65,9 @@ impl<T: ParseInline<I>, I: ParseInput> Parse<I> for VecDeque<T> {
 impl<T: Tagged> Tagged for VecDeque<T> {
     const TAGS: Tags = T::TAGS;
 }
+
+impl<T: ByteOrdered + InlineOutput> ByteOrdered for VecDeque<T> {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.iter_bytes_cmp(other)
+    }
+}
