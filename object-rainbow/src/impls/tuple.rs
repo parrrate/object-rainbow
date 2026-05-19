@@ -56,7 +56,7 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche> MaybeHasNiche for (A, B) {
     type MnArray = tarr![A::MnArray, B::MnArray,];
 }
 
-impl<A: ByteOrdered, B: ByteOrdered> ByteOrdered for (A, B) {
+impl<A: ByteOrdered + InlineOutput, B: ByteOrdered> ByteOrdered for (A, B) {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (OrderedByBytes(&self.0), OrderedByBytes(&self.1))
             .cmp(&(OrderedByBytes(&other.0), OrderedByBytes(&other.1)))
@@ -124,7 +124,9 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche> MaybeHasNiche for (A,
     type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray,];
 }
 
-impl<A: ByteOrdered, B: ByteOrdered, C: ByteOrdered> ByteOrdered for (A, B, C) {
+impl<A: ByteOrdered + InlineOutput, B: ByteOrdered + InlineOutput, C: ByteOrdered> ByteOrdered
+    for (A, B, C)
+{
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (
             OrderedByBytes(&self.0),
@@ -216,7 +218,13 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche, D: MaybeHasNiche> May
     type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray, D::MnArray,];
 }
 
-impl<A: ByteOrdered, B: ByteOrdered, C: ByteOrdered, D: ByteOrdered> ByteOrdered for (A, B, C, D) {
+impl<
+    A: ByteOrdered + InlineOutput,
+    B: ByteOrdered + InlineOutput,
+    C: ByteOrdered + InlineOutput,
+    D: ByteOrdered,
+> ByteOrdered for (A, B, C, D)
+{
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (
             OrderedByBytes(&self.0),
@@ -333,8 +341,13 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche, D: MaybeHasNiche, E: 
     type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray, D::MnArray, E::MnArray,];
 }
 
-impl<A: ByteOrdered, B: ByteOrdered, C: ByteOrdered, D: ByteOrdered, E: ByteOrdered> ByteOrdered
-    for (A, B, C, D, E)
+impl<
+    A: ByteOrdered + InlineOutput,
+    B: ByteOrdered + InlineOutput,
+    C: ByteOrdered + InlineOutput,
+    D: ByteOrdered + InlineOutput,
+    E: ByteOrdered,
+> ByteOrdered for (A, B, C, D, E)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (
@@ -493,8 +506,14 @@ impl<
     ];
 }
 
-impl<A: ByteOrdered, B: ByteOrdered, C: ByteOrdered, D: ByteOrdered, E: ByteOrdered, F: ByteOrdered>
-    ByteOrdered for (A, B, C, D, E, F)
+impl<
+    A: ByteOrdered + InlineOutput,
+    B: ByteOrdered + InlineOutput,
+    C: ByteOrdered + InlineOutput,
+    D: ByteOrdered + InlineOutput,
+    E: ByteOrdered + InlineOutput,
+    F: ByteOrdered,
+> ByteOrdered for (A, B, C, D, E, F)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (
@@ -703,12 +722,12 @@ impl<
 }
 
 impl<
-    A: ByteOrdered,
-    B: ByteOrdered,
-    C: ByteOrdered,
-    D: ByteOrdered,
-    E: ByteOrdered,
-    F: ByteOrdered,
+    A: ByteOrdered + InlineOutput,
+    B: ByteOrdered + InlineOutput,
+    C: ByteOrdered + InlineOutput,
+    D: ByteOrdered + InlineOutput,
+    E: ByteOrdered + InlineOutput,
+    F: ByteOrdered + InlineOutput,
     G: ByteOrdered,
 > ByteOrdered for (A, B, C, D, E, F, G)
 {
@@ -939,13 +958,13 @@ impl<
 }
 
 impl<
-    A: ByteOrdered,
-    B: ByteOrdered,
-    C: ByteOrdered,
-    D: ByteOrdered,
-    E: ByteOrdered,
-    F: ByteOrdered,
-    G: ByteOrdered,
+    A: ByteOrdered + InlineOutput,
+    B: ByteOrdered + InlineOutput,
+    C: ByteOrdered + InlineOutput,
+    D: ByteOrdered + InlineOutput,
+    E: ByteOrdered + InlineOutput,
+    F: ByteOrdered + InlineOutput,
+    G: ByteOrdered + InlineOutput,
     H: ByteOrdered,
 > ByteOrdered for (A, B, C, D, E, F, G, H)
 {
@@ -1203,14 +1222,14 @@ impl<
 }
 
 impl<
-    A: ByteOrdered,
-    B: ByteOrdered,
-    C: ByteOrdered,
-    D: ByteOrdered,
-    E: ByteOrdered,
-    F: ByteOrdered,
-    G: ByteOrdered,
-    H: ByteOrdered,
+    A: ByteOrdered + InlineOutput,
+    B: ByteOrdered + InlineOutput,
+    C: ByteOrdered + InlineOutput,
+    D: ByteOrdered + InlineOutput,
+    E: ByteOrdered + InlineOutput,
+    F: ByteOrdered + InlineOutput,
+    G: ByteOrdered + InlineOutput,
+    H: ByteOrdered + InlineOutput,
     I: ByteOrdered,
 > ByteOrdered for (A, B, C, D, E, F, G, H, I)
 {
@@ -1495,15 +1514,15 @@ impl<
 }
 
 impl<
-    A: ByteOrdered,
-    B: ByteOrdered,
-    C: ByteOrdered,
-    D: ByteOrdered,
-    E: ByteOrdered,
-    F: ByteOrdered,
-    G: ByteOrdered,
-    H: ByteOrdered,
-    I: ByteOrdered,
+    A: ByteOrdered + InlineOutput,
+    B: ByteOrdered + InlineOutput,
+    C: ByteOrdered + InlineOutput,
+    D: ByteOrdered + InlineOutput,
+    E: ByteOrdered + InlineOutput,
+    F: ByteOrdered + InlineOutput,
+    G: ByteOrdered + InlineOutput,
+    H: ByteOrdered + InlineOutput,
+    I: ByteOrdered + InlineOutput,
     J: ByteOrdered,
 > ByteOrdered for (A, B, C, D, E, F, G, H, I, J)
 {
@@ -1819,16 +1838,16 @@ impl<
 }
 
 impl<
-    A: ByteOrdered,
-    B: ByteOrdered,
-    C: ByteOrdered,
-    D: ByteOrdered,
-    E: ByteOrdered,
-    F: ByteOrdered,
-    G: ByteOrdered,
-    H: ByteOrdered,
-    I: ByteOrdered,
-    J: ByteOrdered,
+    A: ByteOrdered + InlineOutput,
+    B: ByteOrdered + InlineOutput,
+    C: ByteOrdered + InlineOutput,
+    D: ByteOrdered + InlineOutput,
+    E: ByteOrdered + InlineOutput,
+    F: ByteOrdered + InlineOutput,
+    G: ByteOrdered + InlineOutput,
+    H: ByteOrdered + InlineOutput,
+    I: ByteOrdered + InlineOutput,
+    J: ByteOrdered + InlineOutput,
     K: ByteOrdered,
 > ByteOrdered for (A, B, C, D, E, F, G, H, I, J, K)
 {
@@ -2165,17 +2184,17 @@ impl<
 }
 
 impl<
-    A: ByteOrdered,
-    B: ByteOrdered,
-    C: ByteOrdered,
-    D: ByteOrdered,
-    E: ByteOrdered,
-    F: ByteOrdered,
-    G: ByteOrdered,
-    H: ByteOrdered,
-    I: ByteOrdered,
-    J: ByteOrdered,
-    K: ByteOrdered,
+    A: ByteOrdered + InlineOutput,
+    B: ByteOrdered + InlineOutput,
+    C: ByteOrdered + InlineOutput,
+    D: ByteOrdered + InlineOutput,
+    E: ByteOrdered + InlineOutput,
+    F: ByteOrdered + InlineOutput,
+    G: ByteOrdered + InlineOutput,
+    H: ByteOrdered + InlineOutput,
+    I: ByteOrdered + InlineOutput,
+    J: ByteOrdered + InlineOutput,
+    K: ByteOrdered + InlineOutput,
     L: ByteOrdered,
 > ByteOrdered for (A, B, C, D, E, F, G, H, I, J, K, L)
 {

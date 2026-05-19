@@ -369,7 +369,10 @@ fn per_n(n: usize) -> String {
             members: vec![Box::new(NicheArray { n })],
         },
         Impl {
-            header: "ByteOrdered".bound().header(n),
+            header: "ByteOrdered + InlineOutput"
+                .bound()
+                .last("ByteOrdered")
+                .header(n),
             members: vec![Box::new(BytesCmp { n })],
         },
     ])
