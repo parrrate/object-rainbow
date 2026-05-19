@@ -1,6 +1,6 @@
-use std::{fmt::Display, num::NonZero};
+use std::{cmp::Ordering, fmt::Display, num::NonZero};
 
-use crate::{enumkind::UsizeTag, *};
+use crate::{enumkind::UsizeTag, ordering::ByteOrdered, *};
 
 pub trait HasOtherSign {
     type OtherSign;
@@ -469,6 +469,12 @@ macro_rules! byte_ordered {
         impl Size for $n {
             const SIZE: usize = std::mem::size_of::<$n>();
             type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
+        }
+
+        impl ByteOrdered for $n {
+            fn bytes_cmp(&self, right: &Self) -> Ordering {
+                self.cmp(right)
+            }
         }
     };
 }
