@@ -27,15 +27,18 @@ use sha2::{Digest, Sha256};
 pub use typenum;
 use typenum::Unsigned;
 
-pub use self::enumkind::Enum;
-pub use self::error::{Error, Result};
-pub use self::hash::{Hash, OptionalHash};
-pub use self::niche::{
-    AutoEnumNiche, AutoNiche, HackNiche, MaybeHasNiche, Niche, NicheForUnsized, NoNiche, OneNiche,
-    SomeNiche, ZeroNiche, ZeroNoNiche,
-};
 #[doc(hidden)]
 pub use self::niche::{MaybeNiche, MnArray, NicheFoldOrArray, NicheOr};
+pub use self::{
+    enumkind::Enum,
+    error::{Error, Result},
+    hash::{Hash, OptionalHash},
+    niche::{
+        AutoEnumNiche, AutoNiche, HackNiche, MaybeHasNiche, Niche, NicheForUnsized, NoNiche,
+        OneNiche, SomeNiche, ZeroNiche, ZeroNoNiche,
+    },
+    ordering::ByteOrdered,
+};
 
 mod assert_impl;
 pub mod enumkind;
@@ -50,7 +53,7 @@ pub mod map_extra;
 mod niche;
 pub mod numeric;
 pub mod object_marker;
-pub mod ordering;
+mod ordering;
 pub mod parse_extra;
 pub mod partial_byte_tag;
 pub mod tuple_extra;

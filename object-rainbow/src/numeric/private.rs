@@ -1,6 +1,6 @@
 use std::{cmp::Ordering, fmt::Display, num::NonZero};
 
-use crate::{enumkind::UsizeTag, ordering::ByteOrdered, *};
+use crate::{enumkind::UsizeTag, *};
 
 pub trait HasOtherSign {
     type OtherSign;
