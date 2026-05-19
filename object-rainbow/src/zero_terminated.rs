@@ -16,6 +16,18 @@ impl<T> PartialEq for ZtInner<T> {
 
 impl<T> Eq for ZtInner<T> {}
 
+impl<T> PartialOrd for ZtInner<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<T> Ord for ZtInner<T> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.data.cmp(&other.data)
+    }
+}
+
 /// Zero-terminated value. Used to make [`Inline`]s out of [`Object`]s which don't contain zeroes.
 ///
 /// If you can't guarantee absence of zeroes, see [`length_prefixed::Lp`].
