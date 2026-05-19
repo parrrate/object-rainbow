@@ -30,3 +30,9 @@ impl<T: ?Sized> Size for PhantomData<T> {
 impl<T: ?Sized> MaybeHasNiche for PhantomData<T> {
     type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
 }
+
+impl<T: ?Sized> ByteOrdered for PhantomData<T> {
+    fn bytes_cmp(&self, _: &Self) -> Ordering {
+        Ordering::Equal
+    }
+}
