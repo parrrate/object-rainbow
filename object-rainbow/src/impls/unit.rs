@@ -30,3 +30,9 @@ impl Size for () {
 impl MaybeHasNiche for () {
     type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
 }
+
+impl ByteOrdered for () {
+    fn bytes_cmp(&self, (): &Self) -> Ordering {
+        Ordering::Equal
+    }
+}
