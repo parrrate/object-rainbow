@@ -52,3 +52,9 @@ impl FromSized for u8 {
         byte
     }
 }
+
+impl ByteOrdered for u8 {
+    fn bytes_cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.cmp(other)
+    }
+}
