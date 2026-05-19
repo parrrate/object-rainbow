@@ -18,3 +18,9 @@ impl Topological for String {}
 impl MaybeHasNiche for String {
     type MnArray = NoNiche<NicheForUnsized>;
 }
+
+impl ByteOrdered for String {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.cmp(other)
+    }
+}
