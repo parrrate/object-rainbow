@@ -64,6 +64,12 @@ impl<K: Tagged, V: Tagged> Tagged for BTreeMap<K, V> {
     const TAGS: Tags = Tags(&[], &[&K::TAGS, &V::TAGS]);
 }
 
+impl<K: ByteOrdered + InlineOutput, V: ByteOrdered + InlineOutput> ByteOrdered for BTreeMap<K, V> {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.iter_bytes_cmp(other)
+    }
+}
+
 impl<K: Ord> Equivalent<BTreeMap<K, ()>> for BTreeSet<K> {
     fn into_equivalent(self) -> BTreeMap<K, ()> {
         self.into_iter().map(|k| (k, ())).collect()
