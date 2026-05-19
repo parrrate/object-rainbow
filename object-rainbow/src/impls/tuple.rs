@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use typenum::tarr;
 
 use crate::*;
@@ -52,6 +54,13 @@ impl<II: ParseInput, A: ParseInline<II>, B: ParseInline<II>> ParseInline<II> for
 
 impl<A: MaybeHasNiche, B: MaybeHasNiche> MaybeHasNiche for (A, B) {
     type MnArray = tarr![A::MnArray, B::MnArray,];
+}
+
+impl<A: ByteOrdered, B: ByteOrdered> ByteOrdered for (A, B) {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        (OrderedByBytes(&self.0), OrderedByBytes(&self.1))
+            .cmp(&(OrderedByBytes(&other.0), OrderedByBytes(&other.1)))
+    }
 }
 
 impl<A: InlineOutput, B: InlineOutput, C: ToOutput> ToOutput for (A, B, C) {
@@ -113,6 +122,21 @@ impl<II: ParseInput, A: ParseInline<II>, B: ParseInline<II>, C: ParseInline<II>>
 
 impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche> MaybeHasNiche for (A, B, C) {
     type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray,];
+}
+
+impl<A: ByteOrdered, B: ByteOrdered, C: ByteOrdered> ByteOrdered for (A, B, C) {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        (
+            OrderedByBytes(&self.0),
+            OrderedByBytes(&self.1),
+            OrderedByBytes(&self.2),
+        )
+            .cmp(&(
+                OrderedByBytes(&other.0),
+                OrderedByBytes(&other.1),
+                OrderedByBytes(&other.2),
+            ))
+    }
 }
 
 impl<A: InlineOutput, B: InlineOutput, C: InlineOutput, D: ToOutput> ToOutput for (A, B, C, D) {
@@ -190,6 +214,23 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche, D: MaybeHasNiche> May
     for (A, B, C, D)
 {
     type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray, D::MnArray,];
+}
+
+impl<A: ByteOrdered, B: ByteOrdered, C: ByteOrdered, D: ByteOrdered> ByteOrdered for (A, B, C, D) {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        (
+            OrderedByBytes(&self.0),
+            OrderedByBytes(&self.1),
+            OrderedByBytes(&self.2),
+            OrderedByBytes(&self.3),
+        )
+            .cmp(&(
+                OrderedByBytes(&other.0),
+                OrderedByBytes(&other.1),
+                OrderedByBytes(&other.2),
+                OrderedByBytes(&other.3),
+            ))
+    }
 }
 
 impl<A: InlineOutput, B: InlineOutput, C: InlineOutput, D: InlineOutput, E: ToOutput> ToOutput
@@ -290,6 +331,27 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche, D: MaybeHasNiche, E: 
     MaybeHasNiche for (A, B, C, D, E)
 {
     type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray, D::MnArray, E::MnArray,];
+}
+
+impl<A: ByteOrdered, B: ByteOrdered, C: ByteOrdered, D: ByteOrdered, E: ByteOrdered> ByteOrdered
+    for (A, B, C, D, E)
+{
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        (
+            OrderedByBytes(&self.0),
+            OrderedByBytes(&self.1),
+            OrderedByBytes(&self.2),
+            OrderedByBytes(&self.3),
+            OrderedByBytes(&self.4),
+        )
+            .cmp(&(
+                OrderedByBytes(&other.0),
+                OrderedByBytes(&other.1),
+                OrderedByBytes(&other.2),
+                OrderedByBytes(&other.3),
+                OrderedByBytes(&other.4),
+            ))
+    }
 }
 
 impl<
@@ -429,6 +491,29 @@ impl<
         E::MnArray,
         F::MnArray,
     ];
+}
+
+impl<A: ByteOrdered, B: ByteOrdered, C: ByteOrdered, D: ByteOrdered, E: ByteOrdered, F: ByteOrdered>
+    ByteOrdered for (A, B, C, D, E, F)
+{
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        (
+            OrderedByBytes(&self.0),
+            OrderedByBytes(&self.1),
+            OrderedByBytes(&self.2),
+            OrderedByBytes(&self.3),
+            OrderedByBytes(&self.4),
+            OrderedByBytes(&self.5),
+        )
+            .cmp(&(
+                OrderedByBytes(&other.0),
+                OrderedByBytes(&other.1),
+                OrderedByBytes(&other.2),
+                OrderedByBytes(&other.3),
+                OrderedByBytes(&other.4),
+                OrderedByBytes(&other.5),
+            ))
+    }
 }
 
 impl<
@@ -615,6 +700,38 @@ impl<
         F::MnArray,
         G::MnArray,
     ];
+}
+
+impl<
+    A: ByteOrdered,
+    B: ByteOrdered,
+    C: ByteOrdered,
+    D: ByteOrdered,
+    E: ByteOrdered,
+    F: ByteOrdered,
+    G: ByteOrdered,
+> ByteOrdered for (A, B, C, D, E, F, G)
+{
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        (
+            OrderedByBytes(&self.0),
+            OrderedByBytes(&self.1),
+            OrderedByBytes(&self.2),
+            OrderedByBytes(&self.3),
+            OrderedByBytes(&self.4),
+            OrderedByBytes(&self.5),
+            OrderedByBytes(&self.6),
+        )
+            .cmp(&(
+                OrderedByBytes(&other.0),
+                OrderedByBytes(&other.1),
+                OrderedByBytes(&other.2),
+                OrderedByBytes(&other.3),
+                OrderedByBytes(&other.4),
+                OrderedByBytes(&other.5),
+                OrderedByBytes(&other.6),
+            ))
+    }
 }
 
 impl<
@@ -819,6 +936,41 @@ impl<
         G::MnArray,
         H::MnArray,
     ];
+}
+
+impl<
+    A: ByteOrdered,
+    B: ByteOrdered,
+    C: ByteOrdered,
+    D: ByteOrdered,
+    E: ByteOrdered,
+    F: ByteOrdered,
+    G: ByteOrdered,
+    H: ByteOrdered,
+> ByteOrdered for (A, B, C, D, E, F, G, H)
+{
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        (
+            OrderedByBytes(&self.0),
+            OrderedByBytes(&self.1),
+            OrderedByBytes(&self.2),
+            OrderedByBytes(&self.3),
+            OrderedByBytes(&self.4),
+            OrderedByBytes(&self.5),
+            OrderedByBytes(&self.6),
+            OrderedByBytes(&self.7),
+        )
+            .cmp(&(
+                OrderedByBytes(&other.0),
+                OrderedByBytes(&other.1),
+                OrderedByBytes(&other.2),
+                OrderedByBytes(&other.3),
+                OrderedByBytes(&other.4),
+                OrderedByBytes(&other.5),
+                OrderedByBytes(&other.6),
+                OrderedByBytes(&other.7),
+            ))
+    }
 }
 
 impl<
@@ -1048,6 +1200,44 @@ impl<
         H::MnArray,
         I::MnArray,
     ];
+}
+
+impl<
+    A: ByteOrdered,
+    B: ByteOrdered,
+    C: ByteOrdered,
+    D: ByteOrdered,
+    E: ByteOrdered,
+    F: ByteOrdered,
+    G: ByteOrdered,
+    H: ByteOrdered,
+    I: ByteOrdered,
+> ByteOrdered for (A, B, C, D, E, F, G, H, I)
+{
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        (
+            OrderedByBytes(&self.0),
+            OrderedByBytes(&self.1),
+            OrderedByBytes(&self.2),
+            OrderedByBytes(&self.3),
+            OrderedByBytes(&self.4),
+            OrderedByBytes(&self.5),
+            OrderedByBytes(&self.6),
+            OrderedByBytes(&self.7),
+            OrderedByBytes(&self.8),
+        )
+            .cmp(&(
+                OrderedByBytes(&other.0),
+                OrderedByBytes(&other.1),
+                OrderedByBytes(&other.2),
+                OrderedByBytes(&other.3),
+                OrderedByBytes(&other.4),
+                OrderedByBytes(&other.5),
+                OrderedByBytes(&other.6),
+                OrderedByBytes(&other.7),
+                OrderedByBytes(&other.8),
+            ))
+    }
 }
 
 impl<
@@ -1302,6 +1492,47 @@ impl<
         I::MnArray,
         J::MnArray,
     ];
+}
+
+impl<
+    A: ByteOrdered,
+    B: ByteOrdered,
+    C: ByteOrdered,
+    D: ByteOrdered,
+    E: ByteOrdered,
+    F: ByteOrdered,
+    G: ByteOrdered,
+    H: ByteOrdered,
+    I: ByteOrdered,
+    J: ByteOrdered,
+> ByteOrdered for (A, B, C, D, E, F, G, H, I, J)
+{
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        (
+            OrderedByBytes(&self.0),
+            OrderedByBytes(&self.1),
+            OrderedByBytes(&self.2),
+            OrderedByBytes(&self.3),
+            OrderedByBytes(&self.4),
+            OrderedByBytes(&self.5),
+            OrderedByBytes(&self.6),
+            OrderedByBytes(&self.7),
+            OrderedByBytes(&self.8),
+            OrderedByBytes(&self.9),
+        )
+            .cmp(&(
+                OrderedByBytes(&other.0),
+                OrderedByBytes(&other.1),
+                OrderedByBytes(&other.2),
+                OrderedByBytes(&other.3),
+                OrderedByBytes(&other.4),
+                OrderedByBytes(&other.5),
+                OrderedByBytes(&other.6),
+                OrderedByBytes(&other.7),
+                OrderedByBytes(&other.8),
+                OrderedByBytes(&other.9),
+            ))
+    }
 }
 
 impl<
@@ -1585,6 +1816,50 @@ impl<
         J::MnArray,
         K::MnArray,
     ];
+}
+
+impl<
+    A: ByteOrdered,
+    B: ByteOrdered,
+    C: ByteOrdered,
+    D: ByteOrdered,
+    E: ByteOrdered,
+    F: ByteOrdered,
+    G: ByteOrdered,
+    H: ByteOrdered,
+    I: ByteOrdered,
+    J: ByteOrdered,
+    K: ByteOrdered,
+> ByteOrdered for (A, B, C, D, E, F, G, H, I, J, K)
+{
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        (
+            OrderedByBytes(&self.0),
+            OrderedByBytes(&self.1),
+            OrderedByBytes(&self.2),
+            OrderedByBytes(&self.3),
+            OrderedByBytes(&self.4),
+            OrderedByBytes(&self.5),
+            OrderedByBytes(&self.6),
+            OrderedByBytes(&self.7),
+            OrderedByBytes(&self.8),
+            OrderedByBytes(&self.9),
+            OrderedByBytes(&self.10),
+        )
+            .cmp(&(
+                OrderedByBytes(&other.0),
+                OrderedByBytes(&other.1),
+                OrderedByBytes(&other.2),
+                OrderedByBytes(&other.3),
+                OrderedByBytes(&other.4),
+                OrderedByBytes(&other.5),
+                OrderedByBytes(&other.6),
+                OrderedByBytes(&other.7),
+                OrderedByBytes(&other.8),
+                OrderedByBytes(&other.9),
+                OrderedByBytes(&other.10),
+            ))
+    }
 }
 
 impl<
@@ -1887,4 +2162,51 @@ impl<
         K::MnArray,
         L::MnArray,
     ];
+}
+
+impl<
+    A: ByteOrdered,
+    B: ByteOrdered,
+    C: ByteOrdered,
+    D: ByteOrdered,
+    E: ByteOrdered,
+    F: ByteOrdered,
+    G: ByteOrdered,
+    H: ByteOrdered,
+    I: ByteOrdered,
+    J: ByteOrdered,
+    K: ByteOrdered,
+    L: ByteOrdered,
+> ByteOrdered for (A, B, C, D, E, F, G, H, I, J, K, L)
+{
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        (
+            OrderedByBytes(&self.0),
+            OrderedByBytes(&self.1),
+            OrderedByBytes(&self.2),
+            OrderedByBytes(&self.3),
+            OrderedByBytes(&self.4),
+            OrderedByBytes(&self.5),
+            OrderedByBytes(&self.6),
+            OrderedByBytes(&self.7),
+            OrderedByBytes(&self.8),
+            OrderedByBytes(&self.9),
+            OrderedByBytes(&self.10),
+            OrderedByBytes(&self.11),
+        )
+            .cmp(&(
+                OrderedByBytes(&other.0),
+                OrderedByBytes(&other.1),
+                OrderedByBytes(&other.2),
+                OrderedByBytes(&other.3),
+                OrderedByBytes(&other.4),
+                OrderedByBytes(&other.5),
+                OrderedByBytes(&other.6),
+                OrderedByBytes(&other.7),
+                OrderedByBytes(&other.8),
+                OrderedByBytes(&other.9),
+                OrderedByBytes(&other.10),
+                OrderedByBytes(&other.11),
+            ))
+    }
 }

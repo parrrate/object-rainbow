@@ -261,6 +261,27 @@ impl Display for TagsConst {
     }
 }
 
+struct BytesCmp {
+    n: usize,
+}
+
+impl Display for BytesCmp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(
+            f,
+            "fn bytes_cmp(&self, other: &Self) -> Ordering {{ ({}).cmp(&({})) }}",
+            (0..self.n)
+                .map(|i| format!("OrderedByBytes(&self.{i})"))
+                .collect::<Vec<_>>()
+                .join(", "),
+            (0..self.n)
+                .map(|i| format!("OrderedByBytes(&other.{i})"))
+                .collect::<Vec<_>>()
+                .join(", "),
+        )
+    }
+}
+
 struct Impl {
     header: Header,
     members: Vec<Box<dyn Display>>,
@@ -347,10 +368,16 @@ fn per_n(n: usize) -> String {
             header: "MaybeHasNiche".bound().header(n),
             members: vec![Box::new(NicheArray { n })],
         },
+        Impl {
+            header: "ByteOrdered".bound().header(n),
+            members: vec![Box::new(BytesCmp { n })],
+        },
     ])
 }
 
 fn main() {
+    println!("use std::cmp::Ordering;");
+    println!();
     println!("use typenum::tarr;");
     println!();
     println!("use crate::*;");
