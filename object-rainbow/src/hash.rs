@@ -191,6 +191,12 @@ impl PartialEq<OptionalHash> for Hash {
     }
 }
 
+impl ByteOrdered for Hash {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.cmp(other)
+    }
+}
+
 #[test]
 fn none_is_zeros() {
     assert_eq!(
