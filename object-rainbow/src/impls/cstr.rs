@@ -13,3 +13,9 @@ impl InlineOutput for CStr {}
 impl ListHashes for CStr {}
 impl Topological for CStr {}
 impl Tagged for CStr {}
+
+impl ByteOrdered for CStr {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.cmp(other)
+    }
+}
