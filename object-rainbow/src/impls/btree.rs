@@ -30,6 +30,12 @@ impl<T: Tagged> Tagged for BTreeSet<T> {
     const TAGS: Tags = T::TAGS;
 }
 
+impl<T: ByteOrdered + InlineOutput> ByteOrdered for BTreeSet<T> {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.iter_bytes_cmp(other)
+    }
+}
+
 impl<K: InlineOutput, V: InlineOutput> ToOutput for BTreeMap<K, V> {
     fn to_output(&self, output: &mut impl Output) {
         self.iter_to_output(output);
