@@ -9,4 +9,5 @@ pub trait ByteOrdered: ToOutput + PartialOrd {
     }
 }
 
+#[derive(PartialEq)]
 pub struct OrderedByBytes<T>(pub T);
