@@ -19,7 +19,7 @@ impl MaybeHasNiche for Infallible {
     type MnArray = SomeNiche<ZeroNiche<U0>>;
 }
 
-impl ByteOrdered for Infallible {
+impl ByteOrd for Infallible {
     fn bytes_cmp(&self, _: &Self) -> Ordering {
         match *self {}
     }

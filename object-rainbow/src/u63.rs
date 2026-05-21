@@ -56,7 +56,7 @@ impl<I: ParseInput> ParseInline<I> for U63 {
     }
 }
 
-impl ByteOrdered for U63 {
+impl ByteOrd for U63 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.cmp(other)
     }

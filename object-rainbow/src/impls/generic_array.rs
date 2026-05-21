@@ -45,7 +45,7 @@ impl<T: ParseInline<I>, N: ArrayLength, I: ParseInput> ParseInline<I> for Generi
     }
 }
 
-impl<T: ByteOrdered + InlineOutput, N: ArrayLength> ByteOrdered for GenericArray<T, N> {
+impl<T: ByteOrd + InlineOutput, N: ArrayLength> ByteOrd for GenericArray<T, N> {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.iter_bytes_cmp(other)
     }

@@ -68,7 +68,7 @@ impl<T: Clone> Equivalent<T> for Arc<T> {
     }
 }
 
-impl<T: ?Sized + ByteOrdered> ByteOrdered for Arc<T> {
+impl<T: ?Sized + ByteOrd> ByteOrd for Arc<T> {
     fn bytes_cmp(&self, other: &Self) -> std::cmp::Ordering {
         (**self).bytes_cmp(other)
     }

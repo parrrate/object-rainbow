@@ -36,7 +36,7 @@ impl MaybeHasNiche for CString {
     type MnArray = NoNiche<NicheForUnsized>;
 }
 
-impl ByteOrdered for CString {
+impl ByteOrd for CString {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.cmp(other)
     }

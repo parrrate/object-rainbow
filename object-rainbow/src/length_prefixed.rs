@@ -48,7 +48,7 @@ impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Lp<T> {
     }
 }
 
-impl<T: SignificantLength> ByteOrdered for Lp<T> {
+impl<T: SignificantLength> ByteOrd for Lp<T> {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.0.bytes_cmp(&other.0)
     }

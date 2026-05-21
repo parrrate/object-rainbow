@@ -30,7 +30,7 @@ impl<T: Tagged> Tagged for BTreeSet<T> {
     const TAGS: Tags = T::TAGS;
 }
 
-impl<T: ByteOrdered + InlineOutput> ByteOrdered for BTreeSet<T> {
+impl<T: ByteOrd + InlineOutput> ByteOrd for BTreeSet<T> {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.iter_bytes_cmp(other)
     }
@@ -64,7 +64,7 @@ impl<K: Tagged, V: Tagged> Tagged for BTreeMap<K, V> {
     const TAGS: Tags = Tags(&[], &[&K::TAGS, &V::TAGS]);
 }
 
-impl<K: ByteOrdered + InlineOutput, V: ByteOrdered + InlineOutput> ByteOrdered for BTreeMap<K, V> {
+impl<K: ByteOrd + InlineOutput, V: ByteOrd + InlineOutput> ByteOrd for BTreeMap<K, V> {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.iter_bytes_cmp(other)
     }

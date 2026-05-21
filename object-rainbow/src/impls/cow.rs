@@ -62,7 +62,7 @@ impl<'a, B: 'a + ToOwned + MaybeHasNiche + ?Sized> MaybeHasNiche for Cow<'a, B> 
     type MnArray = B::MnArray;
 }
 
-impl<'a, B: 'a + ToOwned + ByteOrdered + ?Sized> ByteOrdered for Cow<'a, B> {
+impl<'a, B: 'a + ToOwned + ByteOrd + ?Sized> ByteOrd for Cow<'a, B> {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (**self).bytes_cmp(other)
     }

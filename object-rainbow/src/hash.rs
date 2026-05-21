@@ -191,7 +191,7 @@ impl PartialEq<OptionalHash> for Hash {
     }
 }
 
-impl ByteOrdered for Hash {
+impl ByteOrd for Hash {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.cmp(other)
     }

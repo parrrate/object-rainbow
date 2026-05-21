@@ -37,7 +37,7 @@ impl Size for Ordering {
     const SIZE: usize = 1;
 }
 
-impl ByteOrdered for Ordering {
+impl ByteOrd for Ordering {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.cmp(other)
     }

@@ -59,7 +59,7 @@ impl Tagged for char {}
 impl ListHashes for char {}
 impl Topological for char {}
 
-impl ByteOrdered for char {
+impl ByteOrd for char {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.cmp(other)
     }

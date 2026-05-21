@@ -36,7 +36,7 @@ impl MaybeHasNiche for Ulid {
     type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
 }
 
-impl ByteOrdered for Ulid {
+impl ByteOrd for Ulid {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.cmp(other)
     }

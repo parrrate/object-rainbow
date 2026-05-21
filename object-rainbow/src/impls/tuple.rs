@@ -56,7 +56,7 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche> MaybeHasNiche for (A, B) {
     type MnArray = tarr![A::MnArray, B::MnArray,];
 }
 
-impl<A: ByteOrdered + InlineOutput, B: ByteOrdered> ByteOrdered for (A, B) {
+impl<A: ByteOrd + InlineOutput, B: ByteOrd> ByteOrd for (A, B) {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (OrderedByBytes(&self.0), OrderedByBytes(&self.1))
             .cmp(&(OrderedByBytes(&other.0), OrderedByBytes(&other.1)))
@@ -124,9 +124,7 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche> MaybeHasNiche for (A,
     type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray,];
 }
 
-impl<A: ByteOrdered + InlineOutput, B: ByteOrdered + InlineOutput, C: ByteOrdered> ByteOrdered
-    for (A, B, C)
-{
+impl<A: ByteOrd + InlineOutput, B: ByteOrd + InlineOutput, C: ByteOrd> ByteOrd for (A, B, C) {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (
             OrderedByBytes(&self.0),
@@ -218,12 +216,8 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche, D: MaybeHasNiche> May
     type MnArray = tarr![A::MnArray, B::MnArray, C::MnArray, D::MnArray,];
 }
 
-impl<
-    A: ByteOrdered + InlineOutput,
-    B: ByteOrdered + InlineOutput,
-    C: ByteOrdered + InlineOutput,
-    D: ByteOrdered,
-> ByteOrdered for (A, B, C, D)
+impl<A: ByteOrd + InlineOutput, B: ByteOrd + InlineOutput, C: ByteOrd + InlineOutput, D: ByteOrd>
+    ByteOrd for (A, B, C, D)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (
@@ -342,12 +336,12 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche, D: MaybeHasNiche, E: 
 }
 
 impl<
-    A: ByteOrdered + InlineOutput,
-    B: ByteOrdered + InlineOutput,
-    C: ByteOrdered + InlineOutput,
-    D: ByteOrdered + InlineOutput,
-    E: ByteOrdered,
-> ByteOrdered for (A, B, C, D, E)
+    A: ByteOrd + InlineOutput,
+    B: ByteOrd + InlineOutput,
+    C: ByteOrd + InlineOutput,
+    D: ByteOrd + InlineOutput,
+    E: ByteOrd,
+> ByteOrd for (A, B, C, D, E)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (
@@ -507,13 +501,13 @@ impl<
 }
 
 impl<
-    A: ByteOrdered + InlineOutput,
-    B: ByteOrdered + InlineOutput,
-    C: ByteOrdered + InlineOutput,
-    D: ByteOrdered + InlineOutput,
-    E: ByteOrdered + InlineOutput,
-    F: ByteOrdered,
-> ByteOrdered for (A, B, C, D, E, F)
+    A: ByteOrd + InlineOutput,
+    B: ByteOrd + InlineOutput,
+    C: ByteOrd + InlineOutput,
+    D: ByteOrd + InlineOutput,
+    E: ByteOrd + InlineOutput,
+    F: ByteOrd,
+> ByteOrd for (A, B, C, D, E, F)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (
@@ -722,14 +716,14 @@ impl<
 }
 
 impl<
-    A: ByteOrdered + InlineOutput,
-    B: ByteOrdered + InlineOutput,
-    C: ByteOrdered + InlineOutput,
-    D: ByteOrdered + InlineOutput,
-    E: ByteOrdered + InlineOutput,
-    F: ByteOrdered + InlineOutput,
-    G: ByteOrdered,
-> ByteOrdered for (A, B, C, D, E, F, G)
+    A: ByteOrd + InlineOutput,
+    B: ByteOrd + InlineOutput,
+    C: ByteOrd + InlineOutput,
+    D: ByteOrd + InlineOutput,
+    E: ByteOrd + InlineOutput,
+    F: ByteOrd + InlineOutput,
+    G: ByteOrd,
+> ByteOrd for (A, B, C, D, E, F, G)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (
@@ -958,15 +952,15 @@ impl<
 }
 
 impl<
-    A: ByteOrdered + InlineOutput,
-    B: ByteOrdered + InlineOutput,
-    C: ByteOrdered + InlineOutput,
-    D: ByteOrdered + InlineOutput,
-    E: ByteOrdered + InlineOutput,
-    F: ByteOrdered + InlineOutput,
-    G: ByteOrdered + InlineOutput,
-    H: ByteOrdered,
-> ByteOrdered for (A, B, C, D, E, F, G, H)
+    A: ByteOrd + InlineOutput,
+    B: ByteOrd + InlineOutput,
+    C: ByteOrd + InlineOutput,
+    D: ByteOrd + InlineOutput,
+    E: ByteOrd + InlineOutput,
+    F: ByteOrd + InlineOutput,
+    G: ByteOrd + InlineOutput,
+    H: ByteOrd,
+> ByteOrd for (A, B, C, D, E, F, G, H)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (
@@ -1222,16 +1216,16 @@ impl<
 }
 
 impl<
-    A: ByteOrdered + InlineOutput,
-    B: ByteOrdered + InlineOutput,
-    C: ByteOrdered + InlineOutput,
-    D: ByteOrdered + InlineOutput,
-    E: ByteOrdered + InlineOutput,
-    F: ByteOrdered + InlineOutput,
-    G: ByteOrdered + InlineOutput,
-    H: ByteOrdered + InlineOutput,
-    I: ByteOrdered,
-> ByteOrdered for (A, B, C, D, E, F, G, H, I)
+    A: ByteOrd + InlineOutput,
+    B: ByteOrd + InlineOutput,
+    C: ByteOrd + InlineOutput,
+    D: ByteOrd + InlineOutput,
+    E: ByteOrd + InlineOutput,
+    F: ByteOrd + InlineOutput,
+    G: ByteOrd + InlineOutput,
+    H: ByteOrd + InlineOutput,
+    I: ByteOrd,
+> ByteOrd for (A, B, C, D, E, F, G, H, I)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (
@@ -1514,17 +1508,17 @@ impl<
 }
 
 impl<
-    A: ByteOrdered + InlineOutput,
-    B: ByteOrdered + InlineOutput,
-    C: ByteOrdered + InlineOutput,
-    D: ByteOrdered + InlineOutput,
-    E: ByteOrdered + InlineOutput,
-    F: ByteOrdered + InlineOutput,
-    G: ByteOrdered + InlineOutput,
-    H: ByteOrdered + InlineOutput,
-    I: ByteOrdered + InlineOutput,
-    J: ByteOrdered,
-> ByteOrdered for (A, B, C, D, E, F, G, H, I, J)
+    A: ByteOrd + InlineOutput,
+    B: ByteOrd + InlineOutput,
+    C: ByteOrd + InlineOutput,
+    D: ByteOrd + InlineOutput,
+    E: ByteOrd + InlineOutput,
+    F: ByteOrd + InlineOutput,
+    G: ByteOrd + InlineOutput,
+    H: ByteOrd + InlineOutput,
+    I: ByteOrd + InlineOutput,
+    J: ByteOrd,
+> ByteOrd for (A, B, C, D, E, F, G, H, I, J)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (
@@ -1838,18 +1832,18 @@ impl<
 }
 
 impl<
-    A: ByteOrdered + InlineOutput,
-    B: ByteOrdered + InlineOutput,
-    C: ByteOrdered + InlineOutput,
-    D: ByteOrdered + InlineOutput,
-    E: ByteOrdered + InlineOutput,
-    F: ByteOrdered + InlineOutput,
-    G: ByteOrdered + InlineOutput,
-    H: ByteOrdered + InlineOutput,
-    I: ByteOrdered + InlineOutput,
-    J: ByteOrdered + InlineOutput,
-    K: ByteOrdered,
-> ByteOrdered for (A, B, C, D, E, F, G, H, I, J, K)
+    A: ByteOrd + InlineOutput,
+    B: ByteOrd + InlineOutput,
+    C: ByteOrd + InlineOutput,
+    D: ByteOrd + InlineOutput,
+    E: ByteOrd + InlineOutput,
+    F: ByteOrd + InlineOutput,
+    G: ByteOrd + InlineOutput,
+    H: ByteOrd + InlineOutput,
+    I: ByteOrd + InlineOutput,
+    J: ByteOrd + InlineOutput,
+    K: ByteOrd,
+> ByteOrd for (A, B, C, D, E, F, G, H, I, J, K)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (
@@ -2184,19 +2178,19 @@ impl<
 }
 
 impl<
-    A: ByteOrdered + InlineOutput,
-    B: ByteOrdered + InlineOutput,
-    C: ByteOrdered + InlineOutput,
-    D: ByteOrdered + InlineOutput,
-    E: ByteOrdered + InlineOutput,
-    F: ByteOrdered + InlineOutput,
-    G: ByteOrdered + InlineOutput,
-    H: ByteOrdered + InlineOutput,
-    I: ByteOrdered + InlineOutput,
-    J: ByteOrdered + InlineOutput,
-    K: ByteOrdered + InlineOutput,
-    L: ByteOrdered,
-> ByteOrdered for (A, B, C, D, E, F, G, H, I, J, K, L)
+    A: ByteOrd + InlineOutput,
+    B: ByteOrd + InlineOutput,
+    C: ByteOrd + InlineOutput,
+    D: ByteOrd + InlineOutput,
+    E: ByteOrd + InlineOutput,
+    F: ByteOrd + InlineOutput,
+    G: ByteOrd + InlineOutput,
+    H: ByteOrd + InlineOutput,
+    I: ByteOrd + InlineOutput,
+    J: ByteOrd + InlineOutput,
+    K: ByteOrd + InlineOutput,
+    L: ByteOrd,
+> ByteOrd for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         (

@@ -38,7 +38,7 @@ pub use self::{
         AutoEnumNiche, AutoNiche, HackNiche, MaybeHasNiche, Niche, NicheForUnsized, NoNiche,
         OneNiche, SomeNiche, ZeroNiche, ZeroNoNiche,
     },
-    ordering::{ByteOrdered, OrderedByBytes, SignificantLength},
+    ordering::{ByteOrd, OrderedByBytes, SignificantLength},
 };
 
 mod assert_impl;
@@ -1346,7 +1346,7 @@ pub trait RainbowIterator: Sized + IntoIterator {
 
     fn iter_bytes_cmp(self, other: impl IntoIterator<Item = Self::Item>) -> Ordering
     where
-        Self::Item: ByteOrdered,
+        Self::Item: ByteOrd,
     {
         self.into_iter()
             .map(OrderedByBytes)

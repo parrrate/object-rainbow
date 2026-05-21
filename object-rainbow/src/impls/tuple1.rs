@@ -63,7 +63,7 @@ impl<T> Equivalent<T> for (T,) {
     }
 }
 
-impl<T: ByteOrdered> ByteOrdered for (T,) {
+impl<T: ByteOrd> ByteOrd for (T,) {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.0.bytes_cmp(&other.0)
     }

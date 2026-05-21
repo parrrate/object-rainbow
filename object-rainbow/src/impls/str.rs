@@ -15,7 +15,7 @@ impl MaybeHasNiche for str {
     type MnArray = NoNiche<NicheForUnsized>;
 }
 
-impl ByteOrdered for str {
+impl ByteOrd for str {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.cmp(other)
     }

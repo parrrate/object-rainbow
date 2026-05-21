@@ -40,7 +40,7 @@ impl Tagged for bool {}
 impl ListHashes for bool {}
 impl Topological for bool {}
 
-impl ByteOrdered for bool {
+impl ByteOrd for bool {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.cmp(other)
     }
