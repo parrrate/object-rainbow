@@ -16,6 +16,9 @@ pub trait Key: 'static + Sized + Send + Sync + Clone + PartialEq + Eq {
     fn mangle_prefix(&self) -> Vec<u8> {
         self.encrypt(b"this encrypted constant is followed by an unencrypted inner hash")
     }
+    fn encrypt_output(&self, object: impl ToOutput) -> Vec<u8> {
+        self.encrypt(&object.vec())
+    }
 }
 
 #[derive(ToOutput, Parse, ParseInline, Clone)]
@@ -427,8 +430,7 @@ impl<K: Key, T: ToOutput> ToOutput for Encrypted<K, T> {
             self.inner.decrypted.data_hash();
         }
         if output.is_real() {
-            let source = self.inner.vec();
-            output.write(&self.inner.key.encrypt(&source));
+            output.write(&self.inner.key.encrypt_output(&self.inner));
         }
     }
 }
