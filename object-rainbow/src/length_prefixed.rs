@@ -5,7 +5,9 @@ use crate::{u63::U63, *};
 /// Length-prefixed value. Used to make [`Inline`]s out of arbitrary [`Object`]s.
 ///
 /// If you can guarantee absence of zeroes, see [`zero_terminated::Zt`].
-#[derive(ListHashes, Topological, Tagged, ParseAsInline, Default, Clone, PartialEq, Eq)]
+#[derive(
+    ListHashes, Topological, Tagged, ParseAsInline, Default, Clone, PartialEq, Eq, PartialOrd,
+)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Lp<T>(pub T);
 
