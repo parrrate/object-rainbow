@@ -4,9 +4,7 @@ use object_rainbow::{
     Address, ByteNode, Error, ExtraFor, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node,
     Parse, ParseInline, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Tagged, ToOutput, TopoVec, Topological, Traversible, derive_for_wrapped,
-    length_prefixed::{Lp, LpVec},
-    map_extra::MappedExtra,
-    tuple_extra::Extra0,
+    length_prefixed::LpVec, map_extra::MappedExtra, tuple_extra::Extra0,
 };
 use object_rainbow_point::{ExtractResolve, Extras, IntoPoint, Point};
 
@@ -102,7 +100,7 @@ impl<K: Key> InnerHeader<K> {
         };
         decrypted.traverse(&mut v);
         v.done()?;
-        let topology = Arc::new(Lp(topology));
+        let topology = Arc::new(LpVec(topology));
         let decrypted = Arc::new(decrypted);
         Ok(Inner {
             tags: self.tags,
@@ -117,7 +115,7 @@ impl<K: Key> InnerHeader<K> {
 struct Inner<K, T> {
     tags: Hash,
     key: Extras<K>,
-    topology: Arc<Lp<TopoVec>>,
+    topology: Arc<LpVec<Arc<dyn Singular>>>,
     decrypted: Arc<T>,
 }
 
@@ -535,7 +533,7 @@ pub async fn encrypt<K: Key, T: Traversible>(
         key: &key,
     });
     let topology = futures_util::future::try_join_all(futures).await?;
-    let topology = Arc::new(Lp(topology));
+    let topology = Arc::new(LpVec(topology));
     let decrypted = Arc::new(decrypted);
     let inner = Inner {
         tags: T::HASH,
