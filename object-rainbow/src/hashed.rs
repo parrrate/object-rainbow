@@ -3,7 +3,7 @@ use std::ops::Deref;
 use crate::*;
 
 /// Wrapper, whose [`ToOutput`] just yields `T`'s [`ToOutput::data_hash`].
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash, Tagged, Default)]
+#[derive(PartialEq, Eq, Clone, Copy, Hash, Tagged, Default)]
 pub struct Hashed<T>(pub T);
 
 impl<T> Deref for Hashed<T> {
