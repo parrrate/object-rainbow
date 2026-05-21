@@ -269,7 +269,7 @@ pub trait Fetch: Send + Sync + FetchBytes {
 }
 
 pub trait PointVisitor {
-    fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone));
+    fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone));
 }
 
 struct ReflessData<'d> {
@@ -1105,7 +1105,7 @@ impl ListHashes for Arc<dyn Singular> {
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
 impl PointVisitor for TopoVec {
-    fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone)) {
+    fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone)) {
         self.push(Arc::new(point.clone()));
     }
 }

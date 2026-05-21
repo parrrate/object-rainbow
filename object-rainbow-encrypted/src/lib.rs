@@ -205,7 +205,7 @@ impl<K: Send + Sync, D: Send + Sync> Singular for RawFetch<K, D> {
 }
 
 impl<'a, K: Key, V: PointVisitor> PointVisitor for RawVisit<'a, K, V> {
-    fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone)) {
+    fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone)) {
         let at = self.at;
         self.at += 1;
         if let Some(address) = self.resolve.addresses.get(at).copied() {
@@ -327,7 +327,7 @@ struct IterateResolution<'a, 'r, K, V> {
 }
 
 impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, '_, K, V> {
-    fn visit<T: Traversible>(&mut self, decrypted: &(impl 'static + SingularFetch<T = T> + Clone)) {
+    fn visit(&mut self, decrypted: &(impl 'static + SingularFetch<T: Traversible> + Clone)) {
         let decrypted = decrypted.clone();
         let encrypted = self.topology.next().expect("length mismatch").clone();
         let point = Point::from_fetch(
@@ -490,7 +490,7 @@ struct ExtractResolution<'a, K> {
 }
 
 impl<K: Key> PointVisitor for ExtractResolution<'_, K> {
-    fn visit<T: Traversible>(&mut self, decrypted: &(impl 'static + SingularFetch<T = T> + Clone)) {
+    fn visit(&mut self, decrypted: &(impl 'static + SingularFetch<T: Traversible> + Clone)) {
         let decrypted = decrypted.clone();
         let key = self.key.clone();
         self.extracted.push(Box::pin(async move {

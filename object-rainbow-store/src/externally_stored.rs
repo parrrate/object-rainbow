@@ -117,7 +117,7 @@ struct ExtractResolution<'a, 's, S, Id = <S as ExternalStore>::Id> {
 }
 
 impl<S: ExternalStore + PartialEq> PointVisitor for ExtractResolution<'_, '_, S> {
-    fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone)) {
+    fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone)) {
         let fetch = point.clone();
         self.extracted
             .push(Box::pin(store_point(self.store, fetch)));

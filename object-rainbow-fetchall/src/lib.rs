@@ -40,7 +40,7 @@ struct DependencyVisitor<'v> {
 }
 
 impl<'v> PointVisitor for DependencyVisitor<'v> {
-    fn visit<T: Traversible>(&mut self, point: &(impl 'static + SingularFetch<T = T> + Clone)) {
+    fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone)) {
         if let btree_map::Entry::Vacant(e) = self.dependencies.entry(point.hash()) {
             let point = point.clone();
             e.insert(Box::new(move |context| {
