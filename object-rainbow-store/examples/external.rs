@@ -17,14 +17,24 @@ impl PartialEq for Store {
 impl ExternalStore for Store {
     type Id = Hash;
 
-    async fn save_data(&self, data: &[u8], _: &[Self::Id]) -> object_rainbow::Result<Self::Id> {
+    async fn save_data(
+        &self,
+        data: &[u8],
+        _: &[Self::Id],
+        _: Hash,
+    ) -> object_rainbow::Result<Self::Id> {
         let id = data.data_hash();
         println!("save");
         self.0.insert(id, data.into());
         Ok(id)
     }
 
-    async fn contains_data(&self, data: &[u8], _: &[Self::Id]) -> object_rainbow::Result<bool> {
+    async fn contains_data(
+        &self,
+        data: &[u8],
+        _: &[Self::Id],
+        _: Hash,
+    ) -> object_rainbow::Result<bool> {
         self.contains(&data.data_hash()).await
     }
 
