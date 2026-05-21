@@ -31,4 +31,4 @@ impl<T: ByteOrdered> Ord for OrderedByBytes<T> {
     }
 }
 
-pub trait SignificantLength {}
+pub trait SignificantLength: ByteOrdered {}
