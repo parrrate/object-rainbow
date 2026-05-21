@@ -152,8 +152,9 @@ pub async fn store_object<S: ExternalStore + PartialEq, T: Traversible>(
         tags: T::HASH,
         topology,
     };
-    let data = &*ExternallyStored { header, object }.vec();
-    store.save_data(data).await
+    let stored = ExternallyStored { header, object };
+    let data = &*stored.vec();
+    store.save_data(data, &stored.header.topology).await
 }
 
 pub async fn load_extra<

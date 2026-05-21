@@ -411,8 +411,8 @@ impl<S: RainbowStore, T: Traversible> Stored<S, T> {
 
 pub trait ExternalStore: 'static + Send + Sync + Clone {
     type Id: ReflessInline + Clone + Eq;
-    fn save_data(&self, data: &[u8]) -> impl RainbowFuture<T = Self::Id>;
-    fn contains_data(&self, data: &[u8]) -> impl RainbowFuture<T = bool>;
+    fn save_data(&self, data: &[u8], refs: &[Self::Id]) -> impl RainbowFuture<T = Self::Id>;
+    fn contains_data(&self, data: &[u8], refs: &[Self::Id]) -> impl RainbowFuture<T = bool>;
     fn contains(&self, id: &Self::Id) -> impl RainbowFuture<T = bool>;
     fn fetch(
         &self,
