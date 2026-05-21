@@ -124,7 +124,7 @@ impl<S: ExternalStore + PartialEq> PointVisitor for ExtractResolution<'_, '_, S>
     }
 }
 
-pub async fn store_point<S: ExternalStore + PartialEq, T: Traversible>(
+pub(crate) async fn store_point<S: ExternalStore + PartialEq, T: Traversible>(
     store: &S,
     fetch: impl 'static + SingularFetch<T = T>,
 ) -> object_rainbow::Result<S::Id> {
@@ -137,7 +137,7 @@ pub async fn store_point<S: ExternalStore + PartialEq, T: Traversible>(
     store_object(store, fetch.fetch().await?).await
 }
 
-pub async fn store_object<S: ExternalStore + PartialEq, T: Traversible>(
+pub(crate) async fn store_object<S: ExternalStore + PartialEq, T: Traversible>(
     store: &S,
     object: T,
 ) -> object_rainbow::Result<S::Id> {
@@ -157,7 +157,7 @@ pub async fn store_object<S: ExternalStore + PartialEq, T: Traversible>(
     store.save_data(data, &stored.header.topology).await
 }
 
-pub async fn load_extra<
+pub(crate) async fn load_extra<
     S: ExternalStore,
     T: ParseSliceExtra<E> + Tagged,
     E: 'static + Send + Sync + Clone,
@@ -174,7 +174,7 @@ pub async fn load_extra<
     Ok(object)
 }
 
-pub async fn load<S: ExternalStore, T: ParseSlice + Tagged>(
+pub(crate) async fn load<S: ExternalStore, T: ParseSlice + Tagged>(
     store: &S,
     id: &S::Id,
 ) -> object_rainbow::Result<T> {

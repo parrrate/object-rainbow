@@ -3,10 +3,7 @@ use std::sync::Arc;
 use dashmap::DashMap;
 use object_rainbow::{Fetch, Hash, ToOutput};
 use object_rainbow_point::{IntoPoint, Point};
-use object_rainbow_store::{
-    ExternalStore,
-    externally_stored::{load, store_object},
-};
+use object_rainbow_store::ExternalStore;
 
 #[derive(Clone, Default)]
 struct Store(DashMap<Hash, Vec<u8>>, Arc<()>);
@@ -49,13 +46,15 @@ impl ExternalStore for Store {
 fn main() -> object_rainbow::Result<()> {
     smol::block_on(async move {
         let store = &Store::default();
-        let id = store_object(store, (*b"a", (*b"b", (*b"c").point()).point())).await?;
+        let id = store
+            .store_object((*b"a", (*b"b", (*b"c").point()).point()))
+            .await?;
         #[expect(clippy::type_complexity)]
-        let mut object: ([u8; 1], Point<([u8; 1], Point<[u8; 1]>)>) = load(store, &id).await?;
+        let mut object: ([u8; 1], Point<([u8; 1], Point<[u8; 1]>)>) = store.load(&id).await?;
         assert_eq!(object.1.fetch().await?.1.fetch().await?, *b"c");
         println!("before mut");
         object.1.fetch_mut().await?.0 = *b"d";
-        store_object(store, object).await?;
+        store.store_object(object).await?;
         Ok(())
     })
 }

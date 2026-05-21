@@ -6,13 +6,13 @@ use std::{
 
 use object_rainbow::{
     Address, ExtraFor, FullHash, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object,
-    ObjectHashes, OptionalHash, Parse, ParseInline, PointInput, PointVisitor, ReflessInline,
-    Resolve, Singular, SingularFetch, Size, Tagged, ToOutput, Topological, Traversible,
-    assert_impl, derive_for_wrapped,
+    ObjectHashes, OptionalHash, Parse, ParseInline, ParseSlice, ParseSliceExtra, PointInput,
+    PointVisitor, ReflessInline, Resolve, Singular, SingularFetch, Size, Tagged, ToOutput,
+    Topological, Traversible, assert_impl, derive_for_wrapped,
 };
 use object_rainbow_point::{Extras, Point};
 
-pub mod externally_stored;
+mod externally_stored;
 
 pub trait RainbowFuture: Send + Future<Output = object_rainbow::Result<Self::T>> {
     type T;
@@ -418,4 +418,29 @@ pub trait ExternalStore: 'static + Send + Sync + Clone {
         &self,
         id: &Self::Id,
     ) -> impl RainbowFuture<T = impl 'static + Send + Sync + AsRef<[u8]>>;
+    fn store_point<T: Traversible>(
+        &self,
+        fetch: impl 'static + SingularFetch<T = T>,
+    ) -> impl RainbowFuture<T = Self::Id>
+    where
+        Self: PartialEq,
+    {
+        externally_stored::store_point(self, fetch)
+    }
+    fn store_object<T: Traversible>(&self, object: T) -> impl RainbowFuture<T = Self::Id>
+    where
+        Self: PartialEq,
+    {
+        externally_stored::store_object(self, object)
+    }
+    fn load_extra<T: ParseSliceExtra<E> + Tagged, E: 'static + Send + Sync + Clone>(
+        &self,
+        id: &Self::Id,
+        extra: E,
+    ) -> impl RainbowFuture<T = T> {
+        externally_stored::load_extra::<_, T, _>(self, id, extra)
+    }
+    fn load<T: ParseSlice + Tagged>(&self, id: &Self::Id) -> impl RainbowFuture<T = T> {
+        externally_stored::load::<_, T>(self, id)
+    }
 }
