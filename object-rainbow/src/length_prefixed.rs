@@ -48,6 +48,12 @@ impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Lp<T> {
     }
 }
 
+impl<T: SignificantLength> ByteOrdered for Lp<T> {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.0.bytes_cmp(&other.0)
+    }
+}
+
 #[test]
 fn prefixed() -> crate::Result<()> {
     let a = Lp(vec![0, 1, 2]);
