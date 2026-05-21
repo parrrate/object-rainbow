@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::*;
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, ParseAsInline)]
@@ -70,4 +72,10 @@ fn reparse_u63_100_000() -> crate::Result<()> {
         assert_eq!(U63::from_u64(n)?.reparse()?.0, n);
         Ok(())
     })
+}
+
+impl Display for U63 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
 }
