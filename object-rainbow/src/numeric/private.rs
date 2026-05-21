@@ -439,7 +439,7 @@ macro_rules! float {
             impl Tagged for Le<$n> {}
             impl Tagged for Be<$n> {}
 
-            impl ByteOrdered for $n {
+            impl ByteOrd for $n {
                 fn bytes_cmp(&self, other: &Self) -> Ordering {
                     self.total_cmp(other)
                 }
@@ -477,7 +477,7 @@ macro_rules! byte_ordered {
             type Size = typenum::generic_const_mappings::U<{ Self::SIZE }>;
         }
 
-        impl ByteOrdered for $n {
+        impl ByteOrd for $n {
             fn bytes_cmp(&self, other: &Self) -> Ordering {
                 self.cmp(other)
             }
