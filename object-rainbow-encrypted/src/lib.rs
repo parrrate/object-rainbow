@@ -13,6 +13,9 @@ pub trait Key: 'static + Sized + Send + Sync + Clone + PartialEq + Eq {
     type Error: 'static + Send + Sync + std::error::Error;
     fn encrypt(&self, data: &[u8]) -> Vec<u8>;
     fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>, Self::Error>;
+    fn mangle_prefix(&self) -> Vec<u8> {
+        self.encrypt(b"this encrypted constant is followed by an unencrypted inner hash")
+    }
 }
 
 #[derive(ToOutput, Parse, ParseInline, Clone)]
@@ -420,12 +423,7 @@ impl<K: Key, T: Topological> Topological for Encrypted<K, T> {
 impl<K: Key, T: ToOutput> ToOutput for Encrypted<K, T> {
     fn to_output(&self, output: &mut impl object_rainbow::Output) {
         if output.is_mangling() {
-            output.write(
-                &self
-                    .inner
-                    .key
-                    .encrypt(b"this encrypted constant is followed by an unencrypted inner hash"),
-            );
+            output.write(&self.inner.key.mangle_prefix());
             self.inner.decrypted.data_hash();
         }
         if output.is_real() {
