@@ -92,6 +92,14 @@ pub use self::private::*;
 
 pub type SmExtra<M> = private::SmExtra<M>;
 
+impl<M: StaticMap<T>, T> StaticMap<T> for SmExtra<M> {
+    type Mapped = M::Mapped;
+
+    fn static_map(x: T) -> Self::Mapped {
+        M::static_map(x)
+    }
+}
+
 impl<M> ToOutput for SmExtra<M> {
     fn to_output(&self, _: &mut impl Output) {}
 }
