@@ -23,3 +23,18 @@ impl<A: ToOutput + Default + PartialEq, B: ToOutput + Default> ToOutput for Defa
         }
     }
 }
+
+impl<A: ParseInline<I> + PartialEq + Default, B: Parse<I> + Default, I: ParseInput> Parse<I>
+    for DefaultChain<A, B>
+{
+    fn parse(mut input: I) -> crate::Result<Self> {
+        let a = input.parse_inline()?;
+        let b = if a == A::default() {
+            input.parse()?
+        } else {
+            input.empty()?;
+            Default::default()
+        };
+        Ok(Self(a, b))
+    }
+}
