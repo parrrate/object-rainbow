@@ -83,6 +83,9 @@ mod private {
     #[phantom]
     #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
     pub struct SmExtra<M>;
+
+    #[phantom]
+    pub struct StaticFMap<M>;
 }
 
 pub type SmExtra<M> = private::SmExtra<M>;
@@ -156,3 +159,5 @@ impl<T: FullHash> StaticMap<T> for StaticToHash {
 }
 
 pub type ToHash = SmExtra<StaticToHash>;
+
+pub type StaticFMap<M> = private::StaticFMap<M>;
