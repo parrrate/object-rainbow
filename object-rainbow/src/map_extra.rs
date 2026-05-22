@@ -87,10 +87,10 @@ mod private {
     #[phantom]
     pub struct StaticFMap<M>;
 }
-
-pub type SmExtra<M> = private::SmExtra<M>;
 #[doc(hidden)]
 pub use self::private::*;
+
+pub type SmExtra<M> = private::SmExtra<M>;
 
 impl<M> ToOutput for SmExtra<M> {
     fn to_output(&self, _: &mut impl Output) {}
