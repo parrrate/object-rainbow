@@ -2,7 +2,9 @@ use std::sync::Arc;
 
 use object_rainbow::{
     InlineOutput, ListHashes, Output, Parse, ParseInline, PointInput, Tagged, ToOutput,
-    Topological, length_prefixed::LpBytes, map_extra::MapExtra,
+    Topological,
+    length_prefixed::LpBytes,
+    map_extra::{MapExtra, SmExtra, StaticMap},
 };
 
 #[derive(Debug, Clone, Default)]
@@ -206,28 +208,17 @@ impl<
     }
 }
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Clone,
-    Copy,
-    Default,
-)]
-pub struct WithByte;
+pub struct StaticWithByte;
 
-impl<E: 'static + Clone> MapExtra<(u8, (Prefix, E))> for WithByte {
+impl<E> StaticMap<(u8, (Prefix, E))> for StaticWithByte {
     type Mapped = (Prefix, E);
 
-    fn map_extra(&self, (byte, (prefix, e)): (u8, (Prefix, E))) -> Self::Mapped {
+    fn map_extra((byte, (prefix, e)): (u8, (Prefix, E))) -> Self::Mapped {
         (prefix.with(vec![byte]), e)
     }
 }
+
+pub type WithByte = SmExtra<StaticWithByte>;
 
 #[derive(
     Debug,
