@@ -87,8 +87,8 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                 WithBytes(LpBytes(common.into())),
                 KeyedArrayMap(
                     [
-                        (first_a, MappedExtra(WithByte, node_a)),
-                        (first_b, MappedExtra(WithByte, node_b)),
+                        (first_a, MappedExtra(Default::default(), node_a)),
+                        (first_b, MappedExtra(Default::default(), node_b)),
                     ]
                     .into(),
                 ),
@@ -277,7 +277,10 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                                 Box::pin(node.append(other, replace)).await?;
                             } else {
                                 drop(o);
-                                s.1.insert(first, MappedExtra(WithByte, std::mem::take(other)));
+                                s.1.insert(
+                                    first,
+                                    MappedExtra(Default::default(), std::mem::take(other)),
+                                );
                             }
                         } else {
                             {
