@@ -96,3 +96,8 @@ impl<M> ToOutput for SmExtra<M> {
 impl<M> Tagged for SmExtra<M> {}
 impl<M> ListHashes for SmExtra<M> {}
 impl<M> Topological for SmExtra<M> {}
+
+impl<M> Size for SmExtra<M> {
+    const SIZE: usize = 0;
+    type Size = typenum::U0;
+}
