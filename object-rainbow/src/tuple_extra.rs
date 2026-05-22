@@ -89,3 +89,5 @@ impl<A, B, M: StaticMap<B>> StaticMap<(A, B)> for StaticMap1<M> {
         (a, M::static_map(b))
     }
 }
+
+pub type Map1<M> = SmExtra<StaticMap1<M>>;
