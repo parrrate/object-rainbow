@@ -92,3 +92,5 @@ pub use self::private::*;
 impl<M> ToOutput for SmExtra<M> {
     fn to_output(&self, _: &mut impl Output) {}
 }
+
+impl<M> ListHashes for SmExtra<M> {}
