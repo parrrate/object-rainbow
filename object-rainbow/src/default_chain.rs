@@ -15,7 +15,7 @@ impl<A: Default, B> DefaultChain<A, B> {
     }
 }
 
-impl<A: ToOutput + Default + PartialEq, B: ToOutput + Default> ToOutput for DefaultChain<A, B> {
+impl<A: InlineOutput + Default + PartialEq, B: ToOutput + Default> ToOutput for DefaultChain<A, B> {
     fn to_output(&self, output: &mut impl crate::Output) {
         self.0.to_output(output);
         if self.0 == A::default() {
