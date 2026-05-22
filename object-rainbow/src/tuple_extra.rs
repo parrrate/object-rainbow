@@ -67,3 +67,5 @@ impl<A: Clone, B, T: IntoIterator<Item = B>> StaticMap<(A, T)> for StaticOneCros
         b.into_iter().map(|b| (a.clone(), b)).collect()
     }
 }
+
+pub type OneCrossN = SmExtra<StaticOneCrossN>;
