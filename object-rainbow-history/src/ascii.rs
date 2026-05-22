@@ -1,9 +1,21 @@
-use object_rainbow::{InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological};
+use object_rainbow::{
+    InlineOutput, ListHashes, Parse, ParseInline, Size, Tagged, ToOutput, Topological,
+};
 
 use crate::Apply;
 
 #[derive(
-    Debug, Clone, Copy, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline,
+    Debug,
+    Clone,
+    Copy,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Size,
 )]
 pub struct Split;
 
