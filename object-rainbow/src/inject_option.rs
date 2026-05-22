@@ -1,4 +1,4 @@
-pub trait InjectAt: Sized {
+pub trait InjectAt: Sized + PartialEq {
     fn inject_at() -> Self;
 }
 
