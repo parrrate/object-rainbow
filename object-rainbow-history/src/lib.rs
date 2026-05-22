@@ -7,6 +7,7 @@ use object_rainbow::{
     Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline, Size,
     Tagged, ToOutput, Topological, Traversible, assert_impl, derive_for_wrapped,
     map_extra::{SmExtra, StaticMap},
+    tuple_extra::ToTuple2,
 };
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
@@ -266,36 +267,6 @@ impl<Diff: Send, First: Apply<Diff>, Second: Apply<First::Output>> Apply<Diff>
 
     async fn apply(&mut self, diff: Diff) -> object_rainbow::Result<Self::Output> {
         self.second.apply(self.first.apply(diff).await?).await
-    }
-}
-
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Default,
-)]
-pub struct ToTuple2;
-
-impl<D: Send + Clone> Apply<D> for ToTuple2 {
-    type Output = (D, D);
-
-    fn apply(
-        &mut self,
-        diff: D,
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        futures_util::future::ready(Ok((diff.clone(), diff)))
     }
 }
 

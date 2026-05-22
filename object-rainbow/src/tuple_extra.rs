@@ -10,6 +10,18 @@ impl<T> StaticMap<T> for StaticToTuple0 {
 
 pub type ToTuple0 = SmExtra<StaticToTuple0>;
 
+pub struct StaticToTuple2;
+
+impl<T: Clone> StaticMap<T> for StaticToTuple2 {
+    type Mapped = (T, T);
+
+    fn map_extra(x: T) -> Self::Mapped {
+        (x.clone(), x)
+    }
+}
+
+pub type ToTuple2 = SmExtra<StaticToTuple2>;
+
 pub struct StaticExtra0;
 
 impl<A, B> StaticMap<(A, B)> for StaticExtra0 {
