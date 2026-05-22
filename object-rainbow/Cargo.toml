@@ -19,6 +19,7 @@ bytes = { workspace = true, optional = true }
 cid = { workspace = true, optional = true }
 futures-util.workspace = true
 generic-array.workspace = true
+ghost.workspace = true
 hex = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"], optional = true }
 sha2.workspace = true

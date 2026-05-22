@@ -75,3 +75,15 @@ pub trait StaticMap<Extra: 'static + Clone = ()> {
     type Mapped: 'static + Clone;
     fn map_extra(extra: Extra) -> Self::Mapped;
 }
+
+#[allow(clippy::repr_packed_without_abi)]
+mod private {
+    use ghost::phantom;
+
+    #[phantom]
+    pub struct SmExtra<M>;
+}
+
+pub type SmExtra<M> = private::SmExtra<M>;
+#[doc(hidden)]
+pub use self::private::*;

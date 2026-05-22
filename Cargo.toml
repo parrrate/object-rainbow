@@ -61,6 +61,7 @@ futures-channel = "0.3.32"
 futures-util = { version = "0.3.32", default-features = false }
 genawaiter-try-stream = "0.1.0"
 generic-array = "1.4.1"
+ghost = "0.1.21"
 hex = "0.4.3"
 imbl = "7.0.0"
 macro_rules_attribute = "0.2.2"

@@ -898,6 +898,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "ghost"
+version = "0.1.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe3de42e89f5bd0686d0058be48d545333311e34c763f85324938ba7cc473149"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
+]
+
+[[package]]
 name = "gloo-timers"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1503,6 +1514,7 @@ dependencies = [
  "cid",
  "futures-util",
  "generic-array 1.4.1",
+ "ghost",
  "hex",
  "object-rainbow-derive",
  "serde",

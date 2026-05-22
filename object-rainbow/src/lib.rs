@@ -42,13 +42,13 @@ pub use self::{
 };
 
 mod assert_impl;
+pub mod default_chain;
 pub mod enumkind;
 mod error;
 mod hash;
 pub mod hashed;
 mod impls;
 pub mod incr_byte_niche;
-pub mod default_chain;
 pub mod inline_extra;
 pub mod length_prefixed;
 pub mod map_extra;
