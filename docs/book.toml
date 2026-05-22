@@ -1,0 +1,15 @@
+[book]
+authors = ["Alisa Feistel"]
+language = "en"
+src = "src"
+title = "OR(H)"
+
+[rust]
+edition = "2024"
+
+[build]
+build-dir = "book"
+create-missing = false
+
+[output.html]
+default-theme = "navy"
