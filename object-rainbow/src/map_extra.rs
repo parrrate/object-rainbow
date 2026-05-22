@@ -90,7 +90,7 @@ mod private {
     pub struct StaticFMap<M>;
 
     #[phantom]
-    pub struct Compose<A, B>;
+    pub struct StaticCompose<A, B>;
 }
 #[doc(hidden)]
 pub use self::private::*;
@@ -185,9 +185,9 @@ impl<T, I: IntoIterator<Item = T>, M: StaticMap<T>> StaticMap<I> for StaticFMap<
 
 pub type FMap<M> = SmExtra<StaticFMap<M>>;
 
-pub type Compose<A, B> = private::Compose<A, B>;
+pub type StaticCompose<A, B> = private::StaticCompose<A, B>;
 
-impl<T, A: StaticMap<T>, B: StaticMap<A::Mapped>> StaticMap<T> for Compose<A, B> {
+impl<T, A: StaticMap<T>, B: StaticMap<A::Mapped>> StaticMap<T> for StaticCompose<A, B> {
     type Mapped = B::Mapped;
 
     fn static_map(x: T) -> Self::Mapped {
