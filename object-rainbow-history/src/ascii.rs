@@ -1,6 +1,6 @@
 use crate::Apply;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Split;
 
 impl<S: 'static + Send + AsRef<str>> Apply<S> for Split {
