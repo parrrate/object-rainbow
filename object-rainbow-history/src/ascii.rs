@@ -19,6 +19,7 @@ use crate::Apply;
     Size,
     MaybeHasNiche,
     PartialEq,
+    Eq,
 )]
 pub struct Split;
 
