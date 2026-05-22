@@ -6,6 +6,7 @@ use futures_util::TryStreamExt;
 use object_rainbow::{
     Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline, Size,
     Tagged, ToOutput, Topological, Traversible, assert_impl, derive_for_wrapped,
+    map_extra::{SmExtra, StaticMap},
     tuple_extra::{Extra0, Extra1, Swap},
 };
 use object_rainbow_chain_tree::ChainTree;
@@ -420,3 +421,11 @@ impl<A: Send, B: Send> Apply<(A, B)> for Swap {
 }
 
 pub type Parallel<A, B> = Sequential<ToTuple2, (A, B)>;
+
+impl<M: Send + StaticMap<D, Mapped: Send>, D: Send> Apply<D> for SmExtra<M> {
+    type Output = M::Mapped;
+
+    fn apply(&mut self, d: D) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
+        core::future::ready(Ok(M::map_extra(d)))
+    }
+}
