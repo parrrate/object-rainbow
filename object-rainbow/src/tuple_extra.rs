@@ -81,3 +81,11 @@ mod private {
 pub use self::private::*;
 
 pub type StaticMap1<M> = private::StaticMap1<M>;
+
+impl<A, B, M: StaticMap<B>> StaticMap<(A, B)> for StaticMap1<M> {
+    type Mapped = (A, M::Mapped);
+
+    fn static_map((a, b): (A, B)) -> Self::Mapped {
+        (a, M::static_map(b))
+    }
+}
