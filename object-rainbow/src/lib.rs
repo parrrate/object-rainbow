@@ -41,6 +41,7 @@ pub use self::{
     ordering::{ByteOrd, OrderedByBytes, SignificantLength},
 };
 
+pub mod ascii;
 mod assert_impl;
 pub mod default_chain;
 pub mod enumkind;
