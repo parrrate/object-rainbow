@@ -154,3 +154,5 @@ impl<T: FullHash> StaticMap<T> for StaticToHash {
         x.full_hash()
     }
 }
+
+pub type ToHash = SmExtra<StaticToHash>;
