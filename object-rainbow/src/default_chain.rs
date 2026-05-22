@@ -24,6 +24,11 @@ impl<A: InlineOutput + Default + PartialEq, B: ToOutput + Default> ToOutput for 
     }
 }
 
+impl<A: InlineOutput + Default + PartialEq, B: InlineOutput + Default> InlineOutput
+    for DefaultChain<A, B>
+{
+}
+
 impl<A: ParseInline<I> + PartialEq + Default, B: Parse<I> + Default, I: ParseInput> Parse<I>
     for DefaultChain<A, B>
 {
