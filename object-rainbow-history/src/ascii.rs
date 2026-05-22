@@ -1,5 +1,6 @@
 use object_rainbow::{
-    InlineOutput, ListHashes, Parse, ParseInline, Size, Tagged, ToOutput, Topological,
+    InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
+    Topological,
 };
 
 use crate::Apply;
@@ -16,6 +17,7 @@ use crate::Apply;
     Parse,
     ParseInline,
     Size,
+    MaybeHasNiche,
 )]
 pub struct Split;
 
