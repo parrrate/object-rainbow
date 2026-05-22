@@ -169,3 +169,5 @@ impl<T, I: IntoIterator<Item = T>, M: StaticMap<T>> StaticMap<I> for StaticFMap<
         it.into_iter().map(M::map_extra).collect()
     }
 }
+
+pub type FMap<M> = SmExtra<StaticFMap<M>>;
