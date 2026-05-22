@@ -1,3 +1,5 @@
+use std::collections::BTreeSet;
+
 use crate::*;
 
 #[derive(
@@ -194,3 +196,11 @@ impl<T, A: StaticMap<T>, B: StaticMap<A::Mapped>> StaticMap<T> for Compose<A, B>
 }
 
 pub struct StaticUniqueSorted;
+
+impl<T: Ord, I: IntoIterator<Item = T>> StaticMap<I> for StaticUniqueSorted {
+    type Mapped = BTreeSet<T>;
+
+    fn static_map(it: I) -> Self::Mapped {
+        it.into_iter().collect()
+    }
+}
