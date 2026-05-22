@@ -213,7 +213,7 @@ pub struct StaticWithByte;
 impl<E> StaticMap<(u8, (Prefix, E))> for StaticWithByte {
     type Mapped = (Prefix, E);
 
-    fn map_extra((byte, (prefix, e)): (u8, (Prefix, E))) -> Self::Mapped {
+    fn static_map((byte, (prefix, e)): (u8, (Prefix, E))) -> Self::Mapped {
         (prefix.with(vec![byte]), e)
     }
 }
@@ -247,7 +247,7 @@ pub struct StaticPrefixRoot;
 impl<E> StaticMap<E> for StaticPrefixRoot {
     type Mapped = (Prefix, E);
 
-    fn map_extra(e: E) -> Self::Mapped {
+    fn static_map(e: E) -> Self::Mapped {
         (Default::default(), e)
     }
 }

@@ -73,7 +73,7 @@ impl<
 
 pub trait StaticMap<T> {
     type Mapped;
-    fn map_extra(x: T) -> Self::Mapped;
+    fn static_map(x: T) -> Self::Mapped;
 }
 
 #[allow(clippy::repr_packed_without_abi)]
@@ -132,7 +132,7 @@ impl<M: StaticMap<E, Mapped: 'static + Clone>, E: 'static + Clone> MapExtra<E> f
     type Mapped = M::Mapped;
 
     fn map_extra(&self, e: E) -> Self::Mapped {
-        M::map_extra(e)
+        M::static_map(e)
     }
 }
 
@@ -141,7 +141,7 @@ pub struct StaticReturn;
 impl<T> StaticMap<T> for StaticReturn {
     type Mapped = T;
 
-    fn map_extra(x: T) -> Self::Mapped {
+    fn static_map(x: T) -> Self::Mapped {
         x
     }
 }
@@ -153,7 +153,7 @@ pub struct StaticToHash;
 impl<T: FullHash> StaticMap<T> for StaticToHash {
     type Mapped = Hash;
 
-    fn map_extra(x: T) -> Self::Mapped {
+    fn static_map(x: T) -> Self::Mapped {
         x.full_hash()
     }
 }
@@ -165,8 +165,8 @@ pub type StaticFMap<M> = private::StaticFMap<M>;
 impl<T, I: IntoIterator<Item = T>, M: StaticMap<T>> StaticMap<I> for StaticFMap<M> {
     type Mapped = Vec<M::Mapped>;
 
-    fn map_extra(it: I) -> Self::Mapped {
-        it.into_iter().map(M::map_extra).collect()
+    fn static_map(it: I) -> Self::Mapped {
+        it.into_iter().map(M::static_map).collect()
     }
 }
 

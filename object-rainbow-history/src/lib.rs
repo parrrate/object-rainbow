@@ -304,6 +304,6 @@ impl<M: Send + StaticMap<D, Mapped: Send>, D: Send> Apply<D> for SmExtra<M> {
     type Output = M::Mapped;
 
     fn apply(&mut self, d: D) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        core::future::ready(Ok(M::map_extra(d)))
+        core::future::ready(Ok(M::static_map(d)))
     }
 }
