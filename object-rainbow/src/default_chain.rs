@@ -1,5 +1,6 @@
 use crate::ToOutput;
 
+#[derive(Default)]
 pub struct DefaultChain<A, B>(A, B);
 
 impl<A, B: Default> DefaultChain<A, B> {
