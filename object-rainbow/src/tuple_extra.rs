@@ -15,30 +15,17 @@ impl<A, B> StaticMap<(A, B)> for StaticExtra0 {
 
 pub type Extra0 = SmExtra<StaticExtra0>;
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Clone,
-    Copy,
-    Parse,
-    ParseInline,
-    Default,
-    PartialEq,
-    Eq,
-)]
-pub struct Extra1;
+pub struct StaticExtra1;
 
-impl<A: 'static + Clone, B: 'static + Clone> MapExtra<(A, B)> for Extra1 {
+impl<A, B> StaticMap<(A, B)> for StaticExtra1 {
     type Mapped = B;
 
-    fn map_extra(&self, (_, extra): (A, B)) -> Self::Mapped {
-        extra
+    fn map_extra((_, b): (A, B)) -> Self::Mapped {
+        b
     }
 }
+
+pub type Extra1 = SmExtra<StaticExtra1>;
 
 #[derive(
     Debug,
