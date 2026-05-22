@@ -69,3 +69,15 @@ impl<A: Clone, B, T: IntoIterator<Item = B>> StaticMap<(A, T)> for StaticOneCros
 }
 
 pub type OneCrossN = SmExtra<StaticOneCrossN>;
+
+#[allow(clippy::repr_packed_without_abi)]
+mod private {
+    use ghost::phantom;
+
+    #[phantom]
+    pub struct StaticMap1<M>;
+}
+#[doc(hidden)]
+pub use self::private::*;
+
+pub type StaticMap1<M> = private::StaticMap1<M>;
