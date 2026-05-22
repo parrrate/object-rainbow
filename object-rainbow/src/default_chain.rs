@@ -1,8 +1,6 @@
-use object_rainbow_derive::{ListHashes, Tagged};
+use crate::*;
 
-use crate::ToOutput;
-
-#[derive(Default, Tagged, ListHashes)]
+#[derive(Default, Tagged, ListHashes, Topological)]
 pub struct DefaultChain<A, B>(A, B);
 
 impl<A, B: Default> DefaultChain<A, B> {
