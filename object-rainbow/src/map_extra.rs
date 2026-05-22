@@ -93,4 +93,5 @@ impl<M> ToOutput for SmExtra<M> {
     fn to_output(&self, _: &mut impl Output) {}
 }
 
+impl<M> Tagged for SmExtra<M> {}
 impl<M> ListHashes for SmExtra<M> {}
