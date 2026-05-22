@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(Default, Tagged, ListHashes, Topological)]
+#[derive(Default, Tagged, ListHashes, Topological, Clone)]
 pub struct DefaultChain<A, B>(A, B);
 
 impl<A, B: Default> DefaultChain<A, B> {
