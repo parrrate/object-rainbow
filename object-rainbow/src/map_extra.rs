@@ -204,3 +204,5 @@ impl<T: Ord, I: IntoIterator<Item = T>> StaticMap<I> for StaticUniqueSorted {
         it.into_iter().collect()
     }
 }
+
+pub type UniqueSorted = SmExtra<StaticUniqueSorted>;
