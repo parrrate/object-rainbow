@@ -242,30 +242,17 @@ impl<E: 'static + Clone> MapExtra<(Prefix, E)> for WithBytes {
     }
 }
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Clone,
-    Copy,
-    Default,
-    PartialEq,
-    Eq,
-)]
-pub struct PrefixRoot;
+pub struct StaticPrefixRoot;
 
-impl<E: 'static + Clone> MapExtra<E> for PrefixRoot {
+impl<E> StaticMap<E> for StaticPrefixRoot {
     type Mapped = (Prefix, E);
 
-    fn map_extra(&self, e: E) -> Self::Mapped {
-        (Prefix::default(), e)
+    fn map_extra(e: E) -> Self::Mapped {
+        (Default::default(), e)
     }
 }
+
+pub type PrefixRoot = SmExtra<StaticPrefixRoot>;
 
 #[test]
 fn abc() {
