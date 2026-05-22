@@ -93,6 +93,7 @@ impl<M> ToOutput for SmExtra<M> {
     fn to_output(&self, _: &mut impl Output) {}
 }
 
+impl<M> InlineOutput for SmExtra<M> {}
 impl<M> Tagged for SmExtra<M> {}
 impl<M> ListHashes for SmExtra<M> {}
 impl<M> Topological for SmExtra<M> {}
