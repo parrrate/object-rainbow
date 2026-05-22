@@ -123,3 +123,11 @@ impl<M, I: ParseInput> ParseInline<I> for SmExtra<M> {
         Ok(SmExtra)
     }
 }
+
+impl<M: StaticMap<E>, E: 'static + Clone> MapExtra<E> for SmExtra<M> {
+    type Mapped = M::Mapped;
+
+    fn map_extra(&self, e: E) -> Self::Mapped {
+        M::map_extra(e)
+    }
+}
