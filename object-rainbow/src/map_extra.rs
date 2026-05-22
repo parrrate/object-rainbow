@@ -144,3 +144,13 @@ impl<T> StaticMap<T> for StaticReturn {
 }
 
 pub type Return = SmExtra<StaticReturn>;
+
+pub struct StaticToHash;
+
+impl<T: FullHash> StaticMap<T> for StaticToHash {
+    type Mapped = Hash;
+
+    fn map_extra(x: T) -> Self::Mapped {
+        x.full_hash()
+    }
+}
