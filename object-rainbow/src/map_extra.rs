@@ -192,3 +192,5 @@ impl<T, A: StaticMap<T>, B: StaticMap<A::Mapped>> StaticMap<T> for Compose<A, B>
         B::static_map(A::static_map(x))
     }
 }
+
+pub struct StaticUniqueSorted;
