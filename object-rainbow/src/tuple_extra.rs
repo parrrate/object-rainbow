@@ -57,3 +57,13 @@ impl<A, B> StaticMap<(A, B)> for StaticSwap {
 }
 
 pub type Swap = SmExtra<StaticSwap>;
+
+pub struct StaticOneCrossN;
+
+impl<A: Clone, B, T: IntoIterator<Item = B>> StaticMap<(A, T)> for StaticOneCrossN {
+    type Mapped = Vec<(A, B)>;
+
+    fn map_extra((a, b): (A, T)) -> Self::Mapped {
+        b.into_iter().map(|b| (a.clone(), b)).collect()
+    }
+}
