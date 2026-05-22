@@ -20,6 +20,7 @@ use crate::Apply;
     MaybeHasNiche,
     PartialEq,
     Eq,
+    Default,
 )]
 pub struct Split;
 
