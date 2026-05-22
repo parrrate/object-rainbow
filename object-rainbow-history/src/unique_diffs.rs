@@ -1,10 +1,11 @@
 use object_rainbow::{
     FullHash, Inline, InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological,
-    assert_impl, map_extra::Return,
+    assert_impl,
+    map_extra::{Return, ToHash},
 };
 use object_rainbow_hamt::HamtSet;
 
-use crate::{Apply, Parallel, Sequential, hashed::HashedDiffs, skip::FilterDiffs};
+use crate::{Apply, Parallel, Sequential, skip::FilterDiffs};
 
 #[derive(
     ToOutput,
@@ -20,7 +21,7 @@ use crate::{Apply, Parallel, Sequential, hashed::HashedDiffs, skip::FilterDiffs}
     Default,
 )]
 pub struct UniqueDiffs<T> {
-    inner: Sequential<Parallel<HashedDiffs<HamtSet>, Return>, FilterDiffs<T>>,
+    inner: Sequential<Parallel<Sequential<ToHash, HamtSet>, Return>, FilterDiffs<T>>,
 }
 
 assert_impl!(

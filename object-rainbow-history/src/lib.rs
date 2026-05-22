@@ -18,7 +18,6 @@ pub mod ascii;
 pub mod enforce_unique;
 #[cfg(feature = "hamt")]
 mod hamt;
-pub mod hashed;
 pub mod remap;
 pub mod skip;
 #[cfg(feature = "trie")]
