@@ -1,10 +1,10 @@
 use object_rainbow::{
     FullHash, Inline, InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological,
-    assert_impl,
+    assert_impl, map_extra::Return,
 };
 use object_rainbow_hamt::HamtSet;
 
-use crate::{Apply, Parallel, Return, Sequential, hashed::HashedDiffs, skip::FilterDiffs};
+use crate::{Apply, Parallel, Sequential, hashed::HashedDiffs, skip::FilterDiffs};
 
 #[derive(
     ToOutput,

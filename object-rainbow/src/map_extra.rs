@@ -132,3 +132,15 @@ impl<M: StaticMap<E, Mapped: 'static + Clone>, E: 'static + Clone> MapExtra<E> f
         M::map_extra(e)
     }
 }
+
+pub struct StaticReturn;
+
+impl<T> StaticMap<T> for StaticReturn {
+    type Mapped = T;
+
+    fn map_extra(x: T) -> Self::Mapped {
+        x
+    }
+}
+
+pub type Return = SmExtra<StaticReturn>;

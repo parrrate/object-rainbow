@@ -356,36 +356,6 @@ impl<T: Clone + Traversible + Apply<D>, D: Send> Apply<D> for Point<T> {
     }
 }
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Default,
-)]
-pub struct Return;
-
-impl<D: Send> Apply<D> for Return {
-    type Output = D;
-
-    fn apply(
-        &mut self,
-        diff: D,
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        futures_util::future::ready(Ok(diff))
-    }
-}
-
 pub type Parallel<A, B> = Sequential<ToTuple2, (A, B)>;
 
 impl<M: Send + StaticMap<D, Mapped: Send>, D: Send> Apply<D> for SmExtra<M> {

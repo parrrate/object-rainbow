@@ -4,10 +4,10 @@ use futures_util::TryStreamExt;
 use macro_rules_attribute::apply;
 use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
-    Topological,
+    Topological, map_extra::Return,
 };
 use object_rainbow_history::{
-    FromIter, Parallel, Return, Sequential,
+    FromIter, Parallel, Sequential,
     remap::{MapToSet, MappedToSet},
 };
 use object_rainbow_trie::{TrieMap, TrieSet};
