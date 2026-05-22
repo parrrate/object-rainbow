@@ -101,3 +101,7 @@ impl<M> Size for SmExtra<M> {
     const SIZE: usize = 0;
     type Size = typenum::U0;
 }
+
+impl<M> MaybeHasNiche for SmExtra<M> {
+    type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
+}
