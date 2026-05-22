@@ -111,3 +111,15 @@ impl<M> ByteOrd for SmExtra<M> {
         Ordering::Equal
     }
 }
+
+impl<M, I: ParseInput> Parse<I> for SmExtra<M> {
+    fn parse(input: I) -> crate::Result<Self> {
+        ParseInline::parse_as_inline(input)
+    }
+}
+
+impl<M, I: ParseInput> ParseInline<I> for SmExtra<M> {
+    fn parse_inline(_: &mut I) -> crate::Result<Self> {
+        Ok(SmExtra)
+    }
+}
