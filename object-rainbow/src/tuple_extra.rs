@@ -1,29 +1,19 @@
-use crate::{map_extra::MapExtra, *};
+use crate::{
+    map_extra::{MapExtra, SmExtra, StaticMap},
+    *,
+};
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Clone,
-    Copy,
-    Parse,
-    ParseInline,
-    Default,
-    PartialEq,
-    Eq,
-)]
-pub struct Extra0;
+pub struct StaticExtra0;
 
-impl<A: 'static + Clone, B: 'static + Clone> MapExtra<(A, B)> for Extra0 {
+impl<A, B> StaticMap<(A, B)> for StaticExtra0 {
     type Mapped = A;
 
-    fn map_extra(&self, (extra, _): (A, B)) -> Self::Mapped {
-        extra
+    fn map_extra((a, _): (A, B)) -> Self::Mapped {
+        a
     }
 }
+
+pub type Extra0 = SmExtra<StaticExtra0>;
 
 #[derive(
     Debug,
