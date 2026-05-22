@@ -1508,10 +1508,7 @@ dependencies = [
  "serde",
  "sha2 0.11.0",
  "sha2-const",
- "smol",
  "thiserror",
- "tracing",
- "tracing-subscriber",
  "typenum",
  "ulid",
 ]

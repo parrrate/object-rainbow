@@ -35,12 +35,6 @@ hex = ["dep:hex"]
 serde = ["dep:serde"]
 ulid = ["dep:ulid"]
 
-[dev-dependencies]
-hex.workspace = true
-smol.workspace = true
-tracing.workspace = true
-tracing-subscriber.workspace = true
-
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
