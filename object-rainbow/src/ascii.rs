@@ -1,4 +1,4 @@
-use crate::map_extra::StaticMap;
+use crate::map_extra::{SmExtra, StaticMap};
 
 pub struct StaticAsciiSplit;
 
@@ -12,3 +12,5 @@ impl<S: AsRef<str>> StaticMap<S> for StaticAsciiSplit {
             .collect()
     }
 }
+
+pub type AsciiSplit = SmExtra<StaticAsciiSplit>;
