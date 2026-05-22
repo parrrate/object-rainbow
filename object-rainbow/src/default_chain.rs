@@ -2,6 +2,12 @@ use crate::ToOutput;
 
 pub struct DefaultChain<A, B>(A, B);
 
+impl<A: Default, B> DefaultChain<A, B> {
+    pub fn from_second(second: B) -> Self {
+        Self(A::default(), second)
+    }
+}
+
 impl<A: ToOutput + Default + PartialEq, B: ToOutput + Default> ToOutput for DefaultChain<A, B> {
     fn to_output(&self, output: &mut impl crate::Output) {
         self.0.to_output(output);
