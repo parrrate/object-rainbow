@@ -2,9 +2,15 @@ use crate::ToOutput;
 
 pub struct DefaultChain<A, B>(A, B);
 
+impl<A, B: Default> DefaultChain<A, B> {
+    pub fn from_first(first: A) -> Self {
+        Self(first, Default::default())
+    }
+}
+
 impl<A: Default, B> DefaultChain<A, B> {
     pub fn from_second(second: B) -> Self {
-        Self(A::default(), second)
+        Self(Default::default(), second)
     }
 }
 
