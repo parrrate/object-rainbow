@@ -77,7 +77,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         };
         Ok(Self::Leaf(
             WithPrefix::new(Prefix::from(prefix), k)?,
-            MappedExtra(Extra1, v),
+            MappedExtra(Default::default(), v),
         ))
     }
 
@@ -115,12 +115,12 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         if wp_a.vec() != key_a {
             return Err(object_rainbow::error_consistency!("suffix mismatch"));
         }
-        let node_a = Self::Leaf(wp_a, MappedExtra(Extra1, v_a));
+        let node_a = Self::Leaf(wp_a, MappedExtra(Default::default(), v_a));
         let wp_b = WithPrefix::new(prefix.with(vec![first_b]), k_b)?;
         if wp_b.vec() != key_b {
             return Err(object_rainbow::error_consistency!("suffix mismatch"));
         }
-        let node_b = Self::Leaf(wp_b, MappedExtra(Extra1, v_b));
+        let node_b = Self::Leaf(wp_b, MappedExtra(Default::default(), v_b));
         Ok(Self::from_pair(common, first_a, first_b, node_a, node_b))
     }
 
@@ -186,7 +186,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                         })?),
                         k_new,
                     )?,
-                    MappedExtra(Extra1, v_new),
+                    MappedExtra(Default::default(), v_new),
                 );
                 *self = Self::from_pair(common, first_a, first_b, node_a, node_b);
                 Ok(None)
