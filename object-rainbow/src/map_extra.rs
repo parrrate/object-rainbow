@@ -195,6 +195,8 @@ impl<T, A: StaticMap<T>, B: StaticMap<A::Mapped>> StaticMap<T> for StaticCompose
     }
 }
 
+pub type Compose<A, B> = SmExtra<StaticCompose<A, B>>;
+
 pub struct StaticUniqueSorted;
 
 impl<T: Ord, I: IntoIterator<Item = T>> StaticMap<I> for StaticUniqueSorted {
