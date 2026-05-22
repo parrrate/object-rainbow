@@ -1,8 +1,8 @@
-use object_rainbow::{InlineOutput, Tagged, ToOutput};
+use object_rainbow::{InlineOutput, ListHashes, Tagged, ToOutput};
 
 use crate::Apply;
 
-#[derive(Debug, Clone, Copy, ToOutput, InlineOutput, Tagged)]
+#[derive(Debug, Clone, Copy, ToOutput, InlineOutput, Tagged, ListHashes)]
 pub struct Split;
 
 impl<S: 'static + Send + AsRef<str>> Apply<S> for Split {
