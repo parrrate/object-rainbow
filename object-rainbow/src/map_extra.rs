@@ -71,9 +71,9 @@ impl<
     }
 }
 
-pub trait StaticMap<Extra: 'static + Clone = ()> {
-    type Mapped: 'static + Clone;
-    fn map_extra(extra: Extra) -> Self::Mapped;
+pub trait StaticMap<T> {
+    type Mapped;
+    fn map_extra(x: T) -> Self::Mapped;
 }
 
 #[allow(clippy::repr_packed_without_abi)]
@@ -124,7 +124,7 @@ impl<M, I: ParseInput> ParseInline<I> for SmExtra<M> {
     }
 }
 
-impl<M: StaticMap<E>, E: 'static + Clone> MapExtra<E> for SmExtra<M> {
+impl<M: StaticMap<E, Mapped: 'static + Clone>, E: 'static + Clone> MapExtra<E> for SmExtra<M> {
     type Mapped = M::Mapped;
 
     fn map_extra(&self, e: E) -> Self::Mapped {
