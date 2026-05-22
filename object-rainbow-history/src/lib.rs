@@ -13,6 +13,7 @@ use object_rainbow_point::Point;
 
 #[cfg(feature = "amt")]
 mod amt;
+pub mod ascii;
 pub mod enforce_unique;
 #[cfg(feature = "hamt")]
 mod hamt;
