@@ -70,3 +70,8 @@ impl<
         Ok(Self(m, t))
     }
 }
+
+pub trait StaticMap<Extra: 'static + Clone = ()> {
+    type Mapped: 'static + Clone;
+    fn map_extra(extra: Extra) -> Self::Mapped;
+}
