@@ -161,3 +161,11 @@ impl<T: FullHash> StaticMap<T> for StaticToHash {
 pub type ToHash = SmExtra<StaticToHash>;
 
 pub type StaticFMap<M> = private::StaticFMap<M>;
+
+impl<T, I: IntoIterator<Item = T>, M: StaticMap<T>> StaticMap<I> for StaticFMap<M> {
+    type Mapped = Vec<M::Mapped>;
+
+    fn map_extra(it: I) -> Self::Mapped {
+        it.into_iter().map(M::map_extra).collect()
+    }
+}
