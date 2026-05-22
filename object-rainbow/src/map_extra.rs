@@ -184,3 +184,11 @@ impl<T, I: IntoIterator<Item = T>, M: StaticMap<T>> StaticMap<I> for StaticFMap<
 pub type FMap<M> = SmExtra<StaticFMap<M>>;
 
 pub type Compose<A, B> = private::Compose<A, B>;
+
+impl<T, A: StaticMap<T>, B: StaticMap<A::Mapped>> StaticMap<T> for Compose<A, B> {
+    type Mapped = B::Mapped;
+
+    fn static_map(x: T) -> Self::Mapped {
+        B::static_map(A::static_map(x))
+    }
+}
