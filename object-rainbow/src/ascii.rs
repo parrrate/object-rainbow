@@ -19,3 +19,11 @@ impl<S: AsRef<str>> StaticMap<S> for StaticAsciiSplit {
 pub type AsciiSplit = SmExtra<StaticAsciiSplit>;
 
 pub type AsciiSplit1 = Compose<Map1<AsciiSplit>, OneCrossN>;
+
+#[test]
+fn ascii_split1() {
+    assert_eq!(
+        AsciiSplit1::static_map((1, "a b")),
+        [(1, "a".into()), (1, "b".into())],
+    );
+}
