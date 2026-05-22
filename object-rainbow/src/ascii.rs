@@ -1,4 +1,7 @@
-use crate::map_extra::{SmExtra, StaticMap};
+use crate::{
+    map_extra::{Compose, SmExtra, StaticMap},
+    tuple_extra::{Map1, OneCrossN},
+};
 
 pub struct StaticAsciiSplit;
 
@@ -14,3 +17,5 @@ impl<S: AsRef<str>> StaticMap<S> for StaticAsciiSplit {
 }
 
 pub type AsciiSplit = SmExtra<StaticAsciiSplit>;
+
+pub type AsciiSplit1 = Compose<Map1<AsciiSplit>, OneCrossN>;
