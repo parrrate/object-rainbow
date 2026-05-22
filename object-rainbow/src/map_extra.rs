@@ -105,3 +105,9 @@ impl<M> Size for SmExtra<M> {
 impl<M> MaybeHasNiche for SmExtra<M> {
     type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
 }
+
+impl<M> ByteOrd for SmExtra<M> {
+    fn bytes_cmp(&self, _: &Self) -> Ordering {
+        Ordering::Equal
+    }
+}
