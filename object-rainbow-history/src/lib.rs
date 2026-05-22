@@ -7,7 +7,6 @@ use object_rainbow::{
     Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline, Size,
     Tagged, ToOutput, Topological, Traversible, assert_impl, derive_for_wrapped,
     map_extra::{SmExtra, StaticMap},
-    tuple_extra::Swap,
 };
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
@@ -384,17 +383,6 @@ impl<D: Send> Apply<D> for Return {
         diff: D,
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
         futures_util::future::ready(Ok(diff))
-    }
-}
-
-impl<A: Send, B: Send> Apply<(A, B)> for Swap {
-    type Output = (B, A);
-
-    fn apply(
-        &mut self,
-        (a, b): (A, B),
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        futures_util::future::ready(Ok((b, a)))
     }
 }
 
