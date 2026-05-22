@@ -299,33 +299,6 @@ impl<D: Send + Clone> Apply<D> for ToTuple2 {
     }
 }
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Default,
-)]
-pub struct ToTuple0;
-
-impl<D: Send> Apply<D> for ToTuple0 {
-    type Output = ();
-
-    fn apply(&mut self, _: D) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        futures_util::future::ready(Ok(()))
-    }
-}
-
 impl Apply<()> for () {
     type Output = ();
 

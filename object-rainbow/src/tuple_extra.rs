@@ -1,5 +1,15 @@
 use crate::map_extra::{SmExtra, StaticMap};
 
+pub struct StaticToTuple0;
+
+impl<T> StaticMap<T> for StaticToTuple0 {
+    type Mapped = ();
+
+    fn map_extra(_: T) -> Self::Mapped {}
+}
+
+pub type ToTuple0 = SmExtra<StaticToTuple0>;
+
 pub struct StaticExtra0;
 
 impl<A, B> StaticMap<(A, B)> for StaticExtra0 {
