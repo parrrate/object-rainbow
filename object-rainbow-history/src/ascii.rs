@@ -18,6 +18,7 @@ use crate::Apply;
     ParseInline,
     Size,
     MaybeHasNiche,
+    PartialEq,
 )]
 pub struct Split;
 
