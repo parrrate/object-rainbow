@@ -81,6 +81,7 @@ mod private {
     use ghost::phantom;
 
     #[phantom]
+    #[derive(Debug)]
     pub struct SmExtra<M>;
 }
 
