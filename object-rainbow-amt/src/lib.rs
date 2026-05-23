@@ -383,90 +383,54 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                         return Ok(());
                     }
                     let (mut s, mut o) = try_join(this.fetch_mut(), o_point.fetch_mut()).await?;
-                    if let Some(suffix) = o.0.0.0.strip_prefix(&*s.0.0.0) {
-                        if let Some((&first, _)) = suffix.split_first() {
-                            let mut prefix = o.0.0.0.drain(..s.0.0.0.len() + 1).collect::<Vec<_>>();
-                            drop(o);
-                            match s.1.entry(first) {
-                                object_rainbow_array_map::Entry::Vacant(e) => {
-                                    e.insert(MappedExtra(
-                                        Default::default(),
-                                        std::mem::take(other),
-                                    ));
-                                }
-                                object_rainbow_array_map::Entry::Occupied(e) => {
-                                    Box::pin(e.into_mut().append_swap(other)).await?;
-                                    match other {
-                                        Self::Empty => todo!(),
-                                        Self::Leaf(k, _) => {
-                                            k.pop_n(prefix.len())?;
-                                        }
-                                        Self::Sub(point) => {
-                                            let suffix = &mut point.fetch_mut().await?.0.0.0;
-                                            prefix.append(suffix);
-                                            *suffix = prefix;
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            let mut retain = Vec::new();
-                            {
-                                let mut futures = futures_util::stream::FuturesUnordered::new();
-                                for (key, node) in s.1.iter_mut() {
-                                    if let Some(mut other) = o.1.remove(key) {
-                                        futures.push(async move {
-                                            node.append_swap(&mut other).await?;
-                                            Ok::<_, object_rainbow::Error>((key, other))
-                                        });
-                                    }
-                                }
-                                while let Some((key, node)) = futures.try_next().await? {
-                                    if !node.is_empty() {
-                                        retain.push((key, node));
-                                    }
+                    if let Some(suffix) = o.0.0.0.strip_prefix(&*s.0.0.0)
+                        && let Some((&first, rest)) = suffix.split_first()
+                    {
+                        let rest = Vec::from(rest);
+                        o.0.0.0.drain(s.0.0.0.len()..);
+                        Self::make_branch(&mut o, first, &rest);
+                    }
+                    if let Some(suffix) = s.0.0.0.strip_prefix(&*o.0.0.0)
+                        && let Some((&first, rest)) = suffix.split_first()
+                    {
+                        let rest = Vec::from(rest);
+                        s.0.0.0.drain(o.0.0.0.len()..);
+                        Self::make_branch(&mut s, first, &rest);
+                    }
+                    if s.0.0.0 == o.0.0.0 {
+                        let mut retain = Vec::new();
+                        {
+                            let mut futures = futures_util::stream::FuturesUnordered::new();
+                            for (key, node) in s.1.iter_mut() {
+                                if let Some(mut other) = o.1.remove(key) {
+                                    futures.push(async move {
+                                        node.append_swap(&mut other).await?;
+                                        Ok::<_, object_rainbow::Error>((key, other))
+                                    });
                                 }
                             }
-                            while let Some((key, sub)) = o.1.pop_first() {
-                                assert!(!s.1.contains(key));
-                                s.1.insert(key, sub);
-                            }
-                            assert!(o.is_empty());
-                            o.1.extend(retain);
-                            let node = Self::collapse(&mut o).await?;
-                            drop(o);
-                            if let Some(node) = node {
-                                *other = node;
+                            while let Some((key, node)) = futures.try_next().await? {
+                                if !node.is_empty() {
+                                    retain.push((key, node));
+                                }
                             }
                         }
-                    } else if let Some(suffix) = s.0.0.0.strip_prefix(&*o.0.0.0) {
-                        let Some((&first, _)) = suffix.split_first() else {
-                            unreachable!()
-                        };
-                        let mut prefix = s.0.0.0.drain(..o.0.0.0.len() + 1).collect::<Vec<_>>();
+                        while let Some((key, sub)) = o.1.pop_first() {
+                            assert!(!s.1.contains(key));
+                            s.1.insert(key, sub);
+                        }
+                        assert!(o.is_empty());
+                        o.1.extend(retain);
+                        let n_s = Self::collapse(&mut s).await?;
+                        let n_o = Self::collapse(&mut o).await?;
                         drop(s);
-                        match o.1.entry(first) {
-                            object_rainbow_array_map::Entry::Vacant(e) => {
-                                e.insert(MappedExtra(Default::default(), std::mem::take(self)));
-                            }
-                            object_rainbow_array_map::Entry::Occupied(mut e) => {
-                                std::mem::swap(&mut **e.get_mut(), self);
-                                Box::pin(e.get_mut().append_swap(self)).await?;
-                                match self {
-                                    Self::Empty => todo!(),
-                                    Self::Leaf(k, _) => {
-                                        k.pop_n(prefix.len())?;
-                                    }
-                                    Self::Sub(point) => {
-                                        let suffix = &mut point.fetch_mut().await?.0.0.0;
-                                        prefix.append(suffix);
-                                        *suffix = prefix;
-                                    }
-                                }
-                            }
-                        }
                         drop(o);
-                        std::mem::swap(self, other);
+                        if let Some(n_s) = n_s {
+                            *other = n_s;
+                        }
+                        if let Some(n_o) = n_o {
+                            *other = n_o;
+                        }
                     } else {
                         let n = common_length(&s.0.0.0, &o.0.0.0)?;
                         let common = &*s.0.0.0[..n].to_vec();
@@ -488,6 +452,17 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
             }
             Ok(())
         }
+    }
+
+    fn make_branch(subs: &mut Subs<K, V>, first: u8, rest: &[u8]) {
+        let node = Self::Sub(
+            MappedExtra(
+                WithBytes(LpBytes(rest.into())),
+                KeyedArrayMap(std::mem::take(&mut subs.1)),
+            )
+            .point(),
+        );
+        subs.1.insert(first, MappedExtra(Default::default(), node));
     }
 
     async fn collapse(subs: &mut Subs<K, V>) -> object_rainbow::Result<Option<Self>> {
