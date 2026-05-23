@@ -30,6 +30,12 @@ impl<T: ByteOrd> Ord for Zt<T> {
     }
 }
 
+impl<T: ByteOrd> ByteOrd for Zt<T> {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.cmp(other)
+    }
+}
+
 impl<T: ToOutput> Zt<T> {
     /// Create a zero-terminated value.
     ///
