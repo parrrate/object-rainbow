@@ -58,6 +58,10 @@ impl<K, V> Node<K, V> {
     fn is_empty(&self) -> bool {
         matches!(self, Self::Empty)
     }
+
+    fn clear(&mut self) {
+        std::mem::take(self);
+    }
 }
 
 impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone> Node<K, V> {
@@ -236,10 +240,6 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
             }
             _ => Ok(None),
         }
-    }
-
-    fn clear(&mut self) {
-        std::mem::take(self);
     }
 
     fn append(
