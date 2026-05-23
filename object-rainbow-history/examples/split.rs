@@ -52,5 +52,7 @@ async fn main() -> object_rainbow::Result<()> {
                 .await?,
         );
     }
+    let x = history.apply((Some("a b a".into()), id)).await?;
+    println!("{x:?}");
     Ok(())
 }
