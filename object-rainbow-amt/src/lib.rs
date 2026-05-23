@@ -54,6 +54,12 @@ assert_impl!(
     }
 );
 
+impl<K, V> Node<K, V> {
+    fn is_empty(&self) -> bool {
+        matches!(self, Self::Empty)
+    }
+}
+
 impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone> Node<K, V> {
     async fn get(&self, key: &[u8]) -> object_rainbow::Result<Option<V>> {
         match self {
@@ -234,10 +240,6 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
 
     fn clear(&mut self) {
         std::mem::take(self);
-    }
-
-    fn is_empty(&self) -> bool {
-        matches!(self, Self::Empty)
     }
 
     fn append(
