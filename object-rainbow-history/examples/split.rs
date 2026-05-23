@@ -19,7 +19,7 @@ type History = Sequential<
         MappedToSet<ToSet>,
         FromIter<
             Sequential<
-                Compose<Compose<Map1<Compose<AsciiSplit1, FMap<Swap>>>, OneCrossN>, UniqueSorted>,
+                Compose<Map1<Compose<Compose<AsciiSplit1, FMap<Swap>>, UniqueSorted>>, OneCrossN>,
                 FromIter<AmtSet<(LpString, Ulid)>>,
             >,
         >,
