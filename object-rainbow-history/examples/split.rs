@@ -1,6 +1,6 @@
 use macro_rules_attribute::apply;
 use object_rainbow::{
-    ascii::AsciiSplit1,
+    ascii::AsciiSplit,
     length_prefixed::LpString,
     map_extra::{Compose, FMap, Return, UniqueSorted},
     tuple_extra::{Map1, OneCrossN, Swap},
@@ -19,7 +19,15 @@ type History = Sequential<
         MappedToSet<ToSet>,
         FromIter<
             Sequential<
-                Compose<Map1<Compose<Compose<AsciiSplit1, FMap<Swap>>, UniqueSorted>>, OneCrossN>,
+                Compose<
+                    Map1<
+                        Compose<
+                            Compose<Map1<Compose<AsciiSplit, UniqueSorted>>, OneCrossN>,
+                            FMap<Swap>,
+                        >,
+                    >,
+                    OneCrossN,
+                >,
                 FromIter<AmtSet<(LpString, Ulid)>>,
             >,
         >,
