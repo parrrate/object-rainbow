@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::{with_repr::WithRepr, *};
 
 /// Zero-terminated value. Used to make [`Inline`]s out of [`Object`]s which don't contain zeroes.
@@ -68,4 +70,12 @@ impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Zt<T> {
 
 impl<T: MaybeHasNiche<MnArray = NoNiche<NicheForUnsized>>> MaybeHasNiche for Zt<T> {
     type MnArray = NoNiche<NicheForUnsized>;
+}
+
+impl<T: FromStr<Err: 'static + Send + Sync + std::error::Error> + ToOutput> FromStr for Zt<T> {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Self::new(s.parse().map_err(Error::parse)?)
+    }
 }
