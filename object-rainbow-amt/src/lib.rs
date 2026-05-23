@@ -246,18 +246,21 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         mut replace: bool,
     ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
         async move {
-            if matches!((&*self, &*other), (Self::Leaf(_, _), Self::Sub(_))) {
-                std::mem::swap(self, other);
-                replace = !replace;
-            }
             match (&mut *self, &mut *other) {
                 (_, Self::Empty) => {}
                 (Self::Empty, _) => std::mem::swap(self, other),
-                (this, Self::Leaf(_, _)) => {
+                (_, Self::Leaf(_, _)) => {
                     let Self::Leaf(k, MappedExtra(_, v)) = std::mem::take(other) else {
                         unreachable!()
                     };
-                    this.insert(&k.vec(), k.into_value(), v, replace).await?;
+                    self.insert(&k.vec(), k.into_value(), v, replace).await?;
+                }
+                (Self::Leaf(_, _), _) => {
+                    let Self::Leaf(k, MappedExtra(_, v)) = std::mem::take(self) else {
+                        unreachable!()
+                    };
+                    other.insert(&k.vec(), k.into_value(), v, !replace).await?;
+                    std::mem::swap(self, other);
                 }
                 (Self::Sub(this), Self::Sub(o_point)) => {
                     if this.hash() == o_point.hash() {
@@ -322,7 +325,6 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                         );
                     }
                 }
-                (Self::Leaf(_, _), Self::Sub(_)) => unreachable!(),
             }
             assert!(other.is_empty());
             Ok(())
