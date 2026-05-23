@@ -18,6 +18,12 @@ impl<T> PartialEq for Zt<T> {
 
 impl<T> Eq for Zt<T> {}
 
+impl<T> PartialOrd for Zt<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.inner.partial_cmp(&other.inner)
+    }
+}
+
 impl<T: ToOutput> Zt<T> {
     /// Create a zero-terminated value.
     ///
