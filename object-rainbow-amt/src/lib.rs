@@ -130,15 +130,15 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         k_new: K,
         v_new: V,
         replace: bool,
-    ) -> object_rainbow::Result<Option<V>> {
+    ) -> object_rainbow::Result<Option<(K, V)>> {
         match &mut *self {
             Self::Leaf(k, MappedExtra(_, v)) => {
                 let vec = k.vec();
                 if vec == key {
                     if replace {
-                        Ok(Some(std::mem::replace(v, v_new)))
+                        Ok(Some((k.replace_equal(k_new), std::mem::replace(v, v_new))))
                     } else {
-                        Ok(Some(v_new))
+                        Ok(Some((k_new, v_new)))
                     }
                 } else {
                     let Self::Leaf(k, MappedExtra(_, v)) = std::mem::take(self) else {
@@ -422,7 +422,10 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     }
 
     pub async fn insert(&mut self, k: K, v: V) -> object_rainbow::Result<Option<V>> {
-        self.0.insert(&k.vec(), k, v, true).await
+        self.0
+            .insert(&k.vec(), k, v, true)
+            .await
+            .map(|o| o.map(|(_, v)| v))
     }
 
     pub async fn remove(&mut self, k: &K) -> object_rainbow::Result<Option<V>> {
