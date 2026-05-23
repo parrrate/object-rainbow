@@ -218,3 +218,5 @@ impl<A: IntoIterator<Item = B>, B: IntoIterator<Item = C>, C> StaticMap<A> for S
         a.into_iter().flatten().collect()
     }
 }
+
+pub type Flatten = SmExtra<StaticFlatten>;
