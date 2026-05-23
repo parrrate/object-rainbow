@@ -13,7 +13,7 @@ use object_rainbow_history::{
 use smol_macros::main;
 use ulid::Ulid;
 
-type History = Sequential<
+type WordSearch = Sequential<
     Parallel<AmtMap<Ulid, LpString>, Return>,
     Sequential<
         MappedToSet<ToSet>,
@@ -36,7 +36,7 @@ type History = Sequential<
 
 #[apply(main!)]
 async fn main() -> object_rainbow::Result<()> {
-    let mut history = History::default();
+    let mut history = WordSearch::default();
     let id = Ulid::new();
     let x = history.apply((Some("a b a".into()), id)).await?;
     println!("{x:?}");
