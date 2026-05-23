@@ -243,7 +243,6 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     fn append(
         &mut self,
         other: &mut Self,
-        mut replace: bool,
     ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
         async move {
             match (&mut *self, &mut *other) {
@@ -253,13 +252,13 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                     let Self::Leaf(k, MappedExtra(_, v)) = std::mem::take(other) else {
                         unreachable!()
                     };
-                    self.insert(&k.vec(), k.into_value(), v, replace).await?;
+                    self.insert(&k.vec(), k.into_value(), v, true).await?;
                 }
                 (Self::Leaf(_, _), _) => {
                     let Self::Leaf(k, MappedExtra(_, v)) = std::mem::take(self) else {
                         unreachable!()
                     };
-                    other.insert(&k.vec(), k.into_value(), v, !replace).await?;
+                    other.insert(&k.vec(), k.into_value(), v, false).await?;
                     std::mem::swap(self, other);
                 }
                 (Self::Sub(this), Self::Sub(o_point)) => {
@@ -268,10 +267,6 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                         return Ok(());
                     }
                     let (mut s, mut o) = try_join(this.fetch_mut(), o_point.fetch_mut()).await?;
-                    if s.0.0.0.len() > o.0.0.0.len() {
-                        std::mem::swap(&mut *s, &mut *o);
-                        replace = !replace;
-                    }
                     if let Some(suffix) = o.0.0.0.strip_prefix(&*s.0.0.0) {
                         if let Some((&first, _)) = suffix.split_first() {
                             o.0.0.0.drain(..s.0.0.0.len() + 1);
@@ -284,7 +279,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                                     ));
                                 }
                                 object_rainbow_array_map::Entry::Occupied(e) => {
-                                    Box::pin(e.into_mut().append(other, replace)).await?;
+                                    Box::pin(e.into_mut().append(other)).await?;
                                 }
                             }
                         } else {
@@ -292,9 +287,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                                 let mut futures = futures_util::stream::FuturesUnordered::new();
                                 for (key, node) in s.1.iter_mut() {
                                     if let Some(mut other) = o.1.remove(key) {
-                                        futures.push(async move {
-                                            node.append(&mut other, replace).await
-                                        });
+                                        futures.push(async move { node.append(&mut other).await });
                                     }
                                 }
                                 while futures.try_next().await?.is_some() {}
@@ -307,6 +300,24 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                             drop(o);
                             *other = Self::Empty;
                         }
+                    } else if let Some(suffix) = s.0.0.0.strip_prefix(&*o.0.0.0) {
+                        let Some((&first, _)) = suffix.split_first() else {
+                            unreachable!()
+                        };
+                        s.0.0.0.drain(..o.0.0.0.len() + 1);
+                        drop(s);
+                        match o.1.entry(first) {
+                            object_rainbow_array_map::Entry::Vacant(e) => {
+                                e.insert(MappedExtra(Default::default(), std::mem::take(self)));
+                            }
+                            object_rainbow_array_map::Entry::Occupied(e) => {
+                                let other = e.into_mut();
+                                Box::pin(other.append(self)).await?;
+                                std::mem::swap(self, other);
+                            }
+                        }
+                        drop(o);
+                        std::mem::swap(self, other);
                     } else {
                         let n = common_length(&s.0.0.0, &o.0.0.0)?;
                         let common = &*s.0.0.0[..n].to_vec();
@@ -445,7 +456,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     }
 
     pub async fn append(&mut self, other: &mut Self) -> object_rainbow::Result<()> {
-        self.0.append(&mut other.0, true).await
+        self.0.append(&mut other.0).await
     }
 }
 
