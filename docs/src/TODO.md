@@ -7,3 +7,4 @@
 - encrypted IPLD storage
 - `Ipld`
 - `#[derive(ByteOrd)]`
+- `{Amt,Hamt,Trie}{Map,Set}: FromIterator`
