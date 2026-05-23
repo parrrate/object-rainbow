@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{fmt::Display, str::FromStr};
 
 use crate::{with_repr::WithRepr, *};
 
@@ -95,5 +95,11 @@ impl<T: FromStr<Err: 'static + Send + Sync + std::error::Error> + ToOutput> From
 impl<T: AsRef<str>> AsRef<str> for Zt<T> {
     fn as_ref(&self) -> &str {
         self.inner.object().as_ref()
+    }
+}
+
+impl<T: Display> Display for Zt<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.inner.object().fmt(f)
     }
 }
