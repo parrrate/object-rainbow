@@ -1,17 +1,18 @@
 use crate::{
-    length_prefixed::LpString,
     map_extra::{SmExtra, StaticMap},
+    zero_terminated::Zt,
 };
 
 pub struct StaticAsciiSplit;
 
 impl<S: AsRef<str>> StaticMap<S> for StaticAsciiSplit {
-    type Mapped = Vec<LpString>;
+    type Mapped = Vec<Zt<String>>;
 
     fn static_map(x: S) -> Self::Mapped {
         x.as_ref()
-            .split_ascii_whitespace()
-            .map(From::from)
+            .split(['\0', '\t', '\n', '\x0C', '\r', ' '].as_slice())
+            .filter(|s| !s.is_empty())
+            .map(|x| Zt::new(String::from(x)).expect("no zeroes allowed here"))
             .collect()
     }
 }
@@ -19,7 +20,7 @@ impl<S: AsRef<str>> StaticMap<S> for StaticAsciiSplit {
 pub type AsciiSplit = SmExtra<StaticAsciiSplit>;
 
 #[test]
-fn ascii_split1() {
+fn ascii_split1() -> crate::Result<()> {
     use crate::{
         map_extra::Compose,
         tuple_extra::{Map1, OneCrossN},
@@ -27,6 +28,7 @@ fn ascii_split1() {
     type AsciiSplit1 = Compose<Map1<AsciiSplit>, OneCrossN>;
     assert_eq!(
         AsciiSplit1::static_map((1, "a b")),
-        [(1, "a".into()), (1, "b".into())],
+        [(1, "a".parse()?), (1, "b".parse()?)],
     );
+    Ok(())
 }

@@ -1,9 +1,9 @@
 use macro_rules_attribute::apply;
 use object_rainbow::{
     ascii::AsciiSplit,
-    length_prefixed::LpString,
     map_extra::{Compose, FMap, Flatten, Return, UniqueSorted},
     tuple_extra::{Map1, OneCrossN, Swap},
+    zero_terminated::Zt,
 };
 use object_rainbow_amt::{AmtMap, AmtSet};
 use object_rainbow_history::{
@@ -14,7 +14,7 @@ use smol_macros::main;
 use ulid::Ulid;
 
 type WordSearch = Sequential<
-    Sequential<Parallel<AmtMap<Ulid, LpString>, Return>, MappedToSet<ToSet>>,
+    Sequential<Parallel<AmtMap<Ulid, Zt<String>>, Return>, MappedToSet<ToSet>>,
     Sequential<
         FromIter<
             Sequential<
@@ -27,7 +27,7 @@ type WordSearch = Sequential<
                     >,
                     OneCrossN,
                 >,
-                FromIter<Parallel<AmtSet<(LpString, Ulid)>, Return>>,
+                FromIter<Parallel<AmtSet<(Zt<String>, Ulid)>, Return>>,
             >,
         >,
         Flatten,
@@ -38,7 +38,7 @@ type WordSearch = Sequential<
 async fn main() -> object_rainbow::Result<()> {
     let mut history = WordSearch::default();
     let id = Ulid::new();
-    let x = history.apply((Some("a b a".into()), id)).await?;
+    let x = history.apply((Some("a b a".parse()?), id)).await?;
     for (a, (b, (c, d))) in x {
         println!("{a} {b} {c} {d}");
     }
@@ -52,12 +52,12 @@ async fn main() -> object_rainbow::Result<()> {
                 .0
                 .second()
                 .0
-                .contains(&(key.into(), id))
+                .contains(&(key.parse()?, id))
                 .await?,
         );
     }
     println!();
-    let x = history.apply((Some("a b c".into()), id)).await?;
+    let x = history.apply((Some("a b c".parse()?), id)).await?;
     for (a, (b, (c, d))) in x {
         println!("{a} {b} {c} {d}");
     }
