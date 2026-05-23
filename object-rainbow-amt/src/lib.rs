@@ -273,13 +273,16 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                         if let Some((&first, _)) = suffix.split_first() {
                             o.0.0.0.drain(..s.0.0.0.len() + 1);
                             drop(o);
-                            if let Some(node) = s.1.get_mut(first) {
-                                Box::pin(node.append(other, replace)).await?;
-                            } else {
-                                s.1.insert(
-                                    first,
-                                    MappedExtra(Default::default(), std::mem::take(other)),
-                                );
+                            match s.1.entry(first) {
+                                object_rainbow_array_map::Entry::Vacant(e) => {
+                                    e.insert(MappedExtra(
+                                        Default::default(),
+                                        std::mem::take(other),
+                                    ));
+                                }
+                                object_rainbow_array_map::Entry::Occupied(e) => {
+                                    Box::pin(e.into_mut().append(other, replace)).await?;
+                                }
                             }
                         } else {
                             {
