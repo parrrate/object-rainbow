@@ -208,3 +208,5 @@ impl<T: Ord, I: IntoIterator<Item = T>> StaticMap<I> for StaticUniqueSorted {
 }
 
 pub type UniqueSorted = SmExtra<StaticUniqueSorted>;
+
+pub struct StaticFlatten;
