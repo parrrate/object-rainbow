@@ -342,6 +342,152 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         }
     }
 
+    fn append_swap(
+        &mut self,
+        other: &mut Self,
+    ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+        async move {
+            match (&mut *self, &mut *other) {
+                (_, Self::Empty) => {}
+                (Self::Empty, _) => std::mem::swap(self, other),
+                (_, Self::Leaf(_, _)) => {
+                    let Self::Leaf(k, MappedExtra(_, v)) = std::mem::take(other) else {
+                        unreachable!()
+                    };
+                    let prefix = k.prefix().clone();
+                    if let Some((k, v)) = self.insert(&k.vec(), k.into_value(), v, true).await? {
+                        *other = Self::Leaf(
+                            WithPrefix::new(prefix, k)?,
+                            MappedExtra(Default::default(), v),
+                        );
+                    }
+                }
+                (Self::Leaf(_, _), _) => {
+                    let Self::Leaf(k, MappedExtra(_, v)) = std::mem::take(self) else {
+                        unreachable!()
+                    };
+                    let prefix = k.prefix().clone();
+                    if let Some((k, v)) = other.insert(&k.vec(), k.into_value(), v, false).await? {
+                        *self = Self::Leaf(
+                            WithPrefix::new(prefix, k)?,
+                            MappedExtra(Default::default(), v),
+                        );
+                    }
+                    std::mem::swap(self, other);
+                }
+                (Self::Sub(this), Self::Sub(o_point)) => {
+                    if this.hash() == o_point.hash() {
+                        std::mem::swap(self, other);
+                        return Ok(());
+                    }
+                    let (mut s, mut o) = try_join(this.fetch_mut(), o_point.fetch_mut()).await?;
+                    if let Some(suffix) = o.0.0.0.strip_prefix(&*s.0.0.0) {
+                        if let Some((&first, _)) = suffix.split_first() {
+                            let mut prefix = o.0.0.0.drain(..s.0.0.0.len() + 1).collect::<Vec<_>>();
+                            drop(o);
+                            match s.1.entry(first) {
+                                object_rainbow_array_map::Entry::Vacant(e) => {
+                                    e.insert(MappedExtra(
+                                        Default::default(),
+                                        std::mem::take(other),
+                                    ));
+                                }
+                                object_rainbow_array_map::Entry::Occupied(e) => {
+                                    Box::pin(e.into_mut().append_swap(other)).await?;
+                                    match other {
+                                        Self::Empty => todo!(),
+                                        Self::Leaf(k, _) => {
+                                            k.pop_n(prefix.len())?;
+                                        }
+                                        Self::Sub(point) => {
+                                            let suffix = &mut point.fetch_mut().await?.0.0.0;
+                                            prefix.append(suffix);
+                                            *suffix = prefix;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            let mut retain = Vec::new();
+                            {
+                                let mut futures = futures_util::stream::FuturesUnordered::new();
+                                for (key, node) in s.1.iter_mut() {
+                                    if let Some(mut other) = o.1.remove(key) {
+                                        futures.push(async move {
+                                            node.append_swap(&mut other).await?;
+                                            Ok::<_, object_rainbow::Error>((key, other))
+                                        });
+                                    }
+                                }
+                                while let Some((key, node)) = futures.try_next().await? {
+                                    if !node.is_empty() {
+                                        retain.push((key, node));
+                                    }
+                                }
+                            }
+                            while let Some((key, sub)) = o.1.pop_first() {
+                                assert!(!s.1.contains(key));
+                                s.1.insert(key, sub);
+                            }
+                            assert!(o.is_empty());
+                            o.1.extend(retain);
+                            let node = Self::collapse(&mut o).await?;
+                            drop(o);
+                            if let Some(node) = node {
+                                *other = node;
+                            }
+                        }
+                    } else if let Some(suffix) = s.0.0.0.strip_prefix(&*o.0.0.0) {
+                        let Some((&first, _)) = suffix.split_first() else {
+                            unreachable!()
+                        };
+                        let mut prefix = s.0.0.0.drain(..o.0.0.0.len() + 1).collect::<Vec<_>>();
+                        drop(s);
+                        match o.1.entry(first) {
+                            object_rainbow_array_map::Entry::Vacant(e) => {
+                                e.insert(MappedExtra(Default::default(), std::mem::take(self)));
+                            }
+                            object_rainbow_array_map::Entry::Occupied(mut e) => {
+                                std::mem::swap(&mut **e.get_mut(), self);
+                                Box::pin(e.get_mut().append_swap(self)).await?;
+                                match self {
+                                    Self::Empty => todo!(),
+                                    Self::Leaf(k, _) => {
+                                        k.pop_n(prefix.len())?;
+                                    }
+                                    Self::Sub(point) => {
+                                        let suffix = &mut point.fetch_mut().await?.0.0.0;
+                                        prefix.append(suffix);
+                                        *suffix = prefix;
+                                    }
+                                }
+                            }
+                        }
+                        drop(o);
+                        std::mem::swap(self, other);
+                    } else {
+                        let n = common_length(&s.0.0.0, &o.0.0.0)?;
+                        let common = &*s.0.0.0[..n].to_vec();
+                        let first_s = s.0.0.0[n];
+                        let first_o = o.0.0.0[n];
+                        s.0.0.0.drain(..n + 1);
+                        o.0.0.0.drain(..n + 1);
+                        drop(s);
+                        drop(o);
+                        *self = Self::from_pair(
+                            common,
+                            first_s,
+                            first_o,
+                            std::mem::take(self),
+                            std::mem::take(other),
+                        );
+                    }
+                }
+            }
+            Ok(())
+        }
+    }
+
     async fn collapse(subs: &mut Subs<K, V>) -> object_rainbow::Result<Option<Self>> {
         Ok(if let Some(collapse_ctx) = Self::collapse_ctx(subs) {
             Some(Self::from_ctx(collapse_ctx).await?)
@@ -457,6 +603,10 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
 
     pub async fn append(&mut self, other: &mut Self) -> object_rainbow::Result<()> {
         self.0.append(&mut other.0).await
+    }
+
+    pub async fn append_swap(&mut self, other: &mut Self) -> object_rainbow::Result<()> {
+        self.0.append_swap(&mut other.0).await
     }
 }
 
@@ -620,6 +770,45 @@ mod test {
         assert_eq!(a.get(b"abce").await?, Some(()));
         assert_eq!(a.get(b"abff").await?, Some(()));
         assert_eq!(a.get(b"abfg").await?, Some(()));
+        Ok(())
+    }
+
+    #[apply(test!)]
+    async fn append_swap() -> object_rainbow::Result<()> {
+        let mut a = AmtMap::<[u8; 4], bool>::new();
+        a.insert(*b"abcd", false).await?;
+        a.insert(*b"abce", false).await?;
+        a.insert(*b"abff", false).await?;
+        a.insert(*b"abfg", false).await?;
+        a.insert(*b"xxx1", true).await?;
+        a.insert(*b"xxx2", true).await?;
+        let mut b = AmtMap::<[u8; 4], bool>::new();
+        b.insert(*b"abcd", true).await?;
+        b.insert(*b"abce", true).await?;
+        b.insert(*b"abff", true).await?;
+        b.insert(*b"abfg", true).await?;
+        b.insert(*b"ahij", true).await?;
+        b.insert(*b"xxy1", true).await?;
+        b.insert(*b"xxy2", true).await?;
+        a.append_swap(&mut b).await?;
+        assert_eq!(a.get(b"abcd").await?, Some(true));
+        assert_eq!(a.get(b"abce").await?, Some(true));
+        assert_eq!(a.get(b"abff").await?, Some(true));
+        assert_eq!(a.get(b"abfg").await?, Some(true));
+        assert_eq!(a.get(b"ahij").await?, Some(true));
+        assert_eq!(a.get(b"xxx1").await?, Some(true));
+        assert_eq!(a.get(b"xxx2").await?, Some(true));
+        assert_eq!(a.get(b"xxy2").await?, Some(true));
+        assert_eq!(a.get(b"xxy2").await?, Some(true));
+
+        assert_eq!(b.get(b"abcd").await?, Some(false));
+        assert_eq!(b.get(b"abce").await?, Some(false));
+        assert_eq!(b.get(b"abff").await?, Some(false));
+        assert_eq!(b.get(b"abfg").await?, Some(false));
+        assert_eq!(b.get(b"xxx1").await?, None);
+        assert_eq!(b.get(b"xxx2").await?, None);
+        assert_eq!(b.get(b"xxy2").await?, None);
+        assert_eq!(b.get(b"xxy2").await?, None);
         Ok(())
     }
 }
