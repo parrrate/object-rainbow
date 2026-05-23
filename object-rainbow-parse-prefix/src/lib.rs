@@ -128,6 +128,14 @@ impl<T> WithPrefix<T> {
         &self.prefix
     }
 
+    pub fn replace_equal(&mut self, new: T) -> T
+    where
+        T: ToOutput,
+    {
+        assert_eq!(self.value.vec(), new.vec());
+        std::mem::replace(&mut self.value, new)
+    }
+
     pub fn value(&self) -> &T {
         &self.value
     }
