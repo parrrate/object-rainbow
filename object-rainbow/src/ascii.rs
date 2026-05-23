@@ -1,4 +1,5 @@
 use crate::{
+    length_prefixed::LpString,
     map_extra::{Compose, SmExtra, StaticMap},
     tuple_extra::{Map1, OneCrossN},
 };
@@ -6,7 +7,7 @@ use crate::{
 pub struct StaticAsciiSplit;
 
 impl<S: AsRef<str>> StaticMap<S> for StaticAsciiSplit {
-    type Mapped = Vec<String>;
+    type Mapped = Vec<LpString>;
 
     fn static_map(x: S) -> Self::Mapped {
         x.as_ref()
