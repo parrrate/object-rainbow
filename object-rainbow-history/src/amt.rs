@@ -30,6 +30,17 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     }
 }
 
+impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone> Apply<Self>
+    for AmtMap<K, V>
+{
+    type Output = Self;
+
+    async fn apply(&mut self, mut diff: Self) -> object_rainbow::Result<Self::Output> {
+        self.append_swap(&mut diff).await?;
+        Ok(diff)
+    }
+}
+
 impl<T: InlineOutput + Traversible + Clone> Apply<(bool, T)> for AmtSet<T> {
     type Output = bool;
 
