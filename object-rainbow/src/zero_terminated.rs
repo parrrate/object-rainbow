@@ -14,6 +14,8 @@ impl<T> PartialEq for Zt<T> {
     }
 }
 
+impl<T> Eq for Zt<T> {}
+
 impl<T: ToOutput> Zt<T> {
     /// Create a zero-terminated value.
     ///
