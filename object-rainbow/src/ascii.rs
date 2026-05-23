@@ -1,7 +1,6 @@
 use crate::{
     length_prefixed::LpString,
-    map_extra::{Compose, SmExtra, StaticMap},
-    tuple_extra::{Map1, OneCrossN},
+    map_extra::{SmExtra, StaticMap},
 };
 
 pub struct StaticAsciiSplit;
@@ -19,10 +18,13 @@ impl<S: AsRef<str>> StaticMap<S> for StaticAsciiSplit {
 
 pub type AsciiSplit = SmExtra<StaticAsciiSplit>;
 
-pub type AsciiSplit1 = Compose<Map1<AsciiSplit>, OneCrossN>;
-
 #[test]
 fn ascii_split1() {
+    use crate::{
+        map_extra::Compose,
+        tuple_extra::{Map1, OneCrossN},
+    };
+    type AsciiSplit1 = Compose<Map1<AsciiSplit>, OneCrossN>;
     assert_eq!(
         AsciiSplit1::static_map((1, "a b")),
         [(1, "a".into()), (1, "b".into())],
