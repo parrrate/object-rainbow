@@ -68,3 +68,12 @@ impl<T: InlineOutput + Traversible + Clone> Apply<((), T)> for AmtSet<T> {
         self.insert(value).await
     }
 }
+
+impl<T: InlineOutput + Traversible + Clone> Apply<Self> for AmtSet<T> {
+    type Output = Self;
+
+    async fn apply(&mut self, mut diff: Self) -> object_rainbow::Result<Self::Output> {
+        self.append_swap(&mut diff).await?;
+        Ok(diff)
+    }
+}
