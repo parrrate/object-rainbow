@@ -272,11 +272,10 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                     if let Some(suffix) = o.0.0.0.strip_prefix(&*s.0.0.0) {
                         if let Some((&first, _)) = suffix.split_first() {
                             o.0.0.0.drain(..s.0.0.0.len() + 1);
+                            drop(o);
                             if let Some(node) = s.1.get_mut(first) {
-                                drop(o);
                                 Box::pin(node.append(other, replace)).await?;
                             } else {
-                                drop(o);
                                 s.1.insert(
                                     first,
                                     MappedExtra(Default::default(), std::mem::take(other)),
