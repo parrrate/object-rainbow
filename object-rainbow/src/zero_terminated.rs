@@ -18,13 +18,13 @@ impl<T> PartialEq for Zt<T> {
 
 impl<T> Eq for Zt<T> {}
 
-impl<T> PartialOrd for Zt<T> {
+impl<T: ByteOrd> PartialOrd for Zt<T> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<T> Ord for Zt<T> {
+impl<T: ByteOrd> Ord for Zt<T> {
     fn cmp(&self, other: &Self) -> Ordering {
         self.inner.cmp(&other.inner)
     }
