@@ -210,3 +210,11 @@ impl<T: Ord, I: IntoIterator<Item = T>> StaticMap<I> for StaticUniqueSorted {
 pub type UniqueSorted = SmExtra<StaticUniqueSorted>;
 
 pub struct StaticFlatten;
+
+impl<A: IntoIterator<Item = B>, B: IntoIterator<Item = C>, C> StaticMap<A> for StaticFlatten {
+    type Mapped = Vec<C>;
+
+    fn static_map(a: A) -> Self::Mapped {
+        a.into_iter().flatten().collect()
+    }
+}
