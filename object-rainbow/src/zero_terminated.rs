@@ -91,3 +91,9 @@ impl<T: FromStr<Err: 'static + Send + Sync + std::error::Error> + ToOutput> From
         Self::new(s.parse().map_err(Error::parse)?)
     }
 }
+
+impl<T: AsRef<str>> AsRef<str> for Zt<T> {
+    fn as_ref(&self) -> &str {
+        self.inner.object().as_ref()
+    }
+}
