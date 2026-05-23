@@ -113,6 +113,12 @@ impl Topological for LpBytes {}
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LpString(pub String);
 
+impl AsRef<str> for LpString {
+    fn as_ref(&self) -> &str {
+        self
+    }
+}
+
 impl Deref for LpString {
     type Target = String;
 
