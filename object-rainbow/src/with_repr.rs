@@ -63,6 +63,12 @@ impl<T> Ord for WithRepr<T> {
     }
 }
 
+impl<T: ToOutput> ByteOrd for WithRepr<T> {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.cmp(other)
+    }
+}
+
 impl<T: Parse<I> + ToOutput, I: ParseInput> Parse<I> for WithRepr<T> {
     fn parse(input: I) -> crate::Result<Self> {
         Ok(Self::new(input.parse()?))
