@@ -8,6 +8,12 @@ pub struct Zt<T> {
     inner: Arc<WithRepr<T>>,
 }
 
+impl<T> PartialEq for Zt<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.inner == other.inner
+    }
+}
+
 impl<T: ToOutput> Zt<T> {
     /// Create a zero-terminated value.
     ///
