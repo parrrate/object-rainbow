@@ -65,3 +65,7 @@ impl<T: Parse<I>, I: ParseInput> ParseInline<I> for Zt<T> {
         Ok(Self { inner })
     }
 }
+
+impl<T: MaybeHasNiche<MnArray = NoNiche<NicheForUnsized>>> MaybeHasNiche for Zt<T> {
+    type MnArray = NoNiche<NicheForUnsized>;
+}
