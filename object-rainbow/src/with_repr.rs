@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(Tagged, ListHashes, Topological)]
+#[derive(Debug, Tagged, ListHashes, Topological)]
 pub struct WithRepr<T> {
     object: T,
     data: Vec<u8>,
