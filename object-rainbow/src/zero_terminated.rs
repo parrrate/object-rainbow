@@ -20,7 +20,13 @@ impl<T> Eq for Zt<T> {}
 
 impl<T> PartialOrd for Zt<T> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.inner.partial_cmp(&other.inner)
+        Some(self.cmp(other))
+    }
+}
+
+impl<T> Ord for Zt<T> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.inner.cmp(&other.inner)
     }
 }
 
