@@ -52,3 +52,36 @@ impl<K: Send + Clone, V: Send, M: MapToSet<K, V>> Apply<(Option<V>, (Option<V>, 
         Ok(diff)
     }
 }
+
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Size,
+    MaybeHasNiche,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Default,
+)]
+pub struct ToSet;
+
+impl<K: Send, V: Send> MapToSet<K, V> for ToSet {
+    type T = (K, V);
+
+    fn map(
+        &self,
+        key: K,
+        value: V,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Self::T>> {
+        core::future::ready(Ok((key, value)))
+    }
+}
