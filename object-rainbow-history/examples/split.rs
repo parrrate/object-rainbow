@@ -27,7 +27,7 @@ type WordSearch = Sequential<
                     >,
                     OneCrossN,
                 >,
-                FromIter<AmtSet<(LpString, Ulid)>>,
+                FromIter<Parallel<AmtSet<(LpString, Ulid)>, Return>>,
             >,
         >,
         Flatten,
@@ -39,7 +39,9 @@ async fn main() -> object_rainbow::Result<()> {
     let mut history = WordSearch::default();
     let id = Ulid::new();
     let x = history.apply((Some("a b a".into()), id)).await?;
-    println!("{x:?}");
+    for (a, (b, (c, d))) in x {
+        println!("{a} {b} {c} {d}");
+    }
     for key in ["a", "b"] {
         assert!(
             history
@@ -48,11 +50,16 @@ async fn main() -> object_rainbow::Result<()> {
                 .0
                 .second()
                 .0
+                .second()
+                .0
                 .contains(&(key.into(), id))
                 .await?,
         );
     }
+    println!();
     let x = history.apply((Some("a b c".into()), id)).await?;
-    println!("{x:?}");
+    for (a, (b, (c, d))) in x {
+        println!("{a} {b} {c} {d}");
+    }
     Ok(())
 }
