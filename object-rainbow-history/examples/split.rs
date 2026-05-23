@@ -2,7 +2,7 @@ use macro_rules_attribute::apply;
 use object_rainbow::{
     ascii::AsciiSplit,
     length_prefixed::LpString,
-    map_extra::{Compose, FMap, Return, UniqueSorted},
+    map_extra::{Compose, FMap, Flatten, Return, UniqueSorted},
     tuple_extra::{Map1, OneCrossN, Swap},
 };
 use object_rainbow_amt::{AmtMap, AmtSet};
@@ -14,9 +14,8 @@ use smol_macros::main;
 use ulid::Ulid;
 
 type WordSearch = Sequential<
-    Parallel<AmtMap<Ulid, LpString>, Return>,
+    Sequential<Parallel<AmtMap<Ulid, LpString>, Return>, MappedToSet<ToSet>>,
     Sequential<
-        MappedToSet<ToSet>,
         FromIter<
             Sequential<
                 Compose<
@@ -31,6 +30,7 @@ type WordSearch = Sequential<
                 FromIter<AmtSet<(LpString, Ulid)>>,
             >,
         >,
+        Flatten,
     >,
 >;
 
@@ -44,7 +44,7 @@ async fn main() -> object_rainbow::Result<()> {
         assert!(
             history
                 .second()
-                .second()
+                .first()
                 .0
                 .second()
                 .0
