@@ -6,8 +6,9 @@ use std::{
 
 use bitvec::array::BitArray;
 use object_rainbow::{
-    Equivalent, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseAsInline, ParseInline,
-    ParseInput, PointInput, RainbowIterator, Size, Tagged, ToOutput, Topological, assert_impl,
+    Equivalent, EquivalentFor, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse,
+    ParseAsInline, ParseInline, ParseInput, PointInput, RainbowIterator, Size, Tagged, ToOutput,
+    Topological, assert_impl,
 };
 
 type Bits = BitArray<[u8; 32]>;
@@ -423,7 +424,7 @@ impl<T, U: Equivalent<T>> Equivalent<KeyedArrayMap<T>> for KeyedArrayMap<U> {
     }
 
     fn from_equivalent(map: KeyedArrayMap<T>) -> Self {
-        Self(ArrayMap::from_equivalent(map.0))
+        Self(map.0.equivalent_for())
     }
 }
 
