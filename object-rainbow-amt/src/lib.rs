@@ -1,7 +1,7 @@
 use futures_util::{TryStreamExt, future::try_join};
 use object_rainbow::{
-    Enum, Fetch, Inline, InlineOutput, ListHashes, Parse, ParseInline, PointInput, Singular,
-    Tagged, ToOutput, Topological, Traversible, assert_impl, length_prefixed::LpBytes,
+    Enum, Equivalent, Fetch, Inline, InlineOutput, ListHashes, Parse, ParseInline, PointInput,
+    Singular, Tagged, ToOutput, Topological, Traversible, assert_impl, length_prefixed::LpBytes,
     map_extra::MappedExtra, tuple_extra::Extra1,
 };
 use object_rainbow_array_map::KeyedArrayMap;
@@ -61,6 +61,26 @@ impl<K, V> Node<K, V> {
 
     fn clear(&mut self) {
         std::mem::take(self);
+    }
+}
+
+impl<K: 'static, V: 'static, U: 'static + Equivalent<V>> Equivalent<Node<K, V>> for Node<K, U> {
+    fn into_equivalent(self) -> Node<K, V> {
+        match self {
+            Self::Empty => Node::Empty,
+            Self::Leaf(k, MappedExtra(e, u)) => Node::Leaf(k, MappedExtra(e, u.into_equivalent())),
+            Self::Sub(point) => Node::Sub(point.into_equivalent()),
+        }
+    }
+
+    fn from_equivalent(node: Node<K, V>) -> Self {
+        match node {
+            Node::Empty => Self::Empty,
+            Node::Leaf(k, MappedExtra(e, v)) => {
+                Self::Leaf(k, MappedExtra(e, U::from_equivalent(v)))
+            }
+            Node::Sub(point) => Node::Sub(Point::from_equivalent(point)),
+        }
     }
 }
 
