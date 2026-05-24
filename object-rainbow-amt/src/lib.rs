@@ -861,7 +861,7 @@ mod test {
         assert_eq!(a.get(b"ahij").await?, Some(true));
         assert_eq!(a.get(b"xxx1").await?, Some(true));
         assert_eq!(a.get(b"xxx2").await?, Some(true));
-        assert_eq!(a.get(b"xxy2").await?, Some(true));
+        assert_eq!(a.get(b"xxy1").await?, Some(true));
         assert_eq!(a.get(b"xxy2").await?, Some(true));
 
         assert_eq!(b.get(b"abcd").await?, Some(false));
@@ -870,7 +870,7 @@ mod test {
         assert_eq!(b.get(b"abfg").await?, Some(false));
         assert_eq!(b.get(b"xxx1").await?, None);
         assert_eq!(b.get(b"xxx2").await?, None);
-        assert_eq!(b.get(b"xxy2").await?, None);
+        assert_eq!(b.get(b"xxy1").await?, None);
         assert_eq!(b.get(b"xxy2").await?, None);
         Ok(())
     }
