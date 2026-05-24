@@ -681,6 +681,13 @@ impl<T: Traversible + Clone> Point<T> {
         self.prepare_yolo_fetch().await?;
         Ok(self.fetch.get().expect("non-local fetch"))
     }
+
+    pub async fn fetch_take(&mut self) -> object_rainbow::Result<T>
+    where
+        T: Default,
+    {
+        Ok(std::mem::take(&mut *self.fetch_mut().await?))
+    }
 }
 
 impl<T: FullHash> Fetch for Point<T> {
