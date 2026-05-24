@@ -1598,6 +1598,12 @@ pub trait EquivalentFor<U>: Sized {
     fn into_inferred_equivalent(self) -> U;
 }
 
+impl<T, U: Equivalent<T>> EquivalentFor<U> for T {
+    fn into_inferred_equivalent(self) -> U {
+        U::from_equivalent(self)
+    }
+}
+
 /// This `Extra` can be used to parse `T` via [`ParseSliceExtra::parse_slice_extra`].
 pub trait ExtraFor<T> {
     /// [`ParseSliceExtra::parse_slice_extra`].
