@@ -89,3 +89,11 @@ impl<T: InlineOutput + Traversible + Clone> Apply<Self> for AmtSet<T> {
         Ok(diff)
     }
 }
+
+impl<T: InlineOutput + Traversible + Clone> Apply<AmtMap<T, bool>> for AmtSet<T> {
+    type Output = Self;
+
+    async fn apply(&mut self, bulk: AmtMap<T, bool>) -> object_rainbow::Result<Self::Output> {
+        self.bulk(bulk).await
+    }
+}
