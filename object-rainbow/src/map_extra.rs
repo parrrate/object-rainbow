@@ -19,6 +19,16 @@ use crate::*;
 )]
 pub struct MappedExtra<T, M = ()>(pub M, pub T);
 
+impl<T, U: Equivalent<T>, M> Equivalent<MappedExtra<T, M>> for MappedExtra<U, M> {
+    fn into_equivalent(self) -> MappedExtra<T, M> {
+        MappedExtra(self.0, self.1.into_equivalent())
+    }
+
+    fn from_equivalent(mapped: MappedExtra<T, M>) -> Self {
+        Self(mapped.0, U::from_equivalent(mapped.1))
+    }
+}
+
 impl<T, M> Deref for MappedExtra<T, M> {
     type Target = T;
 
