@@ -1,8 +1,8 @@
 use futures_util::{TryStreamExt, future::try_join};
 use object_rainbow::{
-    Enum, Equivalent, Fetch, Inline, InlineOutput, ListHashes, Parse, ParseInline, PointInput,
-    Singular, Tagged, ToOutput, Topological, Traversible, assert_impl, length_prefixed::LpBytes,
-    map_extra::MappedExtra, tuple_extra::Extra1,
+    Enum, Equivalent, EquivalentFor, Fetch, Inline, InlineOutput, ListHashes, Parse, ParseInline,
+    PointInput, Singular, Tagged, ToOutput, Topological, Traversible, assert_impl,
+    length_prefixed::LpBytes, map_extra::MappedExtra, tuple_extra::Extra1,
 };
 use object_rainbow_array_map::KeyedArrayMap;
 use object_rainbow_parse_prefix::{Prefix, PrefixRoot, WithByte, WithBytes, WithPrefix};
@@ -76,10 +76,8 @@ impl<K: 'static, V: 'static, U: 'static + Equivalent<V>> Equivalent<Node<K, V>> 
     fn from_equivalent(node: Node<K, V>) -> Self {
         match node {
             Node::Empty => Self::Empty,
-            Node::Leaf(k, MappedExtra(e, v)) => {
-                Self::Leaf(k, MappedExtra(e, U::from_equivalent(v)))
-            }
-            Node::Sub(point) => Node::Sub(Point::from_equivalent(point)),
+            Node::Leaf(k, MappedExtra(e, v)) => Self::Leaf(k, MappedExtra(e, v.equivalent_for())),
+            Node::Sub(point) => Node::Sub(point.equivalent_for()),
         }
     }
 }
