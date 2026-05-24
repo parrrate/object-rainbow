@@ -407,6 +407,16 @@ impl<'a, T> OccupiedEntry<'a, T> {
     }
 }
 
+impl<T, U: Equivalent<T>> Equivalent<ArrayMap<T>> for ArrayMap<U> {
+    fn into_equivalent(self) -> ArrayMap<T> {
+        self.map(U::into_equivalent)
+    }
+
+    fn from_equivalent(map: ArrayMap<T>) -> Self {
+        map.map(U::from_equivalent)
+    }
+}
+
 #[derive(
     ToOutput,
     InlineOutput,
