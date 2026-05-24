@@ -91,6 +91,46 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         })
     }
 
+    async fn filter_map<U: InlineOutput + Traversible + Clone>(
+        self,
+        f: impl Copy + Fn(V) -> Option<U>,
+    ) -> object_rainbow::Result<Node<K, U>> {
+        Ok(match self {
+            Self::Empty => Node::Empty,
+            Self::Leaf(k, MappedExtra(e, v)) => Node::Leaf(
+                k,
+                MappedExtra(
+                    e,
+                    match f(v) {
+                        Some(u) => u,
+                        None => return Ok(Node::Empty),
+                    },
+                ),
+            ),
+            Self::Sub(mut point) => Node::Sub(
+                {
+                    let MappedExtra(prefix, KeyedArrayMap(subs)) = point.fetch_take().await?;
+                    let subs = futures_util::future::try_join_all(subs.into_iter().map(
+                        |(k, MappedExtra(e, node))| async move {
+                            let node = node.filter_map(f).await?;
+                            Ok::<_, object_rainbow::Error>((k, MappedExtra(e, node)))
+                        },
+                    ))
+                    .await?
+                    .into_iter()
+                    .filter(|(_, node)| !Node::is_empty(node))
+                    .collect();
+                    let mut subs = MappedExtra(prefix, KeyedArrayMap(subs));
+                    if let Some(node) = Node::collapse(&mut subs).await? {
+                        return Ok(node);
+                    }
+                    subs
+                }
+                .point(),
+            ),
+        })
+    }
+
     async fn get(&self, key: &[u8]) -> object_rainbow::Result<Option<V>> {
         match self {
             Self::Leaf(k, MappedExtra(_, v)) if k.vec() == key => Ok(Some(v.clone())),
@@ -613,6 +653,18 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     ) -> object_rainbow::Result<AmtMap<K, U>> {
         let AmtMap(MappedExtra(e, node)) = self;
         let node = node.map(&f).await?;
+        Ok(AmtMap(MappedExtra(e, node)))
+    }
+
+    pub async fn filter_map<U: InlineOutput + Traversible + Clone>(
+        self,
+        f: impl Fn(V) -> Option<U>,
+    ) -> object_rainbow::Result<AmtMap<K, U>>
+    where
+        Option<U>: InlineOutput,
+    {
+        let AmtMap(MappedExtra(e, node)) = self;
+        let node = node.filter_map(&f).await?;
         Ok(AmtMap(MappedExtra(e, node)))
     }
 }
