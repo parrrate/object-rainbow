@@ -65,6 +65,32 @@ impl<K, V> Node<K, V> {
 }
 
 impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone> Node<K, V> {
+    async fn map<U: InlineOutput + Traversible + Clone>(
+        self,
+        f: impl Copy + Fn(V) -> U,
+    ) -> object_rainbow::Result<Node<K, U>> {
+        Ok(match self {
+            Self::Empty => Node::Empty,
+            Self::Leaf(k, MappedExtra(e, v)) => Node::Leaf(k, MappedExtra(e, f(v))),
+            Self::Sub(mut point) => Node::Sub(
+                {
+                    let MappedExtra(prefix, KeyedArrayMap(subs)) = point.fetch_take().await?;
+                    let subs = futures_util::future::try_join_all(subs.into_iter().map(
+                        |(k, MappedExtra(e, node))| async move {
+                            let node = node.map(f).await?;
+                            Ok::<_, object_rainbow::Error>((k, MappedExtra(e, node)))
+                        },
+                    ))
+                    .await?
+                    .into_iter()
+                    .collect();
+                    MappedExtra(prefix, KeyedArrayMap(subs))
+                }
+                .point(),
+            ),
+        })
+    }
+
     async fn get(&self, key: &[u8]) -> object_rainbow::Result<Option<V>> {
         match self {
             Self::Leaf(k, MappedExtra(_, v)) if k.vec() == key => Ok(Some(v.clone())),
@@ -579,6 +605,15 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
 
     pub async fn append_swap(&mut self, other: &mut Self) -> object_rainbow::Result<()> {
         self.0.append_swap(&mut other.0).await
+    }
+
+    pub async fn map<U: InlineOutput + Traversible + Clone>(
+        self,
+        f: impl Fn(V) -> U,
+    ) -> object_rainbow::Result<AmtMap<K, U>> {
+        let AmtMap(MappedExtra(e, node)) = self;
+        let node = node.map(&f).await?;
+        Ok(AmtMap(MappedExtra(e, node)))
     }
 }
 
