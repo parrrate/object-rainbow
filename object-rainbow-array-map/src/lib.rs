@@ -186,6 +186,12 @@ impl<T> ArrayMap<T> {
             Entry::Vacant(VacantEntry { map, key })
         }
     }
+
+    pub fn map<U>(self, mut f: impl FnMut(T) -> U) -> ArrayMap<U> {
+        let Self { bits, map } = self;
+        let map = map.into_iter().map(|(k, v)| (k, f(v))).collect();
+        ArrayMap { bits, map }
+    }
 }
 
 pub struct Range<'a, T> {
