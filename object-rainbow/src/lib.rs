@@ -1604,6 +1604,10 @@ impl<T, U: Equivalent<T>> EquivalentFor<U> for T {
     }
 }
 
+pub fn from_equivalent<U>(object: impl EquivalentFor<U>) -> U {
+    object.into_inferred_equivalent()
+}
+
 /// This `Extra` can be used to parse `T` via [`ParseSliceExtra::parse_slice_extra`].
 pub trait ExtraFor<T> {
     /// [`ParseSliceExtra::parse_slice_extra`].
