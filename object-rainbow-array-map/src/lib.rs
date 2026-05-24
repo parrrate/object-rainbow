@@ -231,6 +231,22 @@ impl<T, const N: usize> From<[(u8, T); N]> for ArrayMap<T> {
     }
 }
 
+pub struct IntoEntries<T> {
+    inner: std::collections::btree_map::IntoIter<u8, T>,
+}
+
+impl<T> Iterator for IntoEntries<T> {
+    type Item = (u8, T);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next()
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.inner.size_hint()
+    }
+}
+
 pub struct Entries<'a, T> {
     inner: std::collections::btree_map::Iter<'a, u8, T>,
 }
