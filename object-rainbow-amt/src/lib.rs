@@ -858,6 +858,16 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     }
 }
 
+impl<K: 'static, V: 'static, U: 'static + Equivalent<V>> Equivalent<AmtMap<K, V>> for AmtMap<K, U> {
+    fn into_equivalent(self) -> AmtMap<K, V> {
+        AmtMap(self.0.into_equivalent())
+    }
+
+    fn from_equivalent(map: AmtMap<K, V>) -> Self {
+        Self(Equivalent::from_equivalent(map.0))
+    }
+}
+
 #[derive(
     Debug,
     Clone,
