@@ -417,6 +417,16 @@ impl<T, U: Equivalent<T>> Equivalent<ArrayMap<T>> for ArrayMap<U> {
     }
 }
 
+impl<T, U: Equivalent<T>> Equivalent<KeyedArrayMap<T>> for KeyedArrayMap<U> {
+    fn into_equivalent(self) -> KeyedArrayMap<T> {
+        KeyedArrayMap(self.0.into_equivalent())
+    }
+
+    fn from_equivalent(map: KeyedArrayMap<T>) -> Self {
+        Self(ArrayMap::from_equivalent(map.0))
+    }
+}
+
 #[derive(
     ToOutput,
     InlineOutput,
