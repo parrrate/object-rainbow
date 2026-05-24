@@ -398,29 +398,24 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                         Self::make_branch(&mut s, first, &rest);
                     }
                     if s.0.0.0 == o.0.0.0 {
-                        let mut retain = Vec::new();
                         {
                             let mut futures = futures_util::stream::FuturesUnordered::new();
-                            for (key, node) in s.1.iter_mut() {
-                                if let Some(mut other) = o.1.remove(key) {
-                                    futures.push(async move {
-                                        node.append_swap(&mut other).await?;
-                                        Ok::<_, object_rainbow::Error>((key, other))
-                                    });
-                                }
+                            while let Some((key, mut n_o)) = o.1.pop_first() {
+                                let mut n_s = s.1.remove(key).unwrap_or_default();
+                                futures.push(async move {
+                                    n_s.append_swap(&mut n_o).await?;
+                                    Ok::<_, object_rainbow::Error>((key, n_s, n_o))
+                                });
                             }
-                            while let Some((key, node)) = futures.try_next().await? {
-                                if !node.is_empty() {
-                                    retain.push((key, node));
+                            while let Some((key, n_s, n_o)) = futures.try_next().await? {
+                                if !n_s.is_empty() {
+                                    s.insert(key, n_s);
+                                }
+                                if !n_o.is_empty() {
+                                    o.insert(key, n_o);
                                 }
                             }
                         }
-                        while let Some((key, sub)) = o.1.pop_first() {
-                            assert!(!s.1.contains(key));
-                            s.1.insert(key, sub);
-                        }
-                        assert!(o.is_empty());
-                        o.1.extend(retain);
                         let n_s = Self::collapse(&mut s).await?;
                         let n_o = Self::collapse(&mut o).await?;
                         drop(s);
