@@ -25,7 +25,7 @@ impl<T, U: Equivalent<T>, M> Equivalent<MappedExtra<T, M>> for MappedExtra<U, M>
     }
 
     fn from_equivalent(mapped: MappedExtra<T, M>) -> Self {
-        Self(mapped.0, U::from_equivalent(mapped.1))
+        Self(mapped.0, mapped.1.equivalent_for())
     }
 }
 
