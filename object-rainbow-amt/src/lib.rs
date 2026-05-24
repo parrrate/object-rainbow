@@ -487,7 +487,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                         drop(s);
                         drop(o);
                         if let Some(n_s) = n_s {
-                            *other = n_s;
+                            *self = n_s;
                         }
                         if let Some(n_o) = n_o {
                             *other = n_o;
