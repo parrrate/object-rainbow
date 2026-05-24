@@ -1595,17 +1595,17 @@ pub trait Equivalent<T>: Sized {
 }
 
 pub trait EquivalentFor<U>: Sized {
-    fn into_inferred_equivalent(self) -> U;
+    fn equivalent_for(self) -> U;
 }
 
 impl<T, U: Equivalent<T>> EquivalentFor<U> for T {
-    fn into_inferred_equivalent(self) -> U {
+    fn equivalent_for(self) -> U {
         U::from_equivalent(self)
     }
 }
 
 pub fn from_equivalent<U>(object: impl EquivalentFor<U>) -> U {
-    object.into_inferred_equivalent()
+    object.equivalent_for()
 }
 
 /// This `Extra` can be used to parse `T` via [`ParseSliceExtra::parse_slice_extra`].
