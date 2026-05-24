@@ -862,7 +862,7 @@ impl<K: 'static, V: 'static, U: 'static + Equivalent<V>> Equivalent<AmtMap<K, V>
     }
 
     fn from_equivalent(map: AmtMap<K, V>) -> Self {
-        Self(Equivalent::from_equivalent(map.0))
+        Self(map.0.equivalent_for())
     }
 }
 
