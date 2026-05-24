@@ -1043,4 +1043,47 @@ mod test {
         assert_eq!(b.get(b"xxy2").await?, None);
         Ok(())
     }
+
+    #[apply(test!)]
+    async fn bulk() -> object_rainbow::Result<()> {
+        let mut a = AmtMap::<[u8; 4], bool>::new();
+        a.insert(*b"abcd", false).await?;
+        a.insert(*b"abce", false).await?;
+        a.insert(*b"abff", false).await?;
+        a.insert(*b"abfg", false).await?;
+        a.insert(*b"xxx1", true).await?;
+        a.insert(*b"xxx2", true).await?;
+        a.insert(*b"xxx3", false).await?;
+        let mut b = AmtMap::<[u8; 4], Option<bool>>::new();
+        b.insert(*b"abcd", Some(true)).await?;
+        b.insert(*b"abce", Some(true)).await?;
+        b.insert(*b"abff", Some(true)).await?;
+        b.insert(*b"abfg", Some(true)).await?;
+        b.insert(*b"ahij", Some(true)).await?;
+        b.insert(*b"xxy1", Some(true)).await?;
+        b.insert(*b"xxy2", Some(true)).await?;
+        b.insert(*b"xxx3", None).await?;
+        let b = a.bulk(b).await?;
+        assert_eq!(a.get(b"abcd").await?, Some(true));
+        assert_eq!(a.get(b"abce").await?, Some(true));
+        assert_eq!(a.get(b"abff").await?, Some(true));
+        assert_eq!(a.get(b"abfg").await?, Some(true));
+        assert_eq!(a.get(b"ahij").await?, Some(true));
+        assert_eq!(a.get(b"xxx1").await?, Some(true));
+        assert_eq!(a.get(b"xxx2").await?, Some(true));
+        assert_eq!(a.get(b"xxy1").await?, Some(true));
+        assert_eq!(a.get(b"xxy2").await?, Some(true));
+        assert_eq!(a.get(b"xxx3").await?, None);
+
+        assert_eq!(b.get(b"abcd").await?, Some(false));
+        assert_eq!(b.get(b"abce").await?, Some(false));
+        assert_eq!(b.get(b"abff").await?, Some(false));
+        assert_eq!(b.get(b"abfg").await?, Some(false));
+        assert_eq!(b.get(b"xxx1").await?, None);
+        assert_eq!(b.get(b"xxx2").await?, None);
+        assert_eq!(b.get(b"xxy1").await?, None);
+        assert_eq!(b.get(b"xxy2").await?, None);
+        assert_eq!(b.get(b"xxx3").await?, Some(false));
+        Ok(())
+    }
 }
