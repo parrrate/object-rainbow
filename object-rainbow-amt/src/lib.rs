@@ -515,6 +515,101 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         }
     }
 
+    fn op<U: InlineOutput + Traversible + Clone>(
+        &mut self,
+        other: &mut Node<K, U>,
+        op: &impl TraitOp<K, V, U>,
+    ) -> impl Send + Future<Output = object_rainbow::Result<()>> {
+        async move {
+            match (&mut *self, &mut *other) {
+                (_, Node::Empty) => {}
+                (Self::Empty, _) => *self = op.t1_empty(other).await?,
+                (_, Node::Leaf(_, _)) => {
+                    let Node::Leaf(k, MappedExtra(_, u)) = std::mem::take(other) else {
+                        unreachable!()
+                    };
+                    let prefix = k.prefix().clone();
+                    if let Some((k, u)) = op.single_kv2(self, &k.vec(), k.into_value(), u).await? {
+                        *other = Node::Leaf(
+                            WithPrefix::new(prefix, k)?,
+                            MappedExtra(Default::default(), u),
+                        );
+                    }
+                }
+                (Self::Leaf(_, _), _) => {
+                    let Self::Leaf(k, MappedExtra(_, v)) = std::mem::take(self) else {
+                        unreachable!()
+                    };
+                    *self = op.single_kv1(other, &k.vec(), k.into_value(), v).await?;
+                }
+                (Self::Sub(this), Node::Sub(o_point)) => {
+                    let (mut s, mut o) = try_join(this.fetch_mut(), o_point.fetch_mut()).await?;
+                    if let Some(suffix) = o.0.0.0.strip_prefix(&*s.0.0.0)
+                        && let Some((&first, rest)) = suffix.split_first()
+                    {
+                        let rest = Vec::from(rest);
+                        o.0.0.0.drain(s.0.0.0.len()..);
+                        Node::make_branch(&mut o, first, &rest);
+                    }
+                    if let Some(suffix) = s.0.0.0.strip_prefix(&*o.0.0.0)
+                        && let Some((&first, rest)) = suffix.split_first()
+                    {
+                        let rest = Vec::from(rest);
+                        s.0.0.0.drain(o.0.0.0.len()..);
+                        Self::make_branch(&mut s, first, &rest);
+                    }
+                    if s.0.0.0 == o.0.0.0 {
+                        {
+                            let mut futures = futures_util::stream::FuturesUnordered::new();
+                            while let Some((key, mut n_o)) = o.1.pop_first() {
+                                let mut n_s = s.1.remove(key).unwrap_or_default();
+                                futures.push(async move {
+                                    n_s.op(&mut n_o, op).await?;
+                                    Ok::<_, object_rainbow::Error>((key, n_s, n_o))
+                                });
+                            }
+                            while let Some((key, n_s, n_o)) = futures.try_next().await? {
+                                if !n_s.is_empty() {
+                                    s.insert(key, n_s);
+                                }
+                                if !n_o.is_empty() {
+                                    o.insert(key, n_o);
+                                }
+                            }
+                        }
+                        let n_s = Self::collapse(&mut s).await?;
+                        let n_o = Node::collapse(&mut o).await?;
+                        drop(s);
+                        drop(o);
+                        if let Some(n_s) = n_s {
+                            *self = n_s;
+                        }
+                        if let Some(n_o) = n_o {
+                            *other = n_o;
+                        }
+                    } else {
+                        let n = common_length(&s.0.0.0, &o.0.0.0)?;
+                        let common = &*s.0.0.0[..n].to_vec();
+                        let first_s = s.0.0.0[n];
+                        let first_o = o.0.0.0[n];
+                        s.0.0.0.drain(..n + 1);
+                        o.0.0.0.drain(..n + 1);
+                        drop(s);
+                        drop(o);
+                        *self = Self::from_pair(
+                            common,
+                            first_s,
+                            first_o,
+                            std::mem::take(self),
+                            op.t1_empty(other).await?,
+                        );
+                    }
+                }
+            }
+            Ok(())
+        }
+    }
+
     fn make_branch(subs: &mut Subs<K, V>, first: u8, rest: &[u8]) {
         let node = Self::Sub(
             MappedExtra(
@@ -564,6 +659,69 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         } else {
             None
         }
+    }
+}
+
+trait TraitOp<K: Send, V, U: Send>: Send + Sync {
+    fn t1_empty(
+        &self,
+        t2: &mut Node<K, U>,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Node<K, V>>>;
+    fn single_kv2(
+        &self,
+        t1: &mut Node<K, V>,
+        key: &[u8],
+        k: K,
+        u: U,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Option<(K, U)>>>;
+    fn single_kv1(
+        &self,
+        t2: &mut Node<K, U>,
+        key: &[u8],
+        k: K,
+        v: V,
+    ) -> impl Send + Future<Output = object_rainbow::Result<Node<K, V>>>;
+}
+
+struct BulkOp;
+
+impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone>
+    TraitOp<K, V, Option<V>> for BulkOp
+where
+    Option<V>: InlineOutput,
+{
+    async fn t1_empty(&self, t2: &mut Node<K, Option<V>>) -> object_rainbow::Result<Node<K, V>> {
+        std::mem::take(t2).filter_map(std::convert::identity).await
+    }
+
+    async fn single_kv2(
+        &self,
+        t1: &mut Node<K, V>,
+        key: &[u8],
+        k: K,
+        u: Option<V>,
+    ) -> object_rainbow::Result<Option<(K, Option<V>)>> {
+        let kv = if let Some(v) = u {
+            t1.insert(key, k, v, true).await?
+        } else {
+            t1.remove(key).await?
+        };
+        Ok(kv.map(|(k, v)| (k, Some(v))))
+    }
+
+    async fn single_kv1(
+        &self,
+        t2: &mut Node<K, Option<V>>,
+        key: &[u8],
+        k: K,
+        v: V,
+    ) -> object_rainbow::Result<Node<K, V>> {
+        let kv = t2.insert(key, k, Some(v), false).await?;
+        let t1 = self.t1_empty(t2).await?;
+        if let Some((k, v)) = kv {
+            *t2 = Node::from_kv(key, k, v)?;
+        }
+        Ok(t1)
     }
 }
 
@@ -666,6 +824,17 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         let AmtMap(MappedExtra(e, node)) = self;
         let node = node.filter_map(&f).await?;
         Ok(AmtMap(MappedExtra(e, node)))
+    }
+
+    pub async fn bulk(
+        &mut self,
+        mut bulk: AmtMap<K, Option<V>>,
+    ) -> object_rainbow::Result<AmtMap<K, V>>
+    where
+        Option<V>: InlineOutput,
+    {
+        self.0.op(&mut bulk.0, &BulkOp).await?;
+        bulk.filter_map(std::convert::identity).await
     }
 }
 
