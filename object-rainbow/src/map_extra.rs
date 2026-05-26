@@ -101,6 +101,9 @@ mod private {
 
     #[phantom]
     pub struct StaticCompose<A, B>;
+
+    #[phantom]
+    pub struct StaticCollect<C>;
 }
 #[doc(hidden)]
 pub use self::private::*;
@@ -230,3 +233,5 @@ impl<A: IntoIterator<Item = B>, B: IntoIterator<Item = C>, C> StaticMap<A> for S
 }
 
 pub type Flatten = SmExtra<StaticFlatten>;
+
+pub type StaticCollect<C> = private::StaticCollect<C>;
