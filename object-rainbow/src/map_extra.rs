@@ -235,3 +235,11 @@ impl<A: IntoIterator<Item = B>, B: IntoIterator<Item = C>, C> StaticMap<A> for S
 pub type Flatten = SmExtra<StaticFlatten>;
 
 pub type StaticCollect<C> = private::StaticCollect<C>;
+
+impl<T, I: IntoIterator<Item = T>, C: FromIterator<T>> StaticMap<I> for StaticCollect<C> {
+    type Mapped = C;
+
+    fn static_map(it: I) -> Self::Mapped {
+        C::from_iter(it)
+    }
+}
