@@ -768,7 +768,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
             .into_iter()
             .map(|(k, v)| (k.vec(), Some((k, v))))
             .collect::<Vec<_>>();
-        Self::from_slice(Default::default(), &mut items)
+        Self::from_slice(0, Default::default(), &mut items)
     }
 }
 
