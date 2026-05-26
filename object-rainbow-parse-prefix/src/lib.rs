@@ -115,11 +115,13 @@ impl<T> WithPrefix<T> {
     where
         T: ToOutput,
     {
-        if value.vec().starts_with(&Vec::from(prefix.clone())) {
+        let v_vec = value.vec();
+        let p_vec = Vec::from(prefix.clone());
+        if v_vec.starts_with(&p_vec) {
             Ok(Self { prefix, value })
         } else {
             Err(object_rainbow::error_consistency!(
-                "`value` doesn't start with `prefix`",
+                "`value` doesn't start with `prefix`: {p_vec:?} {v_vec:?}",
             ))
         }
     }
