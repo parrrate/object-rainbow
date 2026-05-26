@@ -8,6 +8,10 @@ use object_rainbow_array_map::KeyedArrayMap;
 use object_rainbow_parse_prefix::{Prefix, PrefixRoot, WithByte, WithBytes, WithPrefix};
 use object_rainbow_point::{IntoPoint, Point};
 
+use self::construct::Construct;
+
+mod construct;
+
 #[derive(
     Debug,
     Enum,
@@ -753,6 +757,18 @@ fn common_length(a: &[u8], b: &[u8]) -> object_rainbow::Result<usize> {
         ))
     } else {
         Ok(n)
+    }
+}
+
+impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone>
+    FromIterator<(K, V)> for Node<K, V>
+{
+    fn from_iter<T: IntoIterator<Item = (K, V)>>(kvs: T) -> Self {
+        let mut items = kvs
+            .into_iter()
+            .map(|(k, v)| (k.vec(), Some((k, v))))
+            .collect::<Vec<_>>();
+        Self::from_slice(Default::default(), &mut items)
     }
 }
 
