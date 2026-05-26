@@ -53,7 +53,7 @@ pub(crate) trait Construct: Default {
         for (c, x) in counts.into_iter().enumerate() {
             if x != last {
                 let c = c as u8;
-                children.push((c, Self::from_slice(prefix.with([c]), items)));
+                children.push((c, Self::from_slice(prefix.with([c]), &mut items[last..x])));
             }
             last = x;
         }
