@@ -882,6 +882,17 @@ impl<K: 'static, V: 'static, U: 'static + Equivalent<V>> Equivalent<AmtMap<K, V>
     }
 }
 
+impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone>
+    FromIterator<(K, V)> for AmtMap<K, V>
+{
+    fn from_iter<T: IntoIterator<Item = (K, V)>>(kvs: T) -> Self {
+        Self(MappedExtra(
+            Default::default(),
+            FromIterator::from_iter(kvs),
+        ))
+    }
+}
+
 #[derive(
     Debug,
     Clone,
