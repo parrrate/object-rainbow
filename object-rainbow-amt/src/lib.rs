@@ -1149,4 +1149,31 @@ mod test {
         assert_eq!(b.get(b"xxx3").await?, Some(false));
         Ok(())
     }
+
+    #[apply(test!)]
+    async fn collect() -> object_rainbow::Result<()> {
+        let a: AmtMap<[u8; 4], bool> = [
+            (*b"abcd", true),
+            (*b"abce", true),
+            (*b"abff", true),
+            (*b"abfg", true),
+            (*b"ahij", true),
+            (*b"xxx1", true),
+            (*b"xxx2", true),
+            (*b"xxy1", true),
+            (*b"xxy2", true),
+        ]
+        .into_iter()
+        .collect();
+        assert_eq!(a.get(b"abcd").await?, Some(true));
+        assert_eq!(a.get(b"abce").await?, Some(true));
+        assert_eq!(a.get(b"abff").await?, Some(true));
+        assert_eq!(a.get(b"abfg").await?, Some(true));
+        assert_eq!(a.get(b"ahij").await?, Some(true));
+        assert_eq!(a.get(b"xxx1").await?, Some(true));
+        assert_eq!(a.get(b"xxx2").await?, Some(true));
+        assert_eq!(a.get(b"xxy1").await?, Some(true));
+        assert_eq!(a.get(b"xxy2").await?, Some(true));
+        Ok(())
+    }
 }
