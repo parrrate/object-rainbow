@@ -39,7 +39,7 @@ pub(crate) trait Construct: Default {
         let mut total = 0;
         for count in &mut counts {
             let old = *count;
-            *count += total;
+            *count = total;
             total += old;
         }
         for i in 0..items.len() {
