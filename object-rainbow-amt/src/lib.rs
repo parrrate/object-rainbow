@@ -956,6 +956,12 @@ impl<T: InlineOutput + Traversible + Clone> AmtSet<T> {
     }
 }
 
+impl<T: InlineOutput + Traversible + Clone> FromIterator<T> for AmtSet<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(items: I) -> Self {
+        Self(items.into_iter().map(|x| (x, ())).collect())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
