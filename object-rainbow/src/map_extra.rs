@@ -243,3 +243,5 @@ impl<T, I: IntoIterator<Item = T>, C: FromIterator<T>> StaticMap<I> for StaticCo
         C::from_iter(it)
     }
 }
+
+pub type Collect<C> = SmExtra<StaticCollect<C>>;
