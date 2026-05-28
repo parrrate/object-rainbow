@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use dashmap::DashMap;
-use object_rainbow::{DiffHashes, Fetch, Hash, ObjectHashes, ToOutput};
+use object_rainbow::{Fetch, Hash, ObjectHashes, ToOutput};
 use object_rainbow_point::{IntoPoint, Point};
 use object_rainbow_store::ExternalStore;
 
@@ -21,13 +21,9 @@ impl ExternalStore for Store {
         &self,
         data: &[u8],
         _: &[Self::Id],
-        diff: DiffHashes,
+        hashes: ObjectHashes,
     ) -> object_rainbow::Result<Self::Id> {
-        let id = ObjectHashes {
-            diff: diff.data_hash(),
-            data: data.data_hash(),
-        }
-        .data_hash();
+        let id = hashes.data_hash();
         println!("save");
         self.0.insert(id, data.into());
         Ok(id)
@@ -35,15 +31,11 @@ impl ExternalStore for Store {
 
     async fn contains_data(
         &self,
-        data: &[u8],
+        _: &[u8],
         _: &[Self::Id],
-        diff: DiffHashes,
+        hashes: ObjectHashes,
     ) -> object_rainbow::Result<bool> {
-        let id = ObjectHashes {
-            diff: diff.data_hash(),
-            data: data.data_hash(),
-        }
-        .data_hash();
+        let id = hashes.data_hash();
         self.contains(&id).await
     }
 

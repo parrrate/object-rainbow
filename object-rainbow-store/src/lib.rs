@@ -5,10 +5,10 @@ use std::{
 };
 
 use object_rainbow::{
-    Address, DiffHashes, ExtraFor, FullHash, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche,
-    Object, ObjectHashes, OptionalHash, Parse, ParseInline, ParseSlice, ParseSliceExtra,
-    PointInput, PointVisitor, ReflessInline, Resolve, Singular, SingularFetch, Size, Tagged,
-    ToOutput, Topological, Traversible, assert_impl, derive_for_wrapped,
+    Address, ExtraFor, FullHash, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object,
+    ObjectHashes, OptionalHash, Parse, ParseInline, ParseSlice, ParseSliceExtra, PointInput,
+    PointVisitor, ReflessInline, Resolve, Singular, SingularFetch, Size, Tagged, ToOutput,
+    Topological, Traversible, assert_impl, derive_for_wrapped,
 };
 use object_rainbow_point::{Extras, Point};
 
@@ -415,13 +415,13 @@ pub trait ExternalStore: 'static + Send + Sync + Clone {
         &self,
         data: &[u8],
         refs: &[Self::Id],
-        diff: DiffHashes,
+        hashes: ObjectHashes,
     ) -> impl RainbowFuture<T = Self::Id>;
     fn contains_data(
         &self,
         data: &[u8],
         refs: &[Self::Id],
-        diff: DiffHashes,
+        hashes: ObjectHashes,
     ) -> impl RainbowFuture<T = bool>;
     fn contains(&self, id: &Self::Id) -> impl RainbowFuture<T = bool>;
     fn fetch(
