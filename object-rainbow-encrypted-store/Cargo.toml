@@ -1,0 +1,21 @@
+[package]
+name = "object-rainbow-encrypted-store"
+version = "0.0.0-a.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "encrypted adapter for object rainbow external stores"
+
+[dependencies]
+object-rainbow.workspace = true
+object-rainbow-encrypted.workspace = true
+object-rainbow-store.workspace = true
+
+[dev-dependencies]
+object-rainbow-point.workspace = true
+
+macro_rules_attribute.workspace = true
+smol.workspace = true
+smol-macros.workspace = true

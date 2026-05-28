@@ -1604,6 +1604,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "object-rainbow-encrypted-store"
+version = "0.0.0-a.0"
+dependencies = [
+ "macro_rules_attribute",
+ "object-rainbow",
+ "object-rainbow-encrypted",
+ "object-rainbow-point",
+ "object-rainbow-store",
+ "smol",
+ "smol-macros",
+]
+
+[[package]]
 name = "object-rainbow-fetchall"
 version = "0.0.0-a.7"
 dependencies = [

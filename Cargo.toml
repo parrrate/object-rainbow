@@ -7,6 +7,7 @@ members = [
     "object-rainbow-chain-tree",
     "object-rainbow-derive",
     "object-rainbow-encrypted",
+    "object-rainbow-encrypted-store",
     "object-rainbow-fetchall",
     "object-rainbow-hamt",
     "object-rainbow-history",
@@ -38,6 +39,7 @@ object-rainbow-amt = { version = "0.0.0-a.4", path = "object-rainbow-amt" }
 object-rainbow-append-tree = { version = "0.0.0-a.12", path = "object-rainbow-append-tree" }
 object-rainbow-array-map = { version = "0.0.0-a.11", path = "object-rainbow-array-map" }
 object-rainbow-chain-tree = { version = "0.0.0-a.10", path = "object-rainbow-chain-tree" }
+object-rainbow-encrypted = { version = "0.0.0-a.18", path = "object-rainbow-encrypted" }
 object-rainbow-fetchall = { version = "0.0.0-a.7", path = "object-rainbow-fetchall" }
 object-rainbow-hamt = { version = "0.0.0-a.9", path = "object-rainbow-hamt" }
 object-rainbow-history = { version = "0.0.0-a.30", path = "object-rainbow-history" }
