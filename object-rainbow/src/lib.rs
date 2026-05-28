@@ -803,7 +803,7 @@ pub struct DiffHashes {
     pub mangle: Hash,
 }
 
-#[derive(ToOutput)]
+#[derive(Debug, ToOutput)]
 pub struct ObjectHashes {
     pub diff: Hash,
     pub data: Hash,
