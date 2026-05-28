@@ -78,11 +78,11 @@ impl<'r> Context<'r> {
             let diff = object.diff_hashes();
             let diff_hash = diff.data_hash();
             let data = object.vec();
-            let hashes = WithHash {
+            let wh = WithHash {
                 diff: diff_hash,
                 data: &data,
             };
-            let full_hash = hashes.data_hash();
+            let full_hash = wh.data_hash();
             self.request
                 .send_async(Request::End {
                     hash: full_hash,
