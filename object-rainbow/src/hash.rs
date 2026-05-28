@@ -27,6 +27,12 @@ mod hex;
 )]
 pub struct Hash([u8; HASH_SIZE]);
 
+impl Default for Hash {
+    fn default() -> Self {
+        "".data_hash()
+    }
+}
+
 impl Display for Hash {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for x in self.0 {
