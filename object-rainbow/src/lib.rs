@@ -664,6 +664,7 @@ impl<'d, Extra: 'static + Clone> PointInput for Input<'d, Extra> {
 pub trait ToOutput {
     fn to_output(&self, output: &mut impl Output);
 
+    #[must_use]
     fn data_hash(&self) -> Hash {
         #[derive(Default)]
         struct HashOutput {
