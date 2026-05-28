@@ -21,7 +21,7 @@ impl ExternalStore for Store {
         &self,
         data: &[u8],
         _: &[Self::Id],
-        hashes: ObjectHashes,
+        hashes: ObjectHashes<'_, impl ToOutput>,
     ) -> object_rainbow::Result<Self::Id> {
         let id = hashes.data_hash();
         println!("save");
@@ -33,7 +33,7 @@ impl ExternalStore for Store {
         &self,
         _: &[u8],
         _: &[Self::Id],
-        hashes: ObjectHashes,
+        hashes: ObjectHashes<'_, impl Send + Sync + ToOutput>,
     ) -> object_rainbow::Result<bool> {
         let id = hashes.data_hash();
         self.contains(&id).await

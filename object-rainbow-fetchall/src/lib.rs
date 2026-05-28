@@ -78,10 +78,9 @@ impl<'r> Context<'r> {
             let diff = object.diff_hashes();
             let diff_hash = diff.data_hash();
             let data = object.vec();
-            let data_hash = data.data_hash();
             let hashes = ObjectHashes {
                 diff: diff_hash,
-                data: data_hash,
+                data: &data,
             };
             let full_hash = hashes.data_hash();
             self.request

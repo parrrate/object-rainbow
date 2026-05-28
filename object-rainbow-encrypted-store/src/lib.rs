@@ -21,13 +21,17 @@ impl<S: ExternalStore, K: Key> ExternalStore for EncryptedStore<S, K> {
         &self,
         data: &[u8],
         refs: &[Self::Id],
-        hashes: ObjectHashes,
+        hashes: ObjectHashes<'_, impl ToOutput>,
     ) -> object_rainbow::Result<Self::Id> {
         let encrypted = &self.key.encrypt(data);
         let diff = DiffHashes {
             tags: Default::default(),
             topology: refs.data_hash(),
-            mangle: (self.key.mangle_prefix().data_hash(), hashes.data).data_hash(),
+            mangle: (
+                self.key.mangle_prefix().data_hash(),
+                hashes.data.data_hash(),
+            )
+                .data_hash(),
         };
         self.store
             .save_data(
@@ -35,7 +39,7 @@ impl<S: ExternalStore, K: Key> ExternalStore for EncryptedStore<S, K> {
                 refs,
                 ObjectHashes {
                     diff: diff.data_hash(),
-                    data: encrypted.data_hash(),
+                    data: encrypted,
                 },
             )
             .await
@@ -45,13 +49,17 @@ impl<S: ExternalStore, K: Key> ExternalStore for EncryptedStore<S, K> {
         &self,
         data: &[u8],
         refs: &[Self::Id],
-        hashes: ObjectHashes,
+        hashes: ObjectHashes<'_, impl Send + Sync + ToOutput>,
     ) -> object_rainbow::Result<bool> {
         let encrypted = &self.key.encrypt(data);
         let diff = DiffHashes {
             tags: Default::default(),
             topology: refs.data_hash(),
-            mangle: (self.key.mangle_prefix().data_hash(), hashes.data).data_hash(),
+            mangle: (
+                self.key.mangle_prefix().data_hash(),
+                hashes.data.data_hash(),
+            )
+                .data_hash(),
         };
         self.store
             .contains_data(
@@ -59,7 +67,7 @@ impl<S: ExternalStore, K: Key> ExternalStore for EncryptedStore<S, K> {
                 refs,
                 ObjectHashes {
                     diff: diff.data_hash(),
-                    data: encrypted.data_hash(),
+                    data: encrypted,
                 },
             )
             .await
@@ -100,7 +108,7 @@ mod test {
             &self,
             _: &[u8],
             _: &[Self::Id],
-            hashes: ObjectHashes,
+            hashes: ObjectHashes<'_, impl Send + Sync + ToOutput>,
         ) -> object_rainbow::Result<Self::Id> {
             Ok(hashes.data_hash())
         }
@@ -109,7 +117,7 @@ mod test {
             &self,
             _: &[u8],
             _: &[Self::Id],
-            _: ObjectHashes,
+            _: ObjectHashes<'_, impl Send + Sync + ToOutput>,
         ) -> object_rainbow::Result<bool> {
             unimplemented!()
         }

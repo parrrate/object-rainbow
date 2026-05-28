@@ -45,7 +45,7 @@ impl LocalMap {
                 mangle: mangle_hash,
             }
             .data_hash(),
-            data: data.data_hash(),
+            data: &data,
         }
         .data_hash();
         if expected != hash {

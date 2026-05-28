@@ -97,7 +97,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
     fn save_object(&self, object: &impl Traversible) -> impl RainbowFuture<T = ()> {
         async {
             self.save_topology(object).await?;
-            self.save_data(object.hashes(), &object.vec()).await?;
+            self.save_data(object.hashes()).await?;
             Ok(())
         }
     }
@@ -116,7 +116,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
     fn point<T: Object>(&self, hash: Hash) -> Point<T> {
         self.point_extra(hash, ())
     }
-    fn save_data(&self, hashes: ObjectHashes, data: &[u8]) -> impl RainbowFuture<T = ()>;
+    fn save_data(&self, hashes: ObjectHashes<'_, impl Send + Sync + ToOutput>) -> impl RainbowFuture<T = ()>;
     fn contains(&self, hash: Hash) -> impl RainbowFuture<T = bool>;
     fn fetch(&self, hash: Hash)
     -> impl RainbowFuture<T = impl 'static + Send + Sync + AsRef<[u8]>>;
@@ -415,13 +415,13 @@ pub trait ExternalStore: 'static + Send + Sync + Clone {
         &self,
         data: &[u8],
         refs: &[Self::Id],
-        hashes: ObjectHashes,
+        hashes: ObjectHashes<'_, impl Send + Sync + ToOutput>,
     ) -> impl RainbowFuture<T = Self::Id>;
     fn contains_data(
         &self,
         data: &[u8],
         refs: &[Self::Id],
-        hashes: ObjectHashes,
+        hashes: ObjectHashes<'_, impl Send + Sync + ToOutput>,
     ) -> impl RainbowFuture<T = bool>;
     fn contains(&self, id: &Self::Id) -> impl RainbowFuture<T = bool>;
     fn fetch(

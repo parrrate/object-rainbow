@@ -14,9 +14,12 @@ impl OpendalStore {
 }
 
 impl RainbowStore for OpendalStore {
-    async fn save_data(&self, hashes: ObjectHashes, data: &[u8]) -> object_rainbow::Result<()> {
+    async fn save_data(
+        &self,
+        hashes: ObjectHashes<'_, impl Send + Sync + ToOutput>,
+    ) -> object_rainbow::Result<()> {
         self.operator
-            .write(&hex::encode(hashes.data_hash()), data.to_vec())
+            .write(&hex::encode(hashes.data_hash()), hashes.data.vec())
             .await
             .map_err(object_rainbow::Error::io)?;
         Ok(())
