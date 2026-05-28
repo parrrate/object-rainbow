@@ -427,7 +427,7 @@ impl<K: Key, T: ToOutput> ToOutput for Encrypted<K, T> {
     fn to_output(&self, output: &mut impl object_rainbow::Output) {
         if output.is_mangling() {
             output.write(&*self.inner.key.mangle_prefix().data_hash());
-            self.inner.decrypted.data_hash();
+            output.write(&*self.inner.decrypted.data_hash());
         }
         if output.is_real() {
             output.write(&self.inner.key.encrypt_output(&self.inner));
