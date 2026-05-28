@@ -1,4 +1,4 @@
-use object_rainbow::{Hash, ObjectHashes, OptionalHash, ParseSliceRefless, ToOutput};
+use object_rainbow::{Hash, OptionalHash, ParseSliceRefless, ToOutput, WithHash};
 use object_rainbow_store::{RainbowStore, RainbowStoreMut};
 use opendal::{ErrorKind, Operator};
 
@@ -16,10 +16,10 @@ impl OpendalStore {
 impl RainbowStore for OpendalStore {
     async fn save_data(
         &self,
-        hashes: ObjectHashes<'_, impl Send + Sync + ToOutput>,
+        wh: WithHash<'_, impl Send + Sync + ToOutput>,
     ) -> object_rainbow::Result<()> {
         self.operator
-            .write(&hex::encode(hashes.data_hash()), hashes.data.vec())
+            .write(&hex::encode(wh.data_hash()), wh.data.vec())
             .await
             .map_err(object_rainbow::Error::io)?;
         Ok(())

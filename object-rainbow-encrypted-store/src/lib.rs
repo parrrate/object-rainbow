@@ -1,4 +1,4 @@
-use object_rainbow::{DiffHashes, ObjectHashes, ToOutput};
+use object_rainbow::{DiffHashes, ToOutput, WithHash};
 use object_rainbow_encrypted::Key;
 use object_rainbow_store::ExternalStore;
 
@@ -21,23 +21,19 @@ impl<S: ExternalStore, K: Key> ExternalStore for EncryptedStore<S, K> {
         &self,
         data: &[u8],
         refs: &[Self::Id],
-        hashes: ObjectHashes<'_, impl ToOutput>,
+        wh: WithHash<'_, impl ToOutput>,
     ) -> object_rainbow::Result<Self::Id> {
         let encrypted = &self.key.encrypt(data);
         let diff = DiffHashes {
             tags: Default::default(),
             topology: refs.data_hash(),
-            mangle: (
-                self.key.mangle_prefix().data_hash(),
-                hashes.data.data_hash(),
-            )
-                .data_hash(),
+            mangle: (self.key.mangle_prefix().data_hash(), wh.data.data_hash()).data_hash(),
         };
         self.store
             .save_data(
                 encrypted,
                 refs,
-                ObjectHashes {
+                WithHash {
                     diff: diff.data_hash(),
                     data: encrypted,
                 },
@@ -49,23 +45,19 @@ impl<S: ExternalStore, K: Key> ExternalStore for EncryptedStore<S, K> {
         &self,
         data: &[u8],
         refs: &[Self::Id],
-        hashes: ObjectHashes<'_, impl Send + Sync + ToOutput>,
+        wh: WithHash<'_, impl Send + Sync + ToOutput>,
     ) -> object_rainbow::Result<bool> {
         let encrypted = &self.key.encrypt(data);
         let diff = DiffHashes {
             tags: Default::default(),
             topology: refs.data_hash(),
-            mangle: (
-                self.key.mangle_prefix().data_hash(),
-                hashes.data.data_hash(),
-            )
-                .data_hash(),
+            mangle: (self.key.mangle_prefix().data_hash(), wh.data.data_hash()).data_hash(),
         };
         self.store
             .contains_data(
                 encrypted,
                 refs,
-                ObjectHashes {
+                WithHash {
                     diff: diff.data_hash(),
                     data: encrypted,
                 },
@@ -90,7 +82,7 @@ mod test {
     use std::convert::Infallible;
 
     use macro_rules_attribute::apply;
-    use object_rainbow::{FullHash, Hash, ObjectHashes, ToOutput};
+    use object_rainbow::{FullHash, Hash, ToOutput, WithHash};
     use object_rainbow_encrypted::{Key, encrypt};
     use object_rainbow_point::IntoPoint;
     use object_rainbow_store::ExternalStore;
@@ -108,16 +100,16 @@ mod test {
             &self,
             _: &[u8],
             _: &[Self::Id],
-            hashes: ObjectHashes<'_, impl Send + Sync + ToOutput>,
+            wh: WithHash<'_, impl Send + Sync + ToOutput>,
         ) -> object_rainbow::Result<Self::Id> {
-            Ok(hashes.data_hash())
+            Ok(wh.data_hash())
         }
 
         async fn contains_data(
             &self,
             _: &[u8],
             _: &[Self::Id],
-            _: ObjectHashes<'_, impl Send + Sync + ToOutput>,
+            _: WithHash<'_, impl Send + Sync + ToOutput>,
         ) -> object_rainbow::Result<bool> {
             unimplemented!()
         }

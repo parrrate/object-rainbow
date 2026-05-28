@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use imbl::{HashMap, OrdSet};
 use object_rainbow::{
-    Address, ByteNode, DiffHashes, FailFuture, Hash, ObjectHashes, Resolve, ToOutput,
+    Address, ByteNode, DiffHashes, FailFuture, Hash, Resolve, ToOutput, WithHash,
 };
 
 struct EntryInner {
@@ -38,7 +38,7 @@ impl LocalMap {
             return Ok(());
         }
         let mut map = self.map.clone();
-        let expected = ObjectHashes {
+        let expected = WithHash {
             diff: DiffHashes {
                 tags: tags_hash,
                 topology: topology.data_hash(),

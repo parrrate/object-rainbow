@@ -6,9 +6,9 @@ use std::{
 
 use object_rainbow::{
     Address, ExtraFor, FullHash, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object,
-    ObjectHashes, OptionalHash, Parse, ParseInline, ParseSlice, ParseSliceExtra, PointInput,
-    PointVisitor, ReflessInline, Resolve, Singular, SingularFetch, Size, Tagged, ToOutput,
-    Topological, Traversible, assert_impl, derive_for_wrapped,
+    OptionalHash, Parse, ParseInline, ParseSlice, ParseSliceExtra, PointInput, PointVisitor,
+    ReflessInline, Resolve, Singular, SingularFetch, Size, Tagged, ToOutput, Topological,
+    Traversible, WithHash, assert_impl, derive_for_wrapped,
 };
 use object_rainbow_point::{Extras, Point};
 
@@ -97,7 +97,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
     fn save_object(&self, object: &impl Traversible) -> impl RainbowFuture<T = ()> {
         async {
             self.save_topology(object).await?;
-            self.save_data(object.hashes()).await?;
+            self.save_data(object.with_hash()).await?;
             Ok(())
         }
     }
@@ -116,7 +116,10 @@ pub trait RainbowStore: 'static + Send + Sync + Clone {
     fn point<T: Object>(&self, hash: Hash) -> Point<T> {
         self.point_extra(hash, ())
     }
-    fn save_data(&self, hashes: ObjectHashes<'_, impl Send + Sync + ToOutput>) -> impl RainbowFuture<T = ()>;
+    fn save_data(
+        &self,
+        wh: WithHash<'_, impl Send + Sync + ToOutput>,
+    ) -> impl RainbowFuture<T = ()>;
     fn contains(&self, hash: Hash) -> impl RainbowFuture<T = bool>;
     fn fetch(&self, hash: Hash)
     -> impl RainbowFuture<T = impl 'static + Send + Sync + AsRef<[u8]>>;
@@ -415,13 +418,13 @@ pub trait ExternalStore: 'static + Send + Sync + Clone {
         &self,
         data: &[u8],
         refs: &[Self::Id],
-        hashes: ObjectHashes<'_, impl Send + Sync + ToOutput>,
+        wh: WithHash<'_, impl Send + Sync + ToOutput>,
     ) -> impl RainbowFuture<T = Self::Id>;
     fn contains_data(
         &self,
         data: &[u8],
         refs: &[Self::Id],
-        hashes: ObjectHashes<'_, impl Send + Sync + ToOutput>,
+        wh: WithHash<'_, impl Send + Sync + ToOutput>,
     ) -> impl RainbowFuture<T = bool>;
     fn contains(&self, id: &Self::Id) -> impl RainbowFuture<T = bool>;
     fn fetch(

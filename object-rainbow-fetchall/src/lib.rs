@@ -6,7 +6,7 @@ use std::{
 use async_executor::Executor;
 use flume::Sender;
 use futures_channel::oneshot;
-use object_rainbow::{Hash, ObjectHashes, PointVisitor, SingularFetch, ToOutput, Traversible};
+use object_rainbow::{Hash, PointVisitor, SingularFetch, ToOutput, Traversible, WithHash};
 use object_rainbow_local_map::LocalMap;
 
 type Dependency = Box<
@@ -78,7 +78,7 @@ impl<'r> Context<'r> {
             let diff = object.diff_hashes();
             let diff_hash = diff.data_hash();
             let data = object.vec();
-            let hashes = ObjectHashes {
+            let hashes = WithHash {
                 diff: diff_hash,
                 data: &data,
             };

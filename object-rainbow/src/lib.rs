@@ -805,7 +805,7 @@ pub struct DiffHashes {
 }
 
 #[derive(Debug, ToOutput)]
-pub struct ObjectHashes<'a, T: ?Sized> {
+pub struct WithHash<'a, T: ?Sized> {
     pub diff: Hash,
     pub data: &'a T,
 }
@@ -819,15 +819,15 @@ pub trait FullHash: ToOutput + ListHashes + Tagged {
         }
     }
 
-    fn hashes(&self) -> ObjectHashes<'_, Self> {
-        ObjectHashes {
+    fn with_hash(&self) -> WithHash<'_, Self> {
+        WithHash {
             diff: self.diff_hashes().data_hash(),
             data: self,
         }
     }
 
     fn full_hash(&self) -> Hash {
-        self.hashes().data_hash()
+        self.with_hash().data_hash()
     }
 }
 

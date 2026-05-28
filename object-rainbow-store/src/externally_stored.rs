@@ -155,7 +155,7 @@ pub(crate) async fn store_object<S: ExternalStore + PartialEq, T: Traversible>(
     let stored = ExternallyStored { header, object };
     let data = &*stored.vec();
     store
-        .save_data(data, &stored.header.topology, stored.object.hashes())
+        .save_data(data, &stored.header.topology, stored.object.with_hash())
         .await
 }
 
