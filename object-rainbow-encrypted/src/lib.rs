@@ -1,4 +1,7 @@
-use std::{ops::Deref, sync::Arc};
+use std::{
+    ops::{Deref, DerefMut},
+    sync::Arc,
+};
 
 use object_rainbow::{
     Address, ByteNode, Error, ExtraFor, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node,
@@ -542,4 +545,40 @@ pub async fn encrypt<K: Key, T: Traversible>(
         decrypted,
     };
     Ok(Encrypted { inner })
+}
+
+impl<K: Key, T: Traversible + Clone> Encrypted<K, T> {
+    pub fn as_mut(&mut self) -> EncryptedMut<'_, K, T> {
+        let object = self.inner.decrypted.as_ref().clone();
+        EncryptedMut {
+            encrypted: self,
+            object,
+        }
+    }
+}
+
+pub struct EncryptedMut<'a, K, T> {
+    encrypted: &'a mut Encrypted<K, T>,
+    object: T,
+}
+
+impl<K, T> Deref for EncryptedMut<'_, K, T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.object
+    }
+}
+
+impl<K, T> DerefMut for EncryptedMut<'_, K, T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.object
+    }
+}
+
+impl<'a, K: Key, T: Traversible> EncryptedMut<'a, K, T> {
+    pub async fn save(self) -> object_rainbow::Result<()> {
+        *self.encrypted = encrypt(self.encrypted.inner.key.0.clone(), self.object).await?;
+        Ok(())
+    }
 }
