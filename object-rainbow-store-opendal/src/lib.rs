@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use object_rainbow::{Hash, OptionalHash, ParseSliceRefless, ToOutput, WithHash};
 use object_rainbow_store::{RainbowStore, RainbowStoreMut};
 use opendal::{ErrorKind, Operator};
@@ -5,11 +7,21 @@ use opendal::{ErrorKind, Operator};
 #[derive(Debug, Clone)]
 pub struct OpendalStore {
     operator: Operator,
+    ptr: Arc<()>,
 }
 
 impl OpendalStore {
     pub fn from_operator(operator: Operator) -> Self {
-        Self { operator }
+        Self {
+            operator,
+            ptr: Default::default(),
+        }
+    }
+}
+
+impl PartialEq for OpendalStore {
+    fn eq(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.ptr, &other.ptr)
     }
 }
 
