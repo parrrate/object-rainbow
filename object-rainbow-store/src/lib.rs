@@ -412,7 +412,7 @@ impl<S: RainbowStore, T: Traversible> Stored<S, T> {
     }
 }
 
-pub trait ExternalStore: 'static + Send + Sync + Clone {
+pub trait ExternalStore: 'static + Send + Sync + Clone + PartialEq {
     type Id: ReflessInline + Clone + Eq;
     fn save_data(
         &self,
