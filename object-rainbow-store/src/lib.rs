@@ -62,7 +62,7 @@ impl<S: 'static + Send + RainbowStore> Resolve for StoreResolve<S> {
 }
 
 #[derive_for_wrapped]
-pub trait RainbowStore: 'static + Send + Sync + Clone {
+pub trait RainbowStore: 'static + Send + Sync + Clone + PartialEq {
     fn saved_point<T: 'static + Traversible, Extra: 'static + Send + Sync + Clone + ExtraFor<T>>(
         &self,
         point: &Point<T>,
