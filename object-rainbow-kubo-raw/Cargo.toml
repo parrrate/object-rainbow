@@ -21,4 +21,6 @@ serde_with.workspace = true
 url.workspace = true
 
 [dev-dependencies]
+object-rainbow-encrypted.workspace = true
+
 tokio = { workspace = true, features = ["full"] }

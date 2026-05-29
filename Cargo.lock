@@ -1812,6 +1812,7 @@ dependencies = [
  "bytes",
  "cid",
  "object-rainbow",
+ "object-rainbow-encrypted",
  "object-rainbow-point",
  "object-rainbow-store",
  "reqwest",
