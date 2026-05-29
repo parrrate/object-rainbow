@@ -1,0 +1,24 @@
+[package]
+name = "object-rainbow-kubo-raw"
+version = "0.0.0-a.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "local IPFS storage using Kubo API and raw codecs"
+
+[dependencies]
+object-rainbow.workspace = true
+object-rainbow-point.workspace = true
+object-rainbow-store.workspace = true
+
+bytes.workspace = true
+cid.workspace = true
+reqwest = { workspace = true, features = ["json", "multipart"] }
+serde = { workspace = true, features = ["derive"] }
+serde_with.workspace = true
+url.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full"] }
