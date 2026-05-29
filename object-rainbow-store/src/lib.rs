@@ -10,7 +10,7 @@ use object_rainbow::{
     ReflessInline, Resolve, Singular, SingularFetch, Size, Tagged, ToOutput, Topological,
     Traversible, WithHash, assert_impl, derive_for_wrapped,
 };
-use object_rainbow_point::{Extras, Point};
+use object_rainbow_point::{ExtractResolve, Extras, Point};
 
 mod externally_stored;
 
@@ -75,7 +75,10 @@ pub trait RainbowStore: 'static + Send + Sync + Clone + PartialEq {
     }
     fn save_point(&self, point: &impl SingularFetch<T: Traversible>) -> impl RainbowFuture<T = ()> {
         async {
-            if !self.contains(point.hash()).await? {
+            let already_stored = point
+                .extract_resolve::<StoreResolve<Self>>()
+                .is_some_and(|(_, resolve)| resolve.store == *self);
+            if already_stored || !self.contains(point.hash()).await? {
                 self.save_object(&point.fetch().await?).await?;
             }
             Ok(())
