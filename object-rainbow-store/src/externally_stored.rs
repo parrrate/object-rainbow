@@ -116,7 +116,7 @@ struct ExtractResolution<'a, 's, S, Id = <S as ExternalStore>::Id> {
     store: &'s S,
 }
 
-impl<S: ExternalStore + PartialEq> PointVisitor for ExtractResolution<'_, '_, S> {
+impl<S: ExternalStore> PointVisitor for ExtractResolution<'_, '_, S> {
     fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone)) {
         let fetch = point.clone();
         self.extracted
@@ -124,7 +124,7 @@ impl<S: ExternalStore + PartialEq> PointVisitor for ExtractResolution<'_, '_, S>
     }
 }
 
-pub(crate) async fn store_point<S: ExternalStore + PartialEq, T: Traversible>(
+pub(crate) async fn store_point<S: ExternalStore, T: Traversible>(
     store: &S,
     fetch: impl 'static + SingularFetch<T = T>,
 ) -> object_rainbow::Result<S::Id> {
@@ -137,7 +137,7 @@ pub(crate) async fn store_point<S: ExternalStore + PartialEq, T: Traversible>(
     store_object(store, fetch.fetch().await?).await
 }
 
-pub(crate) async fn store_object<S: ExternalStore + PartialEq, T: Traversible>(
+pub(crate) async fn store_object<S: ExternalStore, T: Traversible>(
     store: &S,
     object: T,
 ) -> object_rainbow::Result<S::Id> {
