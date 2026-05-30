@@ -99,6 +99,12 @@ impl ToOutput for Address {
 
 impl InlineOutput for Address {}
 
+impl ListHashes for Address {
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        f(self.hash);
+    }
+}
+
 impl<I: PointInput> ParseInline<I> for Address {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         Ok(Self {
