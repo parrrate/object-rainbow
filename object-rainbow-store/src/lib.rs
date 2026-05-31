@@ -91,9 +91,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone + PartialEq {
             futures: &mut futures,
         });
         async {
-            for future in futures {
-                future.await?;
-            }
+            futures_util::future::try_join_all(futures).await?;
             Ok(())
         }
     }
