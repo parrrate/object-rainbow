@@ -403,9 +403,9 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
                             object_rainbow_array_map::Entry::Occupied(e) => {
                                 let other = e.into_mut();
                                 Box::pin(other.append(self)).await?;
-                                std::mem::swap(self, other);
                             }
                         }
+                        assert!(self.is_empty());
                         drop(o);
                         std::mem::swap(self, other);
                     } else {
