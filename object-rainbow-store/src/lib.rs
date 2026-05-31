@@ -78,7 +78,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone + PartialEq {
             let already_stored = point
                 .extract_resolve::<StoreResolve<Self>>()
                 .is_some_and(|(_, resolve)| resolve.store == *self);
-            if already_stored || !self.contains(point.hash()).await? {
+            if !already_stored && !self.contains(point.hash()).await? {
                 self.save_object(&point.fetch().await?).await?;
             }
             Ok(())
