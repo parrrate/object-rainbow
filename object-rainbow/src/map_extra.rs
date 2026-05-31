@@ -19,6 +19,16 @@ use crate::*;
 )]
 pub struct MappedExtra<T, M = ()>(pub M, pub T);
 
+impl<T: IntoIterator, M> IntoIterator for MappedExtra<T, M> {
+    type Item = T::Item;
+
+    type IntoIter = T::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.1.into_iter()
+    }
+}
+
 impl<T, U: Equivalent<T>, M> Equivalent<MappedExtra<T, M>> for MappedExtra<U, M> {
     fn into_equivalent(self) -> MappedExtra<T, M> {
         MappedExtra(self.0, self.1.into_equivalent())
