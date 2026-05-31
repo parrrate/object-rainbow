@@ -266,6 +266,16 @@ impl<T> IntoIterator for ArrayMap<T> {
     }
 }
 
+impl<T> IntoIterator for KeyedArrayMap<T> {
+    type Item = (u8, T);
+
+    type IntoIter = IntoEntries<T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
 pub struct Entries<'a, T> {
     inner: std::collections::btree_map::Iter<'a, u8, T>,
 }
