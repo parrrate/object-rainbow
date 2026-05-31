@@ -48,7 +48,7 @@ struct PutResponse {
 }
 
 impl LocalIpfsStore {
-    async fn gat_put(&self, data: Vec<u8>) -> object_rainbow::Result<Cid> {
+    async fn dag_put(&self, data: Vec<u8>) -> object_rainbow::Result<Cid> {
         let hash = data.data_hash();
         let mut url = self.url.as_ref().clone();
         url.set_path("/api/v0/dag/put");
@@ -126,7 +126,7 @@ impl RainbowStore for LocalIpfsStore {
         &self,
         wh: WithHash<'_, impl Send + Sync + ToOutput>,
     ) -> object_rainbow::Result<()> {
-        self.gat_put(wh.vec()).await?;
+        self.dag_put(wh.vec()).await?;
         Ok(())
     }
 
