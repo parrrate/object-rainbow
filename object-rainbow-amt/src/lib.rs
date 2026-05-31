@@ -975,6 +975,10 @@ impl<T: InlineOutput + Traversible + Clone> AmtSet<T> {
             .await?;
         Ok(Self(bulk))
     }
+
+    pub async fn count(&self) -> object_rainbow::Result<u64> {
+        self.0.count().await
+    }
 }
 
 impl<T: InlineOutput + Traversible + Clone> FromIterator<T> for AmtSet<T> {
