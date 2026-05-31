@@ -36,17 +36,31 @@ pub(crate) trait Construct: Default {
         for x in items.iter() {
             counts[x.0[n] as usize] += 1;
         }
+        let mut ends = [0; 256];
         let mut total = 0;
-        for count in &mut counts {
+        for (count, end) in counts.iter_mut().zip(&mut ends) {
             let old = *count;
             *count = total;
             total += old;
+            *end = total;
         }
         for i in 0..items.len() {
-            let count = &mut counts[items[i].0[n] as usize];
-            items.swap(*count, i);
-            *count += 1;
+            loop {
+                let c = items[i].0[n] as usize;
+                let count = &mut counts[c];
+                if *count == ends[c] {
+                    break;
+                }
+                assert!(*count < items.len());
+                if *count == i {
+                    *count += 1;
+                    break;
+                }
+                items.swap(*count, i);
+                *count += 1;
+            }
         }
+        assert!(items.is_sorted_by_key(|item| item.0[n]));
         let prefix = prefix.with(&*common);
         let mut children = Vec::new();
         let mut last = 0;
