@@ -682,6 +682,23 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
             None
         }
     }
+
+    async fn count(&self) -> object_rainbow::Result<u64> {
+        match self {
+            Self::Empty => Ok(0),
+            Self::Leaf(_, _) => Ok(1),
+            Self::Sub(point) => Ok(futures_util::future::try_join_all(
+                point
+                    .fetch()
+                    .await?
+                    .into_iter()
+                    .map(|(_, node)| async move { node.count().await }),
+            )
+            .await?
+            .into_iter()
+            .sum()),
+        }
+    }
 }
 
 trait TraitOp<K: Send, V, U: Send>: Send + Sync {
@@ -869,6 +886,10 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     {
         self.0.op(&mut bulk.0, &BulkOp).await?;
         bulk.filter_map(std::convert::identity).await
+    }
+
+    pub async fn count(&self) -> object_rainbow::Result<u64> {
+        self.0.count().await
     }
 }
 
