@@ -25,13 +25,17 @@ impl PartialEq for OpendalStore {
     }
 }
 
+fn to_key(hash: Hash) -> String {
+    hex::encode(hash)
+}
+
 impl RainbowStore for OpendalStore {
     async fn save_data(
         &self,
         wh: WithHash<'_, impl Send + Sync + ToOutput>,
     ) -> object_rainbow::Result<()> {
         self.operator
-            .write(&hex::encode(wh.data_hash()), wh.data.vec())
+            .write(&to_key(wh.data_hash()), wh.data.vec())
             .await
             .map_err(object_rainbow::Error::io)?;
         Ok(())
@@ -39,7 +43,7 @@ impl RainbowStore for OpendalStore {
 
     async fn contains(&self, hash: Hash) -> object_rainbow::Result<bool> {
         self.operator
-            .exists(&hex::encode(hash))
+            .exists(&to_key(hash))
             .await
             .map_err(object_rainbow::Error::io)
     }
@@ -49,7 +53,7 @@ impl RainbowStore for OpendalStore {
         hash: Hash,
     ) -> object_rainbow::Result<impl 'static + Send + Sync + AsRef<[u8]>> {
         self.operator
-            .read(&hex::encode(hash))
+            .read(&to_key(hash))
             .await
             .map_err(object_rainbow::Error::io)
             .map(|b| b.to_bytes())
