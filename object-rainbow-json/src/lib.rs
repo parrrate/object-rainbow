@@ -2,8 +2,6 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(docsrs, doc(cfg_hide(doc)))]
 
-use std::io::Write;
-
 use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseInput, Size, SomeNiche, Tagged,
     ToOutput, Topological, ZeroNiche,
@@ -19,25 +17,10 @@ mod distributed;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct Json<T>(pub T);
 
-struct Writer<'a, T: ?Sized> {
-    output: &'a mut T,
-}
-
-impl<T: ?Sized + Output> Write for Writer<'_, T> {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.output.write(buf);
-        Ok(buf.len())
-    }
-
-    fn flush(&mut self) -> std::io::Result<()> {
-        Ok(())
-    }
-}
-
 impl<T: Serialize> ToOutput for Json<T> {
     fn to_output(&self, output: &mut impl Output) {
         if output.is_real() {
-            serde_json::to_writer(&mut Writer { output }, &self.0)
+            serde_json::to_writer(&mut output.as_write(), &self.0)
                 .expect("json write errors are considered bugs");
         }
     }
