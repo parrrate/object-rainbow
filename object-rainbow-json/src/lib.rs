@@ -14,7 +14,7 @@ pub use self::distributed::{Distributed, DistributedParseError};
 #[cfg(feature = "distributed")]
 mod distributed;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct Json<T>(pub T);
 
 impl<T: Serialize> ToOutput for Json<T> {
