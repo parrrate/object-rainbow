@@ -43,11 +43,17 @@ impl<T: Serialize> ToOutput for Json<T> {
     }
 }
 
-impl<T: DeserializeOwned, I: ParseInput> Parse<I> for Json<T> {
+impl<T: DeserializeOwned + Serialize, I: ParseInput> Parse<I> for Json<T> {
     fn parse(input: I) -> object_rainbow::Result<Self> {
-        serde_json::from_slice(&input.parse_all()?)
+        let data = input.parse_all()?;
+        let json = serde_json::from_slice(&data)
             .map_err(object_rainbow::Error::parse)
-            .map(Self)
+            .map(Self)?;
+        if *data == json.vec() {
+            Ok(json)
+        } else {
+            Err(object_rainbow::error_parse!("inconsistent serialization"))
+        }
     }
 }
 
