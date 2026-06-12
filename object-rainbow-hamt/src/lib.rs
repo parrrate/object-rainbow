@@ -2,9 +2,9 @@ use std::pin::Pin;
 
 use futures_util::TryStreamExt;
 use object_rainbow::{
-    Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseInline,
-    PointInput, PointVisitor, Singular, Size, SizeExt, Tagged, Tags, ToOutput, Topological,
-    Traversible, assert_impl,
+    Component, Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse,
+    ParseInline, PointInput, PointVisitor, Singular, Size, SizeExt, Tagged, Tags, ToOutput,
+    Topological, Traversible, assert_impl,
 };
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
@@ -640,7 +640,7 @@ mod private {
                 }
             }
 
-            impl<V: Traversible + InlineOutput + Clone> Amt<$k> for $next<V> {
+            impl<V: Component> Amt<$k> for $next<V> {
                 type V = V;
 
                 fn is_empty(&self) -> bool {
@@ -758,13 +758,13 @@ impl<V> PartialEq for HamtMap<V> {
 
 impl<V> Eq for HamtMap<V> {}
 
-impl<V: Traversible + InlineOutput + Clone> Default for HamtMap<V> {
+impl<V: Component> Default for HamtMap<V> {
     fn default() -> Self {
         Self(Default::default())
     }
 }
 
-impl<V: Traversible + InlineOutput + Clone> HamtMap<V> {
+impl<V: Component> HamtMap<V> {
     pub fn new() -> Self {
         Self::default()
     }
