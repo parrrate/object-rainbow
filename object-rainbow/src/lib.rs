@@ -973,6 +973,10 @@ impl<T: Object<Extra> + InlineOutput + for<'a> ParseInline<Input<'a, Extra>>, Ex
 {
 }
 
+pub trait Component: InlineOutput + Traversible + Clone {}
+
+impl<T: InlineOutput + Traversible + Clone> Component for T {}
+
 pub struct Tags(pub &'static [&'static str], pub &'static [&'static Self]);
 
 const fn bytes_compare(l: &[u8], r: &[u8]) -> std::cmp::Ordering {
