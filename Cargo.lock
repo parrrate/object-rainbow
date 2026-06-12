@@ -1624,7 +1624,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.64"
+version = "0.0.0-a.65"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1645,7 +1645,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-amt"
-version = "0.0.0-a.4"
+version = "0.0.0-a.5"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1672,7 +1672,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-array-map"
-version = "0.0.0-a.11"
+version = "0.0.0-a.12"
 dependencies = [
  "bitvec",
  "object-rainbow",
@@ -1706,7 +1706,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-encrypted"
-version = "0.0.0-a.18"
+version = "0.0.0-a.19"
 dependencies = [
  "anyhow",
  "chacha20poly1305",
@@ -1736,7 +1736,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-fetchall"
-version = "0.0.0-a.7"
+version = "0.0.0-a.8"
 dependencies = [
  "anyhow",
  "async-executor",
@@ -1750,7 +1750,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-hamt"
-version = "0.0.0-a.9"
+version = "0.0.0-a.10"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1763,7 +1763,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.30"
+version = "0.0.0-a.31"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1795,7 +1795,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-json"
-version = "0.0.0-a.21"
+version = "0.0.0-a.22"
 dependencies = [
  "futures-util",
  "object-rainbow",
@@ -1824,7 +1824,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-local-map"
-version = "0.0.0-a.6"
+version = "0.0.0-a.7"
 dependencies = [
  "imbl",
  "object-rainbow",
@@ -1844,14 +1844,14 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-parse-prefix"
-version = "0.0.0-a.3"
+version = "0.0.0-a.4"
 dependencies = [
  "object-rainbow",
 ]
 
 [[package]]
 name = "object-rainbow-point"
-version = "0.0.0-a.12"
+version = "0.0.0-a.13"
 dependencies = [
  "futures-util",
  "object-rainbow",
@@ -1860,7 +1860,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-store"
-version = "0.0.0-a.10"
+version = "0.0.0-a.11"
 dependencies = [
  "dashmap",
  "futures-util",
@@ -1871,7 +1871,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-store-opendal"
-version = "0.0.0-a.6"
+version = "0.0.0-a.7"
 dependencies = [
  "anyhow",
  "hex",
