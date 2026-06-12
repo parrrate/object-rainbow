@@ -1,11 +1,9 @@
-use object_rainbow::{Hash, InlineOutput, Traversible};
+use object_rainbow::{Component, Hash};
 use object_rainbow_hamt::{HamtMap, HamtSet};
 
 use crate::Apply;
 
-impl<V: 'static + Send + Sync + Clone + Traversible + InlineOutput> Apply<(Option<V>, Hash)>
-    for HamtMap<V>
-{
+impl<V: 'static + Send + Sync + Component> Apply<(Option<V>, Hash)> for HamtMap<V> {
     type Output = Option<V>;
 
     async fn apply(
@@ -20,9 +18,7 @@ impl<V: 'static + Send + Sync + Clone + Traversible + InlineOutput> Apply<(Optio
     }
 }
 
-impl<V: 'static + Send + Sync + Clone + Traversible + InlineOutput> Apply<(V, Hash)>
-    for HamtMap<V>
-{
+impl<V: 'static + Send + Sync + Component> Apply<(V, Hash)> for HamtMap<V> {
     type Output = Option<V>;
 
     async fn apply(&mut self, (value, hash): (V, Hash)) -> object_rainbow::Result<Self::Output> {
