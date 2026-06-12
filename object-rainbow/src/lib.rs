@@ -963,6 +963,16 @@ pub trait Object<Extra = ()>: Traversible + for<'a> Parse<Input<'a, Extra>> {}
 
 impl<T: Traversible + for<'a> Parse<Input<'a, Extra>>, Extra> Object<Extra> for T {}
 
+pub trait Inline<Extra = ()>:
+    Object<Extra> + InlineOutput + for<'a> ParseInline<Input<'a, Extra>>
+{
+}
+
+impl<T: Object<Extra> + InlineOutput + for<'a> ParseInline<Input<'a, Extra>>, Extra> Inline<Extra>
+    for T
+{
+}
+
 pub struct Tags(pub &'static [&'static str], pub &'static [&'static Self]);
 
 const fn bytes_compare(l: &[u8], r: &[u8]) -> std::cmp::Ordering {
@@ -1064,16 +1074,6 @@ fn const_hash() {
     );
     assert_eq!(Tags(&["a", "b"], &[]).hash(), Tags(&["b", "a"], &[]).hash());
     assert_eq!(Tags(&["a", "a"], &[]).hash(), Tags(&["a"], &[]).hash());
-}
-
-pub trait Inline<Extra = ()>:
-    Object<Extra> + InlineOutput + for<'a> ParseInline<Input<'a, Extra>>
-{
-}
-
-impl<T: Object<Extra> + InlineOutput + for<'a> ParseInline<Input<'a, Extra>>, Extra> Inline<Extra>
-    for T
-{
 }
 
 pub trait Topology: Resolve {
