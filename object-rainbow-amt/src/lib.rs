@@ -1,7 +1,7 @@
 use futures_util::{TryStreamExt, future::try_join};
 use object_rainbow::{
-    Enum, Equivalent, EquivalentFor, Fetch, Inline, InlineOutput, ListHashes, Parse, ParseInline,
-    PointInput, Singular, Tagged, ToOutput, Topological, Traversible, assert_impl,
+    Component, Enum, Equivalent, EquivalentFor, Fetch, Inline, InlineOutput, ListHashes, Parse,
+    ParseInline, PointInput, Singular, Tagged, ToOutput, Topological, Traversible, assert_impl,
     length_prefixed::LpBytes, map_extra::MappedExtra, tuple_extra::Extra1,
 };
 use object_rainbow_array_map::KeyedArrayMap;
@@ -86,8 +86,8 @@ impl<K: 'static, V: 'static, U: 'static + Equivalent<V>> Equivalent<Node<K, V>> 
     }
 }
 
-impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone> Node<K, V> {
-    async fn map<U: InlineOutput + Traversible + Clone>(
+impl<K: Component, V: Component> Node<K, V> {
+    async fn map<U: Component>(
         self,
         f: impl Copy + Fn(V) -> U,
     ) -> object_rainbow::Result<Node<K, U>> {
@@ -113,7 +113,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         })
     }
 
-    async fn filter_map<U: InlineOutput + Traversible + Clone>(
+    async fn filter_map<U: Component>(
         self,
         f: impl Copy + Fn(V) -> Option<U>,
     ) -> object_rainbow::Result<Node<K, U>> {
@@ -537,7 +537,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         }
     }
 
-    fn op<U: InlineOutput + Traversible + Clone>(
+    fn op<U: Component>(
         &mut self,
         other: &mut Node<K, U>,
         op: &impl TraitOp<K, V, U>,
@@ -724,8 +724,7 @@ trait TraitOp<K: Send, V, U: Send>: Send + Sync {
 
 struct BulkOp;
 
-impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone>
-    TraitOp<K, V, Option<V>> for BulkOp
+impl<K: Component, V: Component> TraitOp<K, V, Option<V>> for BulkOp
 where
     Option<V>: InlineOutput,
 {
@@ -777,9 +776,7 @@ fn common_length(a: &[u8], b: &[u8]) -> object_rainbow::Result<usize> {
     }
 }
 
-impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone>
-    FromIterator<(K, V)> for Node<K, V>
-{
+impl<K: Component, V: Component> FromIterator<(K, V)> for Node<K, V> {
     fn from_iter<T: IntoIterator<Item = (K, V)>>(kvs: T) -> Self {
         let mut items = kvs
             .into_iter()
@@ -820,7 +817,7 @@ impl<K, V> Default for AmtMap<K, V> {
     }
 }
 
-impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone> AmtMap<K, V> {
+impl<K: Component, V: Component> AmtMap<K, V> {
     pub fn new() -> Self {
         Self::default()
     }
@@ -856,7 +853,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         self.0.append_swap(&mut other.0).await
     }
 
-    pub async fn map<U: InlineOutput + Traversible + Clone>(
+    pub async fn map<U: Component>(
         self,
         f: impl Fn(V) -> U,
     ) -> object_rainbow::Result<AmtMap<K, U>> {
@@ -865,7 +862,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
         Ok(AmtMap(MappedExtra(e, node)))
     }
 
-    pub async fn filter_map<U: InlineOutput + Traversible + Clone>(
+    pub async fn filter_map<U: Component>(
         self,
         f: impl Fn(V) -> Option<U>,
     ) -> object_rainbow::Result<AmtMap<K, U>>
@@ -903,9 +900,7 @@ impl<K: 'static, V: 'static, U: 'static + Equivalent<V>> Equivalent<AmtMap<K, V>
     }
 }
 
-impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone>
-    FromIterator<(K, V)> for AmtMap<K, V>
-{
+impl<K: Component, V: Component> FromIterator<(K, V)> for AmtMap<K, V> {
     fn from_iter<T: IntoIterator<Item = (K, V)>>(kvs: T) -> Self {
         Self(MappedExtra(
             Default::default(),
@@ -935,7 +930,7 @@ impl<T> Default for AmtSet<T> {
     }
 }
 
-impl<T: InlineOutput + Traversible + Clone> AmtSet<T> {
+impl<T: Component> AmtSet<T> {
     pub fn new() -> Self {
         Self::default()
     }
@@ -978,7 +973,7 @@ impl<T: InlineOutput + Traversible + Clone> AmtSet<T> {
     }
 }
 
-impl<T: InlineOutput + Traversible + Clone> FromIterator<T> for AmtSet<T> {
+impl<T: Component> FromIterator<T> for AmtSet<T> {
     fn from_iter<I: IntoIterator<Item = T>>(items: I) -> Self {
         Self(items.into_iter().map(|x| (x, ())).collect())
     }
