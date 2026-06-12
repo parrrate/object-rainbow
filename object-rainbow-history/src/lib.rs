@@ -4,8 +4,8 @@
 
 use futures_util::TryStreamExt;
 use object_rainbow::{
-    Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline, Size,
-    Tagged, ToOutput, Topological, Traversible, assert_impl, derive_for_wrapped,
+    Component, Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline,
+    Size, Tagged, ToOutput, Topological, Traversible, assert_impl, derive_for_wrapped,
     map_extra::{SmExtra, StaticMap},
     tuple_extra::ToTuple2,
 };
@@ -71,9 +71,7 @@ pub trait Apply<Diff: Send>: Send {
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>>;
 }
 
-impl<T: Clone + Traversible + InlineOutput + Default + Apply<D>, D: Clone + Traversible>
-    History<T, D>
-{
+impl<T: Component + Default + Apply<D>, D: Clone + Traversible> History<T, D> {
     pub async fn commit(&mut self, diff: D) -> object_rainbow::Result<T::Output> {
         let mut tree = self.tree().await?;
         let hash = tree.full_hash();
@@ -149,9 +147,7 @@ impl<T: Clone + Traversible + InlineOutput + Default + Apply<D>, D: Clone + Trav
     }
 }
 
-impl<T: Clone + Traversible + InlineOutput + Default + Apply<D>, D: Clone + Traversible> Apply<D>
-    for History<T, D>
-{
+impl<T: Component + Default + Apply<D>, D: Clone + Traversible> Apply<D> for History<T, D> {
     type Output = T::Output;
 
     fn apply(
