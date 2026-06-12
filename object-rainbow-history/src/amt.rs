@@ -1,11 +1,9 @@
-use object_rainbow::{InlineOutput, Traversible};
+use object_rainbow::{Component, InlineOutput};
 use object_rainbow_amt::{AmtMap, AmtSet};
 
 use crate::Apply;
 
-impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone>
-    Apply<(Option<V>, K)> for AmtMap<K, V>
-{
+impl<K: Component, V: Component> Apply<(Option<V>, K)> for AmtMap<K, V> {
     type Output = Option<V>;
 
     async fn apply(
@@ -20,9 +18,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     }
 }
 
-impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone> Apply<(V, K)>
-    for AmtMap<K, V>
-{
+impl<K: Component, V: Component> Apply<(V, K)> for AmtMap<K, V> {
     type Output = Option<V>;
 
     async fn apply(&mut self, (value, key): (V, K)) -> object_rainbow::Result<Self::Output> {
@@ -30,9 +26,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     }
 }
 
-impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone> Apply<Self>
-    for AmtMap<K, V>
-{
+impl<K: Component, V: Component> Apply<Self> for AmtMap<K, V> {
     type Output = Self;
 
     async fn apply(&mut self, mut diff: Self) -> object_rainbow::Result<Self::Output> {
@@ -41,8 +35,7 @@ impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clon
     }
 }
 
-impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone>
-    Apply<AmtMap<K, Option<V>>> for AmtMap<K, V>
+impl<K: Component, V: Component> Apply<AmtMap<K, Option<V>>> for AmtMap<K, V>
 where
     Option<V>: InlineOutput,
 {
@@ -53,7 +46,7 @@ where
     }
 }
 
-impl<T: InlineOutput + Traversible + Clone> Apply<(bool, T)> for AmtSet<T> {
+impl<T: Component> Apply<(bool, T)> for AmtSet<T> {
     type Output = bool;
 
     async fn apply(&mut self, (remove, value): (bool, T)) -> object_rainbow::Result<Self::Output> {
@@ -65,7 +58,7 @@ impl<T: InlineOutput + Traversible + Clone> Apply<(bool, T)> for AmtSet<T> {
     }
 }
 
-impl<T: InlineOutput + Traversible + Clone> Apply<T> for AmtSet<T> {
+impl<T: Component> Apply<T> for AmtSet<T> {
     type Output = bool;
 
     async fn apply(&mut self, value: T) -> object_rainbow::Result<Self::Output> {
@@ -73,7 +66,7 @@ impl<T: InlineOutput + Traversible + Clone> Apply<T> for AmtSet<T> {
     }
 }
 
-impl<T: InlineOutput + Traversible + Clone> Apply<((), T)> for AmtSet<T> {
+impl<T: Component> Apply<((), T)> for AmtSet<T> {
     type Output = bool;
 
     async fn apply(&mut self, ((), value): ((), T)) -> object_rainbow::Result<Self::Output> {
@@ -81,7 +74,7 @@ impl<T: InlineOutput + Traversible + Clone> Apply<((), T)> for AmtSet<T> {
     }
 }
 
-impl<T: InlineOutput + Traversible + Clone> Apply<Self> for AmtSet<T> {
+impl<T: Component> Apply<Self> for AmtSet<T> {
     type Output = Self;
 
     async fn apply(&mut self, mut diff: Self) -> object_rainbow::Result<Self::Output> {
@@ -90,7 +83,7 @@ impl<T: InlineOutput + Traversible + Clone> Apply<Self> for AmtSet<T> {
     }
 }
 
-impl<T: InlineOutput + Traversible + Clone> Apply<AmtMap<T, bool>> for AmtSet<T> {
+impl<T: Component> Apply<AmtMap<T, bool>> for AmtSet<T> {
     type Output = Self;
 
     async fn apply(&mut self, bulk: AmtMap<T, bool>) -> object_rainbow::Result<Self::Output> {
