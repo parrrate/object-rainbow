@@ -969,10 +969,7 @@ impl<T: InlineOutput + Traversible + Clone> AmtSet<T> {
     }
 
     pub async fn bulk(&mut self, bulk: AmtMap<T, bool>) -> object_rainbow::Result<Self> {
-        let bulk = self
-            .0
-            .bulk(AmtMap::<T, Option<()>>::from_equivalent(bulk))
-            .await?;
+        let bulk = self.0.bulk(bulk.equivalent_for()).await?;
         Ok(Self(bulk))
     }
 
