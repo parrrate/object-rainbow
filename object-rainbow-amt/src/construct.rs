@@ -1,4 +1,4 @@
-use object_rainbow::{InlineOutput, Traversible, length_prefixed::LpBytes, map_extra::MappedExtra};
+use object_rainbow::{Component, length_prefixed::LpBytes, map_extra::MappedExtra};
 use object_rainbow_array_map::KeyedArrayMap;
 use object_rainbow_parse_prefix::{Prefix, WithBytes, WithPrefix};
 use object_rainbow_point::IntoPoint;
@@ -78,9 +78,7 @@ pub(crate) trait Construct: Default {
     }
 }
 
-impl<K: InlineOutput + Traversible + Clone, V: InlineOutput + Traversible + Clone> Construct
-    for Node<K, V>
-{
+impl<K: Component, V: Component> Construct for Node<K, V> {
     type K = K;
     type V = V;
 
