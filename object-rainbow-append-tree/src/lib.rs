@@ -1,9 +1,9 @@
 use std::{fmt::Debug, future::ready, marker::PhantomData};
 
 use object_rainbow::{
-    Enum, ExtraFor, Fetch, FullHash, Inline, InlineOutput, ListHashes, Object, Output, Parse,
-    ParseAsInline, ParseInline, ParseInput, PointInput, Tagged, ToOutput, Topological, Traversible,
-    assert_impl, numeric::Be,
+    Component, Enum, ExtraFor, Fetch, FullHash, Inline, InlineOutput, ListHashes, Object, Output,
+    Parse, ParseAsInline, ParseInline, ParseInput, PointInput, Tagged, ToOutput, Topological,
+    Traversible, assert_impl, numeric::Be,
 };
 use object_rainbow_point::{IntoPoint, Point};
 use typenum::{U256, Unsigned};
@@ -185,9 +185,7 @@ where
     }
 }
 
-impl<T: Send + Sync + Clone + Traversible + InlineOutput, N: Send + Sync + Unsigned> Push
-    for Node<T, N, Leaf>
-{
+impl<T: Send + Sync + Component, N: Send + Sync + Unsigned> Push for Node<T, N, Leaf> {
     type T = T;
 
     fn get(
@@ -391,28 +389,28 @@ type N7<T> = Node<Point<N6<T>>, U256, NonLeaf>;
 type N8<T> = Node<Point<N7<T>>, U256, NonLeaf>;
 
 assert_impl!(
-    impl<T> Push for N1<T> where T: Send + Sync + Clone + Traversible + InlineOutput {}
+    impl<T> Push for N1<T> where T: Send + Sync + Component {}
 );
 assert_impl!(
-    impl<T> Push for N2<T> where T: Send + Sync + Clone + Traversible + InlineOutput {}
+    impl<T> Push for N2<T> where T: Send + Sync + Component {}
 );
 assert_impl!(
-    impl<T> Push for N3<T> where T: Send + Sync + Clone + Traversible + InlineOutput {}
+    impl<T> Push for N3<T> where T: Send + Sync + Component {}
 );
 assert_impl!(
-    impl<T> Push for N4<T> where T: Send + Sync + Clone + Traversible + InlineOutput {}
+    impl<T> Push for N4<T> where T: Send + Sync + Component {}
 );
 assert_impl!(
-    impl<T> Push for N5<T> where T: Send + Sync + Clone + Traversible + InlineOutput {}
+    impl<T> Push for N5<T> where T: Send + Sync + Component {}
 );
 assert_impl!(
-    impl<T> Push for N6<T> where T: Send + Sync + Clone + Traversible + InlineOutput {}
+    impl<T> Push for N6<T> where T: Send + Sync + Component {}
 );
 assert_impl!(
-    impl<T> Push for N7<T> where T: Send + Sync + Clone + Traversible + InlineOutput {}
+    impl<T> Push for N7<T> where T: Send + Sync + Component {}
 );
 assert_impl!(
-    impl<T> Push for N8<T> where T: Send + Sync + Clone + Traversible + InlineOutput {}
+    impl<T> Push for N8<T> where T: Send + Sync + Component {}
 );
 
 type H1 = ();
@@ -512,7 +510,7 @@ assert_impl!(
     }
 );
 
-impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
+impl<T: Send + Sync + Component> AppendTree<T> {
     pub const fn new() -> Self {
         Self {
             len: Be::<u64>::new(0u64),
@@ -592,7 +590,7 @@ impl<T: Send + Sync + Clone + Traversible + InlineOutput> AppendTree<T> {
     }
 }
 
-impl<T: Send + Sync + Clone + Traversible + InlineOutput> Default for AppendTree<T> {
+impl<T: Send + Sync + Component> Default for AppendTree<T> {
     fn default() -> Self {
         Self::new()
     }
