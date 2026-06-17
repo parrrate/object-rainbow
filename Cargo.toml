@@ -1,28 +1,28 @@
 [workspace]
 members = [
-    "object-rainbow",
-    "object-rainbow-amt",
-    "object-rainbow-append-tree",
-    "object-rainbow-array-map",
-    "object-rainbow-chain-tree",
-    "object-rainbow-derive",
-    "object-rainbow-encrypted",
-    "object-rainbow-encrypted-store",
-    "object-rainbow-fetchall",
-    "object-rainbow-hamt",
-    "object-rainbow-history",
-    "object-rainbow-history-store",
-    "object-rainbow-json",
-    "object-rainbow-kubo-raw",
-    "object-rainbow-local-map",
-    "object-rainbow-marshall",
-    "object-rainbow-parse-prefix",
-    "object-rainbow-point",
-    "object-rainbow-store",
-    "object-rainbow-store-opendal",
-    "object-rainbow-trie",
-    "xtask",
-    "xtask-release",
+    "crates/object-rainbow",
+    "crates/object-rainbow-amt",
+    "crates/object-rainbow-append-tree",
+    "crates/object-rainbow-array-map",
+    "crates/object-rainbow-chain-tree",
+    "crates/object-rainbow-derive",
+    "crates/object-rainbow-encrypted",
+    "crates/object-rainbow-encrypted-store",
+    "crates/object-rainbow-fetchall",
+    "crates/object-rainbow-hamt",
+    "crates/object-rainbow-history",
+    "crates/object-rainbow-history-store",
+    "crates/object-rainbow-json",
+    "crates/object-rainbow-kubo-raw",
+    "crates/object-rainbow-local-map",
+    "crates/object-rainbow-marshall",
+    "crates/object-rainbow-parse-prefix",
+    "crates/object-rainbow-point",
+    "crates/object-rainbow-store",
+    "crates/object-rainbow-store-opendal",
+    "crates/object-rainbow-trie",
+    "crates/xtask",
+    "crates/xtask-release",
 ]
 
 resolver = "3"
@@ -35,21 +35,21 @@ repository = "https://github.com/parrrate/object-rainbow"
 authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 
 [workspace.dependencies]
-object-rainbow = { version = "0.0.0-a.66", path = "object-rainbow" }
-object-rainbow-amt = { version = "0.0.0-a.6", path = "object-rainbow-amt" }
-object-rainbow-append-tree = { version = "0.0.0-a.13", path = "object-rainbow-append-tree" }
-object-rainbow-array-map = { version = "0.0.0-a.12", path = "object-rainbow-array-map" }
-object-rainbow-chain-tree = { version = "0.0.0-a.10", path = "object-rainbow-chain-tree" }
-object-rainbow-encrypted = { version = "0.0.0-a.19", path = "object-rainbow-encrypted" }
-object-rainbow-fetchall = { version = "0.0.0-a.8", path = "object-rainbow-fetchall" }
-object-rainbow-hamt = { version = "0.0.0-a.11", path = "object-rainbow-hamt" }
-object-rainbow-history = { version = "0.0.0-a.32", path = "object-rainbow-history" }
-object-rainbow-local-map = { version = "0.0.0-a.7", path = "object-rainbow-local-map" }
-object-rainbow-parse-prefix = { version = "0.0.0-a.4", path = "object-rainbow-parse-prefix" }
-object-rainbow-point = { version = "0.0.0-a.13", path = "object-rainbow-point" }
-object-rainbow-store = { version = "0.0.0-a.11", path = "object-rainbow-store" }
-object-rainbow-store-opendal = { version = "0.0.0-a.7", path = "object-rainbow-store-opendal" }
-object-rainbow-trie = { version = "0.0.0-a.18", path = "object-rainbow-trie" }
+object-rainbow = { version = "0.0.0-a.66", path = "crates/object-rainbow" }
+object-rainbow-amt = { version = "0.0.0-a.6", path = "crates/object-rainbow-amt" }
+object-rainbow-append-tree = { version = "0.0.0-a.13", path = "crates/object-rainbow-append-tree" }
+object-rainbow-array-map = { version = "0.0.0-a.12", path = "crates/object-rainbow-array-map" }
+object-rainbow-chain-tree = { version = "0.0.0-a.10", path = "crates/object-rainbow-chain-tree" }
+object-rainbow-encrypted = { version = "0.0.0-a.19", path = "crates/object-rainbow-encrypted" }
+object-rainbow-fetchall = { version = "0.0.0-a.8", path = "crates/object-rainbow-fetchall" }
+object-rainbow-hamt = { version = "0.0.0-a.11", path = "crates/object-rainbow-hamt" }
+object-rainbow-history = { version = "0.0.0-a.32", path = "crates/object-rainbow-history" }
+object-rainbow-local-map = { version = "0.0.0-a.7", path = "crates/object-rainbow-local-map" }
+object-rainbow-parse-prefix = { version = "0.0.0-a.4", path = "crates/object-rainbow-parse-prefix" }
+object-rainbow-point = { version = "0.0.0-a.13", path = "crates/object-rainbow-point" }
+object-rainbow-store = { version = "0.0.0-a.11", path = "crates/object-rainbow-store" }
+object-rainbow-store-opendal = { version = "0.0.0-a.7", path = "crates/object-rainbow-store-opendal" }
+object-rainbow-trie = { version = "0.0.0-a.18", path = "crates/object-rainbow-trie" }
 
 anyhow = "1.0.102"
 async-executor = "1.14.0"
