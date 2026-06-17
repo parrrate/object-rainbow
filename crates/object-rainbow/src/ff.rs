@@ -22,3 +22,9 @@ impl<I: ParseInput> ParseInline<I> for Ff {
         }
     }
 }
+
+impl ByteOrd for Ff {
+    fn bytes_cmp(&self, Self: &Self) -> Ordering {
+        Ordering::Equal
+    }
+}
