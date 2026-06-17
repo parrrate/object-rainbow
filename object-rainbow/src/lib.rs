@@ -44,6 +44,7 @@ pub use self::{
 pub mod ascii;
 mod assert_impl;
 pub mod default_chain;
+pub mod default_terminated;
 pub mod enumkind;
 mod error;
 mod hash;
