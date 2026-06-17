@@ -39,4 +39,6 @@ impl MaybeHasNiche for Ff {
 fn ff_option() {
     assert_eq!(Some(Ff).vec(), [0xff]);
     assert_eq!(None::<Ff>.vec(), [0xfe]);
+    assert_eq!(None::<Option<Ff>>.vec(), [0xfd]);
+    assert_eq!(None::<Option<Option<Ff>>>.vec(), [0xfc]);
 }
