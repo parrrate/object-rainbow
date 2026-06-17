@@ -92,6 +92,18 @@ where
 {
 }
 
+impl<T, A: ByteOrd> ByteOrd for Nt<T>
+where
+    for<'a> &'a T: IntoIterator<Item = A>,
+    Option<A>: ByteOrd + InlineOutput,
+{
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.into_iter()
+            .map(OrderedByBytes)
+            .cmp(other.into_iter().map(OrderedByBytes))
+    }
+}
+
 impl<T, A: ListHashes> ListHashes for Nt<T>
 where
     for<'a> &'a T: IntoIterator<Item = A>,
