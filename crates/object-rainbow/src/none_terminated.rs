@@ -3,6 +3,14 @@ use crate::*;
 #[derive(ParseAsInline)]
 pub struct Nt<T>(pub T);
 
+impl<T> Deref for Nt<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 impl<T: IntoIterator<Item = A> + FromIterator<A>, A, I: ParseInput> ParseInline<I> for Nt<T>
 where
     Option<A>: ParseInline<I>,
