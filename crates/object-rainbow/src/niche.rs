@@ -210,6 +210,8 @@ impl<T: Niche<NeedsTag = B0>> Niche for SomeNiche<T> {
     type Next = T::Next;
 }
 
+impl<T: MinNiche> MinNiche for SomeNiche<T> {}
+
 impl<T: Niche<NeedsTag = B0>> MaybeNiche for SomeNiche<T> {
     type N = T::N;
 }
