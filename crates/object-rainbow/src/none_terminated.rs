@@ -43,6 +43,19 @@ impl<T> DerefMut for Nt<T> {
     }
 }
 
+impl<T, A> ToOutput for Nt<T>
+where
+    for<'a> &'a T: IntoIterator<Item = A>,
+    Option<A>: InlineOutput,
+{
+    fn to_output(&self, output: &mut impl Output) {
+        for item in self {
+            Some(item).to_output(output);
+        }
+        None.to_output(output);
+    }
+}
+
 impl<T: IntoIterator<Item = A> + FromIterator<A>, A, I: ParseInput> ParseInline<I> for Nt<T>
 where
     Option<A>: ParseInline<I>,
