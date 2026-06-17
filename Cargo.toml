@@ -35,15 +35,15 @@ repository = "https://github.com/parrrate/object-rainbow"
 authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 
 [workspace.dependencies]
-object-rainbow = { version = "0.0.0-a.65", path = "object-rainbow" }
-object-rainbow-amt = { version = "0.0.0-a.5", path = "object-rainbow-amt" }
-object-rainbow-append-tree = { version = "0.0.0-a.12", path = "object-rainbow-append-tree" }
+object-rainbow = { version = "0.0.0-a.66", path = "object-rainbow" }
+object-rainbow-amt = { version = "0.0.0-a.6", path = "object-rainbow-amt" }
+object-rainbow-append-tree = { version = "0.0.0-a.13", path = "object-rainbow-append-tree" }
 object-rainbow-array-map = { version = "0.0.0-a.12", path = "object-rainbow-array-map" }
 object-rainbow-chain-tree = { version = "0.0.0-a.10", path = "object-rainbow-chain-tree" }
 object-rainbow-encrypted = { version = "0.0.0-a.19", path = "object-rainbow-encrypted" }
 object-rainbow-fetchall = { version = "0.0.0-a.8", path = "object-rainbow-fetchall" }
-object-rainbow-hamt = { version = "0.0.0-a.10", path = "object-rainbow-hamt" }
-object-rainbow-history = { version = "0.0.0-a.31", path = "object-rainbow-history" }
+object-rainbow-hamt = { version = "0.0.0-a.11", path = "object-rainbow-hamt" }
+object-rainbow-history = { version = "0.0.0-a.32", path = "object-rainbow-history" }
 object-rainbow-local-map = { version = "0.0.0-a.7", path = "object-rainbow-local-map" }
 object-rainbow-parse-prefix = { version = "0.0.0-a.4", path = "object-rainbow-parse-prefix" }
 object-rainbow-point = { version = "0.0.0-a.13", path = "object-rainbow-point" }
