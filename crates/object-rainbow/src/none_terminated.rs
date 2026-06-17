@@ -63,6 +63,15 @@ where
 {
 }
 
+impl<T, A: ListHashes> ListHashes for Nt<T>
+where
+    for<'a> &'a T: IntoIterator<Item = A>,
+{
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.iter_list_hashes(f);
+    }
+}
+
 impl<T: IntoIterator<Item = A> + FromIterator<A>, A, I: ParseInput> ParseInline<I> for Nt<T>
 where
     Option<A>: ParseInline<I>,
