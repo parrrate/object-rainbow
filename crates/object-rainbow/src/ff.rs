@@ -1,4 +1,4 @@
 use crate::*;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, ListHashes)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, ListHashes, Topological)]
 pub struct Ff;
