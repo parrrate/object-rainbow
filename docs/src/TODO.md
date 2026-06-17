@@ -11,3 +11,5 @@ Alisa Feistel maintains this list for herself, please do NOT treat this as an in
 - `#[derive(ByteOrd)]`
 - `{Hamt,Trie}{Map,Set}: FromIterator`
 - auto-inlining wrapper
+- generic `Trie` algorithms
+- type as value
