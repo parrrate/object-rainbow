@@ -47,7 +47,10 @@ impl<T: ToOutput + TaggedOption> OptionOutput for T {
     }
 }
 
-impl<T: ToOutput + TaggedOption> ToOutput for Option<T> {
+impl<T> ToOutput for Option<T>
+where
+    T: OptionOutput,
+{
     fn to_output(&self, output: &mut impl Output) {
         T::to_option_output(self.as_ref(), output);
     }
