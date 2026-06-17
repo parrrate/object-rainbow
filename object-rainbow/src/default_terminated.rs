@@ -6,6 +6,14 @@ pub struct Dt<T> {
     inner: Arc<WithRepr<T>>,
 }
 
+impl<T> Clone for Dt<T> {
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+        }
+    }
+}
+
 impl<T> Deref for Dt<T> {
     type Target = T;
 
