@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(Debug, ParseAsInline, Clone)]
+#[derive(Debug, ParseAsInline, Clone, Copy)]
 pub struct Nt<T>(pub T);
 
 impl<T, A: PartialEq> PartialEq for Nt<T>
