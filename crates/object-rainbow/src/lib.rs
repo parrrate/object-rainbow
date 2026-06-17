@@ -726,6 +726,10 @@ pub trait InlineOutput: ToOutput {
     }
 }
 
+pub trait OptionOutput {
+    fn to_option_output(option: Option<&Self>, output: &mut impl Output);
+}
+
 pub trait ListHashes {
     fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
         let _ = f;

@@ -25,10 +25,6 @@ impl<T: MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag = B>,
     }
 }
 
-pub trait OptionOutput {
-    fn to_option_output(option: Option<&Self>, output: &mut impl Output);
-}
-
 impl<T: ToOutput + TaggedOption> OptionOutput for T {
     fn to_option_output(option: Option<&Self>, output: &mut impl Output) {
         match option {
