@@ -59,7 +59,9 @@ where
 impl<T, A> InlineOutput for Nt<T>
 where
     for<'a> &'a T: IntoIterator<Item = A>,
-    Option<A>: InlineOutput, {}
+    Option<A>: InlineOutput,
+{
+}
 
 impl<T: IntoIterator<Item = A> + FromIterator<A>, A, I: ParseInput> ParseInline<I> for Nt<T>
 where
