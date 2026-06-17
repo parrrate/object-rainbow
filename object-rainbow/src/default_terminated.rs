@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use crate::*;
 
+#[derive(ParseAsInline)]
 pub struct Dt<T> {
     inner: Arc<T>,
 }
@@ -52,5 +53,23 @@ where
 {
     fn traverse(&self, visitor: &mut impl PointVisitor) {
         self.iter_traverse(visitor);
+    }
+}
+
+impl<T: FromIterator<A>, A: PartialEq + Default + ParseInline<I>, I: ParseInput> ParseInline<I>
+    for Dt<T>
+where
+    for<'a> &'a T: IntoIterator<Item = &'a A>,
+{
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        let mut items = Vec::new();
+        let default = A::default();
+        while let item = input.parse_inline()?
+            && item != default
+        {
+            items.push(item);
+        }
+        let inner = Arc::new(items.into_iter().collect());
+        Ok(Self { inner })
     }
 }
