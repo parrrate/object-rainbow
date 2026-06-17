@@ -21,6 +21,7 @@ futures-util.workspace = true
 generic-array.workspace = true
 ghost.workspace = true
 hex = { workspace = true, optional = true }
+indexmap = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"], optional = true }
 sha2.workspace = true
 sha2-const.workspace = true
@@ -33,6 +34,7 @@ bitvec = ["dep:bitvec"]
 bytes = ["dep:bytes"]
 cid = ["dep:cid"]
 hex = ["dep:hex"]
+indexmap = ["dep:indexmap"]
 serde = ["dep:serde"]
 ulid = ["dep:ulid"]
 

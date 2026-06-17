@@ -1634,6 +1634,7 @@ dependencies = [
  "generic-array 1.4.1",
  "ghost",
  "hex",
+ "indexmap 2.14.0",
  "object-rainbow-derive",
  "serde",
  "sha2 0.11.0",

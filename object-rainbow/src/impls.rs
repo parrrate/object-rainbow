@@ -15,6 +15,8 @@ mod cow;
 mod cstr;
 mod cstring;
 mod generic_array;
+#[cfg(feature = "indexmap")]
+mod indexmap;
 mod infallible;
 mod option;
 mod ordering;
