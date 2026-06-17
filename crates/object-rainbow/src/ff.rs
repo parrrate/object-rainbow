@@ -8,3 +8,5 @@ impl ToOutput for Ff {
         output.write(&[0xff]);
     }
 }
+
+impl InlineOutput for Ff {}
