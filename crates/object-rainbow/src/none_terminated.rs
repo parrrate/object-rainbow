@@ -3,6 +3,15 @@ use crate::*;
 #[derive(ParseAsInline)]
 pub struct Nt<T>(pub T);
 
+impl<T, A: PartialEq> PartialEq for Nt<T>
+where
+    for<'a> &'a T: IntoIterator<Item = A>,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.into_iter().eq(other)
+    }
+}
+
 impl<'a, T> IntoIterator for &'a Nt<T>
 where
     &'a T: IntoIterator,
