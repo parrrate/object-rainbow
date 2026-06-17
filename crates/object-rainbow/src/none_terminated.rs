@@ -3,6 +3,19 @@ use crate::*;
 #[derive(ParseAsInline)]
 pub struct Nt<T>(pub T);
 
+impl<'a, T> IntoIterator for &'a Nt<T>
+where
+    &'a T: IntoIterator,
+{
+    type Item = <&'a T as IntoIterator>::Item;
+
+    type IntoIter = <&'a T as IntoIterator>::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
 impl<T> Deref for Nt<T> {
     type Target = T;
 
