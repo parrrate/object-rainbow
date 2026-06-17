@@ -21,9 +21,13 @@ impl<T: MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag = B>,
     }
 }
 
-impl<T: ToOutput + TaggedOption> ToOutput for Option<T> {
-    fn to_output(&self, output: &mut impl Output) {
-        match self {
+pub trait OptionOutput {
+    fn to_option_output(option: Option<&Self>, output: &mut impl Output);
+}
+
+impl<T: ToOutput + TaggedOption> OptionOutput for T {
+    fn to_option_output(option: Option<&Self>, output: &mut impl Output) {
+        match option {
             Some(value) => {
                 if T::TAGGED_OPTION && output.is_real() {
                     output.write(&[0]);
@@ -40,6 +44,12 @@ impl<T: ToOutput + TaggedOption> ToOutput for Option<T> {
                 }
             }
         }
+    }
+}
+
+impl<T: ToOutput + TaggedOption> ToOutput for Option<T> {
+    fn to_output(&self, output: &mut impl Output) {
+        T::to_option_output(self.as_ref(), output);
     }
 }
 
