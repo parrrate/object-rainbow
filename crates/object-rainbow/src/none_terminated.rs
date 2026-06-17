@@ -72,6 +72,15 @@ where
     }
 }
 
+impl<T, A: Topological> Topological for Nt<T>
+where
+    for<'a> &'a T: IntoIterator<Item = A>,
+{
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.iter_traverse(visitor);
+    }
+}
+
 impl<T: IntoIterator<Item = A> + FromIterator<A>, A, I: ParseInput> ParseInline<I> for Nt<T>
 where
     Option<A>: ParseInline<I>,
