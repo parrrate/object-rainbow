@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use crate::{with_repr::WithRepr, *};
+use crate::*;
 
 pub struct Dt<T> {
-    inner: Arc<WithRepr<T>>,
+    inner: Arc<T>,
 }
 
 impl<T> Clone for Dt<T> {
@@ -18,7 +18,7 @@ impl<T> Deref for Dt<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        self.inner.object()
+        &self.inner
     }
 }
 
