@@ -3,11 +3,11 @@ use std::sync::Arc;
 use crate::*;
 
 #[derive(ParseAsInline)]
-pub struct Dt<T> {
-    inner: Arc<T>,
+pub struct Dt<T, A> {
+    inner: Arc<(T, A)>,
 }
 
-impl<T> Clone for Dt<T> {
+impl<T, A> Clone for Dt<T, A> {
     fn clone(&self) -> Self {
         Self {
             inner: self.inner.clone(),
@@ -15,41 +15,41 @@ impl<T> Clone for Dt<T> {
     }
 }
 
-impl<T> Deref for Dt<T> {
+impl<T, A> Deref for Dt<T, A> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        &self.inner
+        &self.inner.0
     }
 }
 
-impl<T, A: Default + InlineOutput> ToOutput for Dt<T>
+impl<T, A: Default + InlineOutput> ToOutput for Dt<T, A>
 where
-    for<'a> &'a T: IntoIterator<Item = &'a A>,
+    for<'a> &'a T: IntoIterator<Item: InlineOutput>,
 {
     fn to_output(&self, output: &mut impl Output) {
         self.iter_to_output(output);
-        A::default().to_output(output);
+        self.inner.1.to_output(output);
     }
 }
 
-impl<T, A: Default + InlineOutput> InlineOutput for Dt<T> where
-    for<'a> &'a T: IntoIterator<Item = &'a A>
+impl<T, A: Default + InlineOutput> InlineOutput for Dt<T, A> where
+    for<'a> &'a T: IntoIterator<Item: InlineOutput>
 {
 }
 
-impl<T, A: ListHashes> ListHashes for Dt<T>
+impl<T, A> ListHashes for Dt<T, A>
 where
-    for<'a> &'a T: IntoIterator<Item = &'a A>,
+    for<'a> &'a T: IntoIterator<Item: ListHashes>,
 {
     fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
         self.iter_list_hashes(f);
     }
 }
 
-impl<T, A: Topological> Topological for Dt<T>
+impl<T, A> Topological for Dt<T, A>
 where
-    for<'a> &'a T: IntoIterator<Item = &'a A>,
+    for<'a> &'a T: IntoIterator<Item: Topological>,
 {
     fn traverse(&self, visitor: &mut impl PointVisitor) {
         self.iter_traverse(visitor);
@@ -57,19 +57,19 @@ where
 }
 
 impl<T: FromIterator<A>, A: PartialEq + Default + ParseInline<I>, I: ParseInput> ParseInline<I>
-    for Dt<T>
-where
-    for<'a> &'a T: IntoIterator<Item = &'a A>,
+    for Dt<T, A>
 {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         let mut items = Vec::new();
         let default = A::default();
-        while let item = input.parse_inline()?
-            && item != default
-        {
+        let term = loop {
+            let item = input.parse_inline()?;
+            if item == default {
+                break item;
+            }
             items.push(item);
-        }
-        let inner = Arc::new(items.into_iter().collect());
+        };
+        let inner = Arc::new((items.into_iter().collect(), term));
         Ok(Self { inner })
     }
 }
