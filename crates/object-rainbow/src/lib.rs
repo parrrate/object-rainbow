@@ -55,7 +55,6 @@ mod impls;
 pub mod incr_byte_niche;
 pub mod inline_extra;
 pub mod length_prefixed;
-pub mod ln_option;
 pub mod map_extra;
 mod niche;
 pub mod none_terminated;
