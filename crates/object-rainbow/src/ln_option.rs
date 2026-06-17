@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
 pub struct LnOption<T>(pub Option<T>);
 
 impl<T: ToOutput> ToOutput for LnOption<T> {
