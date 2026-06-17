@@ -12,6 +12,8 @@ where
     }
 }
 
+impl<T, A: Eq> Eq for Nt<T> where for<'a> &'a T: IntoIterator<Item = A> {}
+
 impl<'a, T> IntoIterator for &'a Nt<T>
 where
     &'a T: IntoIterator,
