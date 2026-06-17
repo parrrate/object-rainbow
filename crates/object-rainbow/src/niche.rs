@@ -175,6 +175,8 @@ impl<T: Niche<N: Add<N, Output: ArrayLength>>, V: Niche<N = N, NeedsTag: NicheAu
     type Next = NicheAnd<T::Next, AutoNiche<V>>;
 }
 
+impl<T: MinNiche, V> MinNiche for NicheAnd<T, V> {}
+
 impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, V: MaybeNiche<N = N>, N: Unsigned> MaybeNiche
     for NicheAnd<T, V>
 {
