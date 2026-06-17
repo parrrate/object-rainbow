@@ -37,3 +37,12 @@ where
         self.iter_list_hashes(f);
     }
 }
+
+impl<T, A: Topological> Topological for Dt<T>
+where
+    for<'a> &'a T: IntoIterator<Item = &'a A>,
+{
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.iter_traverse(visitor);
+    }
+}
