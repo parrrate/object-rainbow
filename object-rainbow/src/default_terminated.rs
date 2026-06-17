@@ -24,6 +24,11 @@ where
     }
 }
 
+impl<T, A: Default + InlineOutput> InlineOutput for Dt<T> where
+    for<'a> &'a T: IntoIterator<Item = &'a A>
+{
+}
+
 impl<T, A: ListHashes> ListHashes for Dt<T>
 where
     for<'a> &'a T: IntoIterator<Item = &'a A>,
