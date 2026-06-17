@@ -401,3 +401,6 @@ impl<const X: usize> Niche for HackNiche<X> {
     }
     type Next = NoNiche<Self>;
 }
+
+/// This niche precedes all non-niche values.
+pub trait MinNiche {}

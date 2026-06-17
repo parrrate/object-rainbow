@@ -35,8 +35,8 @@ pub use self::{
     error::{Error, Result},
     hash::{Hash, OptionalHash},
     niche::{
-        AutoEnumNiche, AutoNiche, HackNiche, MaybeHasNiche, Niche, NicheForUnsized, NoNiche,
-        OneNiche, SomeNiche, ZeroNiche, ZeroNoNiche,
+        AutoEnumNiche, AutoNiche, HackNiche, MaybeHasNiche, MinNiche, Niche, NicheForUnsized,
+        NoNiche, OneNiche, SomeNiche, ZeroNiche, ZeroNoNiche,
     },
     ordering::{ByteOrd, OrderedByBytes, SignificantLength},
 };
