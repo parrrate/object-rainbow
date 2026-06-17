@@ -6,6 +6,8 @@ use typenum::{B0, B1, Bit, IsGreater, IsLess, ToInt, U1, U2, U255, U256};
 use crate::*;
 
 pub trait TaggedOption {
+    type TaggedOption;
+    type Niche;
     const TAGGED_OPTION: bool = true;
     fn none_data() -> impl AsRef<[u8]> {
         []
@@ -15,6 +17,8 @@ pub trait TaggedOption {
 impl<T: MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag = B>, B: Bit>
     TaggedOption for T
 {
+    type TaggedOption = B;
+    type Niche = N;
     const TAGGED_OPTION: bool = B::BOOL;
     fn none_data() -> impl AsRef<[u8]> {
         N::niche()
@@ -54,6 +58,17 @@ impl<T: ToOutput + TaggedOption> ToOutput for Option<T> {
 }
 
 impl<T: InlineOutput + TaggedOption> InlineOutput for Option<T> {}
+
+impl<T: ByteOrd + TaggedOption<TaggedOption = B0, Niche: MinNiche>> ByteOrd for Option<T> {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        match (self, other) {
+            (Self::None, Self::None) => Ordering::Equal,
+            (Self::None, Self::Some(_)) => Ordering::Less,
+            (Self::Some(_), Self::None) => Ordering::Greater,
+            (Self::Some(a), Self::Some(b)) => a.bytes_cmp(b),
+        }
+    }
+}
 
 impl<T: ListHashes> ListHashes for Option<T> {
     fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
