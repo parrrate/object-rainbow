@@ -58,6 +58,7 @@ pub mod length_prefixed;
 pub mod ln_option;
 pub mod map_extra;
 mod niche;
+pub mod none_terminated;
 pub mod numeric;
 pub mod object_marker;
 mod ordering;
