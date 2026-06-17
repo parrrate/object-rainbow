@@ -11,6 +11,12 @@ impl<T> Deref for Nt<T> {
     }
 }
 
+impl<T> DerefMut for Nt<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 impl<T: IntoIterator<Item = A> + FromIterator<A>, A, I: ParseInput> ParseInline<I> for Nt<T>
 where
     Option<A>: ParseInline<I>,
