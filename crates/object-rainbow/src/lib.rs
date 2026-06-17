@@ -47,6 +47,7 @@ pub mod default_chain;
 pub mod default_terminated;
 pub mod enumkind;
 mod error;
+pub mod ff_option;
 mod hash;
 pub mod hashed;
 mod impls;
