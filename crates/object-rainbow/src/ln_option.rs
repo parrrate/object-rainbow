@@ -14,3 +14,5 @@ impl<T: ToOutput> ToOutput for LnOption<T> {
         }
     }
 }
+
+impl<T: InlineOutput> InlineOutput for LnOption<T> {}
