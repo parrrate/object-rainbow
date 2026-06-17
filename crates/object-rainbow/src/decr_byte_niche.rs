@@ -32,3 +32,5 @@ impl<K: ToInt<u8> + NextNiche> Niche for DecrByteNiche<K> {
     }
     type Next = K::NextNiche;
 }
+
+impl<K: ToInt<u8>> MinNiche for DecrByteNiche<K> {}
