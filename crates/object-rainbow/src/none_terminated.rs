@@ -16,6 +16,19 @@ where
     }
 }
 
+impl<'a, T> IntoIterator for &'a mut Nt<T>
+where
+    &'a mut T: IntoIterator,
+{
+    type Item = <&'a mut T as IntoIterator>::Item;
+
+    type IntoIter = <&'a mut T as IntoIterator>::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
 impl<T> Deref for Nt<T> {
     type Target = T;
 
