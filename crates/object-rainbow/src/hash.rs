@@ -46,6 +46,7 @@ pub struct HashNiche<N>(N);
 
 impl<N: ToInt<u8> + Add<B1>> Niche for HashNiche<N> {
     type NeedsTag = B0;
+    type Cut = B0;
     type N = <Hash as Size>::Size;
     fn niche() -> GenericArray<u8, Self::N> {
         let mut niche = GenericArray::default();

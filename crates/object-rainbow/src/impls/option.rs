@@ -129,6 +129,7 @@ impl<
 
 impl<N: ArrayLength, K: ToInt<u8> + NextNiche> Niche for OptionNiche<N, K> {
     type NeedsTag = B0;
+    type Cut = B1;
     type N = N;
     fn niche() -> GenericArray<u8, Self::N> {
         let mut niche = GenericArray::default();

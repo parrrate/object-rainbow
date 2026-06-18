@@ -26,6 +26,7 @@ pub struct NicheForUnsized;
 
 impl Niche for NicheForUnsized {
     type NeedsTag = B1;
+    type Cut = B1;
     type N = U0;
     fn niche() -> GenericArray<u8, Self::N> {
         Default::default()
@@ -49,6 +50,8 @@ pub trait Niche {
     /// Whether this is a fake niche (true niches, i.e. those which don't need a tag, don't
     /// represent a value).
     type NeedsTag: Bit;
+    /// Whether to stop tail extension of this niche.
+    type Cut: Bit;
     /// Length in bytes.
     type N: ArrayLength;
     /// Get the niche bytes.
@@ -74,6 +77,7 @@ pub trait AsHeadOf<U: MaybeNiche>: MaybeNiche {
 
 impl<V: Niche<NeedsTag = B1>> Niche for NoNiche<V> {
     type NeedsTag = B1;
+    type Cut = V::Cut;
     type N = V::N;
     fn niche() -> GenericArray<u8, Self::N> {
         V::niche()
@@ -97,6 +101,7 @@ impl<V: Niche<NeedsTag = B1>, U: AsTailOf<Self>> AsHeadOf<U> for NoNiche<V> {
 
 impl<A: Niche<N: Add<B::N, Output: ArrayLength>>, B: Niche> Niche for NoNiche2<A, B> {
     type NeedsTag = B1;
+    type Cut = B::Cut;
     type N = Sum<A::N, B::N>;
     fn niche() -> GenericArray<u8, Self::N> {
         Concat::concat(A::niche(), B::niche())
@@ -130,6 +135,7 @@ impl<
 > Niche for AndNiche<V, T>
 {
     type NeedsTag = T::NeedsTag;
+    type Cut = T::Cut;
     type N = Sum<N, T::N>;
     fn niche() -> GenericArray<u8, Self::N> {
         Concat::concat(V::niche(), T::niche())
@@ -168,6 +174,7 @@ impl<T: Niche<N: Add<N, Output: ArrayLength>>, V: Niche<N = N, NeedsTag: NicheAu
     Niche for NicheAnd<T, V>
 {
     type NeedsTag = T::NeedsTag;
+    type Cut = V::Cut;
     type N = Sum<T::N, N>;
     fn niche() -> GenericArray<u8, Self::N> {
         Concat::concat(T::niche(), V::niche())
@@ -203,6 +210,7 @@ where
 
 impl<T: Niche<NeedsTag = B0>> Niche for SomeNiche<T> {
     type NeedsTag = T::NeedsTag;
+    type Cut = T::Cut;
     type N = T::N;
     fn niche() -> GenericArray<u8, Self::N> {
         T::niche()
@@ -251,6 +259,7 @@ pub struct ZeroNoNiche<N>(N);
 
 impl<N: ArrayLength> Niche for ZeroNoNiche<N> {
     type NeedsTag = B1;
+    type Cut = B0;
     type N = N;
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::default()
@@ -263,6 +272,7 @@ pub struct ZeroNiche<N, Next = NoNiche<ZeroNoNiche<N>>>(N, Next);
 
 impl<N: ArrayLength, Next> Niche for ZeroNiche<N, Next> {
     type NeedsTag = B0;
+    type Cut = B0;
     type N = N;
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::default()
@@ -275,6 +285,7 @@ pub struct OneNiche<N>(N);
 
 impl<N: ArrayLength> Niche for OneNiche<N> {
     type NeedsTag = B0;
+    type Cut = B0;
     type N = N;
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::default().map(|()| 0xff)
@@ -365,6 +376,7 @@ impl<
 > Niche for EnumNiche<E, X>
 {
     type NeedsTag = V::NeedsTag;
+    type Cut = B0;
     type N = N;
     fn niche() -> GenericArray<u8, Self::N> {
         if V::NeedsTag::BOOL {
@@ -399,6 +411,7 @@ pub struct HackNiche<const X: usize>;
 
 impl<const X: usize> Niche for HackNiche<X> {
     type NeedsTag = B1;
+    type Cut = B0;
     type N = U0;
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::default()

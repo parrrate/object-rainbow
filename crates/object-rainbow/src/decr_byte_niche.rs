@@ -26,6 +26,7 @@ impl<K: Sub<B, Output = J> + IsGreater<U0, Output = B>, J, B: WrapNext> NextNich
 
 impl<K: ToInt<u8> + NextNiche> Niche for DecrByteNiche<K> {
     type NeedsTag = typenum::B0;
+    type Cut = B0;
     type N = U1;
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::from_array([K::INT])

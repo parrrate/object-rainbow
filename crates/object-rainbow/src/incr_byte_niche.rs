@@ -30,6 +30,7 @@ impl<K: IsLess<U256, Output = B1> + Add<B1, Output = J> + IsLess<U255, Output = 
 
 impl<K: ToInt<u8> + NextNiche> Niche for IncrByteNiche<K> {
     type NeedsTag = typenum::B0;
+    type Cut = B0;
     type N = U1;
     fn niche() -> GenericArray<u8, Self::N> {
         GenericArray::from_array([K::INT])
