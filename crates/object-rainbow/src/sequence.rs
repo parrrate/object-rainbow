@@ -89,3 +89,12 @@ where
         self.iter_bytes_cmp(other)
     }
 }
+
+impl<T> ListHashes for Sequence<T>
+where
+    for<'a> &'a T: IntoIterator<Item: ListHashes>,
+{
+    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+        self.iter_list_hashes(f);
+    }
+}
