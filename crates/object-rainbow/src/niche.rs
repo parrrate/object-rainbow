@@ -128,10 +128,14 @@ impl<
     type WithHead = NoNiche2<U, Self>;
 }
 
-impl<A: MaybeNiche<N: Add<B::N, Output: Unsigned>>, B: MaybeNiche, U: AsTailOf<Self>> AsHeadOf<U>
-    for NoNiche2<A, B>
+impl<
+    A: MaybeNiche<N: Add<B::N, Output: Unsigned>>,
+    B: MaybeNiche<Cut = Cut>,
+    U: AsTailOf<Self>,
+    Cut: CutNone<Self, U>,
+> AsHeadOf<U> for NoNiche2<A, B>
 {
-    type WithTail = U::WithHead;
+    type WithTail = Cut::Cut;
 }
 
 impl<
