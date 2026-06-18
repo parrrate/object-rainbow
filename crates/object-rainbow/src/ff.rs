@@ -65,8 +65,8 @@ pub type FfCollection<T> = crate::none_terminated::Nt<
 
 #[test]
 fn ff_collection() {
-    let mut stuff = FfCollection::<Vec<()>>::default();
-    stuff.push(());
-    stuff.push(());
-    assert_eq!(stuff.vec(), [0xff, 0xff, 0xfe]);
+    let mut stuff = FfCollection::<Vec<u8>>::default();
+    stuff.push(1);
+    stuff.push(2);
+    assert_eq!(stuff.vec(), [0xff, 0x01, 0xff, 0x02, 0xfe]);
 }
