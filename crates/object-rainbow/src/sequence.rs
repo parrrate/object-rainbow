@@ -14,6 +14,15 @@ where
 
 impl<T> Eq for Sequence<T> where for<'a> &'a T: IntoIterator<Item: Eq> {}
 
+impl<T> PartialOrd for Sequence<T>
+where
+    for<'a> &'a T: IntoIterator<Item: PartialOrd>,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.into_iter().partial_cmp(other)
+    }
+}
+
 impl<T> Deref for Sequence<T> {
     type Target = T;
 
