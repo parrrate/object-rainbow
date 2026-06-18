@@ -46,6 +46,16 @@ impl<T> DerefMut for Sequence<T> {
     }
 }
 
+impl<T: IntoIterator> IntoIterator for Sequence<T> {
+    type Item = T::Item;
+
+    type IntoIter = T::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
 impl<'a, T> IntoIterator for &'a Sequence<T>
 where
     &'a T: IntoIterator,
