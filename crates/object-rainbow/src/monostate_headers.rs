@@ -5,6 +5,14 @@ pub struct MonostateHeaders<T, M = ()> {
     monostate: M,
 }
 
+impl<T, M> Deref for MonostateHeaders<T, M> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
 pub struct Iter<I, M> {
     inner: I,
     monostate: M,
