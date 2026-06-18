@@ -98,8 +98,10 @@ impl<U: MaybeNiche<N: Add<V::N, Output: Unsigned>>, V: Niche<NeedsTag = B1>> AsT
     type WithHead = NoNiche2<U, Self>;
 }
 
-impl<V: Niche<NeedsTag = B1>, U: AsTailOf<Self>> AsHeadOf<U> for NoNiche<V> {
-    type WithTail = U::WithHead;
+impl<V: Niche<NeedsTag = B1, Cut = Cut>, U: AsTailOf<Self>, Cut: CutNone<Self, U>> AsHeadOf<U>
+    for NoNiche<V>
+{
+    type WithTail = Cut::Cut;
 }
 
 impl<A: Niche<N: Add<B::N, Output: ArrayLength>>, B: Niche> Niche for NoNiche2<A, B> {
@@ -455,5 +457,17 @@ where
 }
 
 impl<A: MaybeNiche, B> CutSome<A, B> for B1 {
+    type Cut = A;
+}
+
+pub trait CutNone<A, B> {
+    type Cut: MaybeNiche;
+}
+
+impl<A: MaybeNiche, B: AsTailOf<A>> CutNone<A, B> for B0 {
+    type Cut = B::WithHead;
+}
+
+impl<A: MaybeNiche, B> CutNone<A, B> for B1 {
     type Cut = A;
 }
