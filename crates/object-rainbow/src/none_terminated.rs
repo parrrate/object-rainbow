@@ -75,7 +75,7 @@ impl<T> DerefMut for Nt<T> {
 impl<T> ToOutput for Nt<T>
 where
     for<'a> &'a T: IntoIterator,
-    for<'a> Option<<&'a T as IntoIterator>::Item>: ToOutput,
+    for<'a> Option<<&'a T as IntoIterator>::Item>: InlineOutput,
 {
     fn to_output(&self, output: &mut impl Output) {
         for item in self {
@@ -85,10 +85,10 @@ where
     }
 }
 
-impl<T, A> InlineOutput for Nt<T>
+impl<T> InlineOutput for Nt<T>
 where
-    for<'a> &'a T: IntoIterator<Item = A>,
-    Option<A>: InlineOutput,
+    for<'a> &'a T: IntoIterator,
+    for<'a> Option<<&'a T as IntoIterator>::Item>: InlineOutput,
 {
 }
 
