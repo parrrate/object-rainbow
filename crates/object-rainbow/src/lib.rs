@@ -34,6 +34,7 @@ pub use self::{
     enumkind::Enum,
     error::{Error, Result},
     hash::{Hash, OptionalHash},
+    monostate::Monostate,
     niche::{
         AutoEnumNiche, AutoNiche, HackNiche, MaybeHasNiche, MinNiche, Niche, NicheForUnsized,
         NoNiche, OneNiche, SomeNiche, ZeroNiche, ZeroNoNiche,
@@ -45,7 +46,6 @@ pub mod ascii;
 mod assert_impl;
 pub mod decr_byte_niche;
 pub mod default_chain;
-pub mod monostate;
 pub mod default_terminated;
 pub mod enumkind;
 mod error;
@@ -57,6 +57,7 @@ pub mod incr_byte_niche;
 pub mod inline_extra;
 pub mod length_prefixed;
 pub mod map_extra;
+mod monostate;
 mod niche;
 pub mod niche_cut;
 pub mod none_terminated;
