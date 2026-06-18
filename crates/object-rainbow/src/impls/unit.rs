@@ -36,3 +36,9 @@ impl ByteOrd for () {
         Ordering::Equal
     }
 }
+
+impl Monostate for () {
+    fn consume(self) {
+        self
+    }
+}
