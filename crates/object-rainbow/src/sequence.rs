@@ -71,3 +71,12 @@ where
         self.0.into_iter()
     }
 }
+
+impl<T> ToOutput for Sequence<T>
+where
+    for<'a> &'a T: IntoIterator<Item: InlineOutput>,
+{
+    fn to_output(&self, output: &mut impl Output) {
+        self.iter_to_output(output);
+    }
+}
