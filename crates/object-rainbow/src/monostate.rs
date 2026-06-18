@@ -1,3 +1,3 @@
-pub trait Monostate: Default {
+pub trait Monostate: Default + Eq {
     fn consume(self);
 }
