@@ -92,10 +92,10 @@ where
 {
 }
 
-impl<T, A: ByteOrd> ByteOrd for Nt<T>
+impl<T> ByteOrd for Nt<T>
 where
-    for<'a> &'a T: IntoIterator<Item = A>,
-    Option<A>: ByteOrd + InlineOutput,
+    for<'a> &'a T: IntoIterator<Item: ByteOrd>,
+    for<'a> Option<<&'a T as IntoIterator>::Item>: ByteOrd + InlineOutput,
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.into_iter()
