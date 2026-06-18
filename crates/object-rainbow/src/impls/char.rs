@@ -62,6 +62,7 @@ impl ListHashes for char {}
 impl Topological for char {}
 
 pub struct CharNiche;
+pub struct CharNicheNext;
 
 impl Niche for CharNiche {
     type NeedsTag = B0;
@@ -70,7 +71,7 @@ impl Niche for CharNiche {
     fn niche() -> GenericArray<u8, Self::N> {
         [0xffu8].into()
     }
-    type Next = NoNiche<NicheForUnsized>;
+    type Next = CharNicheNext;
 }
 
 impl MaybeHasNiche for char {
