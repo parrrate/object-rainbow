@@ -3,7 +3,17 @@ use typenum::{U1, U254};
 use crate::{decr_byte_niche::DecrByteNiche, *};
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, ListHashes, Topological, ParseAsInline,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    ListHashes,
+    Topological,
+    ParseAsInline,
+    Default,
 )]
 pub struct Ff;
 
