@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(Debug, ParseAsInline, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Sequence<T>(pub T);
 
 impl<T> PartialEq for Sequence<T>
