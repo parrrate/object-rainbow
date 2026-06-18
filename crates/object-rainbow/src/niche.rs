@@ -65,6 +65,8 @@ pub trait Niche {
 pub trait MaybeNiche {
     /// Length in bytes.
     type N: Unsigned;
+    /// Whether to stop tail extension of this niche.
+    type Cut: Bit;
 }
 
 pub trait AsTailOf<U: MaybeNiche>: MaybeNiche {
@@ -87,6 +89,7 @@ impl<V: Niche<NeedsTag = B1>> Niche for NoNiche<V> {
 
 impl<V: Niche<NeedsTag = B1>> MaybeNiche for NoNiche<V> {
     type N = V::N;
+    type Cut = V::Cut;
 }
 
 impl<U: MaybeNiche<N: Add<V::N, Output: Unsigned>>, V: Niche<NeedsTag = B1>> AsTailOf<U>
@@ -111,6 +114,7 @@ impl<A: Niche<N: Add<B::N, Output: ArrayLength>>, B: Niche> Niche for NoNiche2<A
 
 impl<A: MaybeNiche<N: Add<B::N, Output: Unsigned>>, B: MaybeNiche> MaybeNiche for NoNiche2<A, B> {
     type N = Sum<A::N, B::N>;
+    type Cut = B::Cut;
 }
 
 impl<
@@ -148,6 +152,7 @@ where
     N: Add<T::N, Output: Unsigned>,
 {
     type N = Sum<N, T::N>;
+    type Cut = T::Cut;
 }
 
 impl<
@@ -188,6 +193,7 @@ impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, V: MaybeNiche<N = N>, N: Unsign
     for NicheAnd<T, V>
 {
     type N = Sum<T::N, N>;
+    type Cut = V::Cut;
 }
 
 impl<
@@ -222,6 +228,7 @@ impl<T: MinNiche> MinNiche for SomeNiche<T> {}
 
 impl<T: Niche<NeedsTag = B0>> MaybeNiche for SomeNiche<T> {
     type N = T::N;
+    type Cut = T::Cut;
 }
 
 impl<U: MaybeNiche<N: Add<T::N, Output: Unsigned>>, T: Niche<NeedsTag = B0>> AsTailOf<U>
