@@ -23,9 +23,9 @@ where
     }
 }
 
-impl<T, A: Ord> Ord for Nt<T>
+impl<T> Ord for Nt<T>
 where
-    for<'a> &'a T: IntoIterator<Item = A>,
+    for<'a> &'a T: IntoIterator<Item: Ord>,
 {
     fn cmp(&self, other: &Self) -> Ordering {
         self.into_iter().cmp(other)
