@@ -212,12 +212,17 @@ impl<
     type WithHead = AndNiche<U, Self>;
 }
 
-impl<T: MaybeNiche<N: Add<N, Output: Unsigned>>, V: MaybeNiche<N = N>, N: Unsigned, U: MaybeNiche>
-    AsHeadOf<U> for NicheAnd<T, V>
+impl<
+    T: MaybeNiche<N: Add<N, Output: Unsigned>>,
+    V: MaybeNiche<N = N, Cut = Cut>,
+    N: Unsigned,
+    U: MaybeNiche,
+    Cut: CutSome<Self, U>,
+> AsHeadOf<U> for NicheAnd<T, V>
 where
     Sum<T::N, N>: Add<U::N, Output: Unsigned>,
 {
-    type WithTail = NicheAnd<Self, U>;
+    type WithTail = Cut::Cut;
 }
 
 impl<T: Niche<NeedsTag = B0>> Niche for SomeNiche<T> {
