@@ -1,3 +1,5 @@
+use typenum::U1;
+
 use crate::*;
 
 impl ToOutput for char {
@@ -58,6 +60,10 @@ impl InlineOutput for char {}
 impl Tagged for char {}
 impl ListHashes for char {}
 impl Topological for char {}
+
+impl MaybeHasNiche for char {
+    type MnArray = SomeNiche<OneNiche<U1>>;
+}
 
 impl ByteOrd for char {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
