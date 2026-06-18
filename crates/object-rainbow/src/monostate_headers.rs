@@ -13,6 +13,12 @@ impl<T, M> Deref for MonostateHeaders<T, M> {
     }
 }
 
+impl<T, M> DerefMut for MonostateHeaders<T, M> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.inner
+    }
+}
+
 pub struct Iter<I, M> {
     inner: I,
     monostate: M,
