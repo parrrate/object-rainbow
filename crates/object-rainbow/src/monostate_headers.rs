@@ -29,3 +29,12 @@ impl<T: IntoIterator, M: Monostate> IntoIterator for MonostateHeaders<T, M> {
         }
     }
 }
+
+impl<T: FromIterator<A>, M: Monostate, A> FromIterator<A> for MonostateHeaders<T, M> {
+    fn from_iter<I: IntoIterator<Item = A>>(iter: I) -> Self {
+        Self {
+            inner: iter.into_iter().collect(),
+            monostate: Default::default(),
+        }
+    }
+}
