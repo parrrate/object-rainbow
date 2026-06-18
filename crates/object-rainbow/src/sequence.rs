@@ -3,6 +3,15 @@ use crate::*;
 #[derive(Debug, ParseAsInline, Clone, Copy, Default)]
 pub struct Sequence<T>(pub T);
 
+impl<T> PartialEq for Sequence<T>
+where
+    for<'a> &'a T: IntoIterator<Item: PartialEq>,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.into_iter().eq(other)
+    }
+}
+
 impl<T> Deref for Sequence<T> {
     type Target = T;
 
