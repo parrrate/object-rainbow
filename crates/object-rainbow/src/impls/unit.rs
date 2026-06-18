@@ -37,8 +37,4 @@ impl ByteOrd for () {
     }
 }
 
-impl Monostate for () {
-    fn consume(self) {
-        self
-    }
-}
+impl Monostate for () {}
