@@ -1,4 +1,4 @@
-use typenum::U254;
+use typenum::{U1, U254};
 
 use crate::{decr_byte_niche::DecrByteNiche, *};
 
@@ -41,4 +41,8 @@ fn ff_option() {
     assert_eq!(None::<Ff>.vec(), [0xfe]);
     assert_eq!(None::<Option<Ff>>.vec(), [0xfd]);
     assert_eq!(None::<Option<Option<Ff>>>.vec(), [0xfc]);
+}
+
+impl Size for Ff {
+    type Size = U1;
 }
