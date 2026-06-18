@@ -80,3 +80,12 @@ where
         self.iter_to_output(output);
     }
 }
+
+impl<T> ByteOrd for Sequence<T>
+where
+    for<'a> &'a T: IntoIterator<Item: ByteOrd + InlineOutput>,
+{
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.iter_bytes_cmp(other)
+    }
+}
