@@ -42,3 +42,7 @@ impl<T: ?Sized + ByteOrd> ByteOrd for &T {
 impl<T: ?Sized + Size> Size for &T {
     type Size = T::Size;
 }
+
+impl<T: ?Sized + MaybeHasNiche> MaybeHasNiche for &T {
+    type MnArray = T::MnArray;
+}
