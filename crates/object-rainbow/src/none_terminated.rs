@@ -98,9 +98,7 @@ where
     for<'a> Option<<&'a T as IntoIterator>::Item>: ByteOrd + InlineOutput,
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
-        self.into_iter()
-            .map(OrderedByBytes)
-            .cmp(other.into_iter().map(OrderedByBytes))
+        self.iter_bytes_cmp(other)
     }
 }
 
