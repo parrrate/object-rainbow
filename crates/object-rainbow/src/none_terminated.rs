@@ -3,9 +3,9 @@ use crate::*;
 #[derive(Debug, ParseAsInline, Clone, Copy, Default)]
 pub struct Nt<T>(pub T);
 
-impl<T, A: PartialEq> PartialEq for Nt<T>
+impl<T> PartialEq for Nt<T>
 where
-    for<'a> &'a T: IntoIterator<Item = A>,
+    for<'a> &'a T: IntoIterator<Item: PartialEq>,
 {
     fn eq(&self, other: &Self) -> bool {
         self.into_iter().eq(other)
