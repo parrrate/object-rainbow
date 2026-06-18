@@ -28,3 +28,5 @@ impl ByteOrd for NicheCut {
 impl MaybeHasNiche for NicheCut {
     type MnArray = NoNiche<NicheForUnsized>;
 }
+
+impl Monostate for NicheCut {}
