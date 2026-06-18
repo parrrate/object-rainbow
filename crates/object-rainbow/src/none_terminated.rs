@@ -12,7 +12,7 @@ where
     }
 }
 
-impl<T, A: Eq> Eq for Nt<T> where for<'a> &'a T: IntoIterator<Item = A> {}
+impl<T> Eq for Nt<T> where for<'a> &'a T: IntoIterator<Item: Eq> {}
 
 impl<T, A: PartialOrd> PartialOrd for Nt<T>
 where
