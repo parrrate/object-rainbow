@@ -243,7 +243,7 @@ impl<
     Cut: CutSome<Self, U>,
 > AsHeadOf<U> for SomeNiche<T>
 {
-    type WithTail = NicheAnd<Self, U>;
+    type WithTail = Cut::Cut;
 }
 
 /// Array ([`typenum`]-ish) that *might* be reducible down to a [`Niche`].
