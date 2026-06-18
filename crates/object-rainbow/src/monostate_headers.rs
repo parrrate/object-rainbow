@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct MonostateHeaders<T, M = ()> {
     pub inner: T,
     monostate: M,
