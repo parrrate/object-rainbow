@@ -38,3 +38,7 @@ impl<T: ?Sized + ByteOrd> ByteOrd for &T {
         (**self).bytes_cmp(other)
     }
 }
+
+impl<T: ?Sized + Size> Size for &T {
+    type Size = T::Size;
+}
