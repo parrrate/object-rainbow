@@ -45,10 +45,10 @@ impl<T: IntoIterator, M: Monostate> IntoIterator for MonostateHeaders<T, M> {
     }
 }
 
-impl<T: FromIterator<A>, M: Monostate, A> FromIterator<A> for MonostateHeaders<T, M> {
-    fn from_iter<I: IntoIterator<Item = A>>(iter: I) -> Self {
+impl<T: FromIterator<A>, M: Monostate, A> FromIterator<(M, A)> for MonostateHeaders<T, M> {
+    fn from_iter<I: IntoIterator<Item = (M, A)>>(iter: I) -> Self {
         Self {
-            inner: iter.into_iter().collect(),
+            inner: iter.into_iter().map(|(_, item)| item).collect(),
             monostate: Default::default(),
         }
     }
