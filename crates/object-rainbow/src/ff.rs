@@ -56,3 +56,5 @@ fn ff_option() {
 impl Size for Ff {
     type Size = U1;
 }
+
+impl Monostate for Ff {}
