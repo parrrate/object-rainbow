@@ -237,8 +237,11 @@ impl<U: MaybeNiche<N: Add<T::N, Output: Unsigned>>, T: Niche<NeedsTag = B0>> AsT
     type WithHead = AndNiche<U, Self>;
 }
 
-impl<T: Niche<N: Add<U::N, Output: Unsigned>, NeedsTag = B0>, U: MaybeNiche> AsHeadOf<U>
-    for SomeNiche<T>
+impl<
+    T: Niche<N: Add<U::N, Output: Unsigned>, NeedsTag = B0, Cut = Cut>,
+    U: MaybeNiche,
+    Cut: CutSome<Self, U>,
+> AsHeadOf<U> for SomeNiche<T>
 {
     type WithTail = NicheAnd<Self, U>;
 }
@@ -428,3 +431,18 @@ impl<const X: usize> Niche for HackNiche<X> {
 
 /// This niche precedes all non-niche values.
 pub trait MinNiche {}
+
+pub trait CutSome<A: Niche<NeedsTag = B0, Cut = Self>, B: MaybeNiche> {
+    type Cut: MaybeNiche;
+}
+
+impl<A: Niche<NeedsTag = B0, Cut = B0>, B: MaybeNiche> CutSome<A, B> for B0
+where
+    NicheAnd<A, B>: MaybeNiche,
+{
+    type Cut = NicheAnd<A, B>;
+}
+
+impl<A: Niche<NeedsTag = B0, Cut = B1> + MaybeNiche, B: MaybeNiche> CutSome<A, B> for B1 {
+    type Cut = A;
+}
