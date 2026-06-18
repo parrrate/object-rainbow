@@ -277,8 +277,8 @@ impl<T: MaybeNiche> MnArray for T {
     type MaybeNiche = T;
 }
 
-impl<T: AsHeadOf<R::MaybeNiche>, R: MnArray> MnArray for TArr<T, R> {
-    type MaybeNiche = T::WithTail;
+impl<T: MnArray<MaybeNiche = U>, U: AsHeadOf<R::MaybeNiche>, R: MnArray> MnArray for TArr<T, R> {
+    type MaybeNiche = U::WithTail;
 }
 
 /// Already occupied/unusable byte representation filled with `0x00` bytes.
