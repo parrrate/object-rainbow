@@ -95,7 +95,6 @@ fn main() {
     println!("{}", hex::encode(DeriveExample::<(), ()>::HASH));
     println!("{}", DeriveExample::<Be<u8>, Le<u8>>::SIZE);
     println!("{}", Test::<(), (), ()>::SIZE);
-    println!("{}", Option::<Test<(), (), ()>>::SIZE);
     println!("{}", Option::<Stuff<()>>::SIZE);
     println!("{}", Option::<Stuff<bool>>::SIZE);
     println!("{:?}", None::<Stuff<(bool, ())>>.vec());

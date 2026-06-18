@@ -545,9 +545,7 @@ float!(f64, i64, u64);
 
 #[test]
 fn nonzero() {
-    assert_eq!(Option::<super::Le<u8>>::SIZE, 2);
     assert_eq!(Option::<super::Le<NonZero<u8>>>::SIZE, 1);
-    assert_eq!(Option::<super::Le<u16>>::SIZE, 3);
     assert_eq!(Option::<super::Le<NonZero<u16>>>::SIZE, 2);
 }
 

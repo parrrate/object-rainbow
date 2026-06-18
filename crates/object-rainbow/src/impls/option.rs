@@ -1,7 +1,7 @@
 use std::ops::Add;
 
 use generic_array::{ArrayLength, GenericArray};
-use typenum::{B0, B1, Bit, IsGreater, IsLess, ToInt, U1, U2, U255, U256};
+use typenum::{B0, B1, Bit, IsGreater, IsLess, ToInt, U0, U1, U2, U255, U256};
 
 use crate::*;
 
@@ -85,14 +85,25 @@ impl<T: Tagged> Tagged for Option<T> {
     const TAGS: Tags = T::TAGS;
 }
 
+pub trait OptionSize<N: Unsigned>: Bit {
+    type Size: Unsigned;
+}
+
+impl<N: Unsigned> OptionSize<N> for B0 {
+    type Size = N;
+}
+
+impl OptionSize<U0> for B1 {
+    type Size = U1;
+}
+
 impl<
-    T: Size<Size = M> + MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B, N = M>>>,
-    B: Bit,
-    M: Add<B, Output = N>,
+    T: Size<Size = N> + MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B, N = N>>>,
     N: Unsigned,
+    B: OptionSize<N>,
 > Size for Option<T>
 {
-    type Size = N;
+    type Size = B::Size;
 }
 
 pub struct UnspecifiedOptionNiche;
