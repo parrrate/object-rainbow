@@ -1,4 +1,4 @@
-use typenum::U1;
+use typenum::{B0, B1, U1};
 
 use crate::*;
 
@@ -61,8 +61,20 @@ impl Tagged for char {}
 impl ListHashes for char {}
 impl Topological for char {}
 
+pub struct CharNiche;
+
+impl Niche for CharNiche {
+    type NeedsTag = B0;
+    type Cut = B1;
+    type N = U1;
+    fn niche() -> GenericArray<u8, Self::N> {
+        [0xffu8].into()
+    }
+    type Next = NoNiche<NicheForUnsized>;
+}
+
 impl MaybeHasNiche for char {
-    type MnArray = SomeNiche<OneNiche<U1>>;
+    type MnArray = SomeNiche<CharNiche>;
 }
 
 impl ByteOrd for char {
