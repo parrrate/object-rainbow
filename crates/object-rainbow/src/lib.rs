@@ -67,6 +67,7 @@ pub mod object_marker;
 mod ordering;
 pub mod parse_extra;
 pub mod partial_byte_tag;
+pub mod sequence;
 pub mod tuple_extra;
 pub mod u63;
 pub mod with_repr;
