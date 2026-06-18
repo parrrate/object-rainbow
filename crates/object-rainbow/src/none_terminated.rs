@@ -113,9 +113,9 @@ where
     }
 }
 
-impl<T, A: Topological> Topological for Nt<T>
+impl<T> Topological for Nt<T>
 where
-    for<'a> &'a T: IntoIterator<Item = A>,
+    for<'a> &'a T: IntoIterator<Item: Topological>,
 {
     fn traverse(&self, visitor: &mut impl PointVisitor) {
         self.iter_traverse(visitor);
