@@ -1,1 +1,1 @@
-pub trait Monostate: Default + Eq {}
+pub trait Monostate: Default + Eq + Copy {}
