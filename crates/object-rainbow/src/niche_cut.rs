@@ -15,6 +15,7 @@ use crate::*;
     Parse,
     ParseInline,
     Size,
+    Default,
 )]
 pub struct NicheCut;
 
