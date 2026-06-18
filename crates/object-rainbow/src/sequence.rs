@@ -107,3 +107,11 @@ where
         self.iter_traverse(visitor);
     }
 }
+
+impl<T: IntoIterator<Item = A> + FromIterator<A>, A: ParseInline<I>, I: ParseInput> Parse<I>
+    for Sequence<T>
+{
+    fn parse(input: I) -> crate::Result<Self> {
+        Ok(Self(input.parse_collect()?))
+    }
+}
