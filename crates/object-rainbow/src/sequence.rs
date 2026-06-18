@@ -23,6 +23,15 @@ where
     }
 }
 
+impl<T> Ord for Sequence<T>
+where
+    for<'a> &'a T: IntoIterator<Item: Ord>,
+{
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.into_iter().cmp(other)
+    }
+}
+
 impl<T> Deref for Sequence<T> {
     type Target = T;
 
