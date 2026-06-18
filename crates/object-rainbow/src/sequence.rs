@@ -10,3 +10,9 @@ impl<T> Deref for Sequence<T> {
         &self.0
     }
 }
+
+impl<T> DerefMut for Sequence<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
