@@ -63,6 +63,8 @@ impl<A: ByteOrd + InlineOutput, B: ByteOrd> ByteOrd for (A, B) {
     }
 }
 
+impl<A: Monostate, B: Monostate> Monostate for (A, B) {}
+
 impl<A: InlineOutput, B: InlineOutput, C: ToOutput> ToOutput for (A, B, C) {
     fn to_output(&self, output: &mut impl Output) {
         self.0.to_output(output);
@@ -138,6 +140,8 @@ impl<A: ByteOrd + InlineOutput, B: ByteOrd + InlineOutput, C: ByteOrd> ByteOrd f
             ))
     }
 }
+
+impl<A: Monostate, B: Monostate, C: Monostate> Monostate for (A, B, C) {}
 
 impl<A: InlineOutput, B: InlineOutput, C: InlineOutput, D: ToOutput> ToOutput for (A, B, C, D) {
     fn to_output(&self, output: &mut impl Output) {
@@ -234,6 +238,8 @@ impl<A: ByteOrd + InlineOutput, B: ByteOrd + InlineOutput, C: ByteOrd + InlineOu
             ))
     }
 }
+
+impl<A: Monostate, B: Monostate, C: Monostate, D: Monostate> Monostate for (A, B, C, D) {}
 
 impl<A: InlineOutput, B: InlineOutput, C: InlineOutput, D: InlineOutput, E: ToOutput> ToOutput
     for (A, B, C, D, E)
@@ -359,6 +365,11 @@ impl<
                 OrderedByBytes(&other.4),
             ))
     }
+}
+
+impl<A: Monostate, B: Monostate, C: Monostate, D: Monostate, E: Monostate> Monostate
+    for (A, B, C, D, E)
+{
 }
 
 impl<
@@ -527,6 +538,11 @@ impl<
                 OrderedByBytes(&other.5),
             ))
     }
+}
+
+impl<A: Monostate, B: Monostate, C: Monostate, D: Monostate, E: Monostate, F: Monostate> Monostate
+    for (A, B, C, D, E, F)
+{
 }
 
 impl<
@@ -745,6 +761,18 @@ impl<
                 OrderedByBytes(&other.6),
             ))
     }
+}
+
+impl<
+    A: Monostate,
+    B: Monostate,
+    C: Monostate,
+    D: Monostate,
+    E: Monostate,
+    F: Monostate,
+    G: Monostate,
+> Monostate for (A, B, C, D, E, F, G)
+{
 }
 
 impl<
@@ -984,6 +1012,19 @@ impl<
                 OrderedByBytes(&other.7),
             ))
     }
+}
+
+impl<
+    A: Monostate,
+    B: Monostate,
+    C: Monostate,
+    D: Monostate,
+    E: Monostate,
+    F: Monostate,
+    G: Monostate,
+    H: Monostate,
+> Monostate for (A, B, C, D, E, F, G, H)
+{
 }
 
 impl<
@@ -1251,6 +1292,20 @@ impl<
                 OrderedByBytes(&other.8),
             ))
     }
+}
+
+impl<
+    A: Monostate,
+    B: Monostate,
+    C: Monostate,
+    D: Monostate,
+    E: Monostate,
+    F: Monostate,
+    G: Monostate,
+    H: Monostate,
+    I: Monostate,
+> Monostate for (A, B, C, D, E, F, G, H, I)
+{
 }
 
 impl<
@@ -1546,6 +1601,21 @@ impl<
                 OrderedByBytes(&other.9),
             ))
     }
+}
+
+impl<
+    A: Monostate,
+    B: Monostate,
+    C: Monostate,
+    D: Monostate,
+    E: Monostate,
+    F: Monostate,
+    G: Monostate,
+    H: Monostate,
+    I: Monostate,
+    J: Monostate,
+> Monostate for (A, B, C, D, E, F, G, H, I, J)
+{
 }
 
 impl<
@@ -1873,6 +1943,22 @@ impl<
                 OrderedByBytes(&other.10),
             ))
     }
+}
+
+impl<
+    A: Monostate,
+    B: Monostate,
+    C: Monostate,
+    D: Monostate,
+    E: Monostate,
+    F: Monostate,
+    G: Monostate,
+    H: Monostate,
+    I: Monostate,
+    J: Monostate,
+    K: Monostate,
+> Monostate for (A, B, C, D, E, F, G, H, I, J, K)
+{
 }
 
 impl<
@@ -2222,4 +2308,21 @@ impl<
                 OrderedByBytes(&other.11),
             ))
     }
+}
+
+impl<
+    A: Monostate,
+    B: Monostate,
+    C: Monostate,
+    D: Monostate,
+    E: Monostate,
+    F: Monostate,
+    G: Monostate,
+    H: Monostate,
+    I: Monostate,
+    J: Monostate,
+    K: Monostate,
+    L: Monostate,
+> Monostate for (A, B, C, D, E, F, G, H, I, J, K, L)
+{
 }

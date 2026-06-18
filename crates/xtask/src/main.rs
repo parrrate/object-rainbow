@@ -372,6 +372,10 @@ fn per_n(n: usize) -> String {
             header: "ByteOrd + InlineOutput".bound().last("ByteOrd").header(n),
             members: vec![Box::new(BytesCmp { n })],
         },
+        Impl {
+            header: "Monostate".bound().header(n),
+            members: vec![],
+        },
     ])
 }
 
