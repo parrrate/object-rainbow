@@ -59,12 +59,14 @@ impl Size for Ff {
 
 impl Monostate for Ff {}
 
+pub type FfCollection<T> = crate::none_terminated::Nt<
+    crate::monostate_headers::MonostateHeaders<T, (Ff, crate::niche_cut::NicheCut)>,
+>;
+
 #[test]
 fn ff_collection() {
-    use crate::{monostate_headers::MonostateHeaders, niche_cut::NicheCut, none_terminated::Nt};
-    type Stuff = Nt<MonostateHeaders<Vec<()>, (Ff, NicheCut)>>;
-    let mut stuff = Stuff::default();
+    let mut stuff = FfCollection::<Vec<()>>::default();
     stuff.push(());
     stuff.push(());
-    assert_eq!(Stuff::vec(&stuff), [0xff, 0xff, 0xfe]);
+    assert_eq!(stuff.vec(), [0xff, 0xff, 0xfe]);
 }
