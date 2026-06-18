@@ -45,6 +45,7 @@ pub mod ascii;
 mod assert_impl;
 pub mod decr_byte_niche;
 pub mod default_chain;
+pub mod monostate;
 pub mod default_terminated;
 pub mod enumkind;
 mod error;
