@@ -32,6 +32,16 @@ where
     }
 }
 
+impl<T: IntoIterator> IntoIterator for Nt<T> {
+    type Item = T::Item;
+
+    type IntoIter = T::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
 impl<'a, T> IntoIterator for &'a Nt<T>
 where
     &'a T: IntoIterator,
