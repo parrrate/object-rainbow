@@ -57,6 +57,7 @@ pub mod inline_extra;
 pub mod length_prefixed;
 pub mod map_extra;
 mod niche;
+pub mod niche_cut;
 pub mod none_terminated;
 pub mod numeric;
 pub mod object_marker;
