@@ -12,6 +12,8 @@ where
     }
 }
 
+impl<T> Eq for Sequence<T> where for<'a> &'a T: IntoIterator<Item: Eq> {}
+
 impl<T> Deref for Sequence<T> {
     type Target = T;
 
