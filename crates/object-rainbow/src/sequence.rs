@@ -46,6 +46,12 @@ impl<T> DerefMut for Sequence<T> {
     }
 }
 
+impl<T: FromIterator<A>, A> FromIterator<A> for Sequence<T> {
+    fn from_iter<I: IntoIterator<Item = A>>(iter: I) -> Self {
+        Self(iter.into_iter().collect())
+    }
+}
+
 impl<T: IntoIterator> IntoIterator for Sequence<T> {
     type Item = T::Item;
 
