@@ -153,7 +153,7 @@ where
     }
 }
 
-#[derive(Debug, Clone, Copy, Default, ParseAsInline)]
+#[derive(Debug, Clone, Copy, Default, ParseAsInline, Tagged)]
 pub struct NtString<T>(pub T);
 
 impl<T: AsRef<str>> PartialEq for NtString<T> {
@@ -208,9 +208,6 @@ impl<T: AsRef<str>> ByteOrd for NtString<T> {
 impl<T> ListHashes for NtString<T> {}
 impl<T> Topological for NtString<T> {}
 
-impl<T: Tagged> Tagged for NtString<T> {
-    const TAGS: Tags = T::TAGS;
-}
 
 impl<T: FromIterator<char>, I: ParseInput> ParseInline<I> for NtString<T> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
