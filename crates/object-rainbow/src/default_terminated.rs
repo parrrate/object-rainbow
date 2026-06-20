@@ -56,6 +56,10 @@ where
     }
 }
 
+impl<T: Tagged, A> Tagged for Dt<T, A> {
+    const TAGS: Tags = T::TAGS;
+}
+
 impl<T: FromIterator<A>, A: PartialEq + Default + ParseInline<I>, I: ParseInput> ParseInline<I>
     for Dt<T, A>
 {
