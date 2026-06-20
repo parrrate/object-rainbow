@@ -136,6 +136,10 @@ where
     }
 }
 
+impl<T: Tagged> Tagged for Nt<T> {
+    const TAGS: Tags = T::TAGS;
+}
+
 impl<T: IntoIterator<Item = A> + FromIterator<A>, A, I: ParseInput> ParseInline<I> for Nt<T>
 where
     Option<A>: ParseInline<I>,
