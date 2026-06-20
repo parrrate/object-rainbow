@@ -194,3 +194,9 @@ impl<T: AsRef<str>> ToOutput for NtString<T> {
 }
 
 impl<T: AsRef<str>> InlineOutput for NtString<T> {}
+
+impl<T: AsRef<str>> ByteOrd for NtString<T> {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.as_ref().cmp(other.as_ref())
+    }
+}
