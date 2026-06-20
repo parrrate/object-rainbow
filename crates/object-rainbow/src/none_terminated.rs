@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(Debug, ParseAsInline, Clone, Copy, Default)]
+#[derive(Debug, ParseAsInline, Clone, Copy, Default, Tagged)]
 pub struct Nt<T>(pub T);
 
 impl<T> PartialEq for Nt<T>
@@ -136,10 +136,6 @@ where
     }
 }
 
-impl<T: Tagged> Tagged for Nt<T> {
-    const TAGS: Tags = T::TAGS;
-}
-
 impl<T: IntoIterator<Item = A> + FromIterator<A>, A, I: ParseInput> ParseInline<I> for Nt<T>
 where
     Option<A>: ParseInline<I>,
@@ -207,7 +203,6 @@ impl<T: AsRef<str>> ByteOrd for NtString<T> {
 
 impl<T> ListHashes for NtString<T> {}
 impl<T> Topological for NtString<T> {}
-
 
 impl<T: FromIterator<char>, I: ParseInput> ParseInline<I> for NtString<T> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
