@@ -149,7 +149,7 @@ where
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct NtString<T>(pub T);
 
 impl<T> Deref for NtString<T> {
