@@ -152,6 +152,12 @@ where
 #[derive(Debug, Clone, Copy, Default)]
 pub struct NtString<T>(pub T);
 
+impl<T: AsRef<str>> PartialEq for NtString<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_ref() == other.as_ref()
+    }
+}
+
 impl<T> Deref for NtString<T> {
     type Target = T;
 
