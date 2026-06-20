@@ -202,3 +202,4 @@ impl<T: AsRef<str>> ByteOrd for NtString<T> {
 }
 
 impl<T> ListHashes for NtString<T> {}
+impl<T> Topological for NtString<T> {}
