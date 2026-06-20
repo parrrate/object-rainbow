@@ -200,3 +200,5 @@ impl<T: AsRef<str>> ByteOrd for NtString<T> {
         self.as_ref().cmp(other.as_ref())
     }
 }
+
+impl<T> ListHashes for NtString<T> {}
