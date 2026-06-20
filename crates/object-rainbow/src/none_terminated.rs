@@ -185,3 +185,10 @@ impl<T> DerefMut for NtString<T> {
         &mut self.0
     }
 }
+
+impl<T: AsRef<str>> ToOutput for NtString<T> {
+    fn to_output(&self, output: &mut impl Output) {
+        self.as_ref().to_output(output);
+        None::<char>.to_output(output);
+    }
+}
