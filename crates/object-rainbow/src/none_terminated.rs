@@ -148,3 +148,13 @@ where
         Ok(Self(items.into_iter().collect()))
     }
 }
+
+pub struct NtString<T>(pub T);
+
+impl<T> Deref for NtString<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
