@@ -192,3 +192,5 @@ impl<T: AsRef<str>> ToOutput for NtString<T> {
         None::<char>.to_output(output);
     }
 }
+
+impl<T: AsRef<str>> InlineOutput for NtString<T> {}
