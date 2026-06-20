@@ -158,3 +158,9 @@ impl<T> Deref for NtString<T> {
         &self.0
     }
 }
+
+impl<T> DerefMut for NtString<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
