@@ -162,7 +162,13 @@ impl<T: AsRef<str>> Eq for NtString<T> {}
 
 impl<T: AsRef<str>> PartialOrd for NtString<T> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.as_ref().partial_cmp(other.as_ref())
+        Some(self.cmp(other))
+    }
+}
+
+impl<T: AsRef<str>> Ord for NtString<T> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.as_ref().cmp(other.as_ref())
     }
 }
 
