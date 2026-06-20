@@ -160,6 +160,12 @@ impl<T: AsRef<str>> PartialEq for NtString<T> {
 
 impl<T: AsRef<str>> Eq for NtString<T> {}
 
+impl<T: AsRef<str>> PartialOrd for NtString<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.as_ref().partial_cmp(other.as_ref())
+    }
+}
+
 impl<T> Deref for NtString<T> {
     type Target = T;
 
