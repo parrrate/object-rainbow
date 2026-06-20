@@ -219,3 +219,12 @@ impl<T: FromIterator<char>, I: ParseInput> ParseInline<I> for NtString<T> {
         ))
     }
 }
+
+#[test]
+fn nt_string() -> crate::Result<()> {
+    let mut s = NtString("test".to_string());
+    assert_eq!(s.vec(), b"test\xFF");
+    s = s.reparse()?;
+    assert_eq!(s.as_str(), "test");
+    Ok(())
+}
