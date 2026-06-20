@@ -208,6 +208,10 @@ impl<T: AsRef<str>> ByteOrd for NtString<T> {
 impl<T> ListHashes for NtString<T> {}
 impl<T> Topological for NtString<T> {}
 
+impl<T: Tagged> Tagged for NtString<T> {
+    const TAGS: Tags = T::TAGS;
+}
+
 impl<T: FromIterator<char>, I: ParseInput> ParseInline<I> for NtString<T> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         Ok(Self(
