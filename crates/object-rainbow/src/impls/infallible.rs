@@ -31,3 +31,9 @@ impl<I: ParseInput> Parse<I> for Infallible {
         Err(Error::OutOfBounds)
     }
 }
+
+impl<I: ParseInput> ParseInline<I> for Infallible {
+    fn parse_inline(_: &mut I) -> crate::Result<Self> {
+        Err(Error::OutOfBounds)
+    }
+}
