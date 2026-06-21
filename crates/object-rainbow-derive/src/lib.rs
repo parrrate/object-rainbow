@@ -2011,6 +2011,10 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
                 }
             }
 
+            impl ::object_rainbow::MaybeHasNiche for __Kind {
+                type MnArray = <#enumtag as ::object_rainbow::MaybeHasNiche>::MnArray;
+            }
+
             #[automatically_derived]
             impl #impl_generics ::object_rainbow::Enum for #target #ty_generics #where_clause {
                 type Kind = __Kind;
