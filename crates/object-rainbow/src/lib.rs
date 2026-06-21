@@ -1348,16 +1348,22 @@ impl<
     }
 }
 
-impl<A, B, C, N> FromSized for (A, B, C)
-where
-    (A, (B, C)): FromSized<Size = N>,
-    Self: Size<Size = N>,
-{
-    fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self {
-        let (a, (b, c)) = FromSized::from_sized(data);
-        (a, b, c)
-    }
+macro_rules! from_sized_tuple {
+    (($($t:ident),*), ($($x:ident),*)) => {
+        impl<A, $($t),*, N> FromSized for (A, $($t),*)
+        where
+            (A, ($($t),*)): FromSized<Size = N>,
+            Self: Size<Size = N>,
+        {
+            fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self {
+                let (a, ($($x),*)) = FromSized::from_sized(data);
+                (a, $($x),*)
+            }
+        }
+    };
 }
+
+from_sized_tuple!((B, C), (b, c));
 
 pub trait RainbowIterator: Sized + IntoIterator {
     fn iter_to_output(self, output: &mut impl Output)
