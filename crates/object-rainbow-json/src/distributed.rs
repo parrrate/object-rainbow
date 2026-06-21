@@ -1,9 +1,9 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, num::NonZero};
 
 use futures_util::future::try_join_all;
 use object_rainbow::{
-    Enum, Fetch, InlineOutput, ListHashes, MaybeHasNiche, NicheForUnsized, NoNiche, Parse,
-    ParseInline, Tagged, ToOutput, Topological, length_prefixed::LpString, numeric::Le,
+    Enum, Fetch, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Tagged, ToOutput,
+    Topological, length_prefixed::LpString, numeric::Le,
 };
 use object_rainbow_point::{IntoPoint, Point};
 use serde::{Deserialize, Serialize};
@@ -20,9 +20,12 @@ use serde::{Deserialize, Serialize};
     Default,
     Serialize,
     Deserialize,
+    MaybeHasNiche,
 )]
 #[serde(untagged)]
 #[topology(recursive)]
+#[enumtag("NonZero<u8>")]
+#[niche(tag)]
 pub enum Distributed {
     #[default]
     Null,
@@ -36,9 +39,6 @@ pub enum Distributed {
 }
 
 impl Tagged for Distributed {}
-impl MaybeHasNiche for Distributed {
-    type MnArray = NoNiche<NicheForUnsized>;
-}
 
 impl Distributed {
     pub async fn to_value(&self) -> object_rainbow::Result<serde_json::Value> {
