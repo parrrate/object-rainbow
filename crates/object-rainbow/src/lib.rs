@@ -1348,6 +1348,24 @@ impl<
     }
 }
 
+impl<
+    A: FromSized<Size = An>,
+    B: Size<Size = Bn>,
+    C: Size<Size = Cn>,
+    An,
+    Bn,
+    Cn: Add<Bn, Output: ArrayLength + Sub<Bn, Output = Cn>, Output = BCn>,
+    BCn: Add<An, Output: ArrayLength + Sub<An, Output = BCn>>,
+> FromSized for (A, B, C)
+where
+    (B, C): FromSized<Size = BCn>,
+{
+    fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self {
+        let (a, (b, c)) = <(A, (B, C)) as FromSized>::from_sized(data);
+        (a, b, c)
+    }
+}
+
 pub trait RainbowIterator: Sized + IntoIterator {
     fn iter_to_output(self, output: &mut impl Output)
     where
