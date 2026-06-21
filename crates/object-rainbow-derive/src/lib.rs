@@ -1940,6 +1940,18 @@ fn attr_str(attr: &Attribute) -> Option<String> {
 /// assert_eq!(Some(WithoutNiche::A(32)).vec(), [0, 0, 32]);
 /// assert_eq!(Some(WithoutNiche::B(1)).vec(), [0, 1, 1]);
 /// assert_eq!(None::<WithoutNiche>.vec(), [1]);
+///
+/// #[derive(Enum, ToOutput, MaybeHasNiche)]
+/// #[enumtag("bool")]
+/// #[niche(tag)]
+/// enum WithBoolTag {
+///     A(u8),
+///     B(bool),
+/// }
+///
+/// assert_eq!(Some(WithBool::A(32)).vec(), [0, 32]);
+/// assert_eq!(Some(WithBool::B(true)).vec(), [1, 1]);
+/// assert_eq!(None::<WithBool>.vec(), [2, 0]);
 /// ```
 #[proc_macro_derive(Enum, attributes(enumtag))]
 pub fn derive_enum(input: TokenStream) -> TokenStream {
@@ -2159,13 +2171,13 @@ fn gen_kind(data: &Data) -> proc_macro2::TokenStream {
 /// assert_eq!(Option::<WithHole>::SIZE, 2);
 /// assert_eq!(Option::<(object_rainbow::ff::Ff, NoHole)>::SIZE, 3);
 /// ```
-#[proc_macro_derive(MaybeHasNiche)]
+#[proc_macro_derive(MaybeHasNiche, attributes(niche))]
 pub fn derive_maybe_has_niche(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
-    let mn_array = gen_mn_array(&input.data);
+    let mn_array = gen_mn_array(&input.data, &input.attrs);
     let (_, ty_generics, _) = input.generics.split_for_impl();
-    let generics = match bounds_maybe_has_niche(input.generics.clone(), &input.data) {
+    let generics = match bounds_maybe_has_niche(input.generics.clone(), &input.data, &input.attrs) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
@@ -2185,7 +2197,32 @@ pub fn derive_maybe_has_niche(input: TokenStream) -> TokenStream {
     TokenStream::from(output)
 }
 
-fn bounds_maybe_has_niche(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+#[derive(Debug, FromMeta)]
+#[darling(derive_syn_parse)]
+struct ContainerNicheArgs {
+    #[darling(default)]
+    tag: bool,
+}
+
+fn parse_niche_tag(attrs: &[Attribute]) -> syn::Result<bool> {
+    let mut t = false;
+    for attr in attrs {
+        if attr_str(attr).as_deref() == Some("niche") {
+            let ContainerNicheArgs { tag } = attr.parse_args()?;
+            if tag {
+                t = true;
+            }
+        }
+    }
+    Ok(t)
+}
+
+fn bounds_maybe_has_niche(
+    mut generics: Generics,
+    data: &Data,
+    attrs: &[Attribute],
+) -> syn::Result<Generics> {
+    let tag = parse_niche_tag(attrs)?;
     match data {
         Data::Struct(data) => {
             for f in data.fields.iter() {
@@ -2203,6 +2240,9 @@ fn bounds_maybe_has_niche(mut generics: Generics, data: &Data) -> syn::Result<Ge
             }
         }
         Data::Enum(data) => {
+            if tag {
+                return Ok(generics);
+            }
             generics.params.push(parse_quote!(
                 __N: ::object_rainbow::typenum::Unsigned
             ));
@@ -2270,10 +2310,21 @@ fn fields_mn_array(fields: &syn::Fields, variant: Option<usize>) -> proc_macro2:
     }
 }
 
-fn gen_mn_array(data: &Data) -> proc_macro2::TokenStream {
+fn gen_mn_array(data: &Data, attrs: &[Attribute]) -> proc_macro2::TokenStream {
+    let tag = match parse_niche_tag(attrs) {
+        Ok(tag) => tag,
+        Err(e) => return e.into_compile_error(),
+    };
     match data {
         Data::Struct(data) => fields_mn_array(&data.fields, None),
         Data::Enum(data) => {
+            if tag {
+                return quote! {
+                    <
+                        <Self as ::object_rainbow::Enum>::Kind as ::object_rainbow::MaybeHasNiche
+                    >::MnArray
+                };
+            }
             let mn_array = data.variants.iter().enumerate().map(|(i, v)| {
                 let mn_array = fields_mn_array(&v.fields, Some(i));
                 quote! { <#mn_array as ::object_rainbow::MnArray>::MaybeNiche }
