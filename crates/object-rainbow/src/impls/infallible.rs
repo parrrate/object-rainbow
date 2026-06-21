@@ -25,3 +25,9 @@ impl ByteOrd for Infallible {
         match *self {}
     }
 }
+
+impl<I: ParseInput> Parse<I> for Infallible {
+    fn parse(_: I) -> crate::Result<Self> {
+        Err(Error::OutOfBounds)
+    }
+}
