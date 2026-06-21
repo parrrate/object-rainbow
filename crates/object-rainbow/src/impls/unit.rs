@@ -38,3 +38,9 @@ impl ByteOrd for () {
 }
 
 impl Monostate for () {}
+
+impl FromSized for () {
+    fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self {
+        let [] = (*data).into();
+    }
+}
