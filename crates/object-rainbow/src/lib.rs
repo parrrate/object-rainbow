@@ -1354,7 +1354,7 @@ where
     Self: Size<Size = N>,
 {
     fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self {
-        let (a, (b, c)) = <(A, (B, C)) as FromSized>::from_sized(data);
+        let (a, (b, c)) = FromSized::from_sized(data);
         (a, b, c)
     }
 }
