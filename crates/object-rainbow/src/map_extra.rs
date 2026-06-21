@@ -142,6 +142,8 @@ impl<M> Size for SmExtra<M> {
     type Size = typenum::U0;
 }
 
+impl<M> Monostate for SmExtra<M> {}
+
 impl<M> MaybeHasNiche for SmExtra<M> {
     type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
 }
