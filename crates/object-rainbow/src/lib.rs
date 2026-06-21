@@ -1349,7 +1349,7 @@ impl<
 }
 
 macro_rules! from_sized_tuple {
-    (($($t:ident),*), ($($x:ident),*)) => {
+    (($($t:ident),*), ($($x:ident),*) $(,)?) => {
         impl<A, $($t),*, N> FromSized for (A, $($t),*)
         where
             (A, ($($t),*)): FromSized<Size = N>,
@@ -1364,6 +1364,21 @@ macro_rules! from_sized_tuple {
 }
 
 from_sized_tuple!((B, C), (b, c));
+from_sized_tuple!((B, C, D), (b, c, d));
+from_sized_tuple!((B, C, D, E), (b, c, d, e));
+from_sized_tuple!((B, C, D, E, F), (b, c, d, e, f));
+from_sized_tuple!((B, C, D, E, F, G), (b, c, d, e, f, g));
+from_sized_tuple!((B, C, D, E, F, G, H), (b, c, d, e, f, g, h));
+from_sized_tuple!((B, C, D, E, F, G, H, I), (b, c, d, e, f, g, h, i));
+from_sized_tuple!((B, C, D, E, F, G, H, I, J), (b, c, d, e, f, g, h, i, j));
+from_sized_tuple!(
+    (B, C, D, E, F, G, H, I, J, K),
+    (b, c, d, e, f, g, h, i, j, k),
+);
+from_sized_tuple!(
+    (B, C, D, E, F, G, H, I, J, K, L),
+    (b, c, d, e, f, g, h, i, j, k, l),
+);
 
 pub trait RainbowIterator: Sized + IntoIterator {
     fn iter_to_output(self, output: &mut impl Output)
