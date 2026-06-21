@@ -144,6 +144,13 @@ impl<M> Size for SmExtra<M> {
 
 impl<M> Monostate for SmExtra<M> {}
 
+impl<M> FromSized for SmExtra<M> {
+    fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self {
+        let [] = (*data).into();
+        Self::default()
+    }
+}
+
 impl<M> MaybeHasNiche for SmExtra<M> {
     type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
 }
