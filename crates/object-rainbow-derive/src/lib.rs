@@ -2153,7 +2153,7 @@ fn gen_kind(data: &Data) -> proc_macro2::TokenStream {
 /// struct NoHole(u8, u8);
 ///
 /// assert_eq!(Option::<WithHole>::SIZE, 2);
-/// assert_eq!(Option::<NoHole>::SIZE, 3);
+/// assert_eq!(Option::<(object_rainbow::ff::Ff, NoHole)>::SIZE, 3);
 /// ```
 #[proc_macro_derive(MaybeHasNiche)]
 pub fn derive_maybe_has_niche(input: TokenStream) -> TokenStream {
