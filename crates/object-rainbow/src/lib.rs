@@ -1348,17 +1348,10 @@ impl<
     }
 }
 
-impl<
-    A: FromSized<Size = An>,
-    B: Size<Size = Bn>,
-    C: Size<Size = Cn>,
-    An,
-    Bn,
-    Cn: Add<Bn, Output: ArrayLength + Sub<Bn, Output = Cn>, Output = BCn>,
-    BCn: Add<An, Output: ArrayLength + Sub<An, Output = BCn>>,
-> FromSized for (A, B, C)
+impl<A, B, C, N> FromSized for (A, B, C)
 where
-    (B, C): FromSized<Size = BCn>,
+    (A, (B, C)): FromSized<Size = N>,
+    Self: Size<Size = N>,
 {
     fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self {
         let (a, (b, c)) = <(A, (B, C)) as FromSized>::from_sized(data);
