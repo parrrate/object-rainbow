@@ -14,24 +14,6 @@ pub trait UsizeTag: Sized {
     fn try_to_usize(&self) -> Option<usize>;
 }
 
-impl UsizeTag for bool {
-    fn from_usize(n: usize) -> Self {
-        match n {
-            0 => false,
-            1 => true,
-            _ => panic!("out of bounds"),
-        }
-    }
-
-    fn to_usize(&self) -> usize {
-        *self as _
-    }
-
-    fn try_to_usize(&self) -> Option<usize> {
-        Some(self.to_usize())
-    }
-}
-
 /// [`EnumKind::Tag`].
 #[derive(
     ToOutput, InlineOutput, ListHashes, Topological, Tagged, ParseAsInline, Size, MaybeHasNiche,
