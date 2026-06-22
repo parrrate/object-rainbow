@@ -1952,6 +1952,18 @@ fn attr_str(attr: &Attribute) -> Option<String> {
 /// assert_eq!(Some(WithBoolTag::A(32)).vec(), [0, 32]);
 /// assert_eq!(Some(WithBoolTag::B(true)).vec(), [1, 1]);
 /// assert_eq!(None::<WithBoolTag>.vec(), [2]);
+///
+/// #[derive(Enum, ToOutput, MaybeHasNiche)]
+/// #[enumtag("char")]
+/// #[niche(tag)]
+/// enum WithChar {
+///     A(u8),
+///     B(bool),
+/// }
+///
+/// assert_eq!(Some(WithChar::A(32)).vec(), [0, 32]);
+/// assert_eq!(Some(WithChar::B(true)).vec(), [1, 1]);
+/// assert_eq!(None::<WithChar>.vec(), [255]);
 /// ```
 #[proc_macro_derive(Enum, attributes(enumtag))]
 pub fn derive_enum(input: TokenStream) -> TokenStream {
