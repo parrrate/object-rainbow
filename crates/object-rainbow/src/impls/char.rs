@@ -1,6 +1,6 @@
 use typenum::{B0, B1, U1};
 
-use crate::*;
+use crate::{enumkind::UsizeTag, *};
 
 impl ToOutput for char {
     fn to_output(&self, output: &mut impl Output) {
@@ -85,6 +85,20 @@ impl ByteOrd for char {
 }
 
 impl SignificantLength for char {}
+
+impl UsizeTag for char {
+    fn from_usize(n: usize) -> Self {
+        Self::from_u32(n.try_into().unwrap()).unwrap()
+    }
+
+    fn to_usize(&self) -> usize {
+        *self as _
+    }
+
+    fn try_to_usize(&self) -> Option<usize> {
+        Some(self.to_usize())
+    }
+}
 
 #[test]
 fn reparse() -> crate::Result<()> {
