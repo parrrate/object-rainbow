@@ -1949,9 +1949,9 @@ fn attr_str(attr: &Attribute) -> Option<String> {
 ///     B(bool),
 /// }
 ///
-/// assert_eq!(Some(WithBool::A(32)).vec(), [0, 32]);
-/// assert_eq!(Some(WithBool::B(true)).vec(), [1, 1]);
-/// assert_eq!(None::<WithBool>.vec(), [2, 0]);
+/// assert_eq!(Some(WithBoolTag::A(32)).vec(), [0, 32]);
+/// assert_eq!(Some(WithBoolTag::B(true)).vec(), [1, 1]);
+/// assert_eq!(None::<WithBoolTag>.vec(), [2]);
 /// ```
 #[proc_macro_derive(Enum, attributes(enumtag))]
 pub fn derive_enum(input: TokenStream) -> TokenStream {
