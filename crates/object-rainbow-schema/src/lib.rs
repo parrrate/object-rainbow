@@ -1,4 +1,3 @@
-#[cfg(not(feature = "point"))]
 use std::convert::Infallible;
 use std::sync::Arc;
 
@@ -9,6 +8,7 @@ use object_rainbow::{Enum, InlineOutput, MaybeHasNiche, Parse, ParseInline, Tagg
 #[parse(unchecked)]
 #[niche(tag)]
 pub enum Schema {
+    Never(Infallible),
     Option(Arc<Self>),
     Point(
         #[cfg(feature = "point")] Arc<Self>,
