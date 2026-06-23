@@ -303,14 +303,11 @@ impl<T: Push + Traversible, N: Send + Sync + Unsigned> Push for Node<Point<T>, N
             let n = usize::try_from(index / T::CAPACITY)
                 .map_err(|_| object_rainbow::Error::UnsupportedLength)?;
             let r = index % T::CAPACITY;
-            println!("g {n} {}", self.items.len());
             if let Some((node, history)) = history
                 && n == self.items.len()
             {
-                println!("AAA");
                 node.get(r, Some(history)).await
             } else {
-                println!("BBB");
                 self.items
                     .get(n)
                     .ok_or_else(|| {
