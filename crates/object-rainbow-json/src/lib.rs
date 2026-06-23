@@ -19,6 +19,12 @@ pub struct Json<T> {
     value: T,
 }
 
+impl<T: Serialize> Json<T> {
+    pub fn new(value: T) -> object_rainbow::Result<Self> {
+        Ok(Self { value })
+    }
+}
+
 impl<T: Serialize> ToOutput for Json<T> {
     fn to_output(&self, output: &mut impl Output) {
         if output.is_real() {
@@ -31,9 +37,9 @@ impl<T: Serialize> ToOutput for Json<T> {
 impl<T: DeserializeOwned + Serialize, I: ParseInput> Parse<I> for Json<T> {
     fn parse(input: I) -> object_rainbow::Result<Self> {
         let data = input.parse_all()?;
-        let json = Self {
-            value: serde_json::from_slice(&data).map_err(object_rainbow::Error::parse)?,
-        };
+        let json = serde_json::from_slice(&data)
+            .map_err(object_rainbow::Error::parse)
+            .and_then(Self::new)?;
         if *data == json.vec() {
             Ok(json)
         } else {
