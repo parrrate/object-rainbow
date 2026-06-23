@@ -1,4 +1,3 @@
-use std::convert::Infallible;
 use std::sync::Arc;
 
 use object_rainbow::{Enum, InlineOutput, MaybeHasNiche, Parse, ParseInline, Tagged, ToOutput};
@@ -12,7 +11,7 @@ pub enum Schema {
     Option(Arc<Self>),
     Point(
         #[cfg(feature = "point")] Arc<Self>,
-        #[cfg(not(feature = "point"))] Infallible,
+        #[cfg(not(feature = "point"))] std::convert::Infallible,
     ),
 }
 
@@ -20,5 +19,5 @@ impl InlineOutput for Schema {}
 impl Tagged for Schema {}
 
 pub enum Value {
-    Never(Infallible),
+    Option(Option<Arc<Self>>),
 }
