@@ -19,6 +19,7 @@ mod distributed;
 #[derive(Debug, PartialEq, Eq, Hash, Default)]
 struct JsonInner<T> {
     value: T,
+    data: Vec<u8>,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Default)]
@@ -36,8 +37,9 @@ impl<T> Clone for Json<T> {
 
 impl<T: Serialize> Json<T> {
     pub fn new(value: T) -> object_rainbow::Result<Self> {
+        let data = serde_json::to_vec(&value).map_err(object_rainbow::Error::parse)?;
         Ok(Self {
-            inner: Arc::new(JsonInner { value }),
+            inner: Arc::new(JsonInner { value, data }),
         })
     }
 }
