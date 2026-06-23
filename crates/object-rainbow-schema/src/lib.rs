@@ -26,6 +26,7 @@ pub enum ValueOption {
 }
 
 pub enum Value {
+    Unit,
     Option(ValueOption),
     #[cfg(feature = "point")]
     Point(Point<Self>),
