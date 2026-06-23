@@ -2,9 +2,9 @@
 use std::convert::Infallible;
 use std::sync::Arc;
 
-use object_rainbow::{Enum, Parse, ToOutput};
+use object_rainbow::{Enum, Parse, ParseInline, ToOutput};
 
-#[derive(Enum, ToOutput, Parse)]
+#[derive(Enum, ToOutput, Parse, ParseInline)]
 #[enumtag("char")]
 #[parse(unchecked)]
 pub enum Schema {
