@@ -33,7 +33,9 @@ pub enum Value {
     Point(Point<Self>),
 }
 
-pub enum DynNiche {}
+pub enum DynNiche {
+    Hash(u128),
+}
 
 impl Value {
     pub fn niche_schema(&self) -> Schema {
