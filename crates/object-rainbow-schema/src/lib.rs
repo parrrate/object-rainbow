@@ -10,6 +10,7 @@ use object_rainbow_point::Point;
 #[parse(unchecked)]
 pub enum Schema {
     Never,
+    Unit,
     Option(Arc<Self>),
     Point(
         #[cfg(feature = "point")] Arc<Self>,
