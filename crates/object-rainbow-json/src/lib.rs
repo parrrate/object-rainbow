@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseInput, Size, SomeNiche, Tagged,
-    ToOutput, Topological, ZeroNiche,
+    ToOutput, Topological, TryDefault, ZeroNiche,
 };
 use serde::{Serialize, de::DeserializeOwned};
 
@@ -56,11 +56,10 @@ impl<T: Serialize> Json<T> {
             inner: Arc::new(JsonInner { value, data }),
         })
     }
+}
 
-    pub fn try_default() -> object_rainbow::Result<Self>
-    where
-        T: Default,
-    {
+impl<T: Serialize + Default> TryDefault for Json<T> {
+    fn try_default() -> object_rainbow::Result<Self> {
         Self::new(Default::default())
     }
 }
