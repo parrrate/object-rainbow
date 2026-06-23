@@ -2,7 +2,7 @@
 use std::convert::Infallible;
 use std::sync::Arc;
 
-use object_rainbow::{Enum, Parse, ParseInline, ToOutput};
+use object_rainbow::{Enum, InlineOutput, Parse, ParseInline, ToOutput};
 
 #[derive(Enum, ToOutput, Parse, ParseInline)]
 #[enumtag("char")]
@@ -13,3 +13,5 @@ pub enum Schema {
         #[cfg(not(feature = "point"))] Infallible,
     ),
 }
+
+impl InlineOutput for Schema {}
