@@ -1799,3 +1799,9 @@ fn options() {
 pub trait TryDefault: Sized {
     fn try_default() -> crate::Result<Self>;
 }
+
+impl<T: Default> TryDefault for T {
+    fn try_default() -> crate::Result<Self> {
+        Ok(Self::default())
+    }
+}
