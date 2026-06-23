@@ -2,9 +2,9 @@
 use std::convert::Infallible;
 use std::sync::Arc;
 
-use object_rainbow::Enum;
+use object_rainbow::{Enum, ToOutput};
 
-#[derive(Enum)]
+#[derive(Enum, ToOutput)]
 #[enumtag("char")]
 pub enum Schema {
     Point(
