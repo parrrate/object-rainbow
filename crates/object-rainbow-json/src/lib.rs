@@ -2,6 +2,8 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(docsrs, doc(cfg_hide(doc)))]
 
+use std::sync::Arc;
+
 use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseInput, Size, SomeNiche, Tagged,
     ToOutput, Topological, ZeroNiche,
@@ -14,21 +16,28 @@ pub use self::distributed::{Distributed, DistributedParseError};
 #[cfg(feature = "distributed")]
 mod distributed;
 
+#[derive(Debug, PartialEq, Eq, Hash, Default)]
+struct JsonInner<T> {
+    value: T,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Json<T> {
-    value: T,
+    inner: Arc<JsonInner<T>>,
 }
 
 impl<T: Serialize> Json<T> {
     pub fn new(value: T) -> object_rainbow::Result<Self> {
-        Ok(Self { value })
+        Ok(Self {
+            inner: Arc::new(JsonInner { value }),
+        })
     }
 }
 
 impl<T: Serialize> ToOutput for Json<T> {
     fn to_output(&self, output: &mut impl Output) {
         if output.is_real() {
-            serde_json::to_writer(&mut output.as_write(), &self.value)
+            serde_json::to_writer(&mut output.as_write(), &self.inner.value)
                 .expect("json write errors are considered bugs");
         }
     }
