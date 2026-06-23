@@ -16,7 +16,7 @@ pub use self::distributed::{Distributed, DistributedParseError};
 #[cfg(feature = "distributed")]
 mod distributed;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct JsonInner<T> {
     value: T,
     data: Vec<u8>,
@@ -36,7 +36,7 @@ impl<T> std::hash::Hash for JsonInner<T> {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Json<T> {
     inner: Arc<JsonInner<T>>,
 }
