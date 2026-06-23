@@ -15,7 +15,7 @@ pub use self::distributed::{Distributed, DistributedParseError};
 mod distributed;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct Json<T>(pub T);
+pub struct Json<T>(T);
 
 impl<T: Serialize> ToOutput for Json<T> {
     fn to_output(&self, output: &mut impl Output) {
