@@ -7,7 +7,7 @@ use proc_macro::TokenStream;
 use quote::{ToTokens, quote, quote_spanned};
 use syn::{
     Attribute, Data, DeriveInput, Error, Expr, FnArg, GenericParam, Generics, Ident, ImplItem,
-    ItemTrait, LitStr, Path, TraitItem, Type, WherePredicate, parse::Parse, parse_macro_input,
+    ItemTrait, LitStr, TraitItem, Type, WherePredicate, parse::Parse, parse_macro_input,
     parse_quote, parse_quote_spanned, spanned::Spanned, token::Comma,
 };
 
@@ -557,7 +557,6 @@ fn parse_recursive_inline(
 #[derive(Debug, FromMeta)]
 #[darling(derive_syn_parse)]
 struct FieldTopologyArgs {
-    bound: Option<Path>,
     #[darling(default)]
     unchecked: bool,
     with: Option<Expr>,
@@ -580,28 +579,17 @@ fn bounds_topological(
         Data::Struct(data) => {
             'field: for f in data.fields.iter() {
                 let ty = &f.ty;
-                let mut b = None;
                 for attr in &f.attrs {
                     if attr_str(attr).as_deref() == Some("topology") {
-                        let FieldTopologyArgs {
-                            bound, unchecked, ..
-                        } = attr.parse_args()?;
+                        let FieldTopologyArgs { unchecked, .. } = attr.parse_args()?;
                         if unchecked {
                             continue 'field;
                         }
-                        if let Some(bound) = bound {
-                            b = Some(bound);
-                        }
                     }
                 }
-                let bound = if let Some(bound) = b {
-                    quote! { #bound }
-                } else {
-                    if u {
-                        continue 'field;
-                    }
-                    bound.clone()
-                };
+                if u {
+                    continue 'field;
+                }
                 if type_contains_generics(GContext { g, always: false }, ty) {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
@@ -615,28 +603,17 @@ fn bounds_topological(
             for v in data.variants.iter() {
                 'field: for f in v.fields.iter() {
                     let ty = &f.ty;
-                    let mut b = None;
                     for attr in &f.attrs {
                         if attr_str(attr).as_deref() == Some("topology") {
-                            let FieldTopologyArgs {
-                                bound, unchecked, ..
-                            } = attr.parse_args()?;
+                            let FieldTopologyArgs { unchecked, .. } = attr.parse_args()?;
                             if unchecked {
                                 continue 'field;
                             }
-                            if let Some(bound) = bound {
-                                b = Some(bound);
-                            }
                         }
                     }
-                    let bound = if let Some(bound) = b {
-                        quote! { #bound }
-                    } else {
-                        if u {
-                            continue 'field;
-                        }
-                        bound.clone()
-                    };
+                    if u {
+                        continue 'field;
+                    }
                     if type_contains_generics(GContext { g, always: false }, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
@@ -682,32 +659,21 @@ fn fields_traverse(fields: &syn::Fields) -> proc_macro2::TokenStream {
         syn::Fields::Named(fields) => {
             let let_self = fields.named.iter().map(|f| f.ident.as_ref().unwrap());
             let traverse = let_self.clone().zip(fields.named.iter()).map(|(i, f)| {
-                let ty = &f.ty;
                 let mut w = None;
-                let mut b = None;
                 for attr in &f.attrs {
                     if attr_str(attr).as_deref() == Some("topology") {
-                        let FieldTopologyArgs { with, bound, .. } = match attr.parse_args() {
+                        let FieldTopologyArgs { with, .. } = match attr.parse_args() {
                             Ok(args) => args,
                             Err(e) => return e.into_compile_error(),
                         };
                         if let Some(with) = with {
                             w = Some(with);
                         }
-                        if let Some(bound) = bound {
-                            b = Some(bound);
-                        }
                     }
                 }
                 if let Some(with) = w {
-                    if let Some(bound) = b {
-                        quote_spanned! { f.ty.span() =>
-                            <#ty as #bound>::#with(#i, visitor)
-                        }
-                    } else {
-                        quote_spanned! { f.ty.span() =>
-                            #with(#i, visitor)
-                        }
+                    quote_spanned! { f.ty.span() =>
+                        #with(#i, visitor)
                     }
                 } else {
                     quote_spanned! { f.ty.span() =>
@@ -728,32 +694,21 @@ fn fields_traverse(fields: &syn::Fields) -> proc_macro2::TokenStream {
                 .enumerate()
                 .map(|(i, f)| Ident::new(&format!("field{i}"), f.ty.span()));
             let traverse = let_self.clone().zip(fields.unnamed.iter()).map(|(i, f)| {
-                let ty = &f.ty;
                 let mut w = None;
-                let mut b = None;
                 for attr in &f.attrs {
                     if attr_str(attr).as_deref() == Some("topology") {
-                        let FieldTopologyArgs { with, bound, .. } = match attr.parse_args() {
+                        let FieldTopologyArgs { with, .. } = match attr.parse_args() {
                             Ok(args) => args,
                             Err(e) => return e.into_compile_error(),
                         };
                         if let Some(with) = with {
                             w = Some(with);
                         }
-                        if let Some(bound) = bound {
-                            b = Some(bound);
-                        }
                     }
                 }
                 if let Some(with) = w {
-                    if let Some(bound) = b {
-                        quote_spanned! { f.ty.span() =>
-                            <#ty as #bound>::#with(#i, visitor)
-                        }
-                    } else {
-                        quote_spanned! { f.ty.span() =>
-                            #with(#i, visitor)
-                        }
+                    quote_spanned! { f.ty.span() =>
+                        #with(#i, visitor)
                     }
                 } else {
                     quote_spanned! { f.ty.span() =>
