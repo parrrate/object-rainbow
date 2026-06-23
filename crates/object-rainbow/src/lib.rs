@@ -1795,3 +1795,7 @@ fn options() {
     assert_eq!(Option::<Option<Hash>>::SIZE, HASH_SIZE);
     assert_eq!(Option::<Option<Option<Hash>>>::SIZE, HASH_SIZE);
 }
+
+pub trait TryDefault: Sized {
+    fn try_default() -> crate::Result<Self>;
+}
