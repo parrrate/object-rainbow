@@ -1860,6 +1860,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "object-rainbow-schema"
+version = "0.0.0-a.0"
+dependencies = [
+ "object-rainbow",
+ "object-rainbow-point",
+]
+
+[[package]]
 name = "object-rainbow-store"
 version = "0.0.0-a.11"
 dependencies = [
