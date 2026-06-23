@@ -72,12 +72,9 @@ impl<T: Serialize + Default> TryDefault for Json<T> {
     }
 }
 
-impl<T: Serialize> ToOutput for Json<T> {
+impl<T> ToOutput for Json<T> {
     fn to_output(&self, output: &mut impl Output) {
-        if output.is_real() {
-            serde_json::to_writer(&mut output.as_write(), &self.inner.value)
-                .expect("json write errors are considered bugs");
-        }
+        self.inner.data.to_output(output);
     }
 }
 
