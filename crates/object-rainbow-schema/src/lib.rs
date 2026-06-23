@@ -5,6 +5,7 @@ use std::sync::Arc;
 use object_rainbow::Enum;
 
 #[derive(Enum)]
+#[enumtag("char")]
 pub enum Schema {
     Point(
         #[cfg(feature = "point")] Arc<Self>,
