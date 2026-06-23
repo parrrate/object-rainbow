@@ -5,8 +5,8 @@ use object_rainbow::{Enum, InlineOutput, MaybeHasNiche, Parse, ParseInline, Tagg
 
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche)]
 #[enumtag("char")]
-#[parse(unchecked)]
 #[niche(tag)]
+#[parse(unchecked)]
 pub enum Schema {
     Never(Infallible),
     Option(Arc<Self>),
