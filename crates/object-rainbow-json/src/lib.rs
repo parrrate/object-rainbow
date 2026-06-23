@@ -16,10 +16,24 @@ pub use self::distributed::{Distributed, DistributedParseError};
 #[cfg(feature = "distributed")]
 mod distributed;
 
-#[derive(Debug, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Default)]
 struct JsonInner<T> {
     value: T,
     data: Vec<u8>,
+}
+
+impl<T> PartialEq for JsonInner<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.data == other.data
+    }
+}
+
+impl<T> Eq for JsonInner<T> {}
+
+impl<T> std::hash::Hash for JsonInner<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.data.hash(state);
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Default)]
