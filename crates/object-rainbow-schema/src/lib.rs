@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
 use object_rainbow::{Enum, InlineOutput, MaybeHasNiche, Parse, ParseInline, Tagged, ToOutput};
+#[cfg(feature = "point")]
+use object_rainbow_point::Point;
 
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche)]
 #[enumtag("char")]
@@ -20,4 +22,6 @@ impl Tagged for Schema {}
 
 pub enum Value {
     Option(Option<Arc<Self>>),
+    #[cfg(feature = "point")]
+    Point(Point<Self>),
 }
