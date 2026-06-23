@@ -21,9 +21,17 @@ struct JsonInner<T> {
     value: T,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, PartialEq, Eq, Hash, Default)]
 pub struct Json<T> {
     inner: Arc<JsonInner<T>>,
+}
+
+impl<T> Clone for Json<T> {
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+        }
+    }
 }
 
 impl<T: Serialize> Json<T> {
