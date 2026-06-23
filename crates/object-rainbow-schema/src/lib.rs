@@ -9,6 +9,7 @@ use object_rainbow::{Enum, InlineOutput, MaybeHasNiche, Parse, ParseInline, Tagg
 #[parse(unchecked)]
 #[niche(tag)]
 pub enum Schema {
+    Option(Arc<Self>),
     Point(
         #[cfg(feature = "point")] Arc<Self>,
         #[cfg(not(feature = "point"))] Infallible,
