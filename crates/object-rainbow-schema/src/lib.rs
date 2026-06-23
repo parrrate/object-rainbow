@@ -20,9 +20,13 @@ pub enum Schema {
 impl InlineOutput for Schema {}
 impl Tagged for Schema {}
 
-pub enum Value {
+pub enum ValueOption {
     None(Arc<Schema>),
-    Some(Arc<Self>),
+    Some(Arc<Value>),
+}
+
+pub enum Value {
+    Option(ValueOption),
     #[cfg(feature = "point")]
     Point(Point<Self>),
 }
