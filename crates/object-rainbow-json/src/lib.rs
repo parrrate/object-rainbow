@@ -56,6 +56,13 @@ impl<T: Serialize> Json<T> {
             inner: Arc::new(JsonInner { value, data }),
         })
     }
+
+    pub fn try_default() -> object_rainbow::Result<Self>
+    where
+        T: Default,
+    {
+        Self::new(Default::default())
+    }
 }
 
 impl<T: Serialize> ToOutput for Json<T> {
