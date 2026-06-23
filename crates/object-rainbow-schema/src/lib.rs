@@ -21,7 +21,8 @@ impl InlineOutput for Schema {}
 impl Tagged for Schema {}
 
 pub enum Value {
-    Option(Option<Arc<Self>>),
+    None(Arc<Schema>),
+    Some(Arc<Self>),
     #[cfg(feature = "point")]
     Point(Point<Self>),
 }
