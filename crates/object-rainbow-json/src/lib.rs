@@ -2,7 +2,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(docsrs, doc(cfg_hide(doc)))]
 
-use std::sync::Arc;
+use std::{ops::Deref, sync::Arc};
 
 use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseInput, Size, SomeNiche, Tagged,
@@ -39,6 +39,14 @@ impl<T> std::hash::Hash for JsonInner<T> {
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Json<T> {
     inner: Arc<JsonInner<T>>,
+}
+
+impl<T> Deref for Json<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner.value
+    }
 }
 
 impl<T> Clone for Json<T> {
