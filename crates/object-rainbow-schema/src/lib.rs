@@ -8,7 +8,7 @@ use object_rainbow::{Enum, InlineOutput, MaybeHasNiche, Parse, ParseInline, Tagg
 #[niche(tag)]
 #[parse(unchecked)]
 pub enum Schema {
-    Never(Infallible),
+    Never,
     Option(Arc<Self>),
     Point(
         #[cfg(feature = "point")] Arc<Self>,
@@ -18,3 +18,7 @@ pub enum Schema {
 
 impl InlineOutput for Schema {}
 impl Tagged for Schema {}
+
+pub enum Value {
+    Never(Infallible),
+}
