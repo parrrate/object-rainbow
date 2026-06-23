@@ -2,7 +2,7 @@
 
 use std::collections::BTreeSet;
 
-use darling::FromMeta;
+use darling::{FromMeta, util::SpannedValue};
 use proc_macro::TokenStream;
 use quote::{ToTokens, quote, quote_spanned};
 use syn::{
@@ -33,13 +33,15 @@ fn bounds_g(generics: &Generics) -> BTreeSet<Ident> {
 struct RainbowArgs {
     #[darling(default)]
     remote: Option<Type>,
+    #[darling(default)]
+    untagged: SpannedValue<bool>,
 }
 
 fn parse_for(name: &Ident, attrs: &[Attribute]) -> proc_macro2::TokenStream {
     for attr in attrs {
         if attr_str(attr).as_deref() == Some("rainbow") {
             match attr.parse_args::<RainbowArgs>() {
-                Ok(RainbowArgs { remote }) => {
+                Ok(RainbowArgs { remote, .. }) => {
                     if let Some(remote) = remote {
                         return remote.to_token_stream();
                     }
@@ -49,6 +51,19 @@ fn parse_for(name: &Ident, attrs: &[Attribute]) -> proc_macro2::TokenStream {
         }
     }
     name.to_token_stream()
+}
+
+fn parse_untagged(attrs: &[Attribute]) -> syn::Result<Option<SpannedValue<bool>>> {
+    let mut u = None;
+    for attr in attrs {
+        if attr_str(attr).as_deref() == Some("rainbow") {
+            let RainbowArgs { untagged, .. } = attr.parse_args()?;
+            if *untagged {
+                u = Some(untagged);
+            }
+        }
+    }
+    Ok(u)
 }
 
 /// ```rust
@@ -78,7 +93,7 @@ pub fn derive_to_output(input: TokenStream) -> TokenStream {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let to_output = gen_to_output(&input.data);
+    let to_output = gen_to_output(&input.data, &input.attrs);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let target = parse_for(&name, &input.attrs);
     let output = quote! {
@@ -183,7 +198,11 @@ fn fields_to_output(fields: &syn::Fields) -> proc_macro2::TokenStream {
     }
 }
 
-fn gen_to_output(data: &Data) -> proc_macro2::TokenStream {
+fn gen_to_output(data: &Data, attrs: &[Attribute]) -> proc_macro2::TokenStream {
+    let untagged = match parse_untagged(attrs) {
+        Ok(untagged) => untagged,
+        Err(e) => return e.into_compile_error(),
+    };
     match data {
         Data::Struct(data) => {
             let arm = fields_to_output(&data.fields);
@@ -199,10 +218,17 @@ fn gen_to_output(data: &Data) -> proc_macro2::TokenStream {
                 let arm = fields_to_output(&v.fields);
                 quote! { Self::#ident #arm }
             });
+            let tagged = if untagged.is_none() {
+                quote! {
+                    let kind = ::object_rainbow::Enum::kind(self);
+                    let tag = ::object_rainbow::enumkind::EnumKind::to_tag(kind);
+                    tag.to_output(output);
+                }
+            } else {
+                quote! {}
+            };
             quote! {
-                let kind = ::object_rainbow::Enum::kind(self);
-                let tag = ::object_rainbow::enumkind::EnumKind::to_tag(kind);
-                tag.to_output(output);
+                #tagged
                 match self {
                     #(#to_output)*
                 }
@@ -1251,7 +1277,7 @@ pub fn derive_parse(input: TokenStream) -> TokenStream {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let (parse, enum_parse) = gen_parse(&input.data, &inp);
+    let (parse, enum_parse) = gen_parse(&input.data, &inp, &input.attrs);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
     let target = parse_for(&name, &input.attrs);
     let enum_parse = enum_parse.map(|enum_parse| {
@@ -1463,7 +1489,19 @@ fn bounds_parse(
 fn gen_parse(
     data: &Data,
     inp: &Ident,
+    attrs: &[Attribute],
 ) -> (proc_macro2::TokenStream, Option<proc_macro2::TokenStream>) {
+    match parse_untagged(attrs) {
+        Ok(None) => {}
+        Ok(Some(untagged)) => {
+            return (
+                syn::Error::new(untagged.span(), "`untagged` cannot be parsed")
+                    .into_compile_error(),
+                None,
+            );
+        }
+        Err(e) => return (e.into_compile_error(), None),
+    };
     match data {
         Data::Struct(data) => {
             let arm = fields_parse(&data.fields, inp);
