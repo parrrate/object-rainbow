@@ -15,12 +15,14 @@ pub use self::distributed::{Distributed, DistributedParseError};
 mod distributed;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct Json<T>(T);
+pub struct Json<T> {
+    value: T,
+}
 
 impl<T: Serialize> ToOutput for Json<T> {
     fn to_output(&self, output: &mut impl Output) {
         if output.is_real() {
-            serde_json::to_writer(&mut output.as_write(), &self.0)
+            serde_json::to_writer(&mut output.as_write(), &self.value)
                 .expect("json write errors are considered bugs");
         }
     }
@@ -29,9 +31,9 @@ impl<T: Serialize> ToOutput for Json<T> {
 impl<T: DeserializeOwned + Serialize, I: ParseInput> Parse<I> for Json<T> {
     fn parse(input: I) -> object_rainbow::Result<Self> {
         let data = input.parse_all()?;
-        let json = serde_json::from_slice(&data)
-            .map_err(object_rainbow::Error::parse)
-            .map(Self)?;
+        let json = Self {
+            value: serde_json::from_slice(&data).map_err(object_rainbow::Error::parse)?,
+        };
         if *data == json.vec() {
             Ok(json)
         } else {
