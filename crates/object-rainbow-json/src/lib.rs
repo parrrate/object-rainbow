@@ -14,7 +14,7 @@ pub use self::distributed::{Distributed, DistributedParseError};
 #[cfg(feature = "distributed")]
 mod distributed;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Json<T> {
     value: T,
 }
