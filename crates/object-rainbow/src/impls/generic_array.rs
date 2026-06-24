@@ -1,8 +1,9 @@
 use std::ops::Mul;
 
+use generic_array::sequence::{Flatten, GenericSequence};
 use typenum::{B0, B1, IsGreater, U0, U1};
 
-use crate::{niche_cut::NicheCut, *};
+use crate::*;
 
 impl<T: InlineOutput, N: ArrayLength> ToOutput for GenericArray<T, N> {
     fn to_output(&self, output: &mut impl Output) {
@@ -53,15 +54,63 @@ impl<T: ByteOrd + InlineOutput, N: ArrayLength> ByteOrd for GenericArray<T, N> {
     }
 }
 
+pub trait WideNiche<T, N> {
+    type MnArray;
+}
+
+impl<T, N> WideNiche<T, N> for (B1, B1) {
+    type MnArray = NoNiche<ZeroNiche<U0>>;
+}
+
+pub struct RepeatNiche<M, N>(M, N);
+
+impl<M: Niche<NeedsTag = B1, Cut = B0>, N: ArrayLength, K: ArrayLength> Niche for RepeatNiche<M, N>
+where
+    M::N: Mul<N, Output = K>,
+{
+    type NeedsTag = B1;
+    type Cut = B0;
+    type N = K;
+    fn niche() -> GenericArray<u8, Self::N> {
+        GenericArray::<_, N>::repeat(M::niche()).flatten()
+    }
+    type Next = Self;
+}
+
+impl<T: MaybeHasNiche<MnArray: MnArray<MaybeNiche = M>>, N, M> WideNiche<T, N> for (B1, B0) {
+    type MnArray = NoNiche<RepeatNiche<M, N>>;
+}
+
+pub struct ForceCut<M>(M);
+
+impl<M: Niche<NeedsTag = B0>> Niche for ForceCut<M> {
+    type NeedsTag = B0;
+    type Cut = B1;
+    type N = M::N;
+    fn niche() -> GenericArray<u8, Self::N> {
+        M::niche()
+    }
+    type Next = ForceCut<M::Next>;
+}
+
+impl<T: MaybeHasNiche<MnArray: MnArray<MaybeNiche = M>>, N, B, M> WideNiche<T, N> for (B0, B) {
+    type MnArray = SomeNiche<ForceCut<M>>;
+}
+
 pub trait MoreThan1<T, N> {
     type MnArray;
 }
 
-impl<T, N> MoreThan1<T, N> for B1
+impl<
+    T: MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = NeedsTag, Cut = Cut>>>,
+    N,
+    NeedsTag,
+    Cut,
+> MoreThan1<T, N> for B1
 where
-    (T, NicheCut): MaybeHasNiche,
+    (NeedsTag, Cut): WideNiche<T, N>,
 {
-    type MnArray = <(T, NicheCut) as MaybeHasNiche>::MnArray;
+    type MnArray = <(NeedsTag, Cut) as WideNiche<T, N>>::MnArray;
 }
 
 impl<T: MaybeHasNiche, N> MoreThan1<T, N> for B0 {
