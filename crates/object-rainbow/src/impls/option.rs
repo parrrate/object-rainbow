@@ -10,6 +10,11 @@ pub trait TaggedOption {
     type Niche;
     const TAGGED_OPTION: bool = true;
     fn none_data() -> impl AsRef<[u8]>;
+    fn none_output(output: &mut impl Output) {
+        if output.is_real() {
+            output.write(Self::none_data().as_ref());
+        }
+    }
 }
 
 impl<T: MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag = B>, B: Bit>
@@ -36,9 +41,7 @@ impl<T: ToOutput + TaggedOption> OptionOutput for T {
                 if T::TAGGED_OPTION {
                     1u8.to_output(output);
                 } else {
-                    if output.is_real() {
-                        output.write(T::none_data().as_ref());
-                    }
+                    T::none_output(output);
                 }
             }
         }
