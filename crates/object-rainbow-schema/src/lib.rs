@@ -66,6 +66,12 @@ impl Schema {
             Self::Point(_) => false,
         }
     }
+
+    pub fn some_prefix(&self, output: &mut impl Output) {
+        if self.needs_tag(0) {
+            [0xff].to_output(output);
+        }
+    }
 }
 
 impl Value {
