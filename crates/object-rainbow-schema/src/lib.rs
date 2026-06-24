@@ -47,13 +47,23 @@ impl Schema {
                 Self::Unit.none(n - 1, output);
             }
             Self::Unit => {
-                [255 - (n % 256) as u8].to_output(output);
+                [254 - (n % 255) as u8].to_output(output);
             }
             Self::Option(schema) => schema.none(n + 1, output),
             Self::Point(_) => {
                 0u128.to_output(output);
                 (u128::MAX - (n as u128)).to_output(output);
             }
+        }
+    }
+
+    pub fn needs_tag(&self, n: usize) -> bool {
+        match self {
+            Self::Never if n == 0 => unreachable!(),
+            Self::Never => Self::Unit.needs_tag(n - 1),
+            Self::Unit => n.is_multiple_of(255),
+            Self::Option(schema) => schema.needs_tag(n + 1),
+            Self::Point(_) => false,
         }
     }
 }
