@@ -28,6 +28,8 @@ pub enum ValueOption {
     Some(Arc<Value>),
 }
 
+#[derive(ToOutput)]
+#[rainbow(untagged)]
 pub enum Value {
     Unit,
     Option(ValueOption),
@@ -84,6 +86,18 @@ impl Value {
             }),
             #[cfg(feature = "point")]
             Self::Point(_) => Schema::Point(Arc::new(Schema::Unit)),
+        }
+    }
+}
+
+impl ToOutput for ValueOption {
+    fn to_output(&self, output: &mut impl Output) {
+        match self {
+            Self::None(schema) => schema.none(0, output),
+            Self::Some(value) => {
+                value.niche_schema().some_prefix(output);
+                value.to_output(output);
+            }
         }
     }
 }
