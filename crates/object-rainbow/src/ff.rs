@@ -19,7 +19,7 @@ pub struct Ff;
 
 impl ToOutput for Ff {
     fn to_output(&self, output: &mut impl Output) {
-        output.write(&[0xff]);
+        0xffu8.to_output(output);
     }
 }
 
