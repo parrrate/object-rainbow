@@ -35,6 +35,12 @@ pub struct ValueNt {
     pub schema: Arc<Schema>,
 }
 
+impl ToOutput for ValueNt {
+    fn to_output(&self, output: &mut impl Output) {
+        self.items.to_output(output);
+    }
+}
+
 #[derive(ToOutput)]
 #[rainbow(untagged)]
 pub enum Value {
