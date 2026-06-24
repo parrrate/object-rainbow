@@ -71,9 +71,7 @@ impl<T> Deref for Zt<T> {
 impl<T: ToOutput> ToOutput for Zt<T> {
     fn to_output(&self, output: &mut impl Output) {
         self.inner.to_output(output);
-        if output.is_real() {
-            output.write(&[0]);
-        }
+        0u8.to_output(output);
     }
 }
 
