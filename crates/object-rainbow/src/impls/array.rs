@@ -55,3 +55,21 @@ impl<T: ByteOrd + InlineOutput, const N: usize> ByteOrd for [T; N] {
         self.iter_bytes_cmp(other)
     }
 }
+
+impl<T, const N: usize> MaybeHasNiche for [T; N]
+where
+    typenum::generic_const_mappings::Const<N>: ToUInt<Output: ArrayLength>,
+    GenericArray<T, <typenum::generic_const_mappings::Const<N> as ToUInt>::Output>: MaybeHasNiche,
+{
+    type MnArray =
+        <GenericArray<T, <typenum::generic_const_mappings::Const<N> as ToUInt>::Output> as MaybeHasNiche>::MnArray;
+}
+
+#[test]
+fn byte_array_niche() {
+    assert_eq!(
+        None::<(GenericArray<u8, typenum::U2>, bool)>.vec(),
+        [0, 0, 2]
+    );
+    assert_eq!(None::<([u8; 2], bool)>.vec(), [0, 0, 2]);
+}

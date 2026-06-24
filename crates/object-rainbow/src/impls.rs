@@ -5,7 +5,6 @@ mod bitvec;
 mod bool;
 mod boxed;
 mod btree;
-mod byte_array;
 #[cfg(feature = "bytes")]
 mod bytes;
 mod char;
