@@ -56,10 +56,6 @@ pub enum Value {
 
 impl InlineOutput for Value {}
 
-pub enum DynNiche {
-    Hash(u128),
-}
-
 impl Schema {
     pub fn none(&self, n: usize, output: &mut impl Output) {
         match self {
