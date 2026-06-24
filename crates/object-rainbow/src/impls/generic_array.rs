@@ -1,6 +1,8 @@
 use std::ops::Mul;
 
-use crate::*;
+use typenum::{B0, B1, IsGreater, U0, U1};
+
+use crate::{niche_cut::NicheCut, *};
 
 impl<T: InlineOutput, N: ArrayLength> ToOutput for GenericArray<T, N> {
     fn to_output(&self, output: &mut impl Output) {
@@ -49,4 +51,37 @@ impl<T: ByteOrd + InlineOutput, N: ArrayLength> ByteOrd for GenericArray<T, N> {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.iter_bytes_cmp(other)
     }
+}
+
+pub trait MoreThan1<T, N> {
+    type MnArray;
+}
+
+impl<T, N> MoreThan1<T, N> for B1
+where
+    (T, NicheCut): MaybeHasNiche,
+{
+    type MnArray = <(T, NicheCut) as MaybeHasNiche>::MnArray;
+}
+
+impl<T: MaybeHasNiche, N> MoreThan1<T, N> for B0 {
+    type MnArray = T::MnArray;
+}
+
+pub trait MoreThan0<T, N> {
+    type MnArray;
+}
+
+impl<T, N: IsGreater<U1, Output = B>, B: MoreThan1<T, N>> MoreThan0<T, N> for B1 {
+    type MnArray = B::MnArray;
+}
+
+impl<T, N> MoreThan0<T, N> for B0 {
+    type MnArray = NoNiche<ZeroNoNiche<U0>>;
+}
+
+impl<T, N: ArrayLength + IsGreater<U0, Output = B>, B: MoreThan0<T, N>> MaybeHasNiche
+    for GenericArray<T, N>
+{
+    type MnArray = B::MnArray;
 }
