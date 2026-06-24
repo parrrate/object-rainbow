@@ -29,16 +29,16 @@ impl<T: ToOutput + TaggedOption> OptionOutput for T {
     fn to_option_output(option: Option<&Self>, output: &mut impl Output) {
         match option {
             Some(value) => {
-                if T::TAGGED_OPTION && output.is_real() {
-                    output.write(&[0]);
+                if T::TAGGED_OPTION {
+                    0u8.to_output(output);
                 }
                 value.to_output(output);
             }
             None => {
-                if output.is_real() {
-                    if T::TAGGED_OPTION {
-                        output.write(&[1]);
-                    } else {
+                if T::TAGGED_OPTION {
+                    1u8.to_output(output);
+                } else {
+                    if output.is_real() {
                         output.write(T::none_data().as_ref());
                     }
                 }
