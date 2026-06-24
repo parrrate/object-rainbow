@@ -52,6 +52,7 @@ pub enum Value {
     #[cfg(feature = "point")]
     Point(Point<Self>),
     Nt(Arc<ValueNt>),
+    Concat(Arc<Self>, Arc<Self>),
 }
 
 impl InlineOutput for Value {}
@@ -104,6 +105,7 @@ impl Value {
             #[cfg(feature = "point")]
             Self::Point(_) => Schema::Point(Arc::new(Schema::Unit)),
             Self::Nt(nt) => Schema::Nt(nt.schema.clone()),
+            Self::Concat(value, _) => value.niche_schema(),
         }
     }
 }
