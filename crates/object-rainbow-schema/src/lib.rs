@@ -50,6 +50,7 @@ pub enum Value {
     Option(ValueOption),
     #[cfg(feature = "point")]
     Point(Point<Self>),
+    Nt(Arc<ValueNt>),
 }
 
 impl InlineOutput for Value {}
@@ -103,6 +104,7 @@ impl Value {
             }),
             #[cfg(feature = "point")]
             Self::Point(_) => Schema::Point(Arc::new(Schema::Unit)),
+            Self::Nt(nt) => Schema::Nt(nt.schema.clone()),
         }
     }
 }
