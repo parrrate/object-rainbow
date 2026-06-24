@@ -41,6 +41,8 @@ impl ToOutput for ValueNt {
     }
 }
 
+impl InlineOutput for ValueNt {}
+
 #[derive(ToOutput)]
 #[rainbow(untagged)]
 pub enum Value {
