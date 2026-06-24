@@ -8,3 +8,8 @@ where
 {
     type MnArray = NoNiche<ZeroNoNiche<typenum::generic_const_mappings::U<N>>>;
 }
+
+#[test]
+fn byte_array_niche() {
+    assert_eq!(None::<([u8; 2], bool)>.vec(), [0, 0, 2]);
+}
