@@ -20,6 +20,7 @@ pub enum Schema {
         #[cfg(not(feature = "point"))] std::convert::Infallible,
     ),
     Nt(Arc<Self>),
+    Concat(Arc<Self>, Arc<Self>),
 }
 
 impl InlineOutput for Schema {}
@@ -73,6 +74,7 @@ impl Schema {
                 (u128::MAX - (n as u128)).to_output(output);
             }
             Self::Nt(schema) => Self::Option(schema.clone()).none(n, output),
+            Self::Concat(schema, _) => schema.none(n, output),
         }
     }
 
@@ -84,6 +86,7 @@ impl Schema {
             Self::Option(schema) => schema.needs_tag(n + 1),
             Self::Point(_) => false,
             Self::Nt(schema) => Self::Option(schema.clone()).needs_tag(n),
+            Self::Concat(schema, _) => schema.needs_tag(n),
         }
     }
 
