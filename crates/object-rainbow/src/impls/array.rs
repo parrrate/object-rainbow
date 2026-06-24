@@ -69,7 +69,7 @@ where
 fn byte_array_niche() {
     assert_eq!(
         None::<(GenericArray<u8, typenum::U2>, bool)>.vec(),
-        [0, 0, 2]
+        [0, 0, 2],
     );
     assert_eq!(None::<([u8; 2], bool)>.vec(), [0, 0, 2]);
 }
