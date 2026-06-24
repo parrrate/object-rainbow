@@ -38,6 +38,8 @@ pub enum Value {
     Point(Point<Self>),
 }
 
+impl InlineOutput for Value {}
+
 pub enum DynNiche {
     Hash(u128),
 }
