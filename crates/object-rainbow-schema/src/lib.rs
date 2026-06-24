@@ -18,6 +18,7 @@ pub enum Schema {
         #[cfg(feature = "point")] Arc<Self>,
         #[cfg(not(feature = "point"))] std::convert::Infallible,
     ),
+    Nt(Arc<Self>),
 }
 
 impl InlineOutput for Schema {}
@@ -45,9 +46,7 @@ impl Schema {
     pub fn none(&self, n: usize, output: &mut impl Output) {
         match self {
             Self::Never if n == 0 => {}
-            Self::Never => {
-                Self::Unit.none(n - 1, output);
-            }
+            Self::Never => Self::Unit.none(n - 1, output),
             Self::Unit => {
                 [254 - (n % 255) as u8].to_output(output);
             }
@@ -56,6 +55,7 @@ impl Schema {
                 0u128.to_output(output);
                 (u128::MAX - (n as u128)).to_output(output);
             }
+            Self::Nt(schema) => Self::Option(schema.clone()).none(n, output),
         }
     }
 
@@ -66,6 +66,7 @@ impl Schema {
             Self::Unit => n.is_multiple_of(255),
             Self::Option(schema) => schema.needs_tag(n + 1),
             Self::Point(_) => false,
+            Self::Nt(schema) => Self::Option(schema.clone()).needs_tag(n),
         }
     }
 
