@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
-use object_rainbow::{Enum, InlineOutput, MaybeHasNiche, Parse, ParseInline, Tagged, ToOutput};
+use object_rainbow::{
+    Enum, InlineOutput, MaybeHasNiche, Output, Parse, ParseInline, Tagged, ToOutput,
+};
 #[cfg(feature = "point")]
 use object_rainbow_point::Point;
 
@@ -35,6 +37,25 @@ pub enum Value {
 
 pub enum DynNiche {
     Hash(u128),
+}
+
+impl Schema {
+    pub fn none(&self, n: usize, output: &mut impl Output) {
+        match self {
+            Self::Never if n == 0 => {}
+            Self::Never => {
+                Self::Unit.none(n - 1, output);
+            }
+            Self::Unit => {
+                [255 - (n % 256) as u8].to_output(output);
+            }
+            Self::Option(schema) => schema.none(n + 1, output),
+            Self::Point(_) => {
+                0u128.to_output(output);
+                (u128::MAX - (n as u128)).to_output(output);
+            }
+        }
+    }
 }
 
 impl Value {
