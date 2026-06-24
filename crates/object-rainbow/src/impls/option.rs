@@ -9,9 +9,7 @@ pub trait TaggedOption {
     type TaggedOption;
     type Niche;
     const TAGGED_OPTION: bool = true;
-    fn none_data() -> impl AsRef<[u8]> {
-        []
-    }
+    fn none_data() -> impl AsRef<[u8]>;
 }
 
 impl<T: MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag = B>, B: Bit>
