@@ -103,7 +103,7 @@ pub enum NumericValue {
     F32(f32),
     F64(f64),
     OpaqueChar(char),
-    Bool(bool),
+    OpaqueBool(bool),
 }
 
 impl AbstractValue for NumericValue {
@@ -129,7 +129,7 @@ impl AbstractValue for NumericValue {
             Self::F32(_) => NumericSchema::F32,
             Self::F64(_) => NumericSchema::F64,
             Self::OpaqueChar(_) => NumericSchema::OpaqueChar,
-            Self::Bool(_) => NumericSchema::OpaqueBool,
+            Self::OpaqueBool(_) => NumericSchema::OpaqueBool,
         }
     }
 }
@@ -158,7 +158,7 @@ impl<I: PointInput<Extra = NumericSchema>> ParseInline<I> for NumericValue {
             NumericSchema::F32 => Self::F32(input.parse_inline()?),
             NumericSchema::F64 => Self::F64(input.parse_inline()?),
             NumericSchema::OpaqueChar => Self::OpaqueChar(input.parse_inline()?),
-            NumericSchema::OpaqueBool => Self::Bool(input.parse_inline()?),
+            NumericSchema::OpaqueBool => Self::OpaqueBool(input.parse_inline()?),
         })
     }
 }
