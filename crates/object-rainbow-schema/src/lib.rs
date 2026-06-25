@@ -152,6 +152,8 @@ impl ToOutput for ValueSequence {
     }
 }
 
+impl Tagged for ValueSequence {}
+
 impl AbstractValue for ValueSequence {
     type Schema = TailSchema;
 
