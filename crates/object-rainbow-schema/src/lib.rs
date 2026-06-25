@@ -175,7 +175,7 @@ where
     }
 }
 
-#[derive(ListHashes, Topological)]
+#[derive(ListHashes, Topological, ParseAsInline)]
 pub struct ValuePoint {
     pub point: Point<TailValue>,
     pub schema: Arc<TailSchema>,
