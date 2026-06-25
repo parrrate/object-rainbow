@@ -502,7 +502,7 @@ pub fn derive_topological(input: TokenStream) -> TokenStream {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let traverse = gen_traverse(&input.data);
+    let traverse = gen_traverse(&input.data, &input.attrs);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
     let target = parse_for(&name, &input.attrs);
     let output = quote! {
@@ -739,7 +739,11 @@ fn fields_traverse(fields: &syn::Fields) -> proc_macro2::TokenStream {
     }
 }
 
-fn gen_traverse(data: &Data) -> proc_macro2::TokenStream {
+fn gen_traverse(data: &Data, attrs: &[Attribute]) -> proc_macro2::TokenStream {
+    let untagged = match parse_untagged(attrs) {
+        Ok(untagged) => untagged,
+        Err(e) => return e.into_compile_error(),
+    };
     match data {
         Data::Struct(data) => {
             let arm = fields_traverse(&data.fields);
@@ -755,10 +759,17 @@ fn gen_traverse(data: &Data) -> proc_macro2::TokenStream {
                 let arm = fields_traverse(&v.fields);
                 quote! { Self::#ident #arm }
             });
+            let tagged = if untagged.is_none() {
+                quote! {
+                    let kind = ::object_rainbow::Enum::kind(self);
+                    let tag = ::object_rainbow::enumkind::EnumKind::to_tag(kind);
+                    tag.traverse(visitor);
+                }
+            } else {
+                quote! {}
+            };
             quote! {
-                let kind = ::object_rainbow::Enum::kind(self);
-                let tag = ::object_rainbow::enumkind::EnumKind::to_tag(kind);
-                tag.traverse(visitor);
+                #tagged;
                 match self {
                     #(#to_output)*
                 }
