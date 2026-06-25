@@ -25,6 +25,7 @@ pub trait AbstractValue: ToOutput {
 #[niche(tag)]
 pub enum NumericSchema {
     U8,
+    U16,
 }
 
 impl InlineOutput for NumericSchema {}
@@ -34,6 +35,7 @@ impl AbstractSchema for NumericSchema {
     fn niche(&self) -> SchemaNiche {
         match self {
             Self::U8 => SchemaNiche::ZeroNoNiche(1),
+            Self::U16 => SchemaNiche::ZeroNoNiche(2),
         }
     }
 }
@@ -48,6 +50,7 @@ impl From<NumericSchema> for InlineSchema {
 #[rainbow(untagged)]
 pub enum NumericValue {
     U8(u8),
+    U16(u16),
 }
 
 impl AbstractValue for NumericValue {
@@ -56,6 +59,7 @@ impl AbstractValue for NumericValue {
     fn schema(&self) -> Self::Schema {
         match self {
             Self::U8(_) => NumericSchema::U8,
+            Self::U16(_) => NumericSchema::U16,
         }
     }
 }
@@ -67,6 +71,7 @@ impl<I: PointInput<Extra = NumericSchema>> ParseInline<I> for NumericValue {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         Ok(match input.extra().clone() {
             NumericSchema::U8 => Self::U8(input.parse_inline()?),
+            NumericSchema::U16 => Self::U16(input.parse_inline()?),
         })
     }
 }
