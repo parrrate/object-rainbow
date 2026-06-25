@@ -11,6 +11,11 @@ pub trait AbstractSchema {
     fn niche(&self) -> SchemaNiche;
 }
 
+pub trait AbstractValue {
+    type Schema: AbstractSchema;
+    fn schema(&self) -> Self::Schema;
+}
+
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche)]
 #[enumtag("char")]
 #[niche(tag)]
@@ -186,8 +191,9 @@ impl AbstractSchema for Schema {
     }
 }
 
-impl Value {
-    pub fn schema(&self) -> Schema {
+impl AbstractValue for Value {
+    type Schema = Schema;
+    fn schema(&self) -> Self::Schema {
         match self {
             Self::Unit => Schema::Unit,
             Self::Option(o) => Schema::Option(match o {
