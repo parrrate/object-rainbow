@@ -50,7 +50,7 @@ impl Tagged for NumericSchema {}
 
 impl AbstractSchema for NumericSchema {
     fn niche(&self) -> SchemaNiche {
-        match self {
+        match self.clone() {
             Self::U8 | Self::I8 => SchemaNiche::ZeroNoNiche(1),
             Self::U16 | Self::I16 => SchemaNiche::ZeroNoNiche(2),
             Self::U32 | Self::I32 => SchemaNiche::ZeroNoNiche(4),
@@ -61,8 +61,6 @@ impl AbstractSchema for NumericSchema {
             Self::NzU32 => SchemaNiche::Zeroes(4),
             Self::NzU64 => SchemaNiche::Zeroes(8),
             Self::NzU128 => SchemaNiche::Zeroes(16),
-            Self::F8(i) => match *i {},
-            Self::F16(i) => match *i {},
             Self::F32 => SchemaNiche::ZeroNoNiche(4),
             Self::F64 => SchemaNiche::ZeroNoNiche(8),
         }
