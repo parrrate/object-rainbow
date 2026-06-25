@@ -38,6 +38,12 @@ impl AbstractSchema for NumericSchema {
     }
 }
 
+impl From<NumericSchema> for InlineSchema {
+    fn from(schema: NumericSchema) -> Self {
+        Self::Numeric(schema)
+    }
+}
+
 #[derive(ToOutput, ListHashes, Topological, ParseAsInline)]
 #[rainbow(untagged)]
 pub enum NumericValue {
