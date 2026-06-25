@@ -384,10 +384,12 @@ impl<T: AbstractValue + ParseInline<I>, I: PointInput<Extra = Arc<T::Schema>>> P
                 _ => Err(object_rainbow::Error::OutOfBounds),
             }
         } else {
-            input.parse_compare(&niche.vec()).map(|value| match value {
-                Some(value) => Self::Some(value),
-                None => Self::None(schema),
-            })
+            input
+                .parse_compare_inline(&niche.vec())
+                .map(|value| match value {
+                    Some(value) => Self::Some(value),
+                    None => Self::None(schema),
+                })
         }
     }
 }
