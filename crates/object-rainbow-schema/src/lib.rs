@@ -121,6 +121,24 @@ impl SchemaNiche {
 }
 
 impl Schema {
+    pub fn niche(&self) -> SchemaNiche {
+        match self {
+            Self::Never => SchemaNiche::Zeroes(0),
+            Self::Unit => SchemaNiche::ZeroNoNiche(0),
+            Self::Option(schema) => {
+                let sub = schema.niche();
+                if sub.needs_tag() {
+                    SchemaNiche::DecrByte(253)
+                } else {
+                    sub.next()
+                }
+            }
+            Self::Point(_) => SchemaNiche::PointNiche(u128::MAX),
+            Self::Nt(schema) => Self::Option(schema.clone()).niche(),
+            Self::Concat(a, b) => SchemaNiche::concat(Arc::new(a.niche()), Arc::new(b.niche())),
+        }
+    }
+
     pub fn none(&self, n: usize, output: &mut impl Output) {
         match self {
             Self::Never if n == 0 => {}
