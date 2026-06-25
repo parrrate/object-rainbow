@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use object_rainbow::{
     Enum, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline, ParseInline,
-    PointInput, Tagged, ToOutput,
+    PointInput, Tagged, ToOutput, Topological,
 };
 #[cfg(feature = "point")]
 use object_rainbow_point::Point;
@@ -20,7 +20,7 @@ pub trait AbstractValue: ToOutput {
     fn schema(&self) -> Self::Schema;
 }
 
-#[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes)]
+#[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological)]
 #[enumtag("char")]
 #[niche(tag)]
 #[parse(unchecked)]
@@ -40,7 +40,7 @@ pub enum InlineSchema {
 impl InlineOutput for InlineSchema {}
 impl Tagged for InlineSchema {}
 
-#[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes)]
+#[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological)]
 #[enumtag("char")]
 #[niche(tag)]
 #[parse(unchecked)]
