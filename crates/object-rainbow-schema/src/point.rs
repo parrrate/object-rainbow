@@ -6,7 +6,9 @@ use object_rainbow::{
 };
 use object_rainbow_point::Point;
 
-use crate::{AbstractSchema, AbstractValue, InlineSchema, SchemaNiche, TailSchema, TailValue};
+use crate::{
+    AbstractSchema, AbstractValue, InlineSchema, InlineValue, SchemaNiche, TailSchema, TailValue,
+};
 
 #[derive(
     ToOutput,
@@ -67,5 +69,11 @@ impl<I: PointInput<Extra = Arc<TailSchema>>> ParseInline<I> for ValuePoint {
             point: input.parse_inline()?,
             schema,
         })
+    }
+}
+
+impl From<ValuePoint> for InlineValue {
+    fn from(value: ValuePoint) -> Self {
+        Self::Point(value)
     }
 }
