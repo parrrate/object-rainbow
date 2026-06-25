@@ -29,6 +29,12 @@ impl AbstractSchema for PointSchema {
     }
 }
 
+impl From<PointSchema> for InlineSchema {
+    fn from(PointSchema { schema }: PointSchema) -> Self {
+        Self::Point(schema)
+    }
+}
+
 #[derive(ListHashes, Topological, ParseAsInline)]
 pub struct ValuePoint {
     pub point: Point<Arc<TailValue>>,
