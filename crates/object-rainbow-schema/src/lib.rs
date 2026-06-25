@@ -747,6 +747,23 @@ impl OptionSchema for TailSchema {
     }
 }
 
+impl DefaultSchema<TailValue> for TailSchema {
+    fn default_value(&self) -> Option<TailValue> {
+        match self {
+            Self::Cut => Some(TailValue::Cut),
+            Self::Option(schema) => Some(TailValue::Option(ValueOption::None(schema.clone()))),
+            Self::Sequence(schema) => Some(TailValue::Sequence(ValueSequence {
+                items: Default::default(),
+                schema: schema.clone(),
+            })),
+            Self::Concat(a, b) => Some(TailValue::Concat(
+                Arc::new(a.default_value()?),
+                Arc::new(b.default_value()?),
+            )),
+        }
+    }
+}
+
 impl AbstractValue for TailValue {
     type Schema = TailSchema;
     fn schema(&self) -> Self::Schema {
