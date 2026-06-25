@@ -616,7 +616,7 @@ impl AbstractValue for InlineValue {
             Self::Unit => InlineSchema::Unit,
             Self::Option(o) => o.schema(),
             #[cfg(feature = "point")]
-            Self::Point(p) => p.schema(),
+            Self::Point(p) => p.schema().into(),
             Self::Nt(nt) => nt.schema(),
             Self::Concat(a, b) => InlineSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
             Self::Array(a) => a.schema().into(),

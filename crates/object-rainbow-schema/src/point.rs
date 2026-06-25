@@ -51,10 +51,12 @@ impl InlineOutput for ValuePoint {}
 impl Tagged for ValuePoint {}
 
 impl AbstractValue for ValuePoint {
-    type Schema = InlineSchema;
+    type Schema = PointSchema;
 
     fn schema(&self) -> Self::Schema {
-        InlineSchema::Point(self.schema.clone())
+        PointSchema {
+            schema: self.schema.clone(),
+        }
     }
 }
 
