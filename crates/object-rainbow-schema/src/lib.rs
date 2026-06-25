@@ -207,6 +207,12 @@ impl AbstractSchema for InlineSchema {
     }
 }
 
+impl OptionSchema for InlineSchema {
+    fn option(schema: Self) -> Self {
+        Self::Option(Arc::new(schema))
+    }
+}
+
 impl AbstractValue for Value {
     type Schema = InlineSchema;
     fn schema(&self) -> Self::Schema {
