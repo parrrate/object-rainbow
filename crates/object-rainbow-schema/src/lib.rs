@@ -30,6 +30,14 @@ pub enum NumericSchema {
 impl InlineOutput for NumericSchema {}
 impl Tagged for NumericSchema {}
 
+impl AbstractSchema for NumericSchema {
+    fn niche(&self) -> SchemaNiche {
+        match self {
+            Self::U8 => SchemaNiche::ZeroNoNiche(1),
+        }
+    }
+}
+
 #[derive(ToOutput, ListHashes, Topological, ParseAsInline)]
 #[rainbow(untagged)]
 pub enum NumericValue {
