@@ -207,9 +207,9 @@ where
     InlineValue: ParseInline<I::WithExtra<Arc<InlineSchema>>>,
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let (schema, n) = input.extra().clone();
+        let (schema, len) = input.extra().clone();
         let mut items = Vec::new();
-        for _ in 0..n {
+        for _ in 0..len {
             items.push(input.parse_inline_extra(schema.clone())?);
         }
         Ok(Self { items, schema })
