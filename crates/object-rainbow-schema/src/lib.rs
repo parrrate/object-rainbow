@@ -112,6 +112,7 @@ impl InlineOutput for InlineValue {}
 #[rainbow(untagged)]
 pub enum TailValue {
     Cut,
+    Concat(Arc<InlineValue>, Arc<Self>),
 }
 
 #[derive(Clone)]
