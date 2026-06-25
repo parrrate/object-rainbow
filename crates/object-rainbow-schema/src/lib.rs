@@ -218,10 +218,7 @@ impl AbstractValue for Value {
     fn schema(&self) -> Self::Schema {
         match self {
             Self::Unit => InlineSchema::Unit,
-            Self::Option(o) => InlineSchema::Option(match o {
-                ValueOption::None(schema) => schema.clone(),
-                ValueOption::Some(value) => Arc::new(value.schema()),
-            }),
+            Self::Option(o) => o.schema(),
             #[cfg(feature = "point")]
             Self::Point(ValuePoint { schema, .. }) => InlineSchema::Point(schema.clone()),
             Self::Nt(nt) => InlineSchema::Nt(nt.schema.clone()),
@@ -248,5 +245,17 @@ impl<T: AbstractValue> ToOutput for ValueOption<T> {
                 value.to_output(output);
             }
         }
+    }
+}
+
+impl<T: AbstractValue<Schema: OptionSchema>> AbstractValue for ValueOption<T> {
+    type Schema = T::Schema;
+
+    fn schema(&self) -> Self::Schema {
+        match self {
+            Self::None(schema) => schema.clone(),
+            Self::Some(value) => Arc::new(value.schema()),
+        }
+        .option()
     }
 }
