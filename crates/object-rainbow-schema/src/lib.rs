@@ -188,6 +188,7 @@ impl ToOutput for ValuePoint {
 }
 
 impl InlineOutput for ValuePoint {}
+impl Tagged for ValuePoint {}
 
 impl AbstractValue for ValuePoint {
     type Schema = InlineSchema;
