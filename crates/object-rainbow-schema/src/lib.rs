@@ -39,6 +39,14 @@ pub enum NumericValue {
 impl InlineOutput for NumericValue {}
 impl Tagged for NumericValue {}
 
+impl<I: PointInput<Extra = NumericSchema>> ParseInline<I> for NumericValue {
+    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
+        Ok(match input.extra().clone() {
+            NumericSchema::U8 => Self::U8(input.parse_inline()?),
+        })
+    }
+}
+
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological)]
 #[enumtag("char")]
 #[niche(tag)]
