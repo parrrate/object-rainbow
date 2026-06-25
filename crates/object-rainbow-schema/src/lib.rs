@@ -7,6 +7,10 @@ use object_rainbow::{
 #[cfg(feature = "point")]
 use object_rainbow_point::Point;
 
+pub trait AbstractSchema {
+    fn niche(&self) -> SchemaNiche;
+}
+
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche)]
 #[enumtag("char")]
 #[niche(tag)]
@@ -159,8 +163,8 @@ impl SchemaNiche {
     }
 }
 
-impl Schema {
-    pub fn niche(&self) -> SchemaNiche {
+impl AbstractSchema for Schema {
+    fn niche(&self) -> SchemaNiche {
         match self {
             Self::Never => SchemaNiche::Zeroes(0),
             Self::Unit => SchemaNiche::ZeroNoNiche(0),
