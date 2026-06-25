@@ -21,6 +21,7 @@ pub trait AbstractValue: ToOutput {
 }
 
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche)]
+#[niche(tag)]
 pub enum NumericSchema {
     U8,
 }
