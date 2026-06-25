@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    Enum, InlineOutput, MaybeHasNiche, Output, Parse, ParseInline, Tagged, ToOutput,
+    Enum, InlineOutput, MaybeHasNiche, Output, Parse, ParseAsInline, ParseInline, Tagged, ToOutput,
 };
 #[cfg(feature = "point")]
 use object_rainbow_point::Point;
@@ -122,7 +122,7 @@ impl AbstractValue for ValuePoint {
     }
 }
 
-#[derive(ToOutput)]
+#[derive(ToOutput, ParseAsInline)]
 #[rainbow(untagged)]
 pub enum InlineValue {
     Unit,
