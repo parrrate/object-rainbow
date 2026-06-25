@@ -5,7 +5,7 @@ use object_rainbow::{
     PointInput, ReflessInline, Tagged, ToOutput, Topological, Traversible,
 };
 #[cfg(feature = "point")]
-use object_rainbow_point::Point;
+use object_rainbow_point::{IntoPoint, Point};
 
 pub trait AbstractSchema: ReflessInline + Traversible {
     fn niche(&self) -> SchemaNiche;
@@ -615,6 +615,12 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             Self::Never => None,
             Self::Unit => Some(InlineValue::Unit),
             Self::Option(schema) => Some(InlineValue::Option(ValueOption::None(schema.clone()))),
+            #[cfg(feature = "point")]
+            Self::Point(schema) => Some(InlineValue::Point(ValuePoint {
+                point: Arc::new(schema.default_value()?).point(),
+                schema: schema.clone(),
+            })),
+            #[cfg(not(feature = "point"))]
             Self::Point(_) => None,
             Self::Nt(schema) => Some(InlineValue::Nt(ValueNt {
                 items: Default::default(),
