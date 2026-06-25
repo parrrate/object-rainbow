@@ -43,6 +43,7 @@ pub enum NumericSchema {
     F16(Infallible),
     F32,
     F64,
+    F128(Infallible),
 }
 
 impl InlineOutput for NumericSchema {}
