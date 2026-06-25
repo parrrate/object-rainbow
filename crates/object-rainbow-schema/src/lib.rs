@@ -197,18 +197,6 @@ impl Schema {
             Self::Concat(schema, _) => schema.none(n, output),
         }
     }
-
-    pub fn needs_tag(&self, n: usize) -> bool {
-        match self {
-            Self::Never if n == 0 => unreachable!(),
-            Self::Never => Self::Unit.needs_tag(n - 1),
-            Self::Unit => n.is_multiple_of(255),
-            Self::Option(schema) => schema.needs_tag(n + 1),
-            Self::Point(_) => false,
-            Self::Nt(schema) => Self::Option(schema.clone()).needs_tag(n),
-            Self::Concat(a, b) => a.needs_tag(n) && b.needs_tag(n),
-        }
-    }
 }
 
 impl Value {
