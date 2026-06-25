@@ -1436,7 +1436,7 @@ pub trait ParseInput: Sized {
         self.skip_n(1)?;
         Ok((data, value))
     }
-    fn parse_compare<T: Parse<Self>>(&mut self, c: &[u8]) -> Result<Option<T>> {
+    fn parse_compare<T: Parse<Self>>(mut self, c: &[u8]) -> Result<Option<T>> {
         if self.compare_ahead(c)? {
             self.skip_n(c.len())?;
             Ok(None)
