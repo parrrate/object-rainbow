@@ -1864,6 +1864,7 @@ name = "object-rainbow-schema"
 version = "0.0.0-a.0"
 dependencies = [
  "object-rainbow",
+ "object-rainbow-amt",
  "object-rainbow-point",
 ]
 
