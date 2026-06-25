@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    Enum, InlineOutput, MaybeHasNiche, Output, Parse, ParseAsInline, ParseInline, Tagged, ToOutput,
+    Enum, InlineOutput, MaybeHasNiche, Output, Parse, ParseAsInline, ParseInline, PointInput,
+    Tagged, ToOutput,
 };
 #[cfg(feature = "point")]
 use object_rainbow_point::Point;
@@ -349,6 +350,27 @@ impl<T: AbstractValue> ValueOption<T> {
     }
 }
 
+impl<T: AbstractValue + Parse<I>, I: PointInput<Extra = Arc<T::Schema>>> Parse<I>
+    for ValueOption<T>
+{
+    fn parse(mut input: I) -> object_rainbow::Result<Self> {
+        let schema = input.extra().clone();
+        let niche = schema.niche();
+        if niche.needs_tag() {
+            match input.parse_inline::<u8>()? {
+                0xff => Ok(Self::Some(input.parse()?)),
+                0xfe => Ok(Self::None(schema)),
+                _ => Err(object_rainbow::Error::OutOfBounds),
+            }
+        } else {
+            input.parse_compare(&niche.vec()).map(|value| match value {
+                Some(value) => Self::Some(value),
+                None => Self::None(schema),
+            })
+        }
+    }
+}
+
 impl<T: AbstractValue<Schema: OptionSchema>> AbstractValue for ValueOption<T> {
     type Schema = T::Schema;
 
@@ -385,3 +407,17 @@ impl AbstractValue for TailValue {
         }
     }
 }
+
+// impl<I: PointInput<Extra = Arc<InlineSchema>>> ParseInline<I> for InlineValue {
+//     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
+//         match &*input.extra().clone() {
+//             InlineSchema::Never => match input.parse_inline::<Infallible>()? {},
+//             InlineSchema::Unit => Ok(InlineValue::Unit),
+//             InlineSchema::Option(inline_schema) => todo!(),
+//             InlineSchema::Point(tail_schema) => todo!(),
+//             InlineSchema::Nt(inline_schema) => todo!(),
+//             InlineSchema::Concat(inline_schema, inline_schema1) => todo!(),
+//             InlineSchema::Array(inline_schema, _) => todo!(),
+//         }
+//     }
+// }
