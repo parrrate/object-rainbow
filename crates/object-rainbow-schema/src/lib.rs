@@ -242,7 +242,7 @@ impl AbstractValue for InlineValue {
             Self::Option(o) => o.schema(),
             #[cfg(feature = "point")]
             Self::Point(ValuePoint { schema, .. }) => InlineSchema::Point(schema.clone()),
-            Self::Nt(nt) => InlineSchema::Nt(nt.schema.clone()),
+            Self::Nt(ValueNt { schema, .. }) => InlineSchema::Nt(schema.clone()),
             Self::Concat(a, b) => InlineSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
         }
     }
