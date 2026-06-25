@@ -40,6 +40,7 @@ pub enum NumericSchema {
     NzU64,
     NzU128,
     F8(Infallible),
+    F16(Infallible),
 }
 
 impl InlineOutput for NumericSchema {}
@@ -59,6 +60,7 @@ impl AbstractSchema for NumericSchema {
             Self::NzU64 => SchemaNiche::Zeroes(8),
             Self::NzU128 => SchemaNiche::Zeroes(16),
             Self::F8(i) => match *i {},
+            Self::F16(i) => match *i {},
         }
     }
 }
