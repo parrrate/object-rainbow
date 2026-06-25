@@ -468,7 +468,7 @@ impl AbstractValue for InlineValue {
             Self::Nt(nt) => nt.schema(),
             Self::Concat(a, b) => InlineSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
             Self::Array(a) => a.schema().into(),
-            Self::Numeric(n) => InlineSchema::Numeric(n.schema()),
+            Self::Numeric(n) => n.schema().into(),
         }
     }
 }
