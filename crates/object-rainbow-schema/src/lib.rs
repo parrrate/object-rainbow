@@ -30,7 +30,7 @@ pub enum NumericSchema {
 impl InlineOutput for NumericSchema {}
 impl Tagged for NumericSchema {}
 
-#[derive(ToOutput, ListHashes)]
+#[derive(ToOutput, ListHashes, Topological)]
 #[rainbow(untagged)]
 pub enum NumericValue {
     U8(u8),
