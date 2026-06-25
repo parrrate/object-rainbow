@@ -1436,9 +1436,15 @@ pub trait ParseInput: Sized {
         self.skip_n(1)?;
         Ok((data, value))
     }
+    fn compare_skip(&mut self, c: &[u8]) -> Result<bool> {
+        let matches = self.compare_ahead(c)?;
+        if matches {
+            self.skip_n(c.len())?
+        }
+        Ok(matches)
+    }
     fn parse_compare<T: Parse<Self>>(mut self, c: &[u8]) -> Result<Option<T>> {
-        if self.compare_ahead(c)? {
-            self.skip_n(c.len())?;
+        if self.compare_skip(c)? {
             self.empty()?;
             Ok(None)
         } else {
@@ -1446,8 +1452,7 @@ pub trait ParseInput: Sized {
         }
     }
     fn parse_compare_inline<T: ParseInline<Self>>(&mut self, c: &[u8]) -> Result<Option<T>> {
-        if self.compare_ahead(c)? {
-            self.skip_n(c.len())?;
+        if self.compare_skip(c)? {
             Ok(None)
         } else {
             Ok(Some(self.parse_inline()?))
