@@ -108,6 +108,7 @@ pub enum InlineSchema {
     Nt(Arc<Self>),
     Concat(Arc<Self>, Arc<Self>),
     Array(ArraySchema),
+    Numeric(NumericSchema),
 }
 
 impl InlineOutput for InlineSchema {}
@@ -294,6 +295,7 @@ pub enum InlineValue {
     Nt(ValueNt),
     Concat(Arc<Self>, Arc<Self>),
     Array(ValueArray),
+    Numeric(NumericValue),
 }
 
 impl InlineOutput for InlineValue {}
@@ -438,6 +440,7 @@ impl AbstractSchema for InlineSchema {
             Self::Nt(schema) => Self::Option(schema.clone()).niche(),
             Self::Concat(a, b) => SchemaNiche::concat(Arc::new(a.niche()), Arc::new(b.niche())),
             Self::Array(schema) => schema.niche(),
+            Self::Numeric(schema) => schema.niche(),
         }
     }
 }
@@ -459,6 +462,7 @@ impl AbstractValue for InlineValue {
             Self::Nt(nt) => nt.schema(),
             Self::Concat(a, b) => InlineSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
             Self::Array(a) => a.schema().into(),
+            Self::Numeric(n) => InlineSchema::Numeric(n.schema()),
         }
     }
 }
@@ -594,6 +598,9 @@ where
                 input.parse_inline_extra(b.clone())?,
             ),
             InlineSchema::Array(schema) => Self::Array(input.parse_inline_extra(schema.clone())?),
+            InlineSchema::Numeric(schema) => {
+                Self::Numeric(input.parse_inline_extra(schema.clone())?)
+            }
         })
     }
 }
