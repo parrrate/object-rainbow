@@ -108,6 +108,8 @@ pub enum InlineValue {
 
 impl InlineOutput for InlineValue {}
 
+#[derive(ToOutput)]
+#[rainbow(untagged)]
 pub enum TailValue {
     Cut,
 }
