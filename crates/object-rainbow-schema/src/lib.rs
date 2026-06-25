@@ -82,6 +82,26 @@ pub enum SchemaNiche {
     Cut,
 }
 
+impl ToOutput for SchemaNiche {
+    fn to_output(&self, output: &mut impl Output) {
+        match self {
+            Self::Zeroes(_) => {}
+            Self::ZeroNoNiche(_) => {}
+            Self::DecrByte(n) => n.to_output(output),
+            Self::AndNiche(a, b) => (a, b).to_output(output),
+            Self::NicheAnd(a, b) => (a, b).to_output(output),
+            Self::NoNiche2(a, b) => (a, b).to_output(output),
+            Self::PointNiche(n) => {
+                0u128.to_output(output);
+                n.to_output(output);
+            }
+            Self::Cut => {}
+        }
+    }
+}
+
+impl InlineOutput for SchemaNiche {}
+
 impl SchemaNiche {
     pub fn needs_tag(&self) -> bool {
         match self {
