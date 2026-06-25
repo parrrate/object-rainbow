@@ -12,7 +12,7 @@ pub trait AbstractSchema {
 }
 
 pub trait OptionSchema: AbstractSchema {
-    fn option(schema: Self) -> Self;
+    fn option(self) -> Self;
 }
 
 pub trait AbstractValue: ToOutput {
@@ -208,8 +208,8 @@ impl AbstractSchema for InlineSchema {
 }
 
 impl OptionSchema for InlineSchema {
-    fn option(schema: Self) -> Self {
-        Self::Option(Arc::new(schema))
+    fn option(self) -> Self {
+        Self::Option(Arc::new(self))
     }
 }
 
