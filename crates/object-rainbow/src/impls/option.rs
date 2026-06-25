@@ -189,13 +189,13 @@ impl<T: Parse<I>, I: ParseInput> OptionParseBit<T, I> for B1 {
 }
 
 impl<
-    T: ParseInline<I> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
+    T: Parse<I> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
     N: Niche<NeedsTag = B0>,
     I: ParseInput,
 > OptionParseBit<T, I> for B0
 {
     fn parse_option(input: I) -> crate::Result<Option<T>> {
-        Option::<T>::parse_as_inline(input)
+        input.parse_compare(&N::niche())
     }
 }
 
