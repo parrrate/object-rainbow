@@ -80,6 +80,32 @@ impl AbstractSchema for NumericSchema {
     }
 }
 
+impl DefaultSchema<NumericValue> for NumericSchema {
+    fn default_value(&self) -> NumericValue {
+        match self.clone() {
+            Self::U8 => NumericValue::U8(Default::default()),
+            Self::I8 => NumericValue::I8(Default::default()),
+            Self::U16 => NumericValue::U16(Default::default()),
+            Self::I16 => NumericValue::I16(Default::default()),
+            Self::U32 => NumericValue::U32(Default::default()),
+            Self::I32 => NumericValue::I32(Default::default()),
+            Self::U64 => NumericValue::U64(Default::default()),
+            Self::I64 => NumericValue::I64(Default::default()),
+            Self::U128 => NumericValue::U128(Default::default()),
+            Self::I128 => NumericValue::I128(Default::default()),
+            Self::NzU8 => NumericValue::NzU8(NonZero::new(1).expect("1 != 0")),
+            Self::NzU16 => NumericValue::NzU16(NonZero::new(1).expect("1 != 0")),
+            Self::NzU32 => NumericValue::NzU32(NonZero::new(1).expect("1 != 0")),
+            Self::NzU64 => NumericValue::NzU64(NonZero::new(1).expect("1 != 0")),
+            Self::NzU128 => NumericValue::NzU128(NonZero::new(1).expect("1 != 0")),
+            Self::F32 => NumericValue::F32(Default::default()),
+            Self::F64 => NumericValue::F64(Default::default()),
+            Self::OpaqueChar => NumericValue::OpaqueChar(Default::default()),
+            Self::OpaqueBool => NumericValue::OpaqueBool(Default::default()),
+        }
+    }
+}
+
 impl From<NumericSchema> for InlineSchema {
     fn from(schema: NumericSchema) -> Self {
         Self::Numeric(schema)
