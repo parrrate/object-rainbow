@@ -67,6 +67,14 @@ impl<T: AbstractValue + ListHashes> ListHashes for ValueOption<T> {
     }
 }
 
+impl<T: AbstractValue + Topological> Topological for ValueOption<T> {
+    fn traverse(&self, visitor: &mut impl object_rainbow::PointVisitor) {
+        if let Self::Some(value) = self {
+            value.traverse(visitor);
+        }
+    }
+}
+
 #[derive(ParseAsInline)]
 pub struct ValueNt {
     pub items: Vec<Arc<InlineValue>>,
