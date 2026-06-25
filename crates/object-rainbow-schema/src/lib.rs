@@ -102,7 +102,7 @@ where
     }
 }
 
-#[derive(ParseAsInline)]
+#[derive(ParseAsInline, ListHashes)]
 pub struct ValueArray {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
