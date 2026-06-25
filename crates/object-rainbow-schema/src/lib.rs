@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use object_rainbow::{
     Enum, InlineOutput, MaybeHasNiche, Output, Parse, ParseInline, Tagged, ToOutput,
-    none_terminated::Nt,
 };
 #[cfg(feature = "point")]
 use object_rainbow_point::Point;
@@ -57,7 +56,7 @@ pub enum ValueOption<T: AbstractValue> {
 }
 
 pub struct ValueNt {
-    pub items: Nt<Vec<Arc<Value>>>,
+    pub items: Vec<Arc<Value>>,
     pub schema: Arc<InlineSchema>,
 }
 
