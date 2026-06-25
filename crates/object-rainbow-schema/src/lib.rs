@@ -94,8 +94,22 @@ impl SchemaNiche {
         }
     }
 
+    pub fn cut(&self) -> bool {
+        match self {
+            Self::Zeroes(_) => false,
+            Self::ZeroNoNiche(_) => false,
+            Self::DecrByte(_) => false,
+            Self::AndNiche(a, b) => !a.cut() && !b.cut(),
+            Self::NicheAnd(a, b) => !a.cut() && !b.cut(),
+            Self::NoNiche2(a, b) => !a.cut() && !b.cut(),
+            Self::PointNiche(_) => false,
+        }
+    }
+
     pub fn concat(a: Arc<Self>, b: Arc<Self>) -> Self {
-        if a.needs_tag() {
+        if a.cut() {
+            (*a).clone()
+        } else if a.needs_tag() {
             if b.needs_tag() {
                 Self::NoNiche2(a, b)
             } else {
