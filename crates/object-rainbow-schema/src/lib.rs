@@ -35,6 +35,7 @@ pub enum NumericSchema {
     U128,
     I128,
     U256(Infallible),
+    I256(Infallible),
     NzU8,
     NzU16,
     NzU32,
