@@ -340,15 +340,20 @@ impl<T: AbstractValue> ToOutput for ValueOption<T> {
 
 impl<T: AbstractValue + InlineOutput> InlineOutput for ValueOption<T> {}
 
-impl<T: AbstractValue<Schema: OptionSchema>> AbstractValue for ValueOption<T> {
-    type Schema = T::Schema;
-
-    fn schema(&self) -> Self::Schema {
+impl<T: AbstractValue> ValueOption<T> {
+    pub fn inner_schema(&self) -> Arc<T::Schema> {
         match self {
             Self::None(schema) => schema.clone(),
             Self::Some(value) => Arc::new(value.schema()),
         }
-        .option()
+    }
+}
+
+impl<T: AbstractValue<Schema: OptionSchema>> AbstractValue for ValueOption<T> {
+    type Schema = T::Schema;
+
+    fn schema(&self) -> Self::Schema {
+        self.inner_schema().option()
     }
 }
 
