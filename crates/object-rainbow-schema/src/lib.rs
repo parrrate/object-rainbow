@@ -88,8 +88,8 @@ impl AbstractSchema for ArraySchema {
 }
 
 impl From<ArraySchema> for InlineSchema {
-    fn from(ArraySchema { len, schema }: ArraySchema) -> Self {
-        Self::Array(schema, len)
+    fn from(schema: ArraySchema) -> Self {
+        Self::Array(schema)
     }
 }
 
@@ -107,7 +107,7 @@ pub enum InlineSchema {
     ),
     Nt(Arc<Self>),
     Concat(Arc<Self>, Arc<Self>),
-    Array(Arc<Self>, u64),
+    Array(ArraySchema),
 }
 
 impl InlineOutput for InlineSchema {}
@@ -437,7 +437,7 @@ impl AbstractSchema for InlineSchema {
             Self::Point(_) => SchemaNiche::PointNiche(u128::MAX),
             Self::Nt(schema) => Self::Option(schema.clone()).niche(),
             Self::Concat(a, b) => SchemaNiche::concat(Arc::new(a.niche()), Arc::new(b.niche())),
-            Self::Array(schema, n) => schema.niche().repeat(*n),
+            Self::Array(schema) => schema.niche(),
         }
     }
 }
@@ -593,8 +593,8 @@ where
                 input.parse_inline_extra(a.clone())?,
                 input.parse_inline_extra(b.clone())?,
             ),
-            InlineSchema::Array(schema, n) => {
-                Self::Array(input.parse_inline_extra((schema.clone(), *n))?)
+            InlineSchema::Array(ArraySchema { len, schema }) => {
+                Self::Array(input.parse_inline_extra((schema.clone(), *len))?)
             }
         })
     }
