@@ -108,6 +108,10 @@ pub enum InlineValue {
 
 impl InlineOutput for InlineValue {}
 
+pub enum TailValue {
+    Cut,
+}
+
 #[derive(Clone)]
 pub enum SchemaNiche {
     Zeroes(usize),
