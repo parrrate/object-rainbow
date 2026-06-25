@@ -104,7 +104,7 @@ pub enum InlineValue {
     Option(ValueOption<Self>),
     #[cfg(feature = "point")]
     Point(ValuePoint),
-    Nt(Arc<ValueNt>),
+    Nt(ValueNt),
     Concat(Arc<Self>, Arc<Self>),
 }
 
