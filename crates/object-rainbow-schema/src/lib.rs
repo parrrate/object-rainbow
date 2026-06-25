@@ -92,6 +92,18 @@ impl SchemaNiche {
             Self::PointNiche(_) => false,
         }
     }
+
+    pub fn concat(a: Arc<Self>, b: Arc<Self>) -> Self {
+        if a.needs_tag() {
+            if b.needs_tag() {
+                Self::NoNiche2(a, b)
+            } else {
+                Self::AndNiche(a, b)
+            }
+        } else {
+            Self::NicheAnd(a, b)
+        }
+    }
 }
 
 impl Schema {
