@@ -8,6 +8,7 @@ use object_rainbow_point::Point;
 
 use crate::{AbstractValue, InlineSchema, TailSchema, TailValue};
 
+#[derive(ToOutput)]
 pub struct PointSchema {
     pub schema: Arc<TailSchema>,
 }
