@@ -351,6 +351,12 @@ where
     }
 }
 
+impl From<ValueArray> for InlineValue {
+    fn from(value: ValueArray) -> Self {
+        Self::Array(value)
+    }
+}
+
 #[derive(ListHashes, Topological)]
 pub struct ValueSequence {
     pub items: Vec<Arc<InlineValue>>,
