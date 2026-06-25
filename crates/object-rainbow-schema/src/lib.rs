@@ -483,7 +483,6 @@ impl<I: PointInput<Extra = Arc<InlineSchema>, WithExtra<Arc<InlineSchema>> = I>>
     for InlineValue
 where
     ValuePoint: ParseInline<I::WithExtra<Arc<TailSchema>>>,
-    ValueOption<Self>: ParseInline<I>,
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let schema = input.extra().clone();
