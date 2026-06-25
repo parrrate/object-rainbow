@@ -70,6 +70,16 @@ pub enum Value {
 
 impl InlineOutput for Value {}
 
+pub enum SchemaNiche {
+    Zeroes(usize),
+    ZeroNoNiche(usize),
+    DecrByte(u8),
+    AndNiche(Arc<Self>, Arc<Self>),
+    NicheAnd(Arc<Self>, Arc<Self>),
+    NoNiche2(Arc<Self>, Arc<Self>),
+    PointNiche(u128),
+}
+
 impl Schema {
     pub fn none(&self, n: usize, output: &mut impl Output) {
         match self {
