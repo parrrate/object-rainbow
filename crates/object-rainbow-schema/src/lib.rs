@@ -87,6 +87,12 @@ pub struct ValueArray {
     pub schema: Arc<InlineSchema>,
 }
 
+impl ToOutput for ValueArray {
+    fn to_output(&self, output: &mut impl Output) {
+        self.items.to_output(output);
+    }
+}
+
 pub struct ValueSequence {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
