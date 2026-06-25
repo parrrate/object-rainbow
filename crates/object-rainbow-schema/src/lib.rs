@@ -184,10 +184,13 @@ impl InlineOutput for ValueArray {}
 impl Tagged for ValueArray {}
 
 impl AbstractValue for ValueArray {
-    type Schema = InlineSchema;
+    type Schema = ArraySchema;
 
     fn schema(&self) -> Self::Schema {
-        InlineSchema::Array(self.schema.clone(), self.items.len() as _)
+        ArraySchema {
+            length: self.items.len() as _,
+            schema: self.schema.clone(),
+        }
     }
 }
 
@@ -447,7 +450,7 @@ impl AbstractValue for InlineValue {
             Self::Point(p) => p.schema(),
             Self::Nt(nt) => nt.schema(),
             Self::Concat(a, b) => InlineSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
-            Self::Array(a) => a.schema(),
+            Self::Array(a) => a.schema().into(),
         }
     }
 }
