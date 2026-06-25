@@ -224,6 +224,18 @@ impl SchemaNiche {
         }
     }
 
+    pub fn repeat(self, n: usize) -> Self {
+        if n == 0 {
+            Self::ZeroNoNiche(0)
+        } else if n == 1 || self.cut() {
+            self
+        } else if self.needs_tag() {
+            Self::Repeat(Arc::new(self), n)
+        } else {
+            Self::concat(Arc::new(self), Arc::new(Self::Cut))
+        }
+    }
+
     pub fn next(&self) -> Self {
         match self {
             Self::Zeroes(n) => Self::ZeroNoNiche(*n),
