@@ -1,14 +1,14 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    InlineOutput, ListHashes, Output, Parse, ParseAsInline, ParseInline, PointInput, Tagged,
-    ToOutput, Topological,
+    InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline, ParseInline, PointInput,
+    Tagged, ToOutput, Topological,
 };
 use object_rainbow_point::Point;
 
 use crate::{AbstractValue, InlineSchema, TailSchema, TailValue};
 
-#[derive(ToOutput, InlineOutput, Parse, ParseInline)]
+#[derive(ToOutput, InlineOutput, Parse, ParseInline, MaybeHasNiche)]
 pub struct PointSchema {
     pub schema: Arc<TailSchema>,
 }
