@@ -503,3 +503,22 @@ where
         })
     }
 }
+
+impl<I: PointInput<Extra = Arc<TailSchema>, WithExtra<Arc<TailSchema>> = I>> Parse<I> for TailValue
+where
+    InlineValue: ParseInline<I::WithExtra<Arc<InlineSchema>>>,
+    ValueOption<Self>: ParseInline<I>,
+{
+    fn parse(mut input: I) -> object_rainbow::Result<Self> {
+        let schema = input.extra().clone();
+        Ok(match &*schema {
+            TailSchema::Cut => Self::Cut,
+            TailSchema::Option(schema) => Self::Option(input.parse_extra(schema.clone())?),
+            TailSchema::Sequence(schema) => Self::Sequence(input.parse_extra(schema.clone())?),
+            TailSchema::Concat(a, b) => Self::Concat(
+                input.parse_inline_extra(a.clone())?,
+                input.parse_extra(b.clone())?,
+            ),
+        })
+    }
+}
