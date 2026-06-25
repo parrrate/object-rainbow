@@ -21,7 +21,7 @@ pub trait AbstractValue: ToOutput {
 }
 
 pub trait DefaultSchema<T: AbstractValue<Schema = Self>>: AbstractSchema {
-    fn default_value(&self) -> T;
+    fn default_value(&self) -> Option<T>;
 }
 
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone)]
@@ -81,8 +81,8 @@ impl AbstractSchema for NumericSchema {
 }
 
 impl DefaultSchema<NumericValue> for NumericSchema {
-    fn default_value(&self) -> NumericValue {
-        match self.clone() {
+    fn default_value(&self) -> Option<NumericValue> {
+        Some(match self.clone() {
             Self::U8 => NumericValue::U8(Default::default()),
             Self::I8 => NumericValue::I8(Default::default()),
             Self::U16 => NumericValue::U16(Default::default()),
@@ -102,7 +102,7 @@ impl DefaultSchema<NumericValue> for NumericSchema {
             Self::F64 => NumericValue::F64(Default::default()),
             Self::OpaqueChar => NumericValue::OpaqueChar(Default::default()),
             Self::OpaqueBool => NumericValue::OpaqueBool(Default::default()),
-        }
+        })
     }
 }
 
