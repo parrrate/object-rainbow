@@ -96,7 +96,7 @@ impl Schema {
             Self::Option(schema) => schema.needs_tag(n + 1),
             Self::Point(_) => false,
             Self::Nt(schema) => Self::Option(schema.clone()).needs_tag(n),
-            Self::Concat(schema, _) => schema.needs_tag(n),
+            Self::Concat(a, b) => a.needs_tag(n) && b.needs_tag(n),
         }
     }
 
