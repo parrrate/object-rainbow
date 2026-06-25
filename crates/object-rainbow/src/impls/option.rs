@@ -220,7 +220,7 @@ impl<
 > OptionParseBitInline<T, I> for B0
 {
     fn parse_option_inline(input: &mut I) -> crate::Result<Option<T>> {
-        input.parse_compare(&N::niche())
+        input.parse_compare_inline(&N::niche())
     }
 }
 
