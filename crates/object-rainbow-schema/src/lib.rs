@@ -114,6 +114,7 @@ impl InlineOutput for InlineValue {}
 #[rainbow(untagged)]
 pub enum TailValue {
     Cut,
+    Option(ValueOption<Self>),
     Sequence(ValueSequence),
     Concat(Arc<InlineValue>, Arc<Self>),
 }
@@ -305,6 +306,7 @@ impl AbstractValue for TailValue {
     fn schema(&self) -> Self::Schema {
         match self {
             Self::Cut => TailSchema::Cut,
+            Self::Option(o) => o.schema(),
             Self::Sequence(ValueSequence { schema, .. }) => TailSchema::Sequence(schema.clone()),
             Self::Concat(a, b) => TailSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
         }
