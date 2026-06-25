@@ -70,6 +70,7 @@ pub enum Value {
 
 impl InlineOutput for Value {}
 
+#[derive(Clone)]
 pub enum SchemaNiche {
     Zeroes(usize),
     ZeroNoNiche(usize),
