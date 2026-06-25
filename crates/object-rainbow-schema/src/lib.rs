@@ -92,6 +92,14 @@ impl ToOutput for ValueSequence {
     }
 }
 
+impl AbstractValue for ValueSequence {
+    type Schema = TailSchema;
+
+    fn schema(&self) -> Self::Schema {
+        TailSchema::Sequence(self.schema.clone())
+    }
+}
+
 pub struct ValuePoint {
     pub point: Point<InlineValue>,
     pub schema: Arc<InlineSchema>,
@@ -323,7 +331,7 @@ impl AbstractValue for TailValue {
         match self {
             Self::Cut => TailSchema::Cut,
             Self::Option(o) => o.schema(),
-            Self::Sequence(ValueSequence { schema, .. }) => TailSchema::Sequence(schema.clone()),
+            Self::Sequence(s) => s.schema(),
             Self::Concat(a, b) => TailSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
         }
     }
