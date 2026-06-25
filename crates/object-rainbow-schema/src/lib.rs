@@ -20,7 +20,7 @@ pub trait AbstractValue: ToOutput {
 #[enumtag("char")]
 #[niche(tag)]
 #[parse(unchecked)]
-pub enum Schema {
+pub enum InlineSchema {
     Never,
     Unit,
     Option(Arc<Self>),
@@ -32,8 +32,8 @@ pub enum Schema {
     Concat(Arc<Self>, Arc<Self>),
 }
 
-impl InlineOutput for Schema {}
-impl Tagged for Schema {}
+impl InlineOutput for InlineSchema {}
+impl Tagged for InlineSchema {}
 
 pub enum ValueOption<T: AbstractValue> {
     None(Arc<T::Schema>),
@@ -42,7 +42,7 @@ pub enum ValueOption<T: AbstractValue> {
 
 pub struct ValueNt {
     pub items: Nt<Vec<Arc<Value>>>,
-    pub schema: Arc<Schema>,
+    pub schema: Arc<InlineSchema>,
 }
 
 impl ToOutput for ValueNt {
@@ -55,7 +55,7 @@ impl InlineOutput for ValueNt {}
 
 pub struct ValuePoint {
     pub point: Point<Value>,
-    pub schema: Arc<Schema>,
+    pub schema: Arc<InlineSchema>,
 }
 
 impl ToOutput for ValuePoint {
@@ -168,7 +168,7 @@ impl SchemaNiche {
     }
 }
 
-impl AbstractSchema for Schema {
+impl AbstractSchema for InlineSchema {
     fn niche(&self) -> SchemaNiche {
         match self {
             Self::Never => SchemaNiche::Zeroes(0),
@@ -192,18 +192,18 @@ impl AbstractSchema for Schema {
 }
 
 impl AbstractValue for Value {
-    type Schema = Schema;
+    type Schema = InlineSchema;
     fn schema(&self) -> Self::Schema {
         match self {
-            Self::Unit => Schema::Unit,
-            Self::Option(o) => Schema::Option(match o {
+            Self::Unit => InlineSchema::Unit,
+            Self::Option(o) => InlineSchema::Option(match o {
                 ValueOption::None(schema) => schema.clone(),
                 ValueOption::Some(value) => Arc::new(value.schema()),
             }),
             #[cfg(feature = "point")]
-            Self::Point(ValuePoint { schema, .. }) => Schema::Point(schema.clone()),
-            Self::Nt(nt) => Schema::Nt(nt.schema.clone()),
-            Self::Concat(a, b) => Schema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
+            Self::Point(ValuePoint { schema, .. }) => InlineSchema::Point(schema.clone()),
+            Self::Nt(nt) => InlineSchema::Nt(nt.schema.clone()),
+            Self::Concat(a, b) => InlineSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
         }
     }
 }
