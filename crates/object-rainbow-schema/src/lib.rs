@@ -7,7 +7,7 @@ use object_rainbow::{
 #[cfg(feature = "point")]
 use object_rainbow_point::Point;
 
-pub trait AbstractSchema {
+pub trait AbstractSchema: ToOutput {
     fn niche(&self) -> SchemaNiche;
 }
 
