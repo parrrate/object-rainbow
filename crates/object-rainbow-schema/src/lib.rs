@@ -123,6 +123,7 @@ impl AbstractValue for ValueSequence {
     }
 }
 
+#[derive(ListHashes)]
 pub struct ValuePoint {
     pub point: Point<TailValue>,
     pub schema: Arc<TailSchema>,
