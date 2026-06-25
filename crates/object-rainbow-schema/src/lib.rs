@@ -402,21 +402,26 @@ where
     }
 }
 
+#[cfg(feature = "point")]
 #[derive(ListHashes, Topological, ParseAsInline)]
 pub struct ValuePoint {
     pub point: Point<Arc<TailValue>>,
     pub schema: Arc<TailSchema>,
 }
 
+#[cfg(feature = "point")]
 impl ToOutput for ValuePoint {
     fn to_output(&self, output: &mut impl Output) {
         self.point.to_output(output);
     }
 }
 
+#[cfg(feature = "point")]
 impl InlineOutput for ValuePoint {}
+#[cfg(feature = "point")]
 impl Tagged for ValuePoint {}
 
+#[cfg(feature = "point")]
 impl AbstractValue for ValuePoint {
     type Schema = InlineSchema;
 
@@ -425,6 +430,7 @@ impl AbstractValue for ValuePoint {
     }
 }
 
+#[cfg(feature = "point")]
 impl<I: PointInput<Extra = Arc<TailSchema>>> ParseInline<I> for ValuePoint {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let schema = input.extra().clone();
@@ -791,7 +797,10 @@ impl<I: PointInput<Extra = Arc<InlineSchema>, WithExtra<Arc<InlineSchema>> = I>>
             InlineSchema::Never => match input.parse_inline::<Infallible>()? {},
             InlineSchema::Unit => Self::Unit,
             InlineSchema::Option(schema) => Self::Option(input.parse_inline_extra(schema.clone())?),
+            #[cfg(feature = "point")]
             InlineSchema::Point(schema) => Self::Point(input.parse_inline_extra(schema.clone())?),
+            #[cfg(not(feature = "point"))]
+            InlineSchema::Point(i) => match *i {},
             InlineSchema::Nt(schema) => Self::Nt(input.parse_inline_extra(schema.clone())?),
             InlineSchema::Concat(a, b) => Self::Concat(
                 input.parse_inline_extra(a.clone())?,
