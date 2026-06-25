@@ -168,7 +168,7 @@ impl Schema {
                 let sub = schema.niche();
                 if sub.needs_tag() {
                     SchemaNiche::NicheAnd(
-                        Arc::new(SchemaNiche::DecrByte(253)),
+                        Arc::new(SchemaNiche::DecrByte(0xfd)),
                         Arc::new(SchemaNiche::Cut),
                     )
                 } else {
