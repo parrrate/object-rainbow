@@ -486,6 +486,14 @@ impl SchemaNiche {
         }
     }
 
+    pub fn stop(self) -> Self {
+        if self.cut() {
+            self
+        } else {
+            Self::concat(Arc::new(self), Arc::new(Self::Cut))
+        }
+    }
+
     pub fn repeat(self, n: u64) -> Self {
         if n == 0 {
             Self::ZeroNoNiche(0)
@@ -494,7 +502,7 @@ impl SchemaNiche {
         } else if self.needs_tag() {
             Self::Repeat(Arc::new(self), n)
         } else {
-            Self::concat(Arc::new(self), Arc::new(Self::Cut))
+            self.stop()
         }
     }
 
@@ -516,7 +524,7 @@ impl SchemaNiche {
 
     pub fn option(&self) -> Self {
         if self.needs_tag() {
-            Self::NicheAnd(Arc::new(Self::DecrByte(0xfd)), Arc::new(Self::Cut))
+            Self::DecrByte(0xfd).stop()
         } else {
             self.next()
         }
