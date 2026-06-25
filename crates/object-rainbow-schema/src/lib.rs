@@ -11,7 +11,7 @@ pub trait AbstractSchema {
     fn niche(&self) -> SchemaNiche;
 }
 
-pub trait AbstractValue {
+pub trait AbstractValue: ToOutput {
     type Schema: AbstractSchema;
     fn schema(&self) -> Self::Schema;
 }
