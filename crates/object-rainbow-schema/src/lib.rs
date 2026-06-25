@@ -73,6 +73,14 @@ impl ToOutput for ValueNt {
 
 impl InlineOutput for ValueNt {}
 
+impl AbstractValue for ValueNt {
+    type Schema = InlineSchema;
+
+    fn schema(&self) -> Self::Schema {
+        InlineSchema::Nt(self.schema.clone())
+    }
+}
+
 pub struct ValueSequence {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
@@ -251,7 +259,7 @@ impl AbstractValue for InlineValue {
             Self::Option(o) => o.schema(),
             #[cfg(feature = "point")]
             Self::Point(p) => p.schema(),
-            Self::Nt(ValueNt { schema, .. }) => InlineSchema::Nt(schema.clone()),
+            Self::Nt(nt) => nt.schema(),
             Self::Concat(a, b) => InlineSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
         }
     }
