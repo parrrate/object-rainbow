@@ -35,9 +35,9 @@ pub enum Schema {
 impl InlineOutput for Schema {}
 impl Tagged for Schema {}
 
-pub enum ValueOption {
-    None(Arc<Schema>),
-    Some(Arc<Value>),
+pub enum ValueOption<T: AbstractValue> {
+    None(Arc<T::Schema>),
+    Some(Arc<T>),
 }
 
 pub struct ValueNt {
@@ -70,7 +70,7 @@ impl InlineOutput for ValuePoint {}
 #[rainbow(untagged)]
 pub enum Value {
     Unit,
-    Option(ValueOption),
+    Option(ValueOption<Self>),
     #[cfg(feature = "point")]
     Point(ValuePoint),
     Nt(Arc<ValueNt>),
@@ -208,7 +208,7 @@ impl AbstractValue for Value {
     }
 }
 
-impl ToOutput for ValueOption {
+impl<T: AbstractValue> ToOutput for ValueOption<T> {
     fn to_output(&self, output: &mut impl Output) {
         match self {
             Self::None(schema) => {
