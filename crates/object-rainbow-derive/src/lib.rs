@@ -330,7 +330,7 @@ fn bounds_inline_output(mut generics: Generics, data: &Data) -> syn::Result<Gene
 ///     {}
 /// );
 /// ```
-#[proc_macro_derive(ListHashes, attributes(topology))]
+#[proc_macro_derive(ListHashes, attributes(topology, rainbow))]
 pub fn derive_list_hashes(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
@@ -340,7 +340,7 @@ pub fn derive_list_hashes(input: TokenStream) -> TokenStream {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let list_hashes = gen_list_hashes(&input.data);
+    let list_hashes = gen_list_hashes(&input.data, &input.attrs);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
     let target = parse_for(&name, &input.attrs);
     let output = quote! {
@@ -431,7 +431,11 @@ fn fields_list_hashes(fields: &syn::Fields) -> proc_macro2::TokenStream {
     }
 }
 
-fn gen_list_hashes(data: &Data) -> proc_macro2::TokenStream {
+fn gen_list_hashes(data: &Data, attrs: &[Attribute]) -> proc_macro2::TokenStream {
+    let untagged = match parse_untagged(attrs) {
+        Ok(untagged) => untagged,
+        Err(e) => return e.into_compile_error(),
+    };
     match data {
         Data::Struct(data) => {
             let arm = fields_list_hashes(&data.fields);
@@ -447,10 +451,17 @@ fn gen_list_hashes(data: &Data) -> proc_macro2::TokenStream {
                 let arm = fields_list_hashes(&v.fields);
                 quote! { Self::#ident #arm }
             });
+            let tagged = if untagged.is_none() {
+                quote! {
+                    let kind = ::object_rainbow::Enum::kind(self);
+                    let tag = ::object_rainbow::enumkind::EnumKind::to_tag(kind);
+                    tag.list_hashes(visitor);
+                }
+            } else {
+                quote! {}
+            };
             quote! {
-                let kind = ::object_rainbow::Enum::kind(self);
-                let tag = ::object_rainbow::enumkind::EnumKind::to_tag(kind);
-                tag.list_hashes(visitor);
+                #tagged;
                 match self {
                     #(#to_output)*
                 }
