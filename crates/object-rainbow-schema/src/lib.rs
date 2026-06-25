@@ -59,6 +59,14 @@ pub enum ValueOption<T: AbstractValue> {
     Some(Arc<T>),
 }
 
+impl<T: AbstractValue + ListHashes> ListHashes for ValueOption<T> {
+    fn list_hashes(&self, f: &mut impl FnMut(object_rainbow::Hash)) {
+        if let Self::Some(value) = self {
+            value.list_hashes(f);
+        }
+    }
+}
+
 #[derive(ParseAsInline)]
 pub struct ValueNt {
     pub items: Vec<Arc<InlineValue>>,
