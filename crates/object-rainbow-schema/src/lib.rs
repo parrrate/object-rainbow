@@ -271,6 +271,7 @@ impl AbstractSchema for InlineSchema {
             Self::Point(_) => SchemaNiche::PointNiche(u128::MAX),
             Self::Nt(schema) => Self::Option(schema.clone()).niche(),
             Self::Concat(a, b) => SchemaNiche::concat(Arc::new(a.niche()), Arc::new(b.niche())),
+            Self::Array(schema, n) => schema.niche().repeat(*n),
         }
     }
 }
