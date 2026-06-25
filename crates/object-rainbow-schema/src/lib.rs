@@ -35,6 +35,17 @@ pub enum InlineSchema {
 impl InlineOutput for InlineSchema {}
 impl Tagged for InlineSchema {}
 
+#[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche)]
+#[enumtag("char")]
+#[niche(tag)]
+#[parse(unchecked)]
+pub enum TailSchema {
+    Sequence(Arc<InlineSchema>),
+}
+
+impl InlineOutput for TailSchema {}
+impl Tagged for TailSchema {}
+
 pub enum ValueOption<T: AbstractValue> {
     None(Arc<T::Schema>),
     Some(Arc<T>),
