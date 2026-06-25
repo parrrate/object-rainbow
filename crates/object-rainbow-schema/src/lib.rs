@@ -82,6 +82,11 @@ impl AbstractValue for ValueNt {
     }
 }
 
+pub struct ValueArray {
+    pub items: Vec<Arc<InlineValue>>,
+    pub schema: Arc<InlineSchema>,
+}
+
 pub struct ValueSequence {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
