@@ -73,6 +73,12 @@ pub struct ArraySchema {
     pub schema: Arc<InlineSchema>,
 }
 
+impl AbstractSchema for ArraySchema {
+    fn niche(&self) -> SchemaNiche {
+        self.schema.niche().repeat(self.length)
+    }
+}
+
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological)]
 #[enumtag("char")]
 #[niche(tag)]
