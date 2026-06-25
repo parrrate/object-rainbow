@@ -74,6 +74,12 @@ pub struct ValueSequence {
     pub schema: Arc<InlineSchema>,
 }
 
+impl ToOutput for ValueSequence {
+    fn to_output(&self, output: &mut impl Output) {
+        self.items.to_output(output);
+    }
+}
+
 pub struct ValuePoint {
     pub point: Point<Value>,
     pub schema: Arc<InlineSchema>,
