@@ -153,6 +153,7 @@ pub enum SchemaNiche {
     NoNiche2(Arc<Self>, Arc<Self>),
     PointNiche(u128),
     Cut,
+    Repeat(Arc<Self>, usize),
 }
 
 impl ToOutput for SchemaNiche {
@@ -169,6 +170,11 @@ impl ToOutput for SchemaNiche {
                 n.to_output(output);
             }
             Self::Cut => {}
+            Self::Repeat(niche, n) => {
+                for _ in 0..*n {
+                    niche.to_output(output);
+                }
+            }
         }
     }
 }
@@ -186,6 +192,7 @@ impl SchemaNiche {
             Self::NoNiche2(_, _) => true,
             Self::PointNiche(_) => false,
             Self::Cut => true,
+            Self::Repeat(_, _) => true,
         }
     }
 
@@ -199,6 +206,7 @@ impl SchemaNiche {
             Self::NoNiche2(a, b) => !a.cut() && !b.cut(),
             Self::PointNiche(_) => false,
             Self::Cut => true,
+            Self::Repeat(_, _) => false,
         }
     }
 
@@ -228,6 +236,7 @@ impl SchemaNiche {
             Self::PointNiche(0) => Self::ZeroNoNiche(32),
             Self::PointNiche(n) => Self::PointNiche(*n - 1),
             Self::Cut => Self::Cut,
+            Self::Repeat(niche, n) => Self::Repeat(niche.clone(), *n),
         }
     }
 
