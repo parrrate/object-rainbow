@@ -209,12 +209,6 @@ impl Schema {
             Self::Concat(a, b) => a.needs_tag(n) && b.needs_tag(n),
         }
     }
-
-    pub fn some_prefix(&self, output: &mut impl Output) {
-        if self.needs_tag(0) {
-            [0xffu8].to_output(output);
-        }
-    }
 }
 
 impl Value {
@@ -238,7 +232,9 @@ impl ToOutput for ValueOption {
         match self {
             Self::None(schema) => schema.none(0, output),
             Self::Some(value) => {
-                value.schema().some_prefix(output);
+                if value.schema().niche().needs_tag() {
+                    0xffu8.to_output(output);
+                }
                 value.to_output(output);
             }
         }
