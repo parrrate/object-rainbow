@@ -404,7 +404,7 @@ where
 
 #[derive(ListHashes, Topological, ParseAsInline)]
 pub struct ValuePoint {
-    pub point: Point<TailValue>,
+    pub point: Point<Arc<TailValue>>,
     pub schema: Arc<TailSchema>,
 }
 
