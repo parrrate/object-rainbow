@@ -138,6 +138,7 @@ where
     }
 }
 
+#[derive(ListHashes)]
 pub struct ValueSequence {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
