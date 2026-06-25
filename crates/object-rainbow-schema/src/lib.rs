@@ -494,7 +494,7 @@ where
             InlineSchema::Point(schema) => Self::Point(input.parse_inline_extra(schema.clone())?),
             InlineSchema::Nt(schema) => Self::Nt(input.parse_inline_extra(schema.clone())?),
             InlineSchema::Concat(a, b) => Self::Concat(
-                Arc::new(input.parse_inline_extra(a.clone())?),
+                input.parse_inline_extra(a.clone())?,
                 input.parse_inline_extra(b.clone())?,
             ),
             InlineSchema::Array(schema, n) => {
