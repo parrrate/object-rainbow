@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(Enum)]
+#[derive(Enum, ToOutput)]
 pub enum CollectionSchema {
     Amt(
         #[cfg(feature = "amt")] (Arc<InlineSchema>, Arc<InlineSchema>),
