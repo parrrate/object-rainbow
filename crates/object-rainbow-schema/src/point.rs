@@ -4,10 +4,11 @@ use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline, ParseInline, PointInput,
     Tagged, ToOutput, Topological,
 };
-use object_rainbow_point::Point;
+use object_rainbow_point::{IntoPoint, Point};
 
 use crate::{
-    AbstractSchema, AbstractValue, InlineSchema, InlineValue, SchemaNiche, TailSchema, TailValue,
+    AbstractSchema, AbstractValue, DefaultSchema, InlineSchema, InlineValue, SchemaNiche,
+    TailSchema, TailValue,
 };
 
 #[derive(
@@ -28,6 +29,15 @@ pub struct PointSchema {
 impl AbstractSchema for PointSchema {
     fn niche(&self) -> SchemaNiche {
         SchemaNiche::PointNiche(u128::MAX)
+    }
+}
+
+impl DefaultSchema<ValuePoint> for PointSchema {
+    fn default_value(&self) -> Option<ValuePoint> {
+        Some(ValuePoint {
+            point: Arc::new(self.schema.default_value()?).point(),
+            schema: self.schema.clone(),
+        })
     }
 }
 

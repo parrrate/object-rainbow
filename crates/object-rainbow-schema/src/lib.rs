@@ -4,11 +4,9 @@ use object_rainbow::{
     Enum, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline, ParseInline,
     PointInput, ReflessInline, Tagged, ToOutput, Topological, Traversible,
 };
-#[cfg(feature = "point")]
-use object_rainbow_point::IntoPoint;
 
 #[cfg(feature = "point")]
-use self::point::ValuePoint;
+use self::point::{PointSchema, ValuePoint};
 
 #[cfg(feature = "point")]
 pub mod point;
@@ -589,10 +587,11 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             Self::Unit => Some(InlineValue::Unit),
             Self::Option(schema) => Some(InlineValue::Option(ValueOption::None(schema.clone()))),
             #[cfg(feature = "point")]
-            Self::Point(schema) => Some(InlineValue::Point(ValuePoint {
-                point: Arc::new(schema.default_value()?).point(),
+            Self::Point(schema) => PointSchema {
                 schema: schema.clone(),
-            })),
+            }
+            .default_value()
+            .map(From::from),
             #[cfg(not(feature = "point"))]
             Self::Point(_) => None,
             Self::Nt(schema) => Some(InlineValue::Nt(ValueNt {
