@@ -79,6 +79,12 @@ impl AbstractSchema for ArraySchema {
     }
 }
 
+impl From<ArraySchema> for InlineSchema {
+    fn from(ArraySchema { length, schema }: ArraySchema) -> Self {
+        Self::Array(schema, length)
+    }
+}
+
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological)]
 #[enumtag("char")]
 #[niche(tag)]
