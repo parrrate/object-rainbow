@@ -65,7 +65,7 @@ impl<I: PointInput<Extra = NumericSchema>> ParseInline<I> for NumericValue {
     }
 }
 
-#[derive(ToOutput, InlineOutput)]
+#[derive(ToOutput, InlineOutput, Parse)]
 pub struct ArraySchema {
     pub length: u64,
     pub schema: Arc<InlineSchema>,
