@@ -44,6 +44,7 @@ impl Tagged for InlineSchema {}
 #[parse(unchecked)]
 pub enum TailSchema {
     Cut,
+    Option(Arc<Self>),
     Sequence(Arc<InlineSchema>),
     Concat(Arc<InlineSchema>, Arc<Self>),
 }
@@ -286,6 +287,7 @@ impl AbstractSchema for TailSchema {
     fn niche(&self) -> SchemaNiche {
         match self {
             Self::Cut => SchemaNiche::Cut,
+            Self::Option(schema) => schema.niche().option(),
             Self::Sequence(_) => SchemaNiche::Cut,
             Self::Concat(a, b) => SchemaNiche::concat(Arc::new(a.niche()), Arc::new(b.niche())),
         }
