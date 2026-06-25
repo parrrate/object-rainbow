@@ -945,6 +945,10 @@ fn fields_tags(fields: &syn::Fields) -> Vec<proc_macro2::TokenStream> {
 }
 
 fn gen_tags(data: &Data, attrs: &[Attribute], errors: &mut Vec<Error>) -> proc_macro2::TokenStream {
+    let untagged = match parse_untagged(attrs) {
+        Ok(untagged) => untagged,
+        Err(e) => return e.into_compile_error(),
+    };
     match data {
         Data::Struct(data) => {
             let mut tags = Vec::new();
@@ -997,7 +1001,9 @@ fn gen_tags(data: &Data, attrs: &[Attribute], errors: &mut Vec<Error>) -> proc_m
                     as  ::object_rainbow::Tagged
                 >::TAGS
             };
-            nested.insert(0, kind_tags);
+            if untagged.is_none() {
+                nested.insert(0, kind_tags);
+            }
             if nested.len() == 1 && tags.is_empty() {
                 let nested = nested.into_iter().next().unwrap();
                 quote! {
