@@ -198,7 +198,7 @@ impl AbstractValue for ValuePoint {
     }
 }
 
-#[derive(ToOutput, ParseAsInline)]
+#[derive(ToOutput, ParseAsInline, ListHashes)]
 #[rainbow(untagged)]
 pub enum InlineValue {
     Unit,
