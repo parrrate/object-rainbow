@@ -180,23 +180,6 @@ impl Schema {
             Self::Concat(a, b) => SchemaNiche::concat(Arc::new(a.niche()), Arc::new(b.niche())),
         }
     }
-
-    pub fn none(&self, n: usize, output: &mut impl Output) {
-        match self {
-            Self::Never if n == 0 => {}
-            Self::Never => Self::Unit.none(n - 1, output),
-            Self::Unit => {
-                [254 - (n % 255) as u8].to_output(output);
-            }
-            Self::Option(schema) => schema.none(n + 1, output),
-            Self::Point(_) => {
-                0u128.to_output(output);
-                (u128::MAX - (n as u128)).to_output(output);
-            }
-            Self::Nt(schema) => Self::Option(schema.clone()).none(n, output),
-            Self::Concat(schema, _) => schema.none(n, output),
-        }
-    }
 }
 
 impl Value {
@@ -218,7 +201,14 @@ impl Value {
 impl ToOutput for ValueOption {
     fn to_output(&self, output: &mut impl Output) {
         match self {
-            Self::None(schema) => schema.none(0, output),
+            Self::None(schema) => {
+                let niche = schema.niche();
+                if niche.needs_tag() {
+                    0xfeu8.to_output(output);
+                } else {
+                    niche.to_output(output);
+                }
+            }
             Self::Some(value) => {
                 if value.schema().niche().needs_tag() {
                     0xffu8.to_output(output);
