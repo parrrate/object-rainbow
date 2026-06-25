@@ -193,6 +193,12 @@ impl<I: PointInput<Extra = NumericSchema>> ParseInline<I> for NumericValue {
     }
 }
 
+impl From<NumericValue> for InlineValue {
+    fn from(value: NumericValue) -> Self {
+        Self::Numeric(value)
+    }
+}
+
 #[derive(
     ToOutput,
     InlineOutput,
