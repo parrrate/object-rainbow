@@ -2,12 +2,12 @@ use std::sync::Arc;
 
 use object_rainbow::{
     Enum, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline, ParseInline,
-    PointInput, ReflessInline, Tagged, ToOutput, Topological,
+    PointInput, ReflessInline, Tagged, ToOutput, Topological, Traversible,
 };
 #[cfg(feature = "point")]
 use object_rainbow_point::Point;
 
-pub trait AbstractSchema: ReflessInline {
+pub trait AbstractSchema: ReflessInline + Traversible {
     fn niche(&self) -> SchemaNiche;
 }
 
