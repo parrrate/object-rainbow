@@ -261,6 +261,8 @@ impl<T: AbstractValue> ToOutput for ValueOption<T> {
     }
 }
 
+impl<T: AbstractValue + InlineOutput> InlineOutput for ValueOption<T> {}
+
 impl<T: AbstractValue<Schema: OptionSchema>> AbstractValue for ValueOption<T> {
     type Schema = T::Schema;
 
