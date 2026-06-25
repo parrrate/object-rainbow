@@ -13,3 +13,4 @@ Alisa Feistel maintains this list for herself, please do NOT treat this as an in
 - auto-inlining wrapper
 - generic `Trie` algorithms
 - type as value
+- `Option` instead of `bool` for `Apply` on sets, and add key to `Option` on maps
