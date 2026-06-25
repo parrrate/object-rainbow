@@ -63,7 +63,10 @@ pub struct ValueNt {
 
 impl ToOutput for ValueNt {
     fn to_output(&self, output: &mut impl Output) {
-        self.items.to_output(output);
+        for item in &self.items {
+            ValueOption::Some(item.clone()).to_output(output);
+        }
+        ValueOption::<Value>::None(self.schema.clone()).to_output(output);
     }
 }
 
