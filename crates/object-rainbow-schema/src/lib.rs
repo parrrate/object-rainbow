@@ -593,6 +593,27 @@ impl OptionSchema for InlineSchema {
     }
 }
 
+impl DefaultSchema<InlineValue> for InlineSchema {
+    fn default_value(&self) -> Option<InlineValue> {
+        match self {
+            Self::Never => None,
+            Self::Unit => Some(InlineValue::Unit),
+            Self::Option(schema) => Some(InlineValue::Option(ValueOption::None(schema.clone()))),
+            Self::Point(_) => None,
+            Self::Nt(schema) => Some(InlineValue::Nt(ValueNt {
+                items: Default::default(),
+                schema: schema.clone(),
+            })),
+            Self::Concat(a, b) => Some(InlineValue::Concat(
+                Arc::new(a.default_value()?),
+                Arc::new(b.default_value()?),
+            )),
+            Self::Array(_) => None,
+            Self::Numeric(schema) => schema.default_value().map(From::from),
+        }
+    }
+}
+
 impl AbstractValue for InlineValue {
     type Schema = InlineSchema;
     fn schema(&self) -> Self::Schema {
