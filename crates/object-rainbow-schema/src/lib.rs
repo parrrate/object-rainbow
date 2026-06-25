@@ -54,27 +54,11 @@ pub enum TailSchema {
 impl InlineOutput for TailSchema {}
 impl Tagged for TailSchema {}
 
-#[derive(ListHashes)]
+#[derive(ListHashes, Topological)]
 #[rainbow(untagged)]
 pub enum ValueOption<T: AbstractValue> {
     None(Arc<T::Schema>),
     Some(Arc<T>),
-}
-
-impl<T: AbstractValue + ListHashes> ListHashes for ValueOption<T> {
-    fn list_hashes(&self, f: &mut impl FnMut(object_rainbow::Hash)) {
-        if let Self::Some(value) = self {
-            value.list_hashes(f);
-        }
-    }
-}
-
-impl<T: AbstractValue + Topological> Topological for ValueOption<T> {
-    fn traverse(&self, visitor: &mut impl object_rainbow::PointVisitor) {
-        if let Self::Some(value) = self {
-            value.traverse(visitor);
-        }
-    }
 }
 
 #[derive(ParseAsInline)]
