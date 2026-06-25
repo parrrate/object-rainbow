@@ -44,13 +44,26 @@ impl ToOutput for ValueNt {
 
 impl InlineOutput for ValueNt {}
 
+pub struct ValuePoint {
+    pub point: Point<Value>,
+    pub schema: Arc<Schema>,
+}
+
+impl ToOutput for ValuePoint {
+    fn to_output(&self, output: &mut impl Output) {
+        self.point.to_output(output);
+    }
+}
+
+impl InlineOutput for ValuePoint {}
+
 #[derive(ToOutput)]
 #[rainbow(untagged)]
 pub enum Value {
     Unit,
     Option(ValueOption),
     #[cfg(feature = "point")]
-    Point(Point<Self>),
+    Point(ValuePoint),
     Nt(Arc<ValueNt>),
     Concat(Arc<Self>, Arc<Self>),
 }
