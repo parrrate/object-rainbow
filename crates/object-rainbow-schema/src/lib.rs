@@ -33,6 +33,8 @@ pub enum NumericValue {
     U8(u8),
 }
 
+impl InlineOutput for NumericValue {}
+
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological)]
 #[enumtag("char")]
 #[niche(tag)]
