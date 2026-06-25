@@ -11,7 +11,7 @@ pub trait AbstractSchema {
     fn niche(&self) -> SchemaNiche;
 }
 
-pub trait OptionSchema {
+pub trait OptionSchema: AbstractSchema {
     fn option(schema: Self) -> Self;
 }
 
