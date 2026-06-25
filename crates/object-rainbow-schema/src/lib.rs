@@ -33,6 +33,7 @@ pub enum InlineSchema {
     ),
     Nt(Arc<Self>),
     Concat(Arc<Self>, Arc<Self>),
+    Array(Arc<Self>, u32),
 }
 
 impl InlineOutput for InlineSchema {}
@@ -153,7 +154,7 @@ pub enum SchemaNiche {
     NoNiche2(Arc<Self>, Arc<Self>),
     PointNiche(u128),
     Cut,
-    Repeat(Arc<Self>, usize),
+    Repeat(Arc<Self>, u32),
 }
 
 impl ToOutput for SchemaNiche {
@@ -224,7 +225,7 @@ impl SchemaNiche {
         }
     }
 
-    pub fn repeat(self, n: usize) -> Self {
+    pub fn repeat(self, n: u32) -> Self {
         if n == 0 {
             Self::ZeroNoNiche(0)
         } else if n == 1 || self.cut() {
