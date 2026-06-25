@@ -97,6 +97,14 @@ impl ToOutput for ValuePoint {
 
 impl InlineOutput for ValuePoint {}
 
+impl AbstractValue for ValuePoint {
+    type Schema = InlineSchema;
+
+    fn schema(&self) -> Self::Schema {
+        InlineSchema::Point(self.schema.clone())
+    }
+}
+
 #[derive(ToOutput)]
 #[rainbow(untagged)]
 pub enum InlineValue {
@@ -242,7 +250,7 @@ impl AbstractValue for InlineValue {
             Self::Unit => InlineSchema::Unit,
             Self::Option(o) => o.schema(),
             #[cfg(feature = "point")]
-            Self::Point(ValuePoint { schema, .. }) => InlineSchema::Point(schema.clone()),
+            Self::Point(p) => p.schema(),
             Self::Nt(ValueNt { schema, .. }) => InlineSchema::Nt(schema.clone()),
             Self::Concat(a, b) => InlineSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
         }
