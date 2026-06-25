@@ -293,3 +293,9 @@ impl AbstractSchema for TailSchema {
         }
     }
 }
+
+impl OptionSchema for TailSchema {
+    fn option(self: Arc<Self>) -> Self {
+        Self::Option(self)
+    }
+}
