@@ -77,6 +77,7 @@ impl ToOutput for ValueNt {
 }
 
 impl InlineOutput for ValueNt {}
+impl Tagged for ValueNt {}
 
 impl AbstractValue for ValueNt {
     type Schema = InlineSchema;
