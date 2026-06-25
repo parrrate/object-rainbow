@@ -299,3 +299,14 @@ impl OptionSchema for TailSchema {
         Self::Option(self)
     }
 }
+
+impl AbstractValue for TailValue {
+    type Schema = TailSchema;
+    fn schema(&self) -> Self::Schema {
+        match self {
+            Self::Cut => TailSchema::Cut,
+            Self::Sequence(ValueSequence { schema, .. }) => TailSchema::Sequence(schema.clone()),
+            Self::Concat(a, b) => TailSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
+        }
+    }
+}
