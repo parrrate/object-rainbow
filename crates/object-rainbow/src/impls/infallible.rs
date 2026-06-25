@@ -11,6 +11,7 @@ impl ToOutput for Infallible {
 impl InlineOutput for Infallible {}
 impl Tagged for Infallible {}
 impl ListHashes for Infallible {}
+impl Topological for Infallible {}
 
 impl Size for Infallible {
     type Size = U0;
