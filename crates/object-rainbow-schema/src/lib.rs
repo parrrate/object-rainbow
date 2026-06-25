@@ -784,8 +784,6 @@ impl AbstractValue for TailValue {
 
 impl<I: PointInput<Extra = Arc<InlineSchema>, WithExtra<Arc<InlineSchema>> = I>> ParseInline<I>
     for InlineValue
-where
-    ValuePoint: ParseInline<I::WithExtra<Arc<TailSchema>>>,
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let schema = input.extra().clone();
