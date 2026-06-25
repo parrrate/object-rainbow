@@ -213,7 +213,7 @@ pub enum InlineValue {
 impl InlineOutput for InlineValue {}
 impl Tagged for InlineValue {}
 
-#[derive(ToOutput)]
+#[derive(ToOutput, ListHashes)]
 #[rainbow(untagged)]
 pub enum TailValue {
     Cut,
