@@ -5,7 +5,13 @@ use object_rainbow::{
     PointInput, ReflessInline, Tagged, ToOutput, Topological, Traversible,
 };
 #[cfg(feature = "point")]
-use object_rainbow_point::{IntoPoint, Point};
+use object_rainbow_point::IntoPoint;
+
+#[cfg(feature = "point")]
+use self::point::ValuePoint;
+
+#[cfg(feature = "point")]
+pub mod point;
 
 pub trait AbstractSchema: ReflessInline + Traversible {
     fn niche(&self) -> SchemaNiche;
@@ -397,45 +403,6 @@ where
         let schema = input.extra().clone();
         Ok(Self {
             items: input.parse()?,
-            schema,
-        })
-    }
-}
-
-#[cfg(feature = "point")]
-#[derive(ListHashes, Topological, ParseAsInline)]
-pub struct ValuePoint {
-    pub point: Point<Arc<TailValue>>,
-    pub schema: Arc<TailSchema>,
-}
-
-#[cfg(feature = "point")]
-impl ToOutput for ValuePoint {
-    fn to_output(&self, output: &mut impl Output) {
-        self.point.to_output(output);
-    }
-}
-
-#[cfg(feature = "point")]
-impl InlineOutput for ValuePoint {}
-#[cfg(feature = "point")]
-impl Tagged for ValuePoint {}
-
-#[cfg(feature = "point")]
-impl AbstractValue for ValuePoint {
-    type Schema = InlineSchema;
-
-    fn schema(&self) -> Self::Schema {
-        InlineSchema::Point(self.schema.clone())
-    }
-}
-
-#[cfg(feature = "point")]
-impl<I: PointInput<Extra = Arc<TailSchema>>> ParseInline<I> for ValuePoint {
-    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let schema = input.extra().clone();
-        Ok(Self {
-            point: input.parse_inline()?,
             schema,
         })
     }
