@@ -80,6 +80,20 @@ pub enum SchemaNiche {
     PointNiche(u128),
 }
 
+impl SchemaNiche {
+    pub fn needs_tag(&self) -> bool {
+        match self {
+            Self::Zeroes(_) => false,
+            Self::ZeroNoNiche(_) => true,
+            Self::DecrByte(_) => false,
+            Self::AndNiche(_, _) => false,
+            Self::NicheAnd(_, _) => false,
+            Self::NoNiche2(_, _) => true,
+            Self::PointNiche(_) => false,
+        }
+    }
+}
+
 impl Schema {
     pub fn none(&self, n: usize, output: &mut impl Output) {
         match self {
