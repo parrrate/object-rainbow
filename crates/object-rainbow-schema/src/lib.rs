@@ -137,7 +137,7 @@ impl SchemaNiche {
             Self::NicheAnd(_, _) => false,
             Self::NoNiche2(_, _) => true,
             Self::PointNiche(_) => false,
-            SchemaNiche::Cut => false,
+            Self::Cut => true,
         }
     }
 
