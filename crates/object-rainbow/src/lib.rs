@@ -1442,7 +1442,7 @@ pub trait ParseInput: Sized {
             self.empty()?;
             Ok(None)
         } else {
-            Ok(Some(self.split_parse(c.len())?))
+            Ok(Some(self.parse()?))
         }
     }
     fn parse_compare_inline<T: ParseInline<Self>>(&mut self, c: &[u8]) -> Result<Option<T>> {
