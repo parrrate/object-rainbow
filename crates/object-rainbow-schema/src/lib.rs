@@ -35,6 +35,7 @@ pub enum NumericSchema {
     U128,
     I128,
     NzU8,
+    NzU16,
 }
 
 impl InlineOutput for NumericSchema {}
@@ -49,6 +50,7 @@ impl AbstractSchema for NumericSchema {
             Self::U64 | Self::I64 => SchemaNiche::ZeroNoNiche(8),
             Self::U128 | Self::I128 => SchemaNiche::ZeroNoNiche(16),
             Self::NzU8 => SchemaNiche::Zeroes(1),
+            Self::NzU16 => SchemaNiche::Zeroes(2),
         }
     }
 }
@@ -73,6 +75,7 @@ pub enum NumericValue {
     U128(u128),
     I128(i128),
     NzU8(NonZero<u8>),
+    NzU16(NonZero<u16>),
 }
 
 impl AbstractValue for NumericValue {
@@ -91,6 +94,7 @@ impl AbstractValue for NumericValue {
             Self::U128(_) => NumericSchema::U128,
             Self::I128(_) => NumericSchema::I128,
             Self::NzU8(_) => NumericSchema::NzU8,
+            Self::NzU16(_) => NumericSchema::NzU16,
         }
     }
 }
@@ -112,6 +116,7 @@ impl<I: PointInput<Extra = NumericSchema>> ParseInline<I> for NumericValue {
             NumericSchema::U128 => Self::U128(input.parse_inline()?),
             NumericSchema::I128 => Self::I128(input.parse_inline()?),
             NumericSchema::NzU8 => Self::NzU8(input.parse_inline()?),
+            NumericSchema::NzU16 => Self::NzU16(input.parse_inline()?),
         })
     }
 }
