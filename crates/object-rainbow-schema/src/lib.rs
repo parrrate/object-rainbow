@@ -93,6 +93,8 @@ impl ToOutput for ValueArray {
     }
 }
 
+impl InlineOutput for ValueArray {}
+
 pub struct ValueSequence {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
