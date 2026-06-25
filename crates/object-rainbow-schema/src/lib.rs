@@ -59,6 +59,7 @@ pub enum ValueOption<T: AbstractValue> {
     Some(Arc<T>),
 }
 
+#[derive(ParseAsInline)]
 pub struct ValueNt {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
