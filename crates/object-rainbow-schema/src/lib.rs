@@ -83,6 +83,7 @@ impl AbstractValue for ValueNt {
     }
 }
 
+#[derive(ParseAsInline)]
 pub struct ValueArray {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
