@@ -12,4 +12,5 @@ object-rainbow.workspace = true
 object-rainbow-point = { workspace = true, optional = true }
 
 [features]
+collections = ["point"]
 point = ["dep:object-rainbow-point"]
