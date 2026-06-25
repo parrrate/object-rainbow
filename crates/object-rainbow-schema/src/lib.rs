@@ -204,6 +204,14 @@ impl SchemaNiche {
             Self::Cut => Self::Cut,
         }
     }
+
+    pub fn option(&self) -> Self {
+        if self.needs_tag() {
+            Self::NicheAnd(Arc::new(Self::DecrByte(0xfd)), Arc::new(Self::Cut))
+        } else {
+            self.next()
+        }
+    }
 }
 
 impl AbstractSchema for InlineSchema {
@@ -211,17 +219,7 @@ impl AbstractSchema for InlineSchema {
         match self {
             Self::Never => SchemaNiche::Zeroes(0),
             Self::Unit => SchemaNiche::ZeroNoNiche(0),
-            Self::Option(schema) => {
-                let sub = schema.niche();
-                if sub.needs_tag() {
-                    SchemaNiche::NicheAnd(
-                        Arc::new(SchemaNiche::DecrByte(0xfd)),
-                        Arc::new(SchemaNiche::Cut),
-                    )
-                } else {
-                    sub.next()
-                }
-            }
+            Self::Option(schema) => schema.niche().option(),
             Self::Point(_) => SchemaNiche::PointNiche(u128::MAX),
             Self::Nt(schema) => Self::Option(schema.clone()).niche(),
             Self::Concat(a, b) => SchemaNiche::concat(Arc::new(a.niche()), Arc::new(b.niche())),
