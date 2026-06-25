@@ -138,6 +138,19 @@ impl AbstractValue for ValueSequence {
     }
 }
 
+impl<I: PointInput<Extra = Arc<InlineSchema>>> Parse<I> for ValueSequence
+where
+    InlineValue: ParseInline<I>,
+{
+    fn parse(input: I) -> object_rainbow::Result<Self> {
+        let schema = input.extra().clone();
+        Ok(Self {
+            items: input.parse()?,
+            schema,
+        })
+    }
+}
+
 #[derive(ListHashes)]
 pub struct ValuePoint {
     pub point: Point<TailValue>,
