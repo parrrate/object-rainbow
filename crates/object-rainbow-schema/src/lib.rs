@@ -69,6 +69,11 @@ impl ToOutput for ValueNt {
 
 impl InlineOutput for ValueNt {}
 
+pub struct ValueSequence {
+    pub items: Vec<Arc<Value>>,
+    pub schema: Arc<InlineSchema>,
+}
+
 pub struct ValuePoint {
     pub point: Point<Value>,
     pub schema: Arc<InlineSchema>,
