@@ -20,6 +20,10 @@ pub trait AbstractValue: ToOutput {
     fn schema(&self) -> Self::Schema;
 }
 
+pub trait DefaultSchema<T: AbstractValue<Schema = Self>>: AbstractSchema {
+    fn default_value(&self) -> T;
+}
+
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone)]
 #[enumtag("char")]
 #[niche(tag)]
