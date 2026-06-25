@@ -28,7 +28,7 @@ pub enum InlineSchema {
     Unit,
     Option(Arc<Self>),
     Point(
-        #[cfg(feature = "point")] Arc<Self>,
+        #[cfg(feature = "point")] Arc<TailSchema>,
         #[cfg(not(feature = "point"))] std::convert::Infallible,
     ),
     Nt(Arc<Self>),
@@ -101,8 +101,8 @@ impl AbstractValue for ValueSequence {
 }
 
 pub struct ValuePoint {
-    pub point: Point<InlineValue>,
-    pub schema: Arc<InlineSchema>,
+    pub point: Point<TailValue>,
+    pub schema: Arc<TailSchema>,
 }
 
 impl ToOutput for ValuePoint {
