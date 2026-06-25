@@ -27,7 +27,9 @@ pub enum NumericSchema {
     U8,
 }
 
-pub enum NumericValue {}
+pub enum NumericValue {
+    U8(u8),
+}
 
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological)]
 #[enumtag("char")]
