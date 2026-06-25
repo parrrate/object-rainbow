@@ -222,6 +222,8 @@ pub enum TailValue {
     Concat(Arc<InlineValue>, Arc<Self>),
 }
 
+impl Tagged for TailValue {}
+
 #[derive(Clone)]
 pub enum SchemaNiche {
     Zeroes(usize),
