@@ -199,6 +199,7 @@ pub enum InlineValue {
     Point(ValuePoint),
     Nt(ValueNt),
     Concat(Arc<Self>, Arc<Self>),
+    Array(ValueArray),
 }
 
 impl InlineOutput for InlineValue {}
@@ -360,6 +361,7 @@ impl AbstractValue for InlineValue {
             Self::Point(p) => p.schema(),
             Self::Nt(nt) => nt.schema(),
             Self::Concat(a, b) => InlineSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
+            Self::Array(a) => a.schema(),
         }
     }
 }
