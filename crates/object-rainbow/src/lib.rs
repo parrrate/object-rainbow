@@ -1444,6 +1444,14 @@ pub trait ParseInput: Sized {
             Ok(Some(self.split_parse(c.len())?))
         }
     }
+    fn parse_compare_inline<T: ParseInline<Self>>(&mut self, c: &[u8]) -> Result<Option<T>> {
+        if self.compare_ahead(c)? {
+            self.skip_n(c.len())?;
+            Ok(None)
+        } else {
+            Ok(Some(self.parse_inline()?))
+        }
+    }
     fn parse_all(self) -> crate::Result<Self::Data>;
     fn empty(self) -> crate::Result<()>;
     fn non_empty(self) -> crate::Result<Option<Self>>;
