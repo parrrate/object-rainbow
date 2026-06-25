@@ -79,6 +79,7 @@ pub enum SchemaNiche {
     NicheAnd(Arc<Self>, Arc<Self>),
     NoNiche2(Arc<Self>, Arc<Self>),
     PointNiche(u128),
+    Cut,
 }
 
 impl SchemaNiche {
@@ -91,6 +92,7 @@ impl SchemaNiche {
             Self::NicheAnd(_, _) => false,
             Self::NoNiche2(_, _) => true,
             Self::PointNiche(_) => false,
+            SchemaNiche::Cut => false,
         }
     }
 
@@ -103,6 +105,7 @@ impl SchemaNiche {
             Self::NicheAnd(a, b) => !a.cut() && !b.cut(),
             Self::NoNiche2(a, b) => !a.cut() && !b.cut(),
             Self::PointNiche(_) => false,
+            Self::Cut => true,
         }
     }
 
@@ -131,6 +134,7 @@ impl SchemaNiche {
             Self::NoNiche2(a, b) => Self::NoNiche2(a.clone(), b.clone()),
             Self::PointNiche(0) => Self::ZeroNoNiche(32),
             Self::PointNiche(n) => Self::PointNiche(*n - 1),
+            Self::Cut => Self::Cut,
         }
     }
 }
@@ -143,7 +147,10 @@ impl Schema {
             Self::Option(schema) => {
                 let sub = schema.niche();
                 if sub.needs_tag() {
-                    SchemaNiche::DecrByte(253)
+                    SchemaNiche::NicheAnd(
+                        Arc::new(SchemaNiche::DecrByte(253)),
+                        Arc::new(SchemaNiche::Cut),
+                    )
                 } else {
                     sub.next()
                 }
