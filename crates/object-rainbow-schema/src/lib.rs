@@ -44,6 +44,16 @@ pub enum NumericValue {
     U8(u8),
 }
 
+impl AbstractValue for NumericValue {
+    type Schema = NumericSchema;
+
+    fn schema(&self) -> Self::Schema {
+        match self {
+            Self::U8(_) => NumericSchema::U8,
+        }
+    }
+}
+
 impl InlineOutput for NumericValue {}
 impl Tagged for NumericValue {}
 
