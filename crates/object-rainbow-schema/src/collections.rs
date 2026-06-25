@@ -9,3 +9,4 @@ pub enum CollectionSchema {
 }
 
 impl InlineOutput for CollectionSchema {}
+impl Tagged for CollectionSchema {}
