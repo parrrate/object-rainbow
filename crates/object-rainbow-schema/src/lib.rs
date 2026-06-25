@@ -105,6 +105,20 @@ impl AbstractValue for ValueArray {
     }
 }
 
+impl<I: PointInput<Extra = (Arc<InlineSchema>, u64)>> ParseInline<I> for ValueArray
+where
+    InlineValue: ParseInline<I::WithExtra<Arc<InlineSchema>>>,
+{
+    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
+        let (schema, n) = input.extra().clone();
+        let mut items = Vec::new();
+        for _ in 0..n {
+            items.push(input.parse_inline_extra(schema.clone())?);
+        }
+        Ok(Self { items, schema })
+    }
+}
+
 pub struct ValueSequence {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
