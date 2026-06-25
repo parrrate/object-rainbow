@@ -116,6 +116,7 @@ impl ToOutput for ValueArray {
 }
 
 impl InlineOutput for ValueArray {}
+impl Tagged for ValueArray {}
 
 impl AbstractValue for ValueArray {
     type Schema = InlineSchema;
