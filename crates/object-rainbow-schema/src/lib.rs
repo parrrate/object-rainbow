@@ -20,7 +20,7 @@ pub trait AbstractValue: ToOutput {
     fn schema(&self) -> Self::Schema;
 }
 
-#[derive(Enum)]
+#[derive(Enum, ToOutput)]
 pub enum NumericSchema {
     U8,
 }
