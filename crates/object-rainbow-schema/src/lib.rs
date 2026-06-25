@@ -37,6 +37,7 @@ pub enum NumericValue {
 }
 
 impl InlineOutput for NumericValue {}
+impl Tagged for NumericValue {}
 
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological)]
 #[enumtag("char")]
