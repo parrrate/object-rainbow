@@ -6,7 +6,7 @@ use object_rainbow::{
 };
 use object_rainbow_point::Point;
 
-use crate::{AbstractValue, InlineSchema, TailSchema, TailValue};
+use crate::{AbstractSchema, AbstractValue, InlineSchema, SchemaNiche, TailSchema, TailValue};
 
 #[derive(
     ToOutput,
@@ -21,6 +21,12 @@ use crate::{AbstractValue, InlineSchema, TailSchema, TailValue};
 )]
 pub struct PointSchema {
     pub schema: Arc<TailSchema>,
+}
+
+impl AbstractSchema for PointSchema {
+    fn niche(&self) -> SchemaNiche {
+        SchemaNiche::PointNiche(u128::MAX)
+    }
 }
 
 #[derive(ListHashes, Topological, ParseAsInline)]
