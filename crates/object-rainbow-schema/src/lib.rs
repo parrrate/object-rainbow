@@ -104,6 +104,20 @@ impl SchemaNiche {
             Self::NicheAnd(a, b)
         }
     }
+
+    pub fn next(&self) -> Self {
+        match self {
+            Self::Zeroes(n) => Self::ZeroNoNiche(*n),
+            Self::ZeroNoNiche(n) => Self::ZeroNoNiche(*n),
+            Self::DecrByte(0) => Self::ZeroNoNiche(1),
+            Self::DecrByte(n) => Self::DecrByte(*n - 1),
+            Self::AndNiche(a, b) => Self::concat(a.clone(), Arc::new(b.next())),
+            Self::NicheAnd(a, b) => Self::concat(Arc::new(a.next()), b.clone()),
+            Self::NoNiche2(a, b) => Self::NoNiche2(a.clone(), b.clone()),
+            Self::PointNiche(0) => Self::ZeroNoNiche(32),
+            Self::PointNiche(n) => Self::PointNiche(*n - 1),
+        }
+    }
 }
 
 impl Schema {
