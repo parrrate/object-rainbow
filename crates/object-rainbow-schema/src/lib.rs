@@ -95,6 +95,14 @@ impl ToOutput for ValueArray {
 
 impl InlineOutput for ValueArray {}
 
+impl AbstractValue for ValueArray {
+    type Schema = InlineSchema;
+
+    fn schema(&self) -> Self::Schema {
+        InlineSchema::Array(self.schema.clone(), self.items.len() as _)
+    }
+}
+
 pub struct ValueSequence {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
