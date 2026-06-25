@@ -41,6 +41,7 @@ impl Tagged for InlineSchema {}
 #[parse(unchecked)]
 pub enum TailSchema {
     Sequence(Arc<InlineSchema>),
+    Concat(Arc<InlineSchema>, Arc<Self>),
 }
 
 impl InlineOutput for TailSchema {}
