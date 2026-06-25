@@ -28,6 +28,7 @@ pub enum NumericSchema {
 }
 
 impl InlineOutput for NumericSchema {}
+impl Tagged for NumericSchema {}
 
 #[derive(ToOutput)]
 #[rainbow(untagged)]
