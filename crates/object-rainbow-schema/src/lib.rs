@@ -202,12 +202,12 @@ impl AbstractValue for ValueArray {
     }
 }
 
-impl<I: PointInput<Extra = (Arc<InlineSchema>, u64)>> ParseInline<I> for ValueArray
+impl<I: PointInput<Extra = ArraySchema>> ParseInline<I> for ValueArray
 where
     InlineValue: ParseInline<I::WithExtra<Arc<InlineSchema>>>,
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let (schema, len) = input.extra().clone();
+        let ArraySchema { len, schema } = input.extra().clone();
         let mut items = Vec::new();
         for _ in 0..len {
             items.push(input.parse_inline_extra(schema.clone())?);
@@ -593,9 +593,7 @@ where
                 input.parse_inline_extra(a.clone())?,
                 input.parse_inline_extra(b.clone())?,
             ),
-            InlineSchema::Array(ArraySchema { len, schema }) => {
-                Self::Array(input.parse_inline_extra((schema.clone(), *len))?)
-            }
+            InlineSchema::Array(schema) => Self::Array(input.parse_inline_extra(schema.clone())?),
         })
     }
 }
