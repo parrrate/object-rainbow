@@ -108,17 +108,17 @@ impl Schema {
 }
 
 impl Value {
-    pub fn niche_schema(&self) -> Schema {
+    pub fn schema(&self) -> Schema {
         match self {
             Self::Unit => Schema::Unit,
             Self::Option(o) => Schema::Option(match o {
                 ValueOption::None(schema) => schema.clone(),
-                ValueOption::Some(value) => Arc::new(value.niche_schema()),
+                ValueOption::Some(value) => Arc::new(value.schema()),
             }),
             #[cfg(feature = "point")]
-            Self::Point(_) => Schema::Point(Arc::new(Schema::Unit)),
+            Self::Point(ValuePoint { schema, .. }) => Schema::Point(schema.clone()),
             Self::Nt(nt) => Schema::Nt(nt.schema.clone()),
-            Self::Concat(value, _) => value.niche_schema(),
+            Self::Concat(a, b) => Schema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
         }
     }
 }
@@ -128,7 +128,7 @@ impl ToOutput for ValueOption {
         match self {
             Self::None(schema) => schema.none(0, output),
             Self::Some(value) => {
-                value.niche_schema().some_prefix(output);
+                value.schema().some_prefix(output);
                 value.to_output(output);
             }
         }
