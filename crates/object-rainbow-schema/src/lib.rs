@@ -69,19 +69,19 @@ impl<I: PointInput<Extra = NumericSchema>> ParseInline<I> for NumericValue {
     ToOutput, InlineOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Tagged,
 )]
 pub struct ArraySchema {
-    pub length: u64,
+    pub len: u64,
     pub schema: Arc<InlineSchema>,
 }
 
 impl AbstractSchema for ArraySchema {
     fn niche(&self) -> SchemaNiche {
-        self.schema.niche().repeat(self.length)
+        self.schema.niche().repeat(self.len)
     }
 }
 
 impl From<ArraySchema> for InlineSchema {
-    fn from(ArraySchema { length, schema }: ArraySchema) -> Self {
-        Self::Array(schema, length)
+    fn from(ArraySchema { len, schema }: ArraySchema) -> Self {
+        Self::Array(schema, len)
     }
 }
 
@@ -188,7 +188,7 @@ impl AbstractValue for ValueArray {
 
     fn schema(&self) -> Self::Schema {
         ArraySchema {
-            length: self.items.len() as _,
+            len: self.items.len() as _,
             schema: self.schema.clone(),
         }
     }
