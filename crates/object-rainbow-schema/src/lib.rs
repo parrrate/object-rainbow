@@ -56,7 +56,7 @@ pub enum ValueOption<T: AbstractValue> {
 }
 
 pub struct ValueNt {
-    pub items: Vec<Arc<Value>>,
+    pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
 }
 
@@ -65,14 +65,14 @@ impl ToOutput for ValueNt {
         for item in &self.items {
             ValueOption::Some(item.clone()).to_output(output);
         }
-        ValueOption::<Value>::None(self.schema.clone()).to_output(output);
+        ValueOption::<InlineValue>::None(self.schema.clone()).to_output(output);
     }
 }
 
 impl InlineOutput for ValueNt {}
 
 pub struct ValueSequence {
-    pub items: Vec<Arc<Value>>,
+    pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
 }
 
@@ -83,7 +83,7 @@ impl ToOutput for ValueSequence {
 }
 
 pub struct ValuePoint {
-    pub point: Point<Value>,
+    pub point: Point<InlineValue>,
     pub schema: Arc<InlineSchema>,
 }
 
@@ -97,7 +97,7 @@ impl InlineOutput for ValuePoint {}
 
 #[derive(ToOutput)]
 #[rainbow(untagged)]
-pub enum Value {
+pub enum InlineValue {
     Unit,
     Option(ValueOption<Self>),
     #[cfg(feature = "point")]
@@ -106,7 +106,7 @@ pub enum Value {
     Concat(Arc<Self>, Arc<Self>),
 }
 
-impl InlineOutput for Value {}
+impl InlineOutput for InlineValue {}
 
 #[derive(Clone)]
 pub enum SchemaNiche {
@@ -226,7 +226,7 @@ impl OptionSchema for InlineSchema {
     }
 }
 
-impl AbstractValue for Value {
+impl AbstractValue for InlineValue {
     type Schema = InlineSchema;
     fn schema(&self) -> Self::Schema {
         match self {
