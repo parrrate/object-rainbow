@@ -259,3 +259,12 @@ impl<T: AbstractValue<Schema: OptionSchema>> AbstractValue for ValueOption<T> {
         .option()
     }
 }
+
+impl AbstractSchema for TailSchema {
+    fn niche(&self) -> SchemaNiche {
+        match self {
+            Self::Sequence(_) => SchemaNiche::Cut,
+            Self::Concat(a, b) => SchemaNiche::concat(Arc::new(a.niche()), Arc::new(b.niche())),
+        }
+    }
+}
