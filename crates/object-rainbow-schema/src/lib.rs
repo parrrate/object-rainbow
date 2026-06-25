@@ -430,17 +430,3 @@ impl AbstractValue for TailValue {
         }
     }
 }
-
-// impl<I: PointInput<Extra = Arc<InlineSchema>>> ParseInline<I> for InlineValue {
-//     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-//         match &*input.extra().clone() {
-//             InlineSchema::Never => match input.parse_inline::<Infallible>()? {},
-//             InlineSchema::Unit => Ok(InlineValue::Unit),
-//             InlineSchema::Option(inline_schema) => todo!(),
-//             InlineSchema::Point(tail_schema) => todo!(),
-//             InlineSchema::Nt(inline_schema) => todo!(),
-//             InlineSchema::Concat(inline_schema, inline_schema1) => todo!(),
-//             InlineSchema::Array(inline_schema, _) => todo!(),
-//         }
-//     }
-// }
