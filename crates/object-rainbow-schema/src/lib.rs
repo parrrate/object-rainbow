@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{convert::Infallible, sync::Arc};
 
 use object_rainbow::{
     Enum, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline, ParseInline,
@@ -476,5 +476,30 @@ impl AbstractValue for TailValue {
             Self::Sequence(s) => s.schema(),
             Self::Concat(a, b) => TailSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
         }
+    }
+}
+
+impl<I: PointInput<Extra = Arc<InlineSchema>, WithExtra<Arc<InlineSchema>> = I>> ParseInline<I>
+    for InlineValue
+where
+    ValuePoint: ParseInline<I::WithExtra<Arc<TailSchema>>>,
+    ValueOption<Self>: ParseInline<I>,
+{
+    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
+        let schema = input.extra().clone();
+        Ok(match &*schema {
+            InlineSchema::Never => match input.parse_inline::<Infallible>()? {},
+            InlineSchema::Unit => Self::Unit,
+            InlineSchema::Option(schema) => Self::Option(input.parse_inline_extra(schema.clone())?),
+            InlineSchema::Point(schema) => Self::Point(input.parse_inline_extra(schema.clone())?),
+            InlineSchema::Nt(schema) => Self::Nt(input.parse_inline_extra(schema.clone())?),
+            InlineSchema::Concat(a, b) => Self::Concat(
+                Arc::new(input.parse_inline_extra(a.clone())?),
+                input.parse_inline_extra(b.clone())?,
+            ),
+            InlineSchema::Array(schema, n) => {
+                Self::Array(input.parse_inline_extra((schema.clone(), *n))?)
+            }
+        })
     }
 }
