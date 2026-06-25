@@ -1,4 +1,4 @@
-use std::{convert::Infallible, sync::Arc};
+use std::{convert::Infallible, num::NonZero, sync::Arc};
 
 use object_rainbow::{
     Enum, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline, ParseInline,
@@ -34,6 +34,7 @@ pub enum NumericSchema {
     I64,
     U128,
     I128,
+    NzU8,
 }
 
 impl InlineOutput for NumericSchema {}
@@ -47,6 +48,7 @@ impl AbstractSchema for NumericSchema {
             Self::U32 | Self::I32 => SchemaNiche::ZeroNoNiche(4),
             Self::U64 | Self::I64 => SchemaNiche::ZeroNoNiche(8),
             Self::U128 | Self::I128 => SchemaNiche::ZeroNoNiche(16),
+            Self::NzU8 => SchemaNiche::Zeroes(1),
         }
     }
 }
@@ -70,6 +72,7 @@ pub enum NumericValue {
     I64(u64),
     U128(u128),
     I128(i128),
+    NzU8(NonZero<u8>),
 }
 
 impl AbstractValue for NumericValue {
@@ -87,6 +90,7 @@ impl AbstractValue for NumericValue {
             Self::I64(_) => NumericSchema::I64,
             Self::U128(_) => NumericSchema::U128,
             Self::I128(_) => NumericSchema::I128,
+            Self::NzU8(_) => NumericSchema::NzU8,
         }
     }
 }
@@ -107,6 +111,7 @@ impl<I: PointInput<Extra = NumericSchema>> ParseInline<I> for NumericValue {
             NumericSchema::I64 => Self::I64(input.parse_inline()?),
             NumericSchema::U128 => Self::U128(input.parse_inline()?),
             NumericSchema::I128 => Self::I128(input.parse_inline()?),
+            NumericSchema::NzU8 => Self::NzU8(input.parse_inline()?),
         })
     }
 }
