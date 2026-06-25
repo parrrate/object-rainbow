@@ -27,6 +27,8 @@ pub enum NumericSchema {
     U8,
 }
 
+#[derive(ToOutput)]
+#[rainbow(untagged)]
 pub enum NumericValue {
     U8(u8),
 }
