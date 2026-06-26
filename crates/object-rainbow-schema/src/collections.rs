@@ -30,7 +30,7 @@ impl AbstractSchema for CollectionSchema {
 }
 
 #[cfg(feature = "amt")]
-#[derive(ListHashes, Topological, ParseAsInline)]
+#[derive(ListHashes, Topological, Tagged, ParseAsInline)]
 pub struct AmtValue {
     pub kv: (Arc<InlineSchema>, Arc<InlineSchema>),
     pub map: Point<AmtMap<MappedExtra<InlineValue, Extra0>, MappedExtra<InlineValue, Extra1>>>,
