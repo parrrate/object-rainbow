@@ -1179,7 +1179,13 @@ impl SizeSchema for InlineSchema {
         match self {
             Self::Never => Some(0),
             Self::Unit => Some(0),
-            Self::Option(schema) => schema.size()?.checked_add(schema.niche().needs_tag() as _),
+            Self::Option(schema) => {
+                if schema.niche().needs_tag() {
+                    if schema.size()? == 0 { Some(1) } else { None }
+                } else {
+                    schema.size()
+                }
+            }
             Self::Point(_) => Some(32),
             Self::Nt(_) => None,
             Self::Concat(a, b) => a.size()?.checked_add(b.size()?),
