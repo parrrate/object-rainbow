@@ -80,11 +80,6 @@ pub enum CollectionValue {
     AmtMap(AmtMapValue),
 }
 
-#[cfg(not(feature = "amt"))]
-type AmtMapSchema = Infallible;
-#[cfg(not(feature = "amt"))]
-type AmtMapValue = Infallible;
-
 impl Tagged for CollectionValue {}
 
 impl<I: PointInput<Extra = CollectionSchema>> ParseInline<I> for CollectionValue {
