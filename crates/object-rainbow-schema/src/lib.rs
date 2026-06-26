@@ -584,7 +584,7 @@ pub enum SchemaNiche {
     AndNiche(Arc<Self>, Arc<Self>),
     NicheAnd(Arc<Self>, Arc<Self>),
     NoNiche2(Arc<Self>, Arc<Self>),
-    PointNiche(u128),
+    HashNiche(u128),
     Cut,
     Repeat(Arc<Self>, u64),
 }
@@ -598,7 +598,7 @@ impl ToOutput for SchemaNiche {
             Self::AndNiche(a, b) => (a, b).to_output(output),
             Self::NicheAnd(a, b) => (a, b).to_output(output),
             Self::NoNiche2(a, b) => (a, b).to_output(output),
-            Self::PointNiche(n) => {
+            Self::HashNiche(n) => {
                 0u128.to_output(output);
                 n.to_output(output);
             }
@@ -616,7 +616,7 @@ impl InlineOutput for SchemaNiche {}
 
 impl SchemaNiche {
     pub fn point() -> Self {
-        Self::PointNiche(u128::MAX)
+        Self::HashNiche(u128::MAX)
     }
 
     pub fn needs_tag(&self) -> bool {
@@ -627,7 +627,7 @@ impl SchemaNiche {
             Self::AndNiche(_, _) => false,
             Self::NicheAnd(_, _) => false,
             Self::NoNiche2(_, _) => true,
-            Self::PointNiche(_) => false,
+            Self::HashNiche(_) => false,
             Self::Cut => true,
             Self::Repeat(_, _) => true,
         }
@@ -641,7 +641,7 @@ impl SchemaNiche {
             Self::AndNiche(a, b) => a.cut() || b.cut(),
             Self::NicheAnd(a, b) => a.cut() || b.cut(),
             Self::NoNiche2(a, b) => a.cut() || b.cut(),
-            Self::PointNiche(_) => false,
+            Self::HashNiche(_) => false,
             Self::Cut => true,
             Self::Repeat(_, _) => false,
         }
@@ -690,8 +690,8 @@ impl SchemaNiche {
             Self::AndNiche(a, b) => Self::concat(a.clone(), Arc::new(b.next())),
             Self::NicheAnd(a, b) => Self::concat(Arc::new(a.next()), b.clone()),
             Self::NoNiche2(a, b) => Self::NoNiche2(a.clone(), b.clone()),
-            Self::PointNiche(0) => Self::ZeroNoNiche(32),
-            Self::PointNiche(n) => Self::PointNiche(*n - 1),
+            Self::HashNiche(0) => Self::ZeroNoNiche(32),
+            Self::HashNiche(n) => Self::HashNiche(*n - 1),
             Self::Cut => Self::Cut,
             Self::Repeat(niche, n) => Self::Repeat(niche.clone(), *n),
         }

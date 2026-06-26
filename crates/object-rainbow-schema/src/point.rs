@@ -28,7 +28,7 @@ pub struct PointSchema {
 
 impl AbstractSchema for PointSchema {
     fn niche(&self) -> SchemaNiche {
-        SchemaNiche::PointNiche(u128::MAX)
+        SchemaNiche::HashNiche(u128::MAX)
     }
 }
 
