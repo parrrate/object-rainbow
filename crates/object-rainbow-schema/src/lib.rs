@@ -1084,3 +1084,23 @@ assert_impl!(
 assert_impl!(
     impl ReflessInline for TailSchema {}
 );
+
+impl SizeSchema for InlineSchema {
+    fn size(&self) -> Option<u64> {
+        match self {
+            Self::Never => todo!(),
+            Self::Unit => todo!(),
+            Self::Option(schema) => schema.size()?.checked_add(schema.niche().needs_tag() as _),
+            Self::Point(_) => Some(32),
+            Self::Nt(_) => None,
+            Self::Concat(a, b) => a.size()?.checked_add(b.size()?),
+            Self::Array(_) => None,
+            Self::Numeric(schema) => schema.size(),
+            Self::Enum(_) => None,
+            #[cfg(feature = "_collections")]
+            Self::Collection(schema) => schema.size(),
+            #[cfg(not(feature = "_collections"))]
+            Self::Collection(i) => match *i {},
+        }
+    }
+}
