@@ -19,6 +19,8 @@ pub enum CollectionSchema {
 impl InlineOutput for CollectionSchema {}
 impl Tagged for CollectionSchema {}
 
+#[derive(ToOutput)]
+#[rainbow(untagged)]
 pub enum CollectionValue {
     #[cfg(feature = "amt")]
     Amt(AmtMap<MappedExtra<InlineValue, Extra0>, MappedExtra<InlineValue, Extra1>>),
