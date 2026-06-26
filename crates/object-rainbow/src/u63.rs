@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::*;
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, ParseAsInline)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, ParseAsInline, Default)]
 pub struct U63(u64);
 
 impl U63 {
