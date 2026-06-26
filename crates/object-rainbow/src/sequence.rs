@@ -131,3 +131,5 @@ impl<T: IntoIterator<Item = A> + FromIterator<A>, A: ParseInline<I>, I: ParseInp
         Ok(Self(input.parse_collect()?))
     }
 }
+
+pub trait VecLike: IntoIterator {}
