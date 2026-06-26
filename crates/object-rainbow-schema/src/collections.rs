@@ -69,7 +69,7 @@ pub struct KvValue<T> {
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
 pub struct ItemValue<T> {
     pub item: Extras<ItemSchema>,
-    pub set: Point<T>,
+    pub set: T,
 }
 
 #[cfg(feature = "_collections-kv")]
@@ -85,10 +85,7 @@ where
     }
 }
 #[cfg(feature = "_collections-item")]
-impl<T> ItemValue<T>
-where
-    Point<T>: Default,
-{
+impl<T: Default> ItemValue<T> {
     pub fn schema_default(item: ItemSchema) -> Self {
         Self {
             item: Extras(item),
@@ -106,7 +103,7 @@ impl AbstractValue for KvValue<AmtMapInner> {
     }
 }
 #[cfg(feature = "amt")]
-impl AbstractValue for ItemValue<AmtSetInner> {
+impl AbstractValue for ItemValue<Point<AmtSetInner>> {
     type Schema = CollectionSchema;
 
     fn schema(&self) -> Self::Schema {
@@ -128,7 +125,7 @@ pub enum CollectionValue {
     #[cfg(feature = "amt")]
     AmtMap(KvValue<AmtMapInner>),
     #[cfg(feature = "amt")]
-    AmtSet(ItemValue<AmtSetInner>),
+    AmtSet(ItemValue<Point<AmtSetInner>>),
     #[cfg(feature = "hamt")]
     HamtMap(ItemValue<HamtMapInner>),
     #[cfg(feature = "hamt")]
