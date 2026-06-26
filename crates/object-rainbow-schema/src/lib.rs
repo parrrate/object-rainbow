@@ -76,6 +76,10 @@ impl ItemSizeSchema for Infallible {
     }
 }
 
+pub trait ItemsSchema {
+    fn items(&self) -> Vec<Arc<InlineValue>>;
+}
+
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone)]
 #[enumtag("char")]
 #[niche(tag)]
