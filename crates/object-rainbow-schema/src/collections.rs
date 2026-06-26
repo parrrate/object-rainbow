@@ -7,7 +7,6 @@ use object_rainbow::{
 use object_rainbow_amt::{AmtMap, AmtSet};
 #[cfg(feature = "hamt")]
 use object_rainbow_hamt::HamtMap;
-#[cfg(feature = "amt")]
 use object_rainbow_point::Extras;
 use object_rainbow_point::Point;
 
