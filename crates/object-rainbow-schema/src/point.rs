@@ -12,6 +12,7 @@ use crate::{
 };
 
 #[derive(
+    Debug,
     ToOutput,
     InlineOutput,
     Parse,
