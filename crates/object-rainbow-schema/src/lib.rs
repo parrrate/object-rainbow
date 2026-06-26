@@ -53,6 +53,12 @@ pub trait SizeSchema {
     fn size(&self) -> Option<u64>;
 }
 
+impl SizeSchema for Infallible {
+    fn size(&self) -> Option<u64> {
+        match *self {}
+    }
+}
+
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone)]
 #[enumtag("char")]
 #[niche(tag)]
