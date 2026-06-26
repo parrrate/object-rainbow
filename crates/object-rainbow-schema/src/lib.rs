@@ -4,13 +4,13 @@ use object_rainbow::{
     Enum, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline,
     ParseInline, PointInput, ReflessInline, Tagged, ToOutput, Topological, Traversible,
     assert_impl,
+    extras::Extras,
     length_prefixed::LpVec,
     map_extra::MappedExtra,
     tuple_extra::{Extra0, Extra1},
     tuple_of_arrays::try_divide,
     zero_terminated::Zt,
 };
-use object_rainbow_point::Extras;
 
 #[cfg(feature = "_collections")]
 use self::collections::{CollectionSchema, CollectionValue};
