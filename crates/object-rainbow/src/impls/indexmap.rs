@@ -1,6 +1,9 @@
 use indexmap::{IndexMap, IndexSet};
 
-use crate::{sequence::PlainCollection, *};
+use crate::{
+    sequence::{PlainCollection, VecLike},
+    *,
+};
 
 impl<T: InlineOutput> ToOutput for IndexSet<T> {
     fn to_output(&self, output: &mut impl Output) {
@@ -31,6 +34,7 @@ impl<T: Tagged> Tagged for IndexSet<T> {
 }
 
 impl<T> PlainCollection for IndexSet<T> {}
+impl<T> VecLike for IndexSet<T> {}
 
 impl<K: InlineOutput, V: InlineOutput> ToOutput for IndexMap<K, V> {
     fn to_output(&self, output: &mut impl Output) {
