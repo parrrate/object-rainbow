@@ -826,10 +826,19 @@ where
     }
 }
 
-#[derive(ToOutput, InlineOutput, Parse, ParseInline, ListHashes, Topological, Tagged, Clone)]
+#[derive(ToOutput, InlineOutput, Parse, ParseInline, ListHashes, Topological, Tagged)]
 pub struct EnumSchema<T> {
     pub kind: NumericSchema,
     pub variants: Arc<LpVec<Arc<T>>>,
+}
+
+impl<T> Clone for EnumSchema<T> {
+    fn clone(&self) -> Self {
+        Self {
+            kind: self.kind.clone(),
+            variants: self.variants.clone(),
+        }
+    }
 }
 
 impl<T: AbstractSchema> AbstractSchema for EnumSchema<T> {
