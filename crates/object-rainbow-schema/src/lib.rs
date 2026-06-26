@@ -1094,8 +1094,8 @@ impl SizeSchema for ArraySchema {
 impl SizeSchema for InlineSchema {
     fn size(&self) -> Option<u64> {
         match self {
-            Self::Never => todo!(),
-            Self::Unit => todo!(),
+            Self::Never => Some(0),
+            Self::Unit => Some(0),
             Self::Option(schema) => schema.size()?.checked_add(schema.niche().needs_tag() as _),
             Self::Point(_) => Some(32),
             Self::Nt(_) => None,
