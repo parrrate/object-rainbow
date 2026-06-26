@@ -1018,7 +1018,9 @@ impl<
             InlineSchema::Unit => Self::Unit,
             InlineSchema::Option(schema) => Self::Option(input.parse_inline_extra(schema.clone())?),
             #[cfg(feature = "point")]
-            InlineSchema::Point(schema) => Self::Point(input.parse_inline_extra(schema.clone())?),
+            InlineSchema::Point(schema) => {
+                Self::Point(input.parse_inline_extra(schema.clone().schema)?)
+            }
             #[cfg(not(feature = "point"))]
             InlineSchema::Point(i) => match *i {},
             InlineSchema::Nt(schema) => Self::Nt(input.parse_inline_extra(schema.clone())?),
