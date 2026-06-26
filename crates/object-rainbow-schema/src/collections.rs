@@ -5,6 +5,8 @@ use object_rainbow::{
 };
 #[cfg(feature = "amt")]
 use object_rainbow_amt::{AmtMap, AmtSet};
+#[cfg(feature = "amt")]
+use object_rainbow_point::Extras;
 use object_rainbow_point::Point;
 
 use crate::*;
@@ -47,7 +49,7 @@ pub type AmtSetInner = AmtSet<Arc<InlineValue>>;
 #[cfg(feature = "amt")]
 #[derive(ListHashes, Topological, Tagged, ParseAsInline)]
 pub struct AmtMapValue {
-    pub kv: KvSchema,
+    pub kv: Extras<KvSchema>,
     pub map: Point<AmtMapInner>,
 }
 #[cfg(feature = "amt")]
@@ -78,9 +80,8 @@ impl InlineOutput for AmtSetValue {}
 #[cfg(feature = "amt")]
 impl<I: PointInput<Extra = KvSchema>> ParseInline<I> for AmtMapValue {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let kv = input.extra().clone();
         Ok(Self {
-            kv,
+            kv: input.parse_inline()?,
             map: input.parse_inline()?,
         })
     }
@@ -101,7 +102,7 @@ impl AbstractValue for AmtMapValue {
     type Schema = CollectionSchema;
 
     fn schema(&self) -> Self::Schema {
-        CollectionSchema::AmtMap(self.kv.clone())
+        CollectionSchema::AmtMap(self.kv.0.clone())
     }
 }
 #[cfg(feature = "amt")]
@@ -153,7 +154,7 @@ impl DefaultSchema<CollectionValue> for CollectionSchema {
         match self.clone() {
             #[cfg(feature = "amt")]
             Self::AmtMap(kv) => Some(CollectionValue::AmtMap(AmtMapValue {
-                kv,
+                kv: Extras(kv),
                 map: Default::default(),
             })),
             #[cfg(feature = "amt")]
