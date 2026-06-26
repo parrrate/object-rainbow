@@ -53,6 +53,20 @@ impl<A: IntoIterator, B: IntoIterator> IntoIterator for TupleOfArrays<A, B> {
     }
 }
 
+impl<'a, A, B> IntoIterator for &'a TupleOfArrays<A, B>
+where
+    &'a A: IntoIterator,
+    &'a B: IntoIterator,
+{
+    type Item = (<&'a A as IntoIterator>::Item, <&'a B as IntoIterator>::Item);
+
+    type IntoIter = Zip<<&'a A as IntoIterator>::IntoIter, <&'a B as IntoIterator>::IntoIter>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter().zip(&self.1)
+    }
+}
+
 impl<A: PlainCollection, B: PlainCollection> PlainCollection for TupleOfArrays<A, B> {}
 
 impl<A: Extend<L>, B: Extend<R>, L, R> Extend<(L, R)> for TupleOfArrays<A, B> {
