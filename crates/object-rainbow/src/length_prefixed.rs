@@ -173,7 +173,7 @@ impl Tagged for LpString {}
 impl ListHashes for LpString {}
 impl Topological for LpString {}
 
-#[derive(ListHashes, Topological, Tagged, ParseAsInline, Clone, PartialEq, Eq)]
+#[derive(Debug, ListHashes, Topological, Tagged, ParseAsInline, Clone, PartialEq, Eq)]
 pub struct LpVec<T>(pub Vec<T>);
 
 impl<T> Deref for LpVec<T> {
