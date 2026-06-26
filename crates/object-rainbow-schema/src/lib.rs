@@ -1302,6 +1302,12 @@ impl<T: AbstractValue + AbstractCollection> AbstractCollection for ValueOption<T
     }
 }
 
+impl<T: AbstractValue + AbstractCollection> AbstractCollection for EnumValue<T> {
+    fn items(&self) -> Vec<Arc<InlineValue>> {
+        self.value.items()
+    }
+}
+
 impl AbstractCollection for InlineValue {
     fn items(&self) -> Vec<Arc<InlineValue>> {
         match self {
@@ -1312,7 +1318,7 @@ impl AbstractCollection for InlineValue {
             Self::Concat(a, b) => [a.items(), b.items()].concat(),
             Self::Array(value) => value.items(),
             Self::Numeric(_) => Vec::new(),
-            Self::Enum(value) => value.value.items(),
+            Self::Enum(value) => value.items(),
             Self::Collection(_) => Vec::new(),
             Self::Zt(_) => Vec::new(),
         }
