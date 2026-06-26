@@ -46,6 +46,16 @@ impl ToOutput for AmtMapValue {
 #[cfg(feature = "amt")]
 impl InlineOutput for AmtMapValue {}
 
+impl<I: PointInput<Extra = (Arc<InlineSchema>, Arc<InlineSchema>)>> ParseInline<I> for AmtMapValue {
+    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
+        let kv = input.extra().clone();
+        Ok(Self {
+            kv,
+            map: input.parse_inline()?,
+        })
+    }
+}
+
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, ParseAsInline)]
 #[rainbow(untagged)]
 pub enum CollectionValue {
