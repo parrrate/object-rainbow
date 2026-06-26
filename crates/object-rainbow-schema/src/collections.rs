@@ -21,6 +21,10 @@ pub enum CollectionSchema {
         #[cfg(feature = "amt")] AmtMapSchema,
         #[cfg(not(feature = "amt"))] Infallible,
     ),
+    AmtSet(
+        #[cfg(feature = "amt")] AmtSetSchema,
+        #[cfg(not(feature = "amt"))] Infallible,
+    ),
 }
 
 impl InlineOutput for CollectionSchema {}
@@ -30,6 +34,7 @@ impl AbstractSchema for CollectionSchema {
     fn niche(&self) -> SchemaNiche {
         match self {
             Self::AmtMap(_) => SchemaNiche::point(),
+            Self::AmtSet(_) => SchemaNiche::point(),
         }
     }
 }
@@ -100,12 +105,22 @@ impl AbstractValue for AmtMapValue {
         CollectionSchema::AmtMap(self.kv.clone())
     }
 }
+#[cfg(feature = "amt")]
+impl AbstractValue for AmtSetValue {
+    type Schema = CollectionSchema;
+
+    fn schema(&self) -> Self::Schema {
+        CollectionSchema::AmtSet(self.item.clone())
+    }
+}
 
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, ParseAsInline)]
 #[rainbow(untagged)]
 pub enum CollectionValue {
     #[cfg(feature = "amt")]
     AmtMap(AmtMapValue),
+    #[cfg(feature = "amt")]
+    AmtSet(AmtSetValue),
 }
 
 impl Tagged for CollectionValue {}
@@ -115,6 +130,8 @@ impl<I: PointInput<Extra = CollectionSchema>> ParseInline<I> for CollectionValue
         match input.extra().clone() {
             #[cfg(feature = "amt")]
             CollectionSchema::AmtMap(kv) => Ok(Self::AmtMap(input.parse_inline_extra(kv)?)),
+            #[cfg(feature = "amt")]
+            CollectionSchema::AmtSet(item) => Ok(Self::AmtSet(input.parse_inline_extra(item)?)),
         }
     }
 }
@@ -126,6 +143,8 @@ impl AbstractValue for CollectionValue {
         match *self {
             #[cfg(feature = "amt")]
             Self::AmtMap(ref value) => value.schema(),
+            #[cfg(feature = "amt")]
+            Self::AmtSet(ref value) => value.schema(),
         }
     }
 }
@@ -138,6 +157,11 @@ impl DefaultSchema<CollectionValue> for CollectionSchema {
                 kv,
                 map: Default::default(),
             })),
+            #[cfg(feature = "amt")]
+            Self::AmtSet(item) => Some(CollectionValue::AmtSet(AmtSetValue {
+                item,
+                set: Default::default(),
+            })),
         }
     }
 }
@@ -147,6 +171,8 @@ impl DefaultIsMin for CollectionSchema {
         match self.clone() {
             #[cfg(feature = "amt")]
             Self::AmtMap(_) => false,
+            #[cfg(feature = "amt")]
+            Self::AmtSet(_) => false,
         }
     }
 }
