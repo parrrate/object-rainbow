@@ -243,7 +243,7 @@ impl From<ArraySchema> for InlineSchema {
     }
 }
 
-#[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological)]
+#[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone)]
 #[enumtag("char")]
 #[niche(tag)]
 #[parse(unchecked)]
