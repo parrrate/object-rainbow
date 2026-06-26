@@ -9,6 +9,7 @@ use object_rainbow::{
     map_extra::MappedExtra,
     tuple_extra::{Extra0, Extra1},
     tuple_of_arrays::try_divide,
+    u63::U63,
     zero_terminated::Zt,
 };
 
@@ -105,6 +106,7 @@ pub enum NumericSchema {
     F256(Infallible),
     OpaqueChar,
     OpaqueBool,
+    LpU63,
 }
 
 impl InlineOutput for NumericSchema {}
@@ -127,6 +129,7 @@ impl AbstractSchema for NumericSchema {
             Self::F64 => SchemaNiche::ZeroNoNiche(8),
             Self::OpaqueChar => SchemaNiche::Cut,
             Self::OpaqueBool => SchemaNiche::ZeroNoNiche(1),
+            Self::LpU63 => SchemaNiche::Cut,
         }
     }
 }
@@ -153,6 +156,7 @@ impl DefaultSchema<NumericValue> for NumericSchema {
             Self::F64 => NumericValue::F64(Default::default()),
             Self::OpaqueChar => NumericValue::OpaqueChar(Default::default()),
             Self::OpaqueBool => NumericValue::OpaqueBool(Default::default()),
+            Self::LpU63 => NumericValue::LpU63(Default::default()),
         })
     }
 }
@@ -173,6 +177,7 @@ impl SizeSchema for NumericSchema {
             Self::U128 | Self::I128 | Self::NzU128 => Some(16),
             Self::OpaqueChar => None,
             Self::OpaqueBool => Some(1),
+            Self::LpU63 => None,
         }
     }
 }
@@ -205,6 +210,7 @@ pub enum NumericValue {
     F64(f64),
     OpaqueChar(char),
     OpaqueBool(bool),
+    LpU63(U63),
 }
 
 impl NumericValue {
@@ -229,6 +235,7 @@ impl NumericValue {
             Self::F64(_) => None,
             Self::OpaqueChar(x) => Some(*x as _),
             Self::OpaqueBool(x) => Some(*x as _),
+            Self::LpU63(x) => x.as_usize().ok(),
         }
     }
 }
@@ -257,6 +264,7 @@ impl AbstractValue for NumericValue {
             Self::F64(_) => NumericSchema::F64,
             Self::OpaqueChar(_) => NumericSchema::OpaqueChar,
             Self::OpaqueBool(_) => NumericSchema::OpaqueBool,
+            Self::LpU63(_) => NumericSchema::LpU63,
         }
     }
 }
@@ -286,6 +294,7 @@ impl<I: PointInput<Extra = NumericSchema>> ParseInline<I> for NumericValue {
             NumericSchema::F64 => Self::F64(input.parse_inline()?),
             NumericSchema::OpaqueChar => Self::OpaqueChar(input.parse_inline()?),
             NumericSchema::OpaqueBool => Self::OpaqueBool(input.parse_inline()?),
+            NumericSchema::LpU63 => Self::LpU63(input.parse_inline()?),
         })
     }
 }
