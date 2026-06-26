@@ -53,7 +53,7 @@ pub struct AmtMapValue {
     pub map: Point<AmtMapInner>,
 }
 #[cfg(feature = "amt")]
-#[derive(ListHashes, Topological, Tagged, ParseAsInline)]
+#[derive(ListHashes, Topological, Tagged, Parse)]
 pub struct AmtSetValue {
     pub item: Extras<ItemSchema>,
     pub set: Point<AmtSetInner>,
