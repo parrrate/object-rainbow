@@ -27,6 +27,12 @@ pub trait AbstractValue: ToOutput {
     fn schema(&self) -> Self::Schema;
 }
 
+impl AbstractSchema for Infallible {
+    fn niche(&self) -> SchemaNiche {
+        match *self {}
+    }
+}
+
 pub trait DefaultIsMin {
     fn default_is_min(&self) -> bool;
 }
