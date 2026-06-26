@@ -40,8 +40,8 @@ impl<
 {
     fn parse(input: I) -> crate::Result<Self> {
         let (mut input, n) = input.remaining()?;
-        let n = try_divide(n, Ae::SIZE + Be::SIZE)?;
-        Ok(Self(input.split_parse(n * Ae::SIZE)?, input.parse()?))
+        let n = try_divide(n, Ae::SIZE + Be::SIZE)? * Ae::SIZE;
+        Ok(Self(input.split_parse(n)?, input.parse()?))
     }
 }
 
