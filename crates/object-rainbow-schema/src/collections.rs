@@ -59,7 +59,7 @@ pub type AmtSetInner = AmtSet<Arc<InlineValue>>;
 pub type HamtMapInner = HamtMap<Arc<InlineValue>>;
 
 #[cfg(feature = "_collections-kv")]
-#[derive(ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
+#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
 pub struct KvValue<T> {
     pub kv: Extras<KvSchema>,
     pub map: T,
