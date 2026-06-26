@@ -1132,3 +1132,15 @@ impl SizeSchema for InlineSchema {
         }
     }
 }
+
+impl ItemSizeSchema for TailSchema {
+    fn item_size(&self) -> Option<u64> {
+        match self {
+            Self::Cut => None,
+            Self::Option(_) => None,
+            Self::Sequence(schema) => schema.size(),
+            Self::Concat(_, _) => None,
+            Self::Enum(_) => None,
+        }
+    }
+}
