@@ -47,7 +47,7 @@ pub type AmtMapInner =
 pub type AmtSetInner = AmtSet<Arc<InlineValue>>;
 
 #[cfg(feature = "amt")]
-#[derive(ListHashes, Topological, Tagged, Parse)]
+#[derive(ListHashes, Topological, Tagged, Parse, ParseInline)]
 pub struct AmtMapValue {
     pub kv: Extras<KvSchema>,
     pub map: Point<AmtMapInner>,
@@ -77,15 +77,6 @@ impl InlineOutput for AmtMapValue {}
 #[cfg(feature = "amt")]
 impl InlineOutput for AmtSetValue {}
 
-#[cfg(feature = "amt")]
-impl<I: PointInput<Extra = KvSchema>> ParseInline<I> for AmtMapValue {
-    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        Ok(Self {
-            kv: input.parse_inline()?,
-            map: input.parse_inline()?,
-        })
-    }
-}
 #[cfg(feature = "amt")]
 impl<I: PointInput<Extra = ItemSchema>> ParseInline<I> for AmtSetValue {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
