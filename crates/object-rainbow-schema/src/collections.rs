@@ -5,7 +5,6 @@ use object_rainbow::{
 };
 #[cfg(feature = "amt")]
 use object_rainbow_amt::{AmtMap, AmtSet};
-#[cfg(feature = "amt")]
 use object_rainbow_point::Point;
 
 use crate::*;
