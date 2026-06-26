@@ -9,6 +9,7 @@ use object_rainbow::{
     tuple_extra::{Extra0, Extra1},
     tuple_of_arrays::try_divide,
 };
+use object_rainbow_point::Extras;
 
 #[cfg(feature = "_collections")]
 use self::collections::{CollectionSchema, CollectionValue};
@@ -477,8 +478,8 @@ impl From<ValueArray> for InlineValue {
 
 #[derive(ListHashes, Topological)]
 pub struct ValueSequence {
-    pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
+    pub items: Vec<Arc<InlineValue>>,
 }
 
 impl ToOutput for ValueSequence {
