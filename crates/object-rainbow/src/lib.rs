@@ -500,6 +500,11 @@ impl<'d> ParseInput for ReflessInput<'d> {
         })
     }
 
+    fn remaining(self) -> crate::Result<(Self, usize)> {
+        let len = self.data()?.len();
+        Ok((self, len))
+    }
+
     fn parse_refless_inline<T: for<'r> ParseInline<ReflessInput<'r>>>(
         &mut self,
     ) -> crate::Result<T> {
@@ -561,6 +566,12 @@ impl<'d, Extra: Clone> ParseInput for Input<'d, Extra> {
             None => return Ok(None),
         };
         Ok(Some(self))
+    }
+
+    fn remaining(mut self) -> crate::Result<(Self, usize)> {
+        let remaining;
+        (self.refless, remaining) = self.refless.remaining()?;
+        Ok((self, remaining))
     }
 
     fn parse_refless_inline<T: for<'r> ParseInline<ReflessInput<'r>>>(
@@ -1461,6 +1472,7 @@ pub trait ParseInput: Sized {
     fn parse_all(self) -> crate::Result<Self::Data>;
     fn empty(self) -> crate::Result<()>;
     fn non_empty(self) -> crate::Result<Option<Self>>;
+    fn remaining(self) -> crate::Result<(Self, usize)>;
 
     fn consume(self, f: impl FnMut(&mut Self) -> crate::Result<()>) -> crate::Result<()> {
         self.collect(f)
