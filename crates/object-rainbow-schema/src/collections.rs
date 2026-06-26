@@ -68,6 +68,8 @@ impl ToOutput for AmtSetValue {
 
 #[cfg(feature = "amt")]
 impl InlineOutput for AmtMapValue {}
+#[cfg(feature = "amt")]
+impl InlineOutput for AmtSetValue {}
 
 #[cfg(feature = "amt")]
 impl<I: PointInput<Extra = AmtMapSchema>> ParseInline<I> for AmtMapValue {
