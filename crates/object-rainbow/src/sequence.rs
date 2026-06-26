@@ -136,6 +136,6 @@ pub trait PlainCollection: IntoIterator {}
 
 impl<T: IntoIterator> PlainCollection for Sequence<T> {}
 
-pub trait VecLike: IntoIterator {}
+pub trait VecLike: PlainCollection {}
 
 impl<T: IntoIterator> VecLike for Sequence<T> {}
