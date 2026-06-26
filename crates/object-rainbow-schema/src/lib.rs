@@ -59,6 +59,10 @@ impl SizeSchema for Infallible {
     }
 }
 
+pub trait ItemSizeSchema {
+    fn item_size(&self) -> Option<u64>;
+}
+
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone)]
 #[enumtag("char")]
 #[niche(tag)]
