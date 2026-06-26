@@ -194,7 +194,7 @@ impl From<NumericSchema> for InlineSchema {
     }
 }
 
-#[derive(ToOutput, ListHashes, Topological, ParseAsInline)]
+#[derive(Debug, ToOutput, ListHashes, Topological, ParseAsInline)]
 #[rainbow(untagged)]
 pub enum NumericValue {
     U8(u8),
