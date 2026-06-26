@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::*;
+use crate::{sequence::VecLike, *};
 
 impl<T: InlineOutput> ToOutput for BTreeSet<T> {
     fn to_output(&self, output: &mut impl Output) {
@@ -35,6 +35,8 @@ impl<T: ByteOrd + InlineOutput> ByteOrd for BTreeSet<T> {
         self.iter_bytes_cmp(other)
     }
 }
+
+impl<T> VecLike for BTreeSet<T> {}
 
 impl<K: InlineOutput, V: InlineOutput> ToOutput for BTreeMap<K, V> {
     fn to_output(&self, output: &mut impl Output) {
