@@ -1,3 +1,5 @@
+use std::iter::Zip;
+
 use crate::{sequence::PlainCollection, *};
 
 #[derive(ListHashes, Topological, Tagged, Size)]
@@ -28,5 +30,15 @@ impl<
             .checked_div(k)
             .ok_or_else(|| crate::error_parse!("division failed"))?;
         Ok(Self(input.split_parse(n * Ae::SIZE)?, input.parse()?))
+    }
+}
+
+impl<A: IntoIterator, B: IntoIterator> IntoIterator for TupleOfArrays<A, B> {
+    type Item = (A::Item, B::Item);
+
+    type IntoIter = Zip<A::IntoIter, B::IntoIter>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter().zip(self.1)
     }
 }
