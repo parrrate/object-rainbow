@@ -15,7 +15,7 @@ use crate::*;
 
 #[cfg(feature = "_collections-kv")]
 pub type KvSchema = (Arc<InlineSchema>, Arc<InlineSchema>);
-#[cfg(feature = "_collections-set")]
+#[cfg(feature = "_collections-item")]
 pub type ItemSchema = Arc<InlineSchema>;
 
 #[derive(Enum, ToOutput, Parse, ParseInline, ListHashes, Topological, Clone)]
@@ -56,7 +56,7 @@ pub struct KvValue<T> {
     pub kv: Extras<KvSchema>,
     pub map: Point<T>,
 }
-#[cfg(feature = "_collections-set")]
+#[cfg(feature = "_collections-item")]
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
 pub struct ItemValue<T> {
     pub item: Extras<ItemSchema>,

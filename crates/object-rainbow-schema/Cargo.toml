@@ -15,8 +15,8 @@ object-rainbow-point = { workspace = true, optional = true }
 
 [features]
 _collections = ["point"]
+_collections-item = ["_collections"]
 _collections-kv = ["_collections"]
-_collections-set = ["_collections"]
-amt = ["dep:object-rainbow-amt", "_collections-kv", "_collections-set"]
+amt = ["dep:object-rainbow-amt", "_collections-item", "_collections-kv"]
 hamt = ["dep:object-rainbow-hamt"]
 point = ["dep:object-rainbow-point"]
