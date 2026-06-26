@@ -1293,6 +1293,26 @@ impl From<ValueZt> for InlineValue {
     }
 }
 
+impl AbstractCollection for InlineValue {
+    fn items(&self) -> Vec<Arc<InlineValue>> {
+        match self {
+            Self::Unit => Vec::new(),
+            Self::Option(value) => match value {
+                ValueOption::None(_) => Vec::new(),
+                ValueOption::Some(value) => value.items(),
+            },
+            Self::Point(_) => Vec::new(),
+            Self::Nt(value) => value.items(),
+            Self::Concat(a, b) => [a.items(), b.items()].concat(),
+            Self::Array(value) => value.items(),
+            Self::Numeric(_) => Vec::new(),
+            Self::Enum(value) => value.value.items(),
+            Self::Collection(_) => Vec::new(),
+            Self::Zt(_) => Vec::new(),
+        }
+    }
+}
+
 #[test]
 fn tuple_of_arrays() -> object_rainbow::Result<()> {
     use object_rainbow::{ParseSlice, ParseSliceExtra};
