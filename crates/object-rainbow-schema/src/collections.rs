@@ -106,9 +106,7 @@ impl AbstractValue for CollectionValue {
 
 impl DefaultSchema<CollectionValue> for CollectionSchema {
     fn default_value(&self) -> Option<CollectionValue> {
-        #[allow(unreachable_code, unused)]
-        let schema = self.clone();
-        match schema {
+        match self.clone() {
             #[cfg(feature = "amt")]
             Self::AmtMap(kv) => Some(CollectionValue::AmtMap(AmtMapValue {
                 kv,
