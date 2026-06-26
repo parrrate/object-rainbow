@@ -4,7 +4,7 @@ use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline, ParseInline, PointInput,
     Tagged, ToOutput, Topological,
 };
-use object_rainbow_point::{IntoPoint, Point};
+use object_rainbow_point::{Extras, IntoPoint, Point};
 
 use crate::{
     AbstractSchema, AbstractValue, DefaultSchema, InlineSchema, InlineValue, SchemaNiche,
@@ -36,8 +36,8 @@ impl AbstractSchema for PointSchema {
 impl DefaultSchema<ValuePoint> for PointSchema {
     fn default_value(&self) -> Option<ValuePoint> {
         Some(ValuePoint {
+            schema: Extras(self.schema.clone()),
             point: Arc::new(self.schema.default_value()?).point(),
-            schema: self.schema.clone(),
         })
     }
 }
@@ -50,7 +50,7 @@ impl From<PointSchema> for InlineSchema {
 
 #[derive(ListHashes, Topological, ParseAsInline)]
 pub struct ValuePoint {
-    pub schema: Arc<TailSchema>,
+    pub schema: Extras<Arc<TailSchema>>,
     pub point: Point<Arc<TailValue>>,
 }
 
@@ -68,7 +68,7 @@ impl AbstractValue for ValuePoint {
 
     fn schema(&self) -> Self::Schema {
         PointSchema {
-            schema: self.schema.clone(),
+            schema: self.schema.0.clone(),
         }
     }
 }
@@ -78,7 +78,7 @@ impl<I: PointInput<Extra = PointSchema>> ParseInline<I> for ValuePoint {
         let schema = input.extra().clone().schema;
         Ok(Self {
             point: input.parse_inline_extra(schema.clone())?,
-            schema,
+            schema: Extras(schema),
         })
     }
 }
