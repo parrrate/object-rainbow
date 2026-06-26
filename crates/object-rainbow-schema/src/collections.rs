@@ -56,7 +56,7 @@ pub struct KvValue<T> {
     pub kv: Extras<KvSchema>,
     pub map: Point<T>,
 }
-#[cfg(feature = "amt")]
+#[cfg(feature = "_collections-set")]
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
 pub struct ItemValue<T> {
     pub item: Extras<ItemSchema>,
