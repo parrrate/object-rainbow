@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(Debug, Clone, ParseAsInline)]
+#[derive(Debug, Clone, ParseAsInline, PartialEq)]
 pub struct Extras<Extra>(pub Extra);
 
 impl<Extra> Deref for Extras<Extra> {
