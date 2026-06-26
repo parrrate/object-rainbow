@@ -1325,6 +1325,38 @@ impl AbstractCollection for InlineValue {
     }
 }
 
+impl AbstractCollection for TailValue {
+    fn items(&self) -> Vec<Arc<InlineValue>> {
+        match self {
+            Self::Cut => Vec::new(),
+            Self::Option(value) => value.items(),
+            Self::Sequence(value) => value.items(),
+            Self::Concat(a, b) => [a.items(), b.items()].concat(),
+            Self::ToA(ValueToA(a, b)) => a
+                .items()
+                .into_iter()
+                .zip(b.items())
+                .map(|(a, b)| InlineValue::Concat(a, b))
+                .map(Arc::new)
+                .collect(),
+            Self::Enum(value) => value.items(),
+            Self::Bytes(bytes) => bytes
+                .iter()
+                .copied()
+                .map(NumericValue::U8)
+                .map(InlineValue::Numeric)
+                .map(Arc::new)
+                .collect(),
+            Self::String(string) => string
+                .chars()
+                .map(NumericValue::OpaqueChar)
+                .map(InlineValue::Numeric)
+                .map(Arc::new)
+                .collect(),
+        }
+    }
+}
+
 #[test]
 fn tuple_of_arrays() -> object_rainbow::Result<()> {
     use object_rainbow::{ParseSlice, ParseSliceExtra};
