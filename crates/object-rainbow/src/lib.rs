@@ -829,9 +829,15 @@ pub trait ParseSliceExtra<Extra: Clone>: for<'a> Parse<Input<'a, Extra>> {
 
 impl<T: for<'a> Parse<Input<'a, Extra>>, Extra: Clone> ParseSliceExtra<Extra> for T {}
 
-pub trait ParseAs<'a> {}
+pub trait ParseAs<'a> {
+    fn parse_as<T: ParseSlice>(&self) -> crate::Result<T>;
+}
 
-impl<'a> ParseAs<'a> for &'a [u8] {}
+impl<'a> ParseAs<'a> for &'a [u8] {
+    fn parse_as<T: ParseSlice>(&self) -> crate::Result<T> {
+        T::parse_slice(self, &(Arc::new(Vec::new()) as _))
+    }
+}
 
 #[derive(Debug, ToOutput)]
 pub struct DiffHashes {
