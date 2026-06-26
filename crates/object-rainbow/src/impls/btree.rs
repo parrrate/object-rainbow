@@ -76,6 +76,7 @@ impl<K: ByteOrd + InlineOutput, V: ByteOrd + InlineOutput> ByteOrd for BTreeMap<
     }
 }
 
+impl<K, V> PlainCollection for BTreeMap<K, V> {}
 impl<K, V> VecLike for BTreeMap<K, V> {}
 
 impl<K: Ord> Equivalent<BTreeMap<K, ()>> for BTreeSet<K> {
