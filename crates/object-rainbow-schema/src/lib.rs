@@ -81,7 +81,16 @@ pub trait AbstractCollection {
 }
 
 #[derive(
-    Debug, Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone,
+    Debug,
+    Enum,
+    ToOutput,
+    Parse,
+    ParseInline,
+    MaybeHasNiche,
+    ListHashes,
+    Topological,
+    Clone,
+    PartialEq,
 )]
 #[enumtag("char")]
 #[niche(tag)]
