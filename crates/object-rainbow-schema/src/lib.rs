@@ -1085,6 +1085,12 @@ assert_impl!(
     impl ReflessInline for TailSchema {}
 );
 
+impl SizeSchema for ArraySchema {
+    fn size(&self) -> Option<u64> {
+        self.len.checked_mul(self.schema.size()?)
+    }
+}
+
 impl SizeSchema for InlineSchema {
     fn size(&self) -> Option<u64> {
         match self {
@@ -1094,7 +1100,7 @@ impl SizeSchema for InlineSchema {
             Self::Point(_) => Some(32),
             Self::Nt(_) => None,
             Self::Concat(a, b) => a.size()?.checked_add(b.size()?),
-            Self::Array(_) => None,
+            Self::Array(schema) => schema.size(),
             Self::Numeric(schema) => schema.size(),
             Self::Enum(_) => None,
             #[cfg(feature = "_collections")]
