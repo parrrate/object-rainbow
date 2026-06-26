@@ -11,7 +11,7 @@ use crate::*;
 
 #[cfg(feature = "_collections-map")]
 pub type KvSchema = (Arc<InlineSchema>, Arc<InlineSchema>);
-#[cfg(feature = "amt")]
+#[cfg(feature = "_collections-set")]
 pub type ItemSchema = Arc<InlineSchema>;
 
 #[derive(Enum, ToOutput, Parse, ParseInline, ListHashes, Topological, Clone)]
