@@ -735,7 +735,7 @@ mod private {
 )]
 pub struct HamtMap<V>(Point<private::N32<V>>);
 
-impl<V: std::fmt::Debug> std::fmt::Debug for HamtMap<V> {
+impl<V> std::fmt::Debug for HamtMap<V> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("HamtMap").field(&self.0).finish()
     }
