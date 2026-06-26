@@ -12,7 +12,7 @@ use crate::*;
 
 #[derive(Enum, ToOutput, Parse, ParseInline, ListHashes, Topological, Clone)]
 pub enum CollectionSchema {
-    Amt(
+    AmtMap(
         #[cfg(feature = "amt")] (Arc<InlineSchema>, Arc<InlineSchema>),
         #[cfg(not(feature = "amt"))] Infallible,
     ),
@@ -24,7 +24,7 @@ impl Tagged for CollectionSchema {}
 impl AbstractSchema for CollectionSchema {
     fn niche(&self) -> SchemaNiche {
         match self {
-            Self::Amt(_) => SchemaNiche::point(),
+            Self::AmtMap(_) => SchemaNiche::point(),
         }
     }
 }
@@ -56,7 +56,7 @@ impl<I: PointInput<Extra = CollectionSchema>> ParseInline<I> for CollectionValue
         let schema = input.extra().clone();
         match schema {
             #[cfg(feature = "amt")]
-            CollectionSchema::Amt(kv) => Ok(Self::AmtMap(input.parse_inline_extra(kv)?)),
+            CollectionSchema::AmtMap(kv) => Ok(Self::AmtMap(input.parse_inline_extra(kv)?)),
         }
     }
 }
