@@ -59,6 +59,18 @@ pub struct AmtSetValue {
     pub set: Point<AmtSetInner>,
 }
 
+impl<T> MapValue<T>
+where
+    Point<T>: Default,
+{
+    pub fn schema_default(kv: KvSchema) -> Self {
+        Self {
+            kv: Extras(kv),
+            map: Default::default(),
+        }
+    }
+}
+
 #[cfg(feature = "amt")]
 impl AbstractValue for MapValue<AmtMapInner> {
     type Schema = CollectionSchema;
@@ -115,10 +127,7 @@ impl DefaultSchema<CollectionValue> for CollectionSchema {
     fn default_value(&self) -> Option<CollectionValue> {
         match self.clone() {
             #[cfg(feature = "amt")]
-            Self::AmtMap(kv) => Some(CollectionValue::AmtMap(MapValue {
-                kv: Extras(kv),
-                map: Default::default(),
-            })),
+            Self::AmtMap(kv) => Some(CollectionValue::AmtMap(MapValue::schema_default(kv))),
             #[cfg(feature = "amt")]
             Self::AmtSet(item) => Some(CollectionValue::AmtSet(AmtSetValue {
                 item: Extras(item),
