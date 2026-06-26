@@ -8,6 +8,7 @@ use object_rainbow::{
     map_extra::MappedExtra,
     tuple_extra::{Extra0, Extra1},
     tuple_of_arrays::try_divide,
+    zero_terminated::Zt,
 };
 use object_rainbow_point::Extras;
 
@@ -1193,6 +1194,11 @@ impl ItemSizeSchema for TailSchema {
             Self::Enum(_) => None,
         }
     }
+}
+
+pub struct ValueZt {
+    pub schema: Extras<Arc<TailSchema>>,
+    pub value: Zt<Arc<TailValue>>,
 }
 
 #[test]
