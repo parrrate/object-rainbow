@@ -70,8 +70,8 @@ impl<I: PointInput<Extra = PointSchema>> ParseInline<I> for ValuePoint {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let schema = input.extra().clone().schema;
         Ok(Self {
-            point: input.parse_inline_extra(schema.clone())?,
-            schema: Extras(schema),
+            schema: Extras(schema.clone()),
+            point: input.parse_inline_extra(schema)?,
         })
     }
 }
