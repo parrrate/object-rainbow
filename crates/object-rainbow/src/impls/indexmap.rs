@@ -66,6 +66,8 @@ impl<K: Tagged, V: Tagged> Tagged for IndexMap<K, V> {
     const TAGS: Tags = Tags(&[], &[&K::TAGS, &V::TAGS]);
 }
 
+impl<K, V> PlainCollection for IndexMap<K, V> {}
+
 impl<K: Eq + std::hash::Hash> Equivalent<IndexMap<K, ()>> for IndexSet<K> {
     fn into_equivalent(self) -> IndexMap<K, ()> {
         self.into_iter().map(|k| (k, ())).collect()
