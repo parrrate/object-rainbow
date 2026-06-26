@@ -67,7 +67,9 @@ pub struct KvValue<T> {
     pub map: T,
 }
 #[cfg(feature = "_collections-item")]
-#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
+#[derive(
+    Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline, PartialEq,
+)]
 pub struct ItemValue<T> {
     pub item: Extras<ItemSchema>,
     pub set: T,
