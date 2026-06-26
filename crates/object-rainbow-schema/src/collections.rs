@@ -29,6 +29,12 @@ impl AbstractSchema for CollectionSchema {
     }
 }
 
+#[cfg(feature = "amt")]
+pub struct AmtValue {
+    pub kv: (Arc<InlineSchema>, Arc<InlineSchema>),
+    pub map: Point<AmtMap<MappedExtra<InlineValue, Extra0>, MappedExtra<InlineValue, Extra1>>>,
+}
+
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, ParseAsInline)]
 #[rainbow(untagged)]
 pub enum CollectionValue {
