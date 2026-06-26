@@ -21,6 +21,14 @@ pub enum CollectionSchema {
 impl InlineOutput for CollectionSchema {}
 impl Tagged for CollectionSchema {}
 
+impl AbstractSchema for CollectionSchema {
+    fn niche(&self) -> SchemaNiche {
+        match self {
+            Self::Amt(_) => SchemaNiche::point(),
+        }
+    }
+}
+
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, ParseAsInline)]
 #[rainbow(untagged)]
 pub enum CollectionValue {
