@@ -27,6 +27,10 @@ pub enum CollectionSchema {
         #[cfg(feature = "amt")] ItemSchema,
         #[cfg(not(feature = "amt"))] Infallible,
     ),
+    HamtMap(
+        #[cfg(feature = "hamt")] ItemSchema,
+        #[cfg(not(feature = "hamt"))] Infallible,
+    ),
 }
 
 impl InlineOutput for CollectionSchema {}
@@ -37,6 +41,7 @@ impl AbstractSchema for CollectionSchema {
         match self {
             Self::AmtMap(_) => SchemaNiche::point(),
             Self::AmtSet(_) => SchemaNiche::point(),
+            Self::HamtMap(_) => SchemaNiche::point(),
         }
     }
 }
@@ -103,6 +108,14 @@ impl AbstractValue for ItemValue<AmtSetInner> {
         CollectionSchema::AmtSet(self.item.0.clone())
     }
 }
+#[cfg(feature = "hamt")]
+impl AbstractValue for ItemValue<HamtMapInner> {
+    type Schema = CollectionSchema;
+
+    fn schema(&self) -> Self::Schema {
+        CollectionSchema::HamtMap(self.item.0.clone())
+    }
+}
 
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, ParseAsInline)]
 #[rainbow(untagged)]
@@ -111,6 +124,8 @@ pub enum CollectionValue {
     AmtMap(KvValue<AmtMapInner>),
     #[cfg(feature = "amt")]
     AmtSet(ItemValue<AmtSetInner>),
+    #[cfg(feature = "hamt")]
+    HamtMap(ItemValue<HamtMapInner>),
 }
 
 impl Tagged for CollectionValue {}
@@ -122,6 +137,8 @@ impl<I: PointInput<Extra = CollectionSchema>> ParseInline<I> for CollectionValue
             CollectionSchema::AmtMap(kv) => Ok(Self::AmtMap(input.parse_inline_extra(kv)?)),
             #[cfg(feature = "amt")]
             CollectionSchema::AmtSet(item) => Ok(Self::AmtSet(input.parse_inline_extra(item)?)),
+            #[cfg(feature = "hamt")]
+            CollectionSchema::HamtMap(item) => Ok(Self::HamtMap(input.parse_inline_extra(item)?)),
         }
     }
 }
@@ -135,6 +152,8 @@ impl AbstractValue for CollectionValue {
             Self::AmtMap(ref value) => value.schema(),
             #[cfg(feature = "amt")]
             Self::AmtSet(ref value) => value.schema(),
+            #[cfg(feature = "hamt")]
+            Self::HamtMap(ref value) => value.schema(),
         }
     }
 }
@@ -146,6 +165,8 @@ impl DefaultSchema<CollectionValue> for CollectionSchema {
             Self::AmtMap(kv) => Some(CollectionValue::AmtMap(KvValue::schema_default(kv))),
             #[cfg(feature = "amt")]
             Self::AmtSet(item) => Some(CollectionValue::AmtSet(ItemValue::schema_default(item))),
+            #[cfg(feature = "hamt")]
+            Self::HamtMap(item) => Some(CollectionValue::HamtMap(ItemValue::schema_default(item))),
         }
     }
 }
@@ -157,6 +178,8 @@ impl DefaultIsMin for CollectionSchema {
             Self::AmtMap(_) => false,
             #[cfg(feature = "amt")]
             Self::AmtSet(_) => false,
+            #[cfg(feature = "hamt")]
+            Self::HamtMap(_) => false,
         }
     }
 }
