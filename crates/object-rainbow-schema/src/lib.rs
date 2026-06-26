@@ -787,7 +787,7 @@ impl AbstractValue for TailValue {
             Self::Option(o) => o.schema(),
             Self::Sequence(s) => s.schema(),
             Self::Concat(a, b) => TailSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
-            Self::Enum(e) => TailSchema::Enum(e.schema()),
+            Self::Enum(e) => e.schema().into(),
         }
     }
 }
@@ -846,6 +846,12 @@ pub struct EnumSchema<T> {
 
 impl From<EnumSchema<InlineSchema>> for InlineSchema {
     fn from(schema: EnumSchema<InlineSchema>) -> Self {
+        Self::Enum(schema)
+    }
+}
+
+impl From<EnumSchema<TailSchema>> for TailSchema {
+    fn from(schema: EnumSchema<TailSchema>) -> Self {
         Self::Enum(schema)
     }
 }
