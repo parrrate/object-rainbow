@@ -1406,32 +1406,30 @@ fn tuple_of_arrays() -> object_rainbow::Result<()> {
     let resolve = &(Arc::new(object_rainbow::TopoVec::new()) as _);
     let schema = TailSchema::parse_slice(&[4, 2, 7, 0, 2, 7, 2], resolve)?;
     let value = TailValue::parse_slice_extra(&[1, 2, 3, 4, 5, 6], resolve, &Arc::new(schema))?;
-    let TailValue::ToA(ValueToA(a, b)) = value else {
-        unreachable!()
-    };
-    let TailValue::Sequence(ValueSequence { items: a, .. }) = &**a else {
-        unreachable!()
-    };
-    let TailValue::Sequence(ValueSequence { items: b, .. }) = &**b else {
-        unreachable!()
-    };
     assert_eq!(
-        a.iter()
-            .map(|a| match &**a {
-                InlineValue::Numeric(NumericValue::U8(a)) => *a,
-                _ => unreachable!(),
-            })
-            .collect::<Vec<_>>(),
-        [1, 2],
-    );
-    assert_eq!(
-        b.iter()
-            .map(|b| match &**b {
-                InlineValue::Numeric(NumericValue::U16(b)) => *b,
-                _ => unreachable!(),
-            })
-            .collect::<Vec<_>>(),
-        [0x0304, 0x0506],
+        value,
+        TailValue::ToA(ValueToA(
+            MappedExtra(
+                Default::default(),
+                Arc::new(TailValue::Sequence(ValueSequence {
+                    schema: Extras(Arc::new(InlineSchema::Numeric(NumericSchema::U8))),
+                    items: vec![
+                        Arc::new(InlineValue::Numeric(NumericValue::U8(1))),
+                        Arc::new(InlineValue::Numeric(NumericValue::U8(2))),
+                    ]
+                })),
+            ),
+            MappedExtra(
+                Default::default(),
+                Arc::new(TailValue::Sequence(ValueSequence {
+                    schema: Extras(Arc::new(InlineSchema::Numeric(NumericSchema::U16))),
+                    items: vec![
+                        Arc::new(InlineValue::Numeric(NumericValue::U16(0x0304))),
+                        Arc::new(InlineValue::Numeric(NumericValue::U16(0x0506))),
+                    ]
+                })),
+            ),
+        )),
     );
     Ok(())
 }
