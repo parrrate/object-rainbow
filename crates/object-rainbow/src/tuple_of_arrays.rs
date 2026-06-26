@@ -52,3 +52,10 @@ impl<A: Extend<L>, B: Extend<R>, L, R> Extend<(L, R)> for TupleOfArrays<A, B> {
         self.1.extend(b);
     }
 }
+
+impl<A: FromIterator<L>, B: FromIterator<R>, L, R> FromIterator<(L, R)> for TupleOfArrays<A, B> {
+    fn from_iter<T: IntoIterator<Item = (L, R)>>(iter: T) -> Self {
+        let (a, b): (Vec<_>, Vec<_>) = iter.into_iter().collect();
+        Self(a.into_iter().collect(), b.into_iter().collect())
+    }
+}
