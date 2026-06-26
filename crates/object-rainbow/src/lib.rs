@@ -839,7 +839,9 @@ impl<'a> ParseAs<'a> for &'a [u8] {
     }
 }
 
-pub trait ParseAsExtra<'a, Extra: Clone> {}
+pub trait ParseAsExtra<'a, Extra: Clone> {
+    fn parse_as_extra<T: ParseSliceExtra<Extra>>(&self) -> crate::Result<T>;
+}
 
 #[derive(Debug, ToOutput)]
 pub struct DiffHashes {
