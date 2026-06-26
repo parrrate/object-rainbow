@@ -47,7 +47,7 @@ pub type AmtMapInner =
 pub type AmtSetInner = AmtSet<Arc<InlineValue>>;
 
 #[cfg(feature = "amt")]
-#[derive(ToOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
+#[derive(ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
 pub struct AmtMapValue {
     pub kv: Extras<KvSchema>,
     pub map: Point<AmtMapInner>,
@@ -66,8 +66,6 @@ impl ToOutput for AmtSetValue {
     }
 }
 
-#[cfg(feature = "amt")]
-impl InlineOutput for AmtMapValue {}
 #[cfg(feature = "amt")]
 impl InlineOutput for AmtSetValue {}
 
