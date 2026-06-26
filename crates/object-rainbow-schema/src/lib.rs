@@ -440,7 +440,7 @@ pub enum ValueOption<T: AbstractValue> {
     Some(Arc<T>),
 }
 
-#[derive(Debug, ParseAsInline, ListHashes, Topological)]
+#[derive(Debug, ParseAsInline, ListHashes, Topological, PartialEq)]
 pub struct ValueNt {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
@@ -488,7 +488,7 @@ where
     }
 }
 
-#[derive(Debug, ParseAsInline, ListHashes, Topological)]
+#[derive(Debug, ParseAsInline, ListHashes, Topological, PartialEq)]
 pub struct ValueArray {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
@@ -607,7 +607,7 @@ where
     }
 }
 
-#[derive(Debug, ToOutput, ParseAsInline, ListHashes, Topological)]
+#[derive(Debug, ToOutput, ParseAsInline, ListHashes, Topological, PartialEq)]
 #[rainbow(untagged)]
 pub enum InlineValue {
     Unit,
@@ -1296,7 +1296,7 @@ impl ItemSizeSchema for TailSchema {
     }
 }
 
-#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline)]
+#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline, PartialEq)]
 pub struct ValueZt {
     pub schema: Extras<Arc<TailSchema>>,
     pub value: Zt<Arc<TailValue>>,
