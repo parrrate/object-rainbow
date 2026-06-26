@@ -411,6 +411,12 @@ pub struct ValueNt {
     pub schema: Arc<InlineSchema>,
 }
 
+impl AbstractCollection for ValueNt {
+    fn items(&self) -> Vec<Arc<InlineValue>> {
+        self.items.clone()
+    }
+}
+
 impl ToOutput for ValueNt {
     fn to_output(&self, output: &mut impl Output) {
         for item in &self.items {
