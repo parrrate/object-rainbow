@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{sequence::VecLike, *};
 
 #[derive(ListHashes, Topological, Tagged, Size)]
 pub struct TupleOfArrays<A, B>(A, B);
@@ -11,8 +11,8 @@ impl<A: ToOutput, B: ToOutput> ToOutput for TupleOfArrays<A, B> {
 }
 
 impl<
-    A: Parse<I> + IntoIterator<Item = Ae>,
-    B: Parse<I> + IntoIterator<Item = Be>,
+    A: Parse<I> + VecLike<Item = Ae>,
+    B: Parse<I> + VecLike<Item = Be>,
     I: ParseInput,
     Ae: Size,
     Be: Size,
