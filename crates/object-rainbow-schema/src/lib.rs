@@ -757,7 +757,7 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             Self::Collection(schema) => schema.default_value().map(From::from),
             #[cfg(not(feature = "_collections"))]
             Self::Collection(_) => None,
-            Self::Zt(schema) => ValueZt::schema_default(schema.clone()).map(InlineValue::Zt),
+            Self::Zt(schema) => ValueZt::schema_default(schema.clone()).map(From::from),
         }
     }
 }
@@ -1245,6 +1245,12 @@ impl AbstractValue for ValueZt {
 
     fn schema(&self) -> Self::Schema {
         InlineSchema::Zt(self.schema.0.clone())
+    }
+}
+
+impl From<ValueZt> for InlineValue {
+    fn from(value: ValueZt) -> Self {
+        Self::Zt(value)
     }
 }
 
