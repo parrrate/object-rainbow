@@ -1,5 +1,6 @@
 use crate::*;
 
+#[derive(ListHashes)]
 pub struct TupleOfArrays<A, B>(A, B);
 
 impl<A: ToOutput, B: ToOutput> ToOutput for TupleOfArrays<A, B> {
