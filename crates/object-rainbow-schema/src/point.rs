@@ -43,7 +43,7 @@ impl DefaultSchema<ValuePoint> for PointSchema {
 }
 
 impl From<PointSchema> for InlineSchema {
-    fn from(PointSchema { schema }: PointSchema) -> Self {
+    fn from(schema: PointSchema) -> Self {
         Self::Point(schema)
     }
 }
@@ -73,11 +73,11 @@ impl AbstractValue for ValuePoint {
     }
 }
 
-impl<I: PointInput<Extra = Arc<TailSchema>>> ParseInline<I> for ValuePoint {
+impl<I: PointInput<Extra = PointSchema>> ParseInline<I> for ValuePoint {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let schema = input.extra().clone();
+        let schema = input.extra().clone().schema;
         Ok(Self {
-            point: input.parse_inline()?,
+            point: input.parse_inline_extra(schema.clone())?,
             schema,
         })
     }

@@ -367,7 +367,7 @@ pub enum InlineSchema {
     Unit,
     Option(Arc<Self>),
     Point(
-        #[cfg(feature = "point")] Arc<TailSchema>,
+        #[cfg(feature = "point")] PointSchema,
         #[cfg(not(feature = "point"))] Infallible,
     ),
     Nt(Arc<Self>),
@@ -775,11 +775,7 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             Self::Unit => Some(InlineValue::Unit),
             Self::Option(schema) => Some(InlineValue::Option(ValueOption::None(schema.clone()))),
             #[cfg(feature = "point")]
-            Self::Point(schema) => PointSchema {
-                schema: schema.clone(),
-            }
-            .default_value()
-            .map(From::from),
+            Self::Point(schema) => schema.default_value().map(From::from),
             #[cfg(not(feature = "point"))]
             Self::Point(_) => None,
             Self::Nt(schema) => Some(InlineValue::Nt(ValueNt {
