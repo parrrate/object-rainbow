@@ -74,6 +74,7 @@ where
         }
     }
 }
+#[cfg(feature = "_collections-item")]
 impl<T> ItemValue<T>
 where
     Point<T>: Default,
