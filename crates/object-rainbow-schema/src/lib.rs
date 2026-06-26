@@ -1204,6 +1204,16 @@ pub struct ValueZt {
 
 impl Tagged for ValueZt {}
 
+impl ValueZt {
+    pub fn schema_default(schema: Arc<TailSchema>) -> Option<Self> {
+        let value = Zt::new(Arc::new(schema.default_value()?)).ok()?;
+        Some(Self {
+            schema: Extras(schema),
+            value,
+        })
+    }
+}
+
 #[test]
 fn tuple_of_arrays() -> object_rainbow::Result<()> {
     use object_rainbow::{ParseSlice, ParseSliceExtra};
