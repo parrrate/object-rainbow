@@ -45,7 +45,7 @@ impl ToOutput for AmtValue {
 #[rainbow(untagged)]
 pub enum CollectionValue {
     #[cfg(feature = "amt")]
-    Amt(Point<AmtMap<MappedExtra<InlineValue, Extra0>, MappedExtra<InlineValue, Extra1>>>),
+    AmtMap(Point<AmtMap<MappedExtra<InlineValue, Extra0>, MappedExtra<InlineValue, Extra1>>>),
 }
 
 impl Tagged for CollectionValue {}
@@ -56,7 +56,7 @@ impl<I: PointInput<Extra = CollectionSchema>> ParseInline<I> for CollectionValue
         let schema = input.extra().clone();
         match schema {
             #[cfg(feature = "amt")]
-            CollectionSchema::Amt(kv) => Ok(Self::Amt(input.parse_inline_extra(kv)?)),
+            CollectionSchema::Amt(kv) => Ok(Self::AmtMap(input.parse_inline_extra(kv)?)),
         }
     }
 }
