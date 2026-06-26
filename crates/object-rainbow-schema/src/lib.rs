@@ -511,6 +511,12 @@ pub struct ValueSequence {
     pub items: Vec<Arc<InlineValue>>,
 }
 
+impl AbstractCollection for ValueSequence {
+    fn items(&self) -> Vec<Arc<InlineValue>> {
+        self.items.clone()
+    }
+}
+
 impl Tagged for ValueSequence {}
 
 impl AbstractValue for ValueSequence {
