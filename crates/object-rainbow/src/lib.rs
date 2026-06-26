@@ -831,6 +831,8 @@ impl<T: for<'a> Parse<Input<'a, Extra>>, Extra: Clone> ParseSliceExtra<Extra> fo
 
 pub trait ParseAs<'a> {}
 
+impl<'a> ParseAs<'a> for &'a [u8] {}
+
 #[derive(Debug, ToOutput)]
 pub struct DiffHashes {
     pub tags: Hash,
