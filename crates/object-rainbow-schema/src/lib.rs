@@ -2,7 +2,7 @@ use std::{convert::Infallible, num::NonZero, sync::Arc};
 
 use object_rainbow::{
     Enum, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline, ParseInline,
-    PointInput, ReflessInline, Tagged, ToOutput, Topological, Traversible,
+    PointInput, ReflessInline, Tagged, ToOutput, Topological, Traversible, length_prefixed::LpVec,
 };
 
 #[cfg(feature = "point")]
@@ -802,5 +802,5 @@ where
 
 pub struct EnumSchema<T> {
     pub kind: NumericSchema,
-    pub variants: Vec<Arc<T>>,
+    pub variants: LpVec<Arc<T>>,
 }
