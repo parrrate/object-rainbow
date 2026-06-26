@@ -5,6 +5,8 @@ use object_rainbow::{
 };
 #[cfg(feature = "amt")]
 use object_rainbow_amt::AmtMap;
+#[cfg(feature = "amt")]
+use object_rainbow_point::Point;
 
 use crate::*;
 
@@ -23,7 +25,7 @@ impl Tagged for CollectionSchema {}
 #[rainbow(untagged)]
 pub enum CollectionValue {
     #[cfg(feature = "amt")]
-    Amt(AmtMap<MappedExtra<InlineValue, Extra0>, MappedExtra<InlineValue, Extra1>>),
+    Amt(Point<AmtMap<MappedExtra<InlineValue, Extra0>, MappedExtra<InlineValue, Extra1>>>),
 }
 
 impl Tagged for CollectionValue {}
