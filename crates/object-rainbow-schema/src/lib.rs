@@ -1354,12 +1354,14 @@ impl AbstractCollection for InlineValue {
         match self {
             Self::Unit => Vec::new(),
             Self::Option(value) => value.items(),
+            #[cfg(feature = "point")]
             Self::Point(_) => Vec::new(),
             Self::Nt(value) => value.items(),
             Self::Concat(a, b) => [a.items(), b.items()].concat(),
             Self::Array(value) => value.items(),
             Self::Numeric(_) => Vec::new(),
             Self::Enum(value) => value.items(),
+            #[cfg(feature = "_collections")]
             Self::Collection(_) => Vec::new(),
             Self::Zt(value) => value.items(),
         }
