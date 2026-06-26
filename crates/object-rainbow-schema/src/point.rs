@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline, ParseInline, PointInput,
-    Tagged, ToOutput, Topological,
+    InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseAsInline, ParseInline, PointInput, Tagged,
+    ToOutput, Topological,
 };
 use object_rainbow_point::{Extras, IntoPoint, Point};
 
@@ -48,16 +48,10 @@ impl From<PointSchema> for InlineSchema {
     }
 }
 
-#[derive(ListHashes, Topological, ParseAsInline)]
+#[derive(ToOutput, ListHashes, Topological, ParseAsInline)]
 pub struct ValuePoint {
     pub schema: Extras<Arc<TailSchema>>,
     pub point: Point<Arc<TailValue>>,
-}
-
-impl ToOutput for ValuePoint {
-    fn to_output(&self, output: &mut impl Output) {
-        self.point.to_output(output);
-    }
 }
 
 impl InlineOutput for ValuePoint {}
