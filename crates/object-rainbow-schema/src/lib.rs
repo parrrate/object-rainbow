@@ -476,7 +476,7 @@ impl From<ValueArray> for InlineValue {
     }
 }
 
-#[derive(ToOutput, ListHashes, Topological)]
+#[derive(ToOutput, ListHashes, Topological, Parse)]
 pub struct ValueSequence {
     pub schema: Extras<Arc<InlineSchema>>,
     pub items: Vec<Arc<InlineValue>>,
@@ -489,18 +489,6 @@ impl AbstractValue for ValueSequence {
 
     fn schema(&self) -> Self::Schema {
         TailSchema::Sequence(self.schema.0.clone())
-    }
-}
-
-impl<I: PointInput<Extra = Arc<InlineSchema>>> Parse<I> for ValueSequence
-where
-    InlineValue: ParseInline<I>,
-{
-    fn parse(mut input: I) -> object_rainbow::Result<Self> {
-        Ok(Self {
-            schema: input.parse_inline()?,
-            items: input.parse()?,
-        })
     }
 }
 
