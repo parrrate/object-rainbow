@@ -27,6 +27,10 @@ pub trait AbstractValue: ToOutput {
     fn schema(&self) -> Self::Schema;
 }
 
+pub trait DefaultIsMin {
+    fn default_is_min(&self) -> bool;
+}
+
 pub trait DefaultSchema<T: AbstractValue<Schema = Self>>: AbstractSchema {
     fn default_value(&self) -> Option<T>;
 }
