@@ -300,6 +300,7 @@ pub enum TailSchema {
     Option(Arc<Self>),
     Sequence(Arc<InlineSchema>),
     Concat(Arc<InlineSchema>, Arc<Self>),
+    Enum(EnumSchema<Self>),
 }
 
 impl InlineOutput for TailSchema {}
@@ -459,6 +460,7 @@ pub enum TailValue {
     Option(ValueOption<Self>),
     Sequence(ValueSequence),
     Concat(Arc<InlineValue>, Arc<Self>),
+    Enum(EnumValue<Self>),
 }
 
 impl Tagged for TailValue {}
@@ -748,6 +750,7 @@ impl AbstractSchema for TailSchema {
             Self::Option(schema) => schema.niche().option(),
             Self::Sequence(_) => SchemaNiche::Cut,
             Self::Concat(a, b) => SchemaNiche::concat(Arc::new(a.niche()), Arc::new(b.niche())),
+            Self::Enum(schema) => schema.niche(),
         }
     }
 }
@@ -771,6 +774,7 @@ impl DefaultSchema<TailValue> for TailSchema {
                 Arc::new(a.default_value()?),
                 Arc::new(b.default_value()?),
             )),
+            Self::Enum(schema) => schema.default_value().map(TailValue::Enum),
         }
     }
 }
@@ -783,6 +787,7 @@ impl AbstractValue for TailValue {
             Self::Option(o) => o.schema(),
             Self::Sequence(s) => s.schema(),
             Self::Concat(a, b) => TailSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
+            Self::Enum(e) => TailSchema::Enum(e.schema()),
         }
     }
 }
@@ -828,6 +833,7 @@ where
                 input.parse_inline_extra(a.clone())?,
                 input.parse_extra(b.clone())?,
             ),
+            TailSchema::Enum(schema) => Self::Enum(input.parse_extra(schema.clone())?),
         })
     }
 }
