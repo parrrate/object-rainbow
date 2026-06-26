@@ -1478,10 +1478,16 @@ fn gen_parse(
                 quote! {
                     ::object_rainbow::enumkind::EnumParse::parse_as_enum(input)
                 },
-                Some(quote! {
-                    Ok(match kind {
-                        #(#parse)*
-                    })
+                Some(if data.variants.is_empty() {
+                    quote! {
+                        match kind {}
+                    }
+                } else {
+                    quote! {
+                        Ok(match kind {
+                            #(#parse)*
+                        })
+                    }
                 }),
             )
         }
