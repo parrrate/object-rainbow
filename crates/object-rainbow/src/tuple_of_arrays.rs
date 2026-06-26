@@ -42,3 +42,5 @@ impl<A: IntoIterator, B: IntoIterator> IntoIterator for TupleOfArrays<A, B> {
         self.0.into_iter().zip(self.1)
     }
 }
+
+impl<A: PlainCollection, B: PlainCollection> PlainCollection for TupleOfArrays<A, B> {}
