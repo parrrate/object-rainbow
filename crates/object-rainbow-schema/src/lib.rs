@@ -663,6 +663,22 @@ impl DefaultSchema<InlineValue> for InlineSchema {
     }
 }
 
+impl DefaultIsMin for InlineSchema {
+    fn default_is_min(&self) -> bool {
+        match self {
+            Self::Never => false,
+            Self::Unit => true,
+            Self::Option(_) => true,
+            Self::Point(_) => false,
+            Self::Nt(_) => true,
+            Self::Concat(a, b) => a.default_is_min() && b.default_is_min(),
+            Self::Array(schema) => schema.default_is_min(),
+            Self::Numeric(schema) => schema.default_is_min(),
+            Self::Enum(schema) => schema.default_is_min(),
+        }
+    }
+}
+
 impl AbstractValue for InlineValue {
     type Schema = InlineSchema;
     fn schema(&self) -> Self::Schema {
