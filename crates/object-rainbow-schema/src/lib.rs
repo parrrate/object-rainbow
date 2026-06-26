@@ -49,6 +49,10 @@ pub trait DefaultSchema<T: AbstractValue<Schema = Self>>: AbstractSchema {
     fn default_value(&self) -> Option<T>;
 }
 
+pub trait SizeSchema {
+    fn size(&self) -> Option<u64>;
+}
+
 #[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone)]
 #[enumtag("char")]
 #[niche(tag)]
