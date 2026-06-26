@@ -100,3 +100,14 @@ impl AbstractValue for CollectionValue {
         }
     }
 }
+
+impl DefaultSchema<CollectionValue> for CollectionSchema {
+    fn default_value(&self) -> Option<CollectionValue> {
+        match *self {
+            Self::AmtMap(ref kv) => Some(CollectionValue::AmtMap(AmtMapValue {
+                kv: kv.clone(),
+                map: Default::default(),
+            })),
+        }
+    }
+}
