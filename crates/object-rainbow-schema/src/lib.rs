@@ -811,3 +811,9 @@ impl<T: AbstractSchema> AbstractSchema for EnumSchema<T> {
         self.kind.niche().stop()
     }
 }
+
+pub struct EnumValue<T: AbstractValue> {
+    pub kind: NumericValue,
+    pub variants: Arc<LpVec<Arc<T::Schema>>>,
+    pub value: T,
+}
