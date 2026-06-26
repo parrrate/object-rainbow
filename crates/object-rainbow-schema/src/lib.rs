@@ -3,7 +3,10 @@ use std::{convert::Infallible, num::NonZero, sync::Arc};
 use object_rainbow::{
     Enum, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline,
     ParseInline, PointInput, ReflessInline, Tagged, ToOutput, Topological, Traversible,
-    assert_impl, length_prefixed::LpVec,
+    assert_impl,
+    length_prefixed::LpVec,
+    map_extra::MappedExtra,
+    tuple_extra::{Extra0, Extra1},
 };
 
 #[cfg(feature = "_collections")]
@@ -506,7 +509,10 @@ where
 }
 
 #[derive(ListHashes, Topological)]
-pub struct ValueToA(pub Arc<TailValue>, pub Arc<TailValue>);
+pub struct ValueToA(
+    pub MappedExtra<Arc<TailValue>, Extra0>,
+    pub MappedExtra<Arc<TailValue>, Extra1>,
+);
 
 impl ToOutput for ValueToA {
     fn to_output(&self, output: &mut impl Output) {
