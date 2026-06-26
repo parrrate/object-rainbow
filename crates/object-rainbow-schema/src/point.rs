@@ -50,8 +50,8 @@ impl From<PointSchema> for InlineSchema {
 
 #[derive(ListHashes, Topological, ParseAsInline)]
 pub struct ValuePoint {
-    pub point: Point<Arc<TailValue>>,
     pub schema: Arc<TailSchema>,
+    pub point: Point<Arc<TailValue>>,
 }
 
 impl ToOutput for ValuePoint {
