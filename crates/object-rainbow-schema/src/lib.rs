@@ -864,3 +864,24 @@ impl<T: AbstractValue> AbstractValue for EnumValue<T> {
         }
     }
 }
+
+impl<
+    T: AbstractValue + Parse<I::WithExtra<Arc<T::Schema>>>,
+    I: PointInput<Extra = EnumSchema<T::Schema>>,
+> Parse<I> for EnumValue<T>
+{
+    fn parse(mut input: I) -> object_rainbow::Result<Self> {
+        let EnumSchema { kind, variants } = input.extra().clone();
+        let kind: NumericValue = input.parse_inline_extra(kind.clone())?;
+        let schema = variants
+            .get(kind.index().ok_or(object_rainbow::Error::OutOfBounds)?)
+            .ok_or(object_rainbow::Error::OutOfBounds)?
+            .clone();
+        let value = input.parse_extra(schema)?;
+        Ok(Self {
+            kind,
+            variants,
+            value,
+        })
+    }
+}
