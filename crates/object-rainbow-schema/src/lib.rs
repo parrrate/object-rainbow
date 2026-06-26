@@ -414,7 +414,7 @@ pub enum TailSchema {
 impl InlineOutput for TailSchema {}
 impl Tagged for TailSchema {}
 
-#[derive(Debug, ListHashes, Topological, Tagged)]
+#[derive(Debug, ListHashes, Topological, Tagged, PartialEq)]
 #[rainbow(untagged)]
 pub enum ValueOption<T: AbstractValue> {
     None(Arc<T::Schema>),
