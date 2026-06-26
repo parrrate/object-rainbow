@@ -476,16 +476,10 @@ impl From<ValueArray> for InlineValue {
     }
 }
 
-#[derive(ListHashes, Topological)]
+#[derive(ToOutput, ListHashes, Topological)]
 pub struct ValueSequence {
     pub schema: Extras<Arc<InlineSchema>>,
     pub items: Vec<Arc<InlineValue>>,
-}
-
-impl ToOutput for ValueSequence {
-    fn to_output(&self, output: &mut impl Output) {
-        self.items.to_output(output);
-    }
 }
 
 impl Tagged for ValueSequence {}
