@@ -12,6 +12,8 @@ use crate::*;
 
 #[cfg(feature = "amt")]
 pub type AmtMapSchema = (Arc<InlineSchema>, Arc<InlineSchema>);
+#[cfg(feature = "amt")]
+pub type AmtSetSchema = Arc<InlineSchema>;
 
 #[derive(Enum, ToOutput, Parse, ParseInline, ListHashes, Topological, Clone)]
 pub enum CollectionSchema {
