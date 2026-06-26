@@ -505,6 +505,8 @@ where
     }
 }
 
+pub struct ValueToA(pub Arc<TailValue>, pub Arc<TailValue>);
+
 #[derive(ToOutput, ParseAsInline, ListHashes, Topological)]
 #[rainbow(untagged)]
 pub enum InlineValue {
