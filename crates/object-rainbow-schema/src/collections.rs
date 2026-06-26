@@ -54,9 +54,9 @@ pub struct MapValue<T> {
 }
 #[cfg(feature = "amt")]
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
-pub struct AmtSetValue {
+pub struct SetValue<T> {
     pub item: Extras<ItemSchema>,
-    pub set: Point<AmtSetInner>,
+    pub set: Point<T>,
 }
 
 impl<T> MapValue<T>
@@ -80,7 +80,7 @@ impl AbstractValue for MapValue<AmtMapInner> {
     }
 }
 #[cfg(feature = "amt")]
-impl AbstractValue for AmtSetValue {
+impl AbstractValue for SetValue<AmtSetInner> {
     type Schema = CollectionSchema;
 
     fn schema(&self) -> Self::Schema {
@@ -94,7 +94,7 @@ pub enum CollectionValue {
     #[cfg(feature = "amt")]
     AmtMap(MapValue<AmtMapInner>),
     #[cfg(feature = "amt")]
-    AmtSet(AmtSetValue),
+    AmtSet(SetValue<AmtSetInner>),
 }
 
 impl Tagged for CollectionValue {}
@@ -129,7 +129,7 @@ impl DefaultSchema<CollectionValue> for CollectionSchema {
             #[cfg(feature = "amt")]
             Self::AmtMap(kv) => Some(CollectionValue::AmtMap(MapValue::schema_default(kv))),
             #[cfg(feature = "amt")]
-            Self::AmtSet(item) => Some(CollectionValue::AmtSet(AmtSetValue {
+            Self::AmtSet(item) => Some(CollectionValue::AmtSet(SetValue {
                 item: Extras(item),
                 set: Default::default(),
             })),
