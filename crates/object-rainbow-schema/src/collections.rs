@@ -53,7 +53,7 @@ pub struct AmtMapValue {
     pub map: Point<AmtMapInner>,
 }
 #[cfg(feature = "amt")]
-#[derive(ListHashes, Topological, Tagged, Parse)]
+#[derive(ListHashes, Topological, Tagged, Parse, ParseInline)]
 pub struct AmtSetValue {
     pub item: Extras<ItemSchema>,
     pub set: Point<AmtSetInner>,
@@ -76,16 +76,6 @@ impl ToOutput for AmtSetValue {
 impl InlineOutput for AmtMapValue {}
 #[cfg(feature = "amt")]
 impl InlineOutput for AmtSetValue {}
-
-#[cfg(feature = "amt")]
-impl<I: PointInput<Extra = ItemSchema>> ParseInline<I> for AmtSetValue {
-    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        Ok(Self {
-            item: input.parse_inline()?,
-            set: input.parse_inline()?,
-        })
-    }
-}
 
 #[cfg(feature = "amt")]
 impl AbstractValue for AmtMapValue {
