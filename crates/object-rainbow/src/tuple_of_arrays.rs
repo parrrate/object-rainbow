@@ -7,6 +7,14 @@ use crate::{sequence::PlainCollection, *};
 )]
 pub struct TupleOfArrays<A, B>(A, B);
 
+impl<A: ByteOrd + Size, B: ByteOrd> ByteOrd for TupleOfArrays<A, B> {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.0
+            .bytes_cmp(&other.0)
+            .then_with(|| self.1.bytes_cmp(&other.1))
+    }
+}
+
 impl<A: ToOutput, B: ToOutput> ToOutput for TupleOfArrays<A, B> {
     fn to_output(&self, output: &mut impl crate::Output) {
         self.0.to_output(output);
