@@ -296,7 +296,7 @@ pub enum InlineSchema {
     Option(Arc<Self>),
     Point(
         #[cfg(feature = "point")] Arc<TailSchema>,
-        #[cfg(not(feature = "point"))] std::convert::Infallible,
+        #[cfg(not(feature = "point"))] Infallible,
     ),
     Nt(Arc<Self>),
     Concat(Arc<Self>, Arc<Self>),
