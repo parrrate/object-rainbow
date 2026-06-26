@@ -67,6 +67,24 @@ where
     }
 }
 
+impl<'a, A, B> IntoIterator for &'a mut TupleOfArrays<A, B>
+where
+    &'a mut A: IntoIterator,
+    &'a mut B: IntoIterator,
+{
+    type Item = (
+        <&'a mut A as IntoIterator>::Item,
+        <&'a mut B as IntoIterator>::Item,
+    );
+
+    type IntoIter =
+        Zip<<&'a mut A as IntoIterator>::IntoIter, <&'a mut B as IntoIterator>::IntoIter>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter().zip(&mut self.1)
+    }
+}
+
 impl<A: PlainCollection, B: PlainCollection> PlainCollection for TupleOfArrays<A, B> {}
 
 impl<A: Extend<L>, B: Extend<R>, L, R> Extend<(L, R)> for TupleOfArrays<A, B> {
