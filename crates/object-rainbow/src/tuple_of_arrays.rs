@@ -2,7 +2,9 @@ use std::iter::Zip;
 
 use crate::{sequence::PlainCollection, *};
 
-#[derive(ListHashes, Topological, Tagged, Size, Clone, Copy, Default, PartialEq, Eq)]
+#[derive(
+    ListHashes, Topological, Tagged, Size, Clone, Copy, Default, PartialEq, Eq, PartialOrd,
+)]
 pub struct TupleOfArrays<A, B>(A, B);
 
 impl<A: ToOutput, B: ToOutput> ToOutput for TupleOfArrays<A, B> {
