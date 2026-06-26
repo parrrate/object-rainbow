@@ -805,3 +805,9 @@ pub struct EnumSchema<T> {
     pub kind: NumericSchema,
     pub variants: LpVec<Arc<T>>,
 }
+
+impl<T: AbstractSchema> AbstractSchema for EnumSchema<T> {
+    fn niche(&self) -> SchemaNiche {
+        self.kind.niche().stop()
+    }
+}
