@@ -378,6 +378,7 @@ pub enum TailSchema {
     Concat(Arc<InlineSchema>, Arc<Self>),
     ToA(Arc<Self>, Arc<Self>),
     Enum(EnumSchema<Self>),
+    Bytes,
 }
 
 impl InlineOutput for TailSchema {}
@@ -568,6 +569,7 @@ pub enum TailValue {
     Concat(Arc<InlineValue>, Arc<Self>),
     ToA(ValueToA),
     Enum(EnumValue<Self>),
+    Bytes(Vec<u8>),
 }
 
 impl Tagged for TailValue {}
@@ -891,6 +893,7 @@ impl AbstractSchema for TailSchema {
             Self::Concat(a, b) => SchemaNiche::concat(Arc::new(a.niche()), Arc::new(b.niche())),
             Self::ToA(_, _) => SchemaNiche::Cut,
             Self::Enum(schema) => schema.niche(),
+            Self::Bytes => SchemaNiche::Cut,
         }
     }
 }
@@ -919,6 +922,7 @@ impl DefaultSchema<TailValue> for TailSchema {
                 Arc::new(b.default_value()?).into(),
             ))),
             Self::Enum(schema) => schema.default_value().map(From::from),
+            Self::Bytes => Some(TailValue::Bytes(Default::default())),
         }
     }
 }
@@ -932,6 +936,7 @@ impl DefaultIsMin for TailSchema {
             Self::Concat(a, b) => a.default_is_min() && b.default_is_min(),
             Self::ToA(_, _) => false,
             Self::Enum(schema) => schema.default_is_min(),
+            Self::Bytes => true,
         }
     }
 }
@@ -948,6 +953,7 @@ impl AbstractValue for TailValue {
                 TailSchema::ToA(Arc::new(a.schema()), Arc::new(b.schema()))
             }
             Self::Enum(e) => e.schema().into(),
+            Self::Bytes(_) => TailSchema::Bytes,
         }
     }
 }
@@ -1012,6 +1018,7 @@ where
             ),
             TailSchema::ToA(a, b) => Self::ToA(input.parse_extra((a.clone(), b.clone()))?),
             TailSchema::Enum(schema) => Self::Enum(input.parse_extra(schema.clone())?),
+            TailSchema::Bytes => Self::Bytes(input.parse()?),
         })
     }
 }
@@ -1210,6 +1217,7 @@ impl ItemSizeSchema for TailSchema {
             Self::Concat(_, _) => None,
             Self::ToA(a, b) => a.item_size()?.checked_add(b.item_size()?),
             Self::Enum(_) => None,
+            Self::Bytes => None,
         }
     }
 }
