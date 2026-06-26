@@ -62,6 +62,7 @@ pub struct ItemValue<T> {
     pub set: Point<T>,
 }
 
+#[cfg(feature = "_collections-kv")]
 impl<T> KvValue<T>
 where
     Point<T>: Default,
