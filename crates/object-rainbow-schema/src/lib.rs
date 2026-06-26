@@ -361,6 +361,7 @@ pub enum InlineSchema {
         #[cfg(feature = "_collections")] CollectionSchema,
         #[cfg(not(feature = "_collections"))] Infallible,
     ),
+    Zt(Arc<TailSchema>),
 }
 
 impl InlineOutput for InlineSchema {}
@@ -552,6 +553,7 @@ pub enum InlineValue {
     Enum(EnumValue<Self>),
     #[cfg(feature = "_collections")]
     Collection(CollectionValue),
+    Zt(ValueZt),
 }
 
 impl InlineOutput for InlineValue {}
@@ -713,6 +715,7 @@ impl AbstractSchema for InlineSchema {
             Self::Numeric(schema) => schema.niche(),
             Self::Enum(schema) => schema.niche(),
             Self::Collection(schema) => schema.niche(),
+            Self::Zt(_) => SchemaNiche::Cut,
         }
     }
 }
@@ -752,6 +755,7 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             Self::Collection(schema) => schema.default_value().map(From::from),
             #[cfg(not(feature = "_collections"))]
             Self::Collection(_) => None,
+            Self::Zt(schema) => ValueZt::schema_default(schema.clone()).map(InlineValue::Zt),
         }
     }
 }
@@ -769,6 +773,7 @@ impl DefaultIsMin for InlineSchema {
             Self::Numeric(schema) => schema.default_is_min(),
             Self::Enum(schema) => schema.default_is_min(),
             Self::Collection(schema) => schema.default_is_min(),
+            Self::Zt(schema) => schema.default_is_min(),
         }
     }
 }
@@ -788,6 +793,7 @@ impl AbstractValue for InlineValue {
             Self::Enum(e) => e.schema().into(),
             #[cfg(feature = "_collections")]
             Self::Collection(c) => c.schema().into(),
+            Self::Zt(z) => z.schema(),
         }
     }
 }
@@ -946,8 +952,18 @@ impl AbstractValue for TailValue {
     }
 }
 
-impl<I: PointInput<Extra = Arc<InlineSchema>, WithExtra<Arc<InlineSchema>> = I>> ParseInline<I>
-    for InlineValue
+impl<
+    I: PointInput<
+            Extra = Arc<InlineSchema>,
+            WithExtra<Arc<InlineSchema>> = I,
+            WithExtra<Arc<TailSchema>> = J,
+        >,
+    J: PointInput<
+            Extra = Arc<TailSchema>,
+            WithExtra<Arc<InlineSchema>> = I,
+            WithExtra<Arc<TailSchema>> = J,
+        >,
+> ParseInline<I> for InlineValue
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let schema = input.extra().clone();
@@ -975,6 +991,7 @@ impl<I: PointInput<Extra = Arc<InlineSchema>, WithExtra<Arc<InlineSchema>> = I>>
             }
             #[cfg(not(feature = "_collections"))]
             InlineSchema::Collection(i) => match *i {},
+            InlineSchema::Zt(schema) => Self::Zt(input.parse_inline_extra(schema.clone())?),
         })
     }
 }
@@ -1179,6 +1196,7 @@ impl SizeSchema for InlineSchema {
             Self::Collection(schema) => schema.size(),
             #[cfg(not(feature = "_collections"))]
             Self::Collection(i) => match *i {},
+            Self::Zt(_) => None,
         }
     }
 }
@@ -1211,6 +1229,14 @@ impl ValueZt {
             schema: Extras(schema),
             value,
         })
+    }
+}
+
+impl AbstractValue for ValueZt {
+    type Schema = InlineSchema;
+
+    fn schema(&self) -> Self::Schema {
+        InlineSchema::Zt(self.schema.0.clone())
     }
 }
 
