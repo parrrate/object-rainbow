@@ -63,7 +63,7 @@ impl<I: PointInput<Extra = AmtMapSchema>> ParseInline<I> for AmtMapValue {
 #[rainbow(untagged)]
 pub enum CollectionValue {
     #[cfg(feature = "amt")]
-    AmtMap(Point<AmtMap<MappedExtra<InlineValue, Extra0>, MappedExtra<InlineValue, Extra1>>>),
+    AmtMap(AmtMapValue),
 }
 
 impl Tagged for CollectionValue {}
