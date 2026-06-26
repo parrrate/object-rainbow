@@ -17,5 +17,5 @@ object-rainbow-point = { workspace = true, optional = true }
 _collections = ["point"]
 _collections-map = ["_collections"]
 amt = ["dep:object-rainbow-amt", "_collections-map"]
-hamt = ["dep:object-rainbow-hamt", "_collections-map"]
+hamt = ["dep:object-rainbow-hamt"]
 point = ["dep:object-rainbow-point"]
