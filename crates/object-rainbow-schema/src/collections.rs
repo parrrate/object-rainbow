@@ -31,20 +31,20 @@ impl AbstractSchema for CollectionSchema {
 
 #[cfg(feature = "amt")]
 #[derive(ListHashes, Topological, Tagged, ParseAsInline)]
-pub struct AmtValue {
+pub struct AmtMapValue {
     pub kv: (Arc<InlineSchema>, Arc<InlineSchema>),
     pub map: Point<AmtMap<MappedExtra<InlineValue, Extra0>, MappedExtra<InlineValue, Extra1>>>,
 }
 
 #[cfg(feature = "amt")]
-impl ToOutput for AmtValue {
+impl ToOutput for AmtMapValue {
     fn to_output(&self, output: &mut impl Output) {
         self.map.to_output(output);
     }
 }
 
 #[cfg(feature = "amt")]
-impl InlineOutput for AmtValue {}
+impl InlineOutput for AmtMapValue {}
 
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, ParseAsInline)]
 #[rainbow(untagged)]
