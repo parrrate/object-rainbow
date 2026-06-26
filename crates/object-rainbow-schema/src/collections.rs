@@ -8,7 +8,6 @@ use object_rainbow_amt::{AmtMap, AmtSet};
 #[cfg(feature = "hamt")]
 use object_rainbow_hamt::{HamtMap, HamtSet};
 use object_rainbow_point::Extras;
-use object_rainbow_point::Point;
 
 use crate::*;
 
@@ -92,7 +91,7 @@ impl<T: Default> ItemValue<T> {
 }
 
 #[cfg(feature = "amt")]
-impl AbstractValue for KvValue<Point<AmtMapInner>> {
+impl AbstractValue for KvValue<object_rainbow_point::Point<AmtMapInner>> {
     type Schema = CollectionSchema;
 
     fn schema(&self) -> Self::Schema {
@@ -100,7 +99,7 @@ impl AbstractValue for KvValue<Point<AmtMapInner>> {
     }
 }
 #[cfg(feature = "amt")]
-impl AbstractValue for ItemValue<Point<AmtSetInner>> {
+impl AbstractValue for ItemValue<object_rainbow_point::Point<AmtSetInner>> {
     type Schema = CollectionSchema;
 
     fn schema(&self) -> Self::Schema {
@@ -120,9 +119,9 @@ impl AbstractValue for ItemValue<HamtMapInner> {
 #[rainbow(untagged)]
 pub enum CollectionValue {
     #[cfg(feature = "amt")]
-    AmtMap(KvValue<Point<AmtMapInner>>),
+    AmtMap(KvValue<object_rainbow_point::Point<AmtMapInner>>),
     #[cfg(feature = "amt")]
-    AmtSet(ItemValue<Point<AmtSetInner>>),
+    AmtSet(ItemValue<object_rainbow_point::Point<AmtSetInner>>),
     #[cfg(feature = "hamt")]
     HamtMap(ItemValue<HamtMapInner>),
     #[cfg(feature = "hamt")]
