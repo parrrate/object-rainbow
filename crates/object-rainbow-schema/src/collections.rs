@@ -53,14 +53,11 @@ pub struct AmtMapValue {
     pub map: Point<AmtMapInner>,
 }
 #[cfg(feature = "amt")]
-#[derive(ToOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
+#[derive(ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
 pub struct AmtSetValue {
     pub item: Extras<ItemSchema>,
     pub set: Point<AmtSetInner>,
 }
-
-#[cfg(feature = "amt")]
-impl InlineOutput for AmtSetValue {}
 
 #[cfg(feature = "amt")]
 impl AbstractValue for AmtMapValue {
