@@ -839,6 +839,8 @@ impl<'a> ParseAs<'a> for &'a [u8] {
     }
 }
 
+pub trait ParseAsExtra<'a, Extra> {}
+
 #[derive(Debug, ToOutput)]
 pub struct DiffHashes {
     pub tags: Hash,
