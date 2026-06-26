@@ -21,6 +21,7 @@ use crate::{
     Topological,
     Tagged,
     Clone,
+    PartialEq,
 )]
 pub struct PointSchema {
     pub schema: Arc<TailSchema>,

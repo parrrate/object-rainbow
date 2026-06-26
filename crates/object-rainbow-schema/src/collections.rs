@@ -16,7 +16,7 @@ pub type KvSchema = (Arc<InlineSchema>, Arc<InlineSchema>);
 #[cfg(feature = "_collections-item")]
 pub type ItemSchema = Arc<InlineSchema>;
 
-#[derive(Debug, Enum, ToOutput, Parse, ParseInline, ListHashes, Topological, Clone)]
+#[derive(Debug, Enum, ToOutput, Parse, ParseInline, ListHashes, Topological, Clone, PartialEq)]
 pub enum CollectionSchema {
     AmtMap(
         #[cfg(feature = "amt")] KvSchema,

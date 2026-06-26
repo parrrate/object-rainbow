@@ -331,6 +331,7 @@ impl From<NumericValue> for InlineValue {
     Topological,
     Tagged,
     Clone,
+    PartialEq,
 )]
 pub struct ArraySchema {
     pub len: u64,
@@ -366,7 +367,16 @@ impl From<ArraySchema> for InlineSchema {
 }
 
 #[derive(
-    Debug, Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone,
+    Debug,
+    Enum,
+    ToOutput,
+    Parse,
+    ParseInline,
+    MaybeHasNiche,
+    ListHashes,
+    Topological,
+    Clone,
+    PartialEq,
 )]
 #[enumtag("char")]
 #[niche(tag)]
@@ -395,7 +405,16 @@ impl InlineOutput for InlineSchema {}
 impl Tagged for InlineSchema {}
 
 #[derive(
-    Debug, Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone,
+    Debug,
+    Enum,
+    ToOutput,
+    Parse,
+    ParseInline,
+    MaybeHasNiche,
+    ListHashes,
+    Topological,
+    Clone,
+    PartialEq,
 )]
 #[enumtag("char")]
 #[niche(tag)]
