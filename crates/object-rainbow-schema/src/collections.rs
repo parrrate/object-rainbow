@@ -25,3 +25,5 @@ pub enum CollectionValue {
     #[cfg(feature = "amt")]
     Amt(AmtMap<MappedExtra<InlineValue, Extra0>, MappedExtra<InlineValue, Extra1>>),
 }
+
+impl Tagged for CollectionValue {}
