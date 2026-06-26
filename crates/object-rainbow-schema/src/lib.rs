@@ -142,6 +142,32 @@ pub enum NumericValue {
     OpaqueBool(bool),
 }
 
+impl NumericValue {
+    pub fn index(&self) -> Option<usize> {
+        match self {
+            Self::U8(x) => Some(*x as _),
+            Self::I8(x) => Some(*x as _),
+            Self::U16(x) => Some(*x as _),
+            Self::I16(x) => Some(*x as _),
+            Self::U32(x) => Some(*x as _),
+            Self::I32(x) => Some(*x as _),
+            Self::U64(x) => (*x).try_into().ok(),
+            Self::I64(x) => (*x).try_into().ok(),
+            Self::U128(x) => (*x).try_into().ok(),
+            Self::I128(x) => (*x).try_into().ok(),
+            Self::NzU8(x) => Some((x.get() - 1) as _),
+            Self::NzU16(x) => Some((x.get() - 1) as _),
+            Self::NzU32(x) => Some((x.get() - 1) as _),
+            Self::NzU64(x) => (x.get() - 1).try_into().ok(),
+            Self::NzU128(x) => (x.get() - 1).try_into().ok(),
+            Self::F32(_) => None,
+            Self::F64(_) => None,
+            Self::OpaqueChar(x) => Some(*x as _),
+            Self::OpaqueBool(x) => Some(*x as _),
+        }
+    }
+}
+
 impl AbstractValue for NumericValue {
     type Schema = NumericSchema;
 
