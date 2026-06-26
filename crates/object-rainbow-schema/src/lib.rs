@@ -285,6 +285,7 @@ pub enum InlineSchema {
     Concat(Arc<Self>, Arc<Self>),
     Array(ArraySchema),
     Numeric(NumericSchema),
+    Enum(EnumSchema<Self>),
 }
 
 impl InlineOutput for InlineSchema {}
@@ -445,6 +446,7 @@ pub enum InlineValue {
     Concat(Arc<Self>, Arc<Self>),
     Array(ValueArray),
     Numeric(NumericValue),
+    Enum(EnumValue<Self>),
 }
 
 impl InlineOutput for InlineValue {}
@@ -598,6 +600,7 @@ impl AbstractSchema for InlineSchema {
             Self::Concat(a, b) => SchemaNiche::concat(Arc::new(a.niche()), Arc::new(b.niche())),
             Self::Array(schema) => schema.niche(),
             Self::Numeric(schema) => schema.niche(),
+            Self::Enum(schema) => schema.niche(),
         }
     }
 }
@@ -632,6 +635,7 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             )),
             Self::Array(schema) => schema.default_value().map(From::from),
             Self::Numeric(schema) => schema.default_value().map(From::from),
+            Self::Enum(schema) => schema.default_value().map(InlineValue::Enum),
         }
     }
 }
@@ -648,6 +652,7 @@ impl AbstractValue for InlineValue {
             Self::Concat(a, b) => InlineSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
             Self::Array(a) => a.schema().into(),
             Self::Numeric(n) => n.schema().into(),
+            Self::Enum(e) => InlineSchema::Enum(e.schema()),
         }
     }
 }
@@ -804,6 +809,7 @@ impl<I: PointInput<Extra = Arc<InlineSchema>, WithExtra<Arc<InlineSchema>> = I>>
             InlineSchema::Numeric(schema) => {
                 Self::Numeric(input.parse_inline_extra(schema.clone())?)
             }
+            InlineSchema::Enum(schema) => Self::Enum(input.parse_inline_extra(schema.clone())?),
         })
     }
 }
