@@ -132,6 +132,8 @@ impl<T: IntoIterator<Item = A> + FromIterator<A>, A: ParseInline<I>, I: ParseInp
     }
 }
 
+pub trait PlainCollection {}
+
 pub trait VecLike: IntoIterator {}
 
 impl<T: IntoIterator> VecLike for Sequence<T> {}
