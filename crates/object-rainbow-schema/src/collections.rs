@@ -128,3 +128,9 @@ impl From<CollectionSchema> for InlineSchema {
         Self::Collection(schema)
     }
 }
+
+impl From<CollectionValue> for InlineValue {
+    fn from(value: CollectionValue) -> Self {
+        Self::Collection(value)
+    }
+}

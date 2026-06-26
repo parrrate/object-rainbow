@@ -681,7 +681,7 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             Self::Numeric(schema) => schema.default_value().map(From::from),
             Self::Enum(schema) => schema.default_value().map(From::from),
             #[cfg(feature = "_collections")]
-            Self::Collection(schema) => schema.default_value().map(InlineValue::Collection),
+            Self::Collection(schema) => schema.default_value().map(From::from),
             #[cfg(not(feature = "_collections"))]
             Self::Collection(_) => None,
         }
