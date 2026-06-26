@@ -1,4 +1,4 @@
-#[cfg(feature = "_collections-map")]
+#[cfg(feature = "_collections-kv")]
 use object_rainbow::{
     map_extra::MappedExtra,
     tuple_extra::{Extra0, Extra1},
@@ -13,7 +13,7 @@ use object_rainbow_point::Point;
 
 use crate::*;
 
-#[cfg(feature = "_collections-map")]
+#[cfg(feature = "_collections-kv")]
 pub type KvSchema = (Arc<InlineSchema>, Arc<InlineSchema>);
 #[cfg(feature = "_collections-set")]
 pub type ItemSchema = Arc<InlineSchema>;
@@ -50,7 +50,7 @@ pub type AmtSetInner = AmtSet<Arc<InlineValue>>;
 #[cfg(feature = "hamt")]
 pub type HamtMapInner = HamtMap<Arc<InlineValue>>;
 
-#[cfg(feature = "_collections-map")]
+#[cfg(feature = "_collections-kv")]
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
 pub struct KvValue<T> {
     pub kv: Extras<KvSchema>,
