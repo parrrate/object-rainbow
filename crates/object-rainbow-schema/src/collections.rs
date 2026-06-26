@@ -10,10 +10,13 @@ use object_rainbow_point::Point;
 
 use crate::*;
 
+#[cfg(feature = "amt")]
+pub type AmtMapSchema = (Arc<InlineSchema>, Arc<InlineSchema>);
+
 #[derive(Enum, ToOutput, Parse, ParseInline, ListHashes, Topological, Clone)]
 pub enum CollectionSchema {
     AmtMap(
-        #[cfg(feature = "amt")] (Arc<InlineSchema>, Arc<InlineSchema>),
+        #[cfg(feature = "amt")] AmtMapSchema,
         #[cfg(not(feature = "amt"))] Infallible,
     ),
 }
@@ -32,7 +35,7 @@ impl AbstractSchema for CollectionSchema {
 #[cfg(feature = "amt")]
 #[derive(ListHashes, Topological, Tagged, ParseAsInline)]
 pub struct AmtMapValue {
-    pub kv: (Arc<InlineSchema>, Arc<InlineSchema>),
+    pub kv: AmtMapSchema,
     pub map: Point<AmtMap<MappedExtra<InlineValue, Extra0>, MappedExtra<InlineValue, Extra1>>>,
 }
 
@@ -46,7 +49,7 @@ impl ToOutput for AmtMapValue {
 #[cfg(feature = "amt")]
 impl InlineOutput for AmtMapValue {}
 
-impl<I: PointInput<Extra = (Arc<InlineSchema>, Arc<InlineSchema>)>> ParseInline<I> for AmtMapValue {
+impl<I: PointInput<Extra = AmtMapSchema>> ParseInline<I> for AmtMapValue {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let kv = input.extra().clone();
         Ok(Self {
