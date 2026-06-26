@@ -72,6 +72,8 @@ impl<K: ByteOrd + InlineOutput, V: ByteOrd + InlineOutput> ByteOrd for BTreeMap<
     }
 }
 
+impl<K, V> VecLike for BTreeMap<K, V> {}
+
 impl<K: Ord> Equivalent<BTreeMap<K, ()>> for BTreeSet<K> {
     fn into_equivalent(self) -> BTreeMap<K, ()> {
         self.into_iter().map(|k| (k, ())).collect()
