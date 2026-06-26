@@ -4,7 +4,7 @@ use object_rainbow::{
     tuple_extra::{Extra0, Extra1},
 };
 #[cfg(feature = "amt")]
-use object_rainbow_amt::AmtMap;
+use object_rainbow_amt::{AmtMap, AmtSet};
 #[cfg(feature = "amt")]
 use object_rainbow_point::Point;
 
@@ -37,6 +37,8 @@ impl AbstractSchema for CollectionSchema {
 #[cfg(feature = "amt")]
 pub type AmtMapInner =
     AmtMap<MappedExtra<Arc<InlineValue>, Extra0>, MappedExtra<Arc<InlineValue>, Extra1>>;
+#[cfg(feature = "amt")]
+pub type AmtSetInner = AmtSet<Arc<InlineValue>>;
 
 #[cfg(feature = "amt")]
 #[derive(ListHashes, Topological, Tagged, ParseAsInline)]
