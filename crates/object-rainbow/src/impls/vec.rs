@@ -80,3 +80,13 @@ impl<T: ByteOrd + InlineOutput> ByteOrd for VecDeque<T> {
 
 impl<T> PlainCollection for VecDeque<T> {}
 impl<T> VecLike for VecDeque<T> {}
+
+impl<T> Equivalent<Vec<T>> for VecDeque<T> {
+    fn into_equivalent(self) -> Vec<T> {
+        self.into()
+    }
+
+    fn from_equivalent(vec: Vec<T>) -> Self {
+        vec.into()
+    }
+}
