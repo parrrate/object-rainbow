@@ -1,8 +1,9 @@
 use std::{convert::Infallible, num::NonZero, sync::Arc};
 
 use object_rainbow::{
-    Enum, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline, ParseInline,
-    PointInput, ReflessInline, Tagged, ToOutput, Topological, Traversible, length_prefixed::LpVec,
+    Enum, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline,
+    ParseInline, PointInput, ReflessInline, Tagged, ToOutput, Topological, Traversible,
+    assert_impl, length_prefixed::LpVec,
 };
 
 #[cfg(feature = "point")]
@@ -954,3 +955,16 @@ impl<
         })
     }
 }
+
+assert_impl!(
+    impl Inline for InlineSchema {}
+);
+assert_impl!(
+    impl ReflessInline for InlineSchema {}
+);
+assert_impl!(
+    impl Inline for TailSchema {}
+);
+assert_impl!(
+    impl ReflessInline for TailSchema {}
+);
