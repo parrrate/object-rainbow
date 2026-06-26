@@ -719,7 +719,7 @@ impl AbstractValue for InlineValue {
             Self::Numeric(n) => n.schema().into(),
             Self::Enum(e) => e.schema().into(),
             #[cfg(feature = "_collections")]
-            Self::Collection(c) => InlineSchema::Collection(c.schema()),
+            Self::Collection(c) => c.schema().into(),
         }
     }
 }

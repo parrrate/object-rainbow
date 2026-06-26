@@ -122,3 +122,9 @@ impl DefaultIsMin for CollectionSchema {
         }
     }
 }
+
+impl From<CollectionSchema> for InlineSchema {
+    fn from(schema: CollectionSchema) -> Self {
+        Self::Collection(schema)
+    }
+}
