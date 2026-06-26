@@ -774,7 +774,7 @@ impl DefaultSchema<TailValue> for TailSchema {
                 Arc::new(a.default_value()?),
                 Arc::new(b.default_value()?),
             )),
-            Self::Enum(schema) => schema.default_value().map(TailValue::Enum),
+            Self::Enum(schema) => schema.default_value().map(From::from),
         }
     }
 }
@@ -892,6 +892,12 @@ pub struct EnumValue<T: AbstractValue> {
 
 impl From<EnumValue<InlineValue>> for InlineValue {
     fn from(value: EnumValue<InlineValue>) -> Self {
+        Self::Enum(value)
+    }
+}
+
+impl From<EnumValue<TailValue>> for TailValue {
+    fn from(value: EnumValue<TailValue>) -> Self {
         Self::Enum(value)
     }
 }
