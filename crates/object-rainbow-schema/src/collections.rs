@@ -55,7 +55,7 @@ pub struct AmtMapValue {
 #[cfg(feature = "amt")]
 #[derive(ListHashes, Topological, Tagged, ParseAsInline)]
 pub struct AmtSetValue {
-    pub item: ItemSchema,
+    pub item: Extras<ItemSchema>,
     pub set: Point<AmtSetInner>,
 }
 
@@ -80,9 +80,8 @@ impl InlineOutput for AmtSetValue {}
 #[cfg(feature = "amt")]
 impl<I: PointInput<Extra = ItemSchema>> ParseInline<I> for AmtSetValue {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let item = input.extra().clone();
         Ok(Self {
-            item,
+            item: input.parse_inline()?,
             set: input.parse_inline()?,
         })
     }
@@ -101,7 +100,7 @@ impl AbstractValue for AmtSetValue {
     type Schema = CollectionSchema;
 
     fn schema(&self) -> Self::Schema {
-        CollectionSchema::AmtSet(self.item.clone())
+        CollectionSchema::AmtSet(self.item.0.clone())
     }
 }
 
@@ -150,7 +149,7 @@ impl DefaultSchema<CollectionValue> for CollectionSchema {
             })),
             #[cfg(feature = "amt")]
             Self::AmtSet(item) => Some(CollectionValue::AmtSet(AmtSetValue {
-                item,
+                item: Extras(item),
                 set: Default::default(),
             })),
         }
