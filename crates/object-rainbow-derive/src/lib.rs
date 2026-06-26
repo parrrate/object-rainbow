@@ -760,6 +760,9 @@ fn gen_traverse(data: &Data, attrs: &[Attribute]) -> proc_macro2::TokenStream {
             }
         }
         Data::Enum(data) => {
+            if data.variants.is_empty() {
+                return quote! {};
+            }
             let to_output = data.variants.iter().map(|v| {
                 let ident = &v.ident;
                 let arm = fields_traverse(&v.fields);
