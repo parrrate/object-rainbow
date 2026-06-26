@@ -60,6 +60,14 @@ where
     }
 }
 
+impl AbstractValue for AmtMapValue {
+    type Schema = CollectionSchema;
+
+    fn schema(&self) -> Self::Schema {
+        CollectionSchema::AmtMap(self.kv.clone())
+    }
+}
+
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, ParseAsInline)]
 #[rainbow(untagged)]
 pub enum CollectionValue {
