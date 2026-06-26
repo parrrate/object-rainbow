@@ -47,7 +47,7 @@ impl From<PointSchema> for InlineSchema {
     }
 }
 
-#[derive(ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline)]
+#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline)]
 pub struct ValuePoint {
     pub schema: Extras<Arc<TailSchema>>,
     pub point: Point<Arc<TailValue>>,
