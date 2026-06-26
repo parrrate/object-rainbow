@@ -478,7 +478,7 @@ impl From<ValueArray> for InlineValue {
 
 #[derive(ListHashes, Topological)]
 pub struct ValueSequence {
-    pub schema: Arc<InlineSchema>,
+    pub schema: Extras<Arc<InlineSchema>>,
     pub items: Vec<Arc<InlineValue>>,
 }
 
@@ -494,7 +494,7 @@ impl AbstractValue for ValueSequence {
     type Schema = TailSchema;
 
     fn schema(&self) -> Self::Schema {
-        TailSchema::Sequence(self.schema.clone())
+        TailSchema::Sequence(self.schema.0.clone())
     }
 }
 
@@ -502,11 +502,10 @@ impl<I: PointInput<Extra = Arc<InlineSchema>>> Parse<I> for ValueSequence
 where
     InlineValue: ParseInline<I>,
 {
-    fn parse(input: I) -> object_rainbow::Result<Self> {
-        let schema = input.extra().clone();
+    fn parse(mut input: I) -> object_rainbow::Result<Self> {
         Ok(Self {
+            schema: input.parse_inline()?,
             items: input.parse()?,
-            schema,
         })
     }
 }
@@ -919,8 +918,8 @@ impl DefaultSchema<TailValue> for TailSchema {
             Self::Cut => Some(TailValue::Cut),
             Self::Option(schema) => Some(TailValue::Option(ValueOption::None(schema.clone()))),
             Self::Sequence(schema) => Some(TailValue::Sequence(ValueSequence {
+                schema: Extras(schema.clone()),
                 items: Default::default(),
-                schema: schema.clone(),
             })),
             Self::Concat(a, b) => Some(TailValue::Concat(
                 Arc::new(a.default_value()?),
