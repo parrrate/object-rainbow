@@ -2,7 +2,7 @@ use std::ops::Mul;
 
 use typenum::ToUInt;
 
-use crate::*;
+use crate::{sequence::VecLike, *};
 
 impl<T: InlineOutput, const N: usize> ToOutput for [T; N] {
     fn to_output(&self, output: &mut impl Output) {
@@ -73,3 +73,5 @@ fn byte_array_niche() {
     );
     assert_eq!(None::<([u8; 2], bool)>.vec(), [0, 0, 2]);
 }
+
+impl<T, const N: usize> VecLike for [T; N] {}
