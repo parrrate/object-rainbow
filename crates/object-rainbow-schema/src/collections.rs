@@ -90,3 +90,13 @@ where
         }
     }
 }
+
+impl AbstractValue for CollectionValue {
+    type Schema = CollectionSchema;
+
+    fn schema(&self) -> Self::Schema {
+        match *self {
+            Self::AmtMap(ref value) => value.schema(),
+        }
+    }
+}
