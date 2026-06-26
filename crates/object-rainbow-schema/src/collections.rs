@@ -46,6 +46,12 @@ pub struct AmtMapValue {
     pub kv: AmtMapSchema,
     pub map: Point<AmtMapInner>,
 }
+#[cfg(feature = "amt")]
+#[derive(ListHashes, Topological, Tagged, ParseAsInline)]
+pub struct AmtSetValue {
+    pub item: AmtSetSchema,
+    pub map: Point<AmtMapInner>,
+}
 
 #[cfg(feature = "amt")]
 impl ToOutput for AmtMapValue {
