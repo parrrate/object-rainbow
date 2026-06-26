@@ -373,6 +373,7 @@ pub enum TailSchema {
     Option(Arc<Self>),
     Sequence(Arc<InlineSchema>),
     Concat(Arc<InlineSchema>, Arc<Self>),
+    ToA(Arc<Self>, Arc<Self>),
     Enum(EnumSchema<Self>),
 }
 
@@ -580,6 +581,7 @@ pub enum TailValue {
     Option(ValueOption<Self>),
     Sequence(ValueSequence),
     Concat(Arc<InlineValue>, Arc<Self>),
+    ToA(ValueToA),
     Enum(EnumValue<Self>),
 }
 
@@ -898,6 +900,7 @@ impl AbstractSchema for TailSchema {
             Self::Option(schema) => schema.niche().option(),
             Self::Sequence(_) => SchemaNiche::Cut,
             Self::Concat(a, b) => SchemaNiche::concat(Arc::new(a.niche()), Arc::new(b.niche())),
+            Self::ToA(_, _) => SchemaNiche::Cut,
             Self::Enum(schema) => schema.niche(),
         }
     }
@@ -922,6 +925,10 @@ impl DefaultSchema<TailValue> for TailSchema {
                 Arc::new(a.default_value()?),
                 Arc::new(b.default_value()?),
             )),
+            Self::ToA(a, b) => Some(TailValue::ToA(ValueToA(
+                Arc::new(a.default_value()?).into(),
+                Arc::new(b.default_value()?).into(),
+            ))),
             Self::Enum(schema) => schema.default_value().map(From::from),
         }
     }
@@ -934,6 +941,7 @@ impl DefaultIsMin for TailSchema {
             Self::Option(_) => true,
             Self::Sequence(_) => true,
             Self::Concat(a, b) => a.default_is_min() && b.default_is_min(),
+            Self::ToA(_, _) => false,
             Self::Enum(schema) => schema.default_is_min(),
         }
     }
@@ -947,6 +955,9 @@ impl AbstractValue for TailValue {
             Self::Option(o) => o.schema(),
             Self::Sequence(s) => s.schema(),
             Self::Concat(a, b) => TailSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
+            Self::ToA(ValueToA(a, b)) => {
+                TailSchema::ToA(Arc::new(a.schema()), Arc::new(b.schema()))
+            }
             Self::Enum(e) => e.schema().into(),
         }
     }
@@ -999,6 +1010,7 @@ where
                 input.parse_inline_extra(a.clone())?,
                 input.parse_extra(b.clone())?,
             ),
+            TailSchema::ToA(a, b) => Self::ToA(input.parse_extra((a.clone(), b.clone()))?),
             TailSchema::Enum(schema) => Self::Enum(input.parse_extra(schema.clone())?),
         })
     }
@@ -1189,6 +1201,7 @@ impl ItemSizeSchema for TailSchema {
             Self::Option(_) => None,
             Self::Sequence(schema) => schema.size(),
             Self::Concat(_, _) => None,
+            Self::ToA(a, b) => a.item_size()?.checked_add(b.item_size()?),
             Self::Enum(_) => None,
         }
     }
