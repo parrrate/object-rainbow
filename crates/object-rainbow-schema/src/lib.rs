@@ -540,7 +540,7 @@ impl From<ValueArray> for InlineValue {
     }
 }
 
-#[derive(Debug, ToOutput, ListHashes, Topological, Parse)]
+#[derive(Debug, ToOutput, ListHashes, Topological, Parse, PartialEq)]
 pub struct ValueSequence {
     pub schema: Extras<Arc<InlineSchema>>,
     pub items: Vec<Arc<InlineValue>>,
