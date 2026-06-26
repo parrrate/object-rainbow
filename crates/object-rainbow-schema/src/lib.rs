@@ -80,7 +80,9 @@ pub trait AbstractCollection {
     fn items(&self) -> Vec<Arc<InlineValue>>;
 }
 
-#[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone)]
+#[derive(
+    Debug, Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone,
+)]
 #[enumtag("char")]
 #[niche(tag)]
 pub enum NumericSchema {
