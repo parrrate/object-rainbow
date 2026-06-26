@@ -1,6 +1,9 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::{sequence::VecLike, *};
+use crate::{
+    sequence::{PlainCollection, VecLike},
+    *,
+};
 
 impl<T: InlineOutput> ToOutput for BTreeSet<T> {
     fn to_output(&self, output: &mut impl Output) {
@@ -36,6 +39,7 @@ impl<T: ByteOrd + InlineOutput> ByteOrd for BTreeSet<T> {
     }
 }
 
+impl<T> PlainCollection for BTreeSet<T> {}
 impl<T> VecLike for BTreeSet<T> {}
 
 impl<K: InlineOutput, V: InlineOutput> ToOutput for BTreeMap<K, V> {
