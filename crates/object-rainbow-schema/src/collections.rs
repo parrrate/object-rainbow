@@ -1,4 +1,4 @@
-#[cfg(feature = "amt")]
+#[cfg(feature = "_collections-map")]
 use object_rainbow::{
     map_extra::MappedExtra,
     tuple_extra::{Extra0, Extra1},
@@ -9,7 +9,7 @@ use object_rainbow_point::Point;
 
 use crate::*;
 
-#[cfg(feature = "amt")]
+#[cfg(feature = "_collections-map")]
 pub type KvSchema = (Arc<InlineSchema>, Arc<InlineSchema>);
 #[cfg(feature = "amt")]
 pub type ItemSchema = Arc<InlineSchema>;
