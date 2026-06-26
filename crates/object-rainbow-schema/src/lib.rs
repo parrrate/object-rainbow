@@ -312,6 +312,7 @@ impl From<NumericValue> for InlineValue {
 }
 
 #[derive(
+    Debug,
     ToOutput,
     InlineOutput,
     Parse,
@@ -355,7 +356,9 @@ impl From<ArraySchema> for InlineSchema {
     }
 }
 
-#[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone)]
+#[derive(
+    Debug, Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone,
+)]
 #[enumtag("char")]
 #[niche(tag)]
 #[parse(unchecked)]
@@ -382,7 +385,9 @@ pub enum InlineSchema {
 impl InlineOutput for InlineSchema {}
 impl Tagged for InlineSchema {}
 
-#[derive(Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone)]
+#[derive(
+    Debug, Enum, ToOutput, Parse, ParseInline, MaybeHasNiche, ListHashes, Topological, Clone,
+)]
 #[enumtag("char")]
 #[niche(tag)]
 #[parse(unchecked)]
