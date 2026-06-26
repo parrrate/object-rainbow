@@ -2101,6 +2101,11 @@ fn gen_kind(data: &Data) -> proc_macro2::TokenStream {
             Error::new_spanned(data.struct_token, "`struct`s are not supported").to_compile_error()
         }
         Data::Enum(data) => {
+            if data.variants.is_empty() {
+                return quote! {
+                    match *self {}
+                };
+            }
             let variants = data.variants.iter().map(|v| {
                 let ident = &v.ident;
                 quote_spanned! { ident.span() =>
