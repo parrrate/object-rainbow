@@ -515,6 +515,8 @@ impl ToOutput for ValueToA {
     }
 }
 
+impl Tagged for ValueToA {}
+
 #[derive(ToOutput, ParseAsInline, ListHashes, Topological)]
 #[rainbow(untagged)]
 pub enum InlineValue {
