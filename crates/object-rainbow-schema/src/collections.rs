@@ -192,6 +192,17 @@ impl DefaultIsMin for CollectionSchema {
     }
 }
 
+impl SizeSchema for CollectionSchema {
+    fn size(&self) -> Option<u64> {
+        match self {
+            Self::AmtMap(_) => Some(32),
+            Self::AmtSet(_) => Some(32),
+            Self::HamtMap(_) => Some(32),
+            Self::HamtSet(_) => Some(32),
+        }
+    }
+}
+
 impl From<CollectionSchema> for InlineSchema {
     fn from(schema: CollectionSchema) -> Self {
         Self::Collection(schema)
