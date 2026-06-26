@@ -67,6 +67,7 @@ impl<K: Tagged, V: Tagged> Tagged for IndexMap<K, V> {
 }
 
 impl<K, V> PlainCollection for IndexMap<K, V> {}
+impl<K, V> VecLike for IndexMap<K, V> {}
 
 impl<K: Eq + std::hash::Hash> Equivalent<IndexMap<K, ()>> for IndexSet<K> {
     fn into_equivalent(self) -> IndexMap<K, ()> {
