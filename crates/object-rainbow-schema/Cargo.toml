@@ -10,9 +10,11 @@ authors.workspace = true
 [dependencies]
 object-rainbow.workspace = true
 object-rainbow-amt = { workspace = true, optional = true }
+object-rainbow-hamt = { workspace = true, optional = true }
 object-rainbow-point = { workspace = true, optional = true }
 
 [features]
 _collections = ["point"]
 amt = ["dep:object-rainbow-amt", "_collections"]
+hamt = ["dep:object-rainbow-hamt", "_collections"]
 point = ["dep:object-rainbow-point"]

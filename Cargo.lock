@@ -1865,6 +1865,7 @@ version = "0.0.0-a.0"
 dependencies = [
  "object-rainbow",
  "object-rainbow-amt",
+ "object-rainbow-hamt",
  "object-rainbow-point",
 ]
 
