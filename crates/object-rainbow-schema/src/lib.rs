@@ -562,7 +562,7 @@ impl AbstractValue for ValueSequence {
     }
 }
 
-#[derive(Debug, ListHashes, Topological)]
+#[derive(Debug, ListHashes, Topological, PartialEq)]
 pub struct ValueToA(
     pub MappedExtra<Arc<TailValue>, Extra0>,
     pub MappedExtra<Arc<TailValue>, Extra1>,
@@ -627,7 +627,7 @@ pub enum InlineValue {
 impl InlineOutput for InlineValue {}
 impl Tagged for InlineValue {}
 
-#[derive(Debug, ToOutput, ListHashes, Topological)]
+#[derive(Debug, ToOutput, ListHashes, Topological, PartialEq)]
 #[rainbow(untagged)]
 pub enum TailValue {
     Cut,
