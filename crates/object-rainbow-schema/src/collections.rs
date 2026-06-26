@@ -118,9 +118,7 @@ impl DefaultSchema<CollectionValue> for CollectionSchema {
 
 impl DefaultIsMin for CollectionSchema {
     fn default_is_min(&self) -> bool {
-        #[allow(unreachable_code, unused)]
-        let schema = self.clone();
-        match schema {
+        match self.clone() {
             #[cfg(feature = "amt")]
             Self::AmtMap(_) => false,
         }
