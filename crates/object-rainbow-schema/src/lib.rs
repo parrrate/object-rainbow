@@ -7,6 +7,7 @@ use object_rainbow::{
     length_prefixed::LpVec,
     map_extra::MappedExtra,
     tuple_extra::{Extra0, Extra1},
+    tuple_of_arrays::try_divide,
 };
 
 #[cfg(feature = "_collections")]
@@ -522,6 +523,36 @@ impl ToOutput for ValueToA {
 }
 
 impl Tagged for ValueToA {}
+
+impl<I: PointInput<Extra = (Arc<TailSchema>, Arc<TailSchema>)>> Parse<I> for ValueToA
+where
+    TailValue: Parse<I::WithExtra<Arc<TailSchema>>>,
+{
+    fn parse(input: I) -> object_rainbow::Result<Self> {
+        let (mut input, n) = input.remaining()?;
+        let (a, b) = input.extra().clone();
+        let ae = a
+            .item_size()
+            .ok_or_else(|| object_rainbow::error_parse!("no item size"))?;
+        let be = b
+            .item_size()
+            .ok_or_else(|| object_rainbow::error_parse!("no item size"))?;
+        let k = ae
+            .checked_add(be)
+            .ok_or_else(|| object_rainbow::error_parse!("no item size"))?;
+        let n = try_divide(
+            n,
+            k.try_into()
+                .map_err(|_| object_rainbow::Error::UnsupportedLength)?,
+        )?
+        .checked_mul(
+            ae.try_into()
+                .map_err(|_| object_rainbow::Error::UnsupportedLength)?,
+        )
+        .ok_or(object_rainbow::Error::UnsupportedLength)?;
+        Ok(Self(input.split_parse(n)?, input.parse()?))
+    }
+}
 
 #[derive(ToOutput, ParseAsInline, ListHashes, Topological)]
 #[rainbow(untagged)]
