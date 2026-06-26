@@ -3,7 +3,7 @@ use std::iter::Zip;
 use crate::{sequence::PlainCollection, *};
 
 #[derive(
-    ListHashes, Topological, Tagged, Size, Clone, Copy, Default, PartialEq, Eq, PartialOrd,
+    ListHashes, Topological, Tagged, Size, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord,
 )]
 pub struct TupleOfArrays<A, B>(A, B);
 
