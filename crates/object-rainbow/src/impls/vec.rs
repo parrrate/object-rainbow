@@ -79,3 +79,4 @@ impl<T: ByteOrd + InlineOutput> ByteOrd for VecDeque<T> {
 }
 
 impl<T> PlainCollection for VecDeque<T> {}
+impl<T> VecLike for VecDeque<T> {}
