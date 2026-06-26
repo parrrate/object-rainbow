@@ -111,3 +111,11 @@ impl DefaultSchema<CollectionValue> for CollectionSchema {
         }
     }
 }
+
+impl DefaultIsMin for CollectionSchema {
+    fn default_is_min(&self) -> bool {
+        match *self {
+            Self::AmtMap(_) => true,
+        }
+    }
+}
