@@ -799,3 +799,8 @@ where
         })
     }
 }
+
+pub struct EnumSchema<T> {
+    pub kind: NumericSchema,
+    pub variants: Vec<Arc<T>>,
+}
