@@ -379,6 +379,7 @@ pub enum TailSchema {
     ToA(Arc<Self>, Arc<Self>),
     Enum(EnumSchema<Self>),
     Bytes,
+    String,
 }
 
 impl InlineOutput for TailSchema {}
@@ -570,6 +571,7 @@ pub enum TailValue {
     ToA(ValueToA),
     Enum(EnumValue<Self>),
     Bytes(Vec<u8>),
+    String(String),
 }
 
 impl Tagged for TailValue {}
@@ -894,6 +896,7 @@ impl AbstractSchema for TailSchema {
             Self::ToA(_, _) => SchemaNiche::Cut,
             Self::Enum(schema) => schema.niche(),
             Self::Bytes => SchemaNiche::Cut,
+            Self::String => SchemaNiche::Cut,
         }
     }
 }
@@ -923,6 +926,7 @@ impl DefaultSchema<TailValue> for TailSchema {
             ))),
             Self::Enum(schema) => schema.default_value().map(From::from),
             Self::Bytes => Some(TailValue::Bytes(Default::default())),
+            Self::String => Some(TailValue::String(Default::default())),
         }
     }
 }
@@ -937,6 +941,7 @@ impl DefaultIsMin for TailSchema {
             Self::ToA(_, _) => false,
             Self::Enum(schema) => schema.default_is_min(),
             Self::Bytes => true,
+            Self::String => true,
         }
     }
 }
@@ -954,6 +959,7 @@ impl AbstractValue for TailValue {
             }
             Self::Enum(e) => e.schema().into(),
             Self::Bytes(_) => TailSchema::Bytes,
+            Self::String(_) => TailSchema::String,
         }
     }
 }
@@ -1019,6 +1025,7 @@ where
             TailSchema::ToA(a, b) => Self::ToA(input.parse_extra((a.clone(), b.clone()))?),
             TailSchema::Enum(schema) => Self::Enum(input.parse_extra(schema.clone())?),
             TailSchema::Bytes => Self::Bytes(input.parse()?),
+            TailSchema::String => Self::Bytes(input.parse()?),
         })
     }
 }
@@ -1218,6 +1225,7 @@ impl ItemSizeSchema for TailSchema {
             Self::ToA(a, b) => a.item_size()?.checked_add(b.item_size()?),
             Self::Enum(_) => None,
             Self::Bytes => None,
+            Self::String => None,
         }
     }
 }
