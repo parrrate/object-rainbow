@@ -816,7 +816,7 @@ impl<T: AbstractSchema> AbstractSchema for EnumSchema<T> {
 pub struct EnumValue<T: AbstractValue> {
     pub kind: NumericValue,
     pub variants: Arc<LpVec<Arc<T::Schema>>>,
-    pub value: T,
+    pub value: Arc<T>,
 }
 
 impl<T: AbstractValue> AbstractValue for EnumValue<T> {
