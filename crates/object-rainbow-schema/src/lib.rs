@@ -1196,7 +1196,7 @@ impl ItemSizeSchema for TailSchema {
     }
 }
 
-#[derive(ToOutput, InlineOutput, ListHashes, Topological)]
+#[derive(ToOutput, InlineOutput, ListHashes, Topological, Parse)]
 pub struct ValueZt {
     pub schema: Extras<Arc<TailSchema>>,
     pub value: Zt<Arc<TailValue>>,
