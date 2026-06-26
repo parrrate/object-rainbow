@@ -1293,14 +1293,20 @@ impl From<ValueZt> for InlineValue {
     }
 }
 
+impl<T: AbstractValue + AbstractCollection> AbstractCollection for ValueOption<T> {
+    fn items(&self) -> Vec<Arc<InlineValue>> {
+        match self {
+            Self::None(_) => Vec::new(),
+            Self::Some(value) => value.items(),
+        }
+    }
+}
+
 impl AbstractCollection for InlineValue {
     fn items(&self) -> Vec<Arc<InlineValue>> {
         match self {
             Self::Unit => Vec::new(),
-            Self::Option(value) => match value {
-                ValueOption::None(_) => Vec::new(),
-                ValueOption::Some(value) => value.items(),
-            },
+            Self::Option(value) => value.items(),
             Self::Point(_) => Vec::new(),
             Self::Nt(value) => value.items(),
             Self::Concat(a, b) => [a.items(), b.items()].concat(),
