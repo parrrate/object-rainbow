@@ -6,6 +6,8 @@ use object_rainbow::{
     assert_impl, length_prefixed::LpVec,
 };
 
+#[cfg(feature = "_collections")]
+use self::collections::{CollectionSchema, CollectionValue};
 #[cfg(feature = "point")]
 use self::point::{PointSchema, ValuePoint};
 
@@ -315,6 +317,10 @@ pub enum InlineSchema {
     Array(ArraySchema),
     Numeric(NumericSchema),
     Enum(EnumSchema<Self>),
+    Collection(
+        #[cfg(feature = "_collections")] CollectionSchema,
+        #[cfg(not(feature = "_collections"))] Infallible,
+    ),
 }
 
 impl InlineOutput for InlineSchema {}
@@ -477,6 +483,8 @@ pub enum InlineValue {
     Array(ValueArray),
     Numeric(NumericValue),
     Enum(EnumValue<Self>),
+    #[cfg(feature = "_collections")]
+    Collection(CollectionValue),
 }
 
 impl InlineOutput for InlineValue {}
@@ -636,6 +644,7 @@ impl AbstractSchema for InlineSchema {
             Self::Array(schema) => schema.niche(),
             Self::Numeric(schema) => schema.niche(),
             Self::Enum(schema) => schema.niche(),
+            Self::Collection(schema) => schema.niche(),
         }
     }
 }
@@ -671,6 +680,10 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             Self::Array(schema) => schema.default_value().map(From::from),
             Self::Numeric(schema) => schema.default_value().map(From::from),
             Self::Enum(schema) => schema.default_value().map(From::from),
+            #[cfg(feature = "_collections")]
+            Self::Collection(schema) => schema.default_value().map(InlineValue::Collection),
+            #[cfg(not(feature = "_collections"))]
+            Self::Collection(_) => None,
         }
     }
 }
@@ -687,6 +700,7 @@ impl DefaultIsMin for InlineSchema {
             Self::Array(schema) => schema.default_is_min(),
             Self::Numeric(schema) => schema.default_is_min(),
             Self::Enum(schema) => schema.default_is_min(),
+            Self::Collection(schema) => schema.default_is_min(),
         }
     }
 }
@@ -704,6 +718,8 @@ impl AbstractValue for InlineValue {
             Self::Array(a) => a.schema().into(),
             Self::Numeric(n) => n.schema().into(),
             Self::Enum(e) => e.schema().into(),
+            #[cfg(feature = "_collections")]
+            Self::Collection(c) => InlineSchema::Collection(c.schema()),
         }
     }
 }
@@ -876,6 +892,12 @@ impl<I: PointInput<Extra = Arc<InlineSchema>, WithExtra<Arc<InlineSchema>> = I>>
                 Self::Numeric(input.parse_inline_extra(schema.clone())?)
             }
             InlineSchema::Enum(schema) => Self::Enum(input.parse_inline_extra(schema.clone())?),
+            #[cfg(feature = "_collections")]
+            InlineSchema::Collection(schema) => {
+                Self::Collection(input.parse_inline_extra(schema.clone())?)
+            }
+            #[cfg(not(feature = "_collections"))]
+            InlineSchema::Collection(i) => match *i {},
         })
     }
 }
