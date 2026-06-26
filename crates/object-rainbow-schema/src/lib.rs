@@ -1431,5 +1431,18 @@ fn tuple_of_arrays() -> object_rainbow::Result<()> {
             ),
         )),
     );
+    assert_eq!(
+        value.items(),
+        vec![
+            Arc::new(InlineValue::Concat(
+                Arc::new(InlineValue::Numeric(NumericValue::U8(1))),
+                Arc::new(InlineValue::Numeric(NumericValue::U16(0x0304))),
+            )),
+            Arc::new(InlineValue::Concat(
+                Arc::new(InlineValue::Numeric(NumericValue::U8(2))),
+                Arc::new(InlineValue::Numeric(NumericValue::U16(0x0506))),
+            )),
+        ],
+    );
     Ok(())
 }
