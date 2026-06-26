@@ -44,3 +44,11 @@ impl<A: IntoIterator, B: IntoIterator> IntoIterator for TupleOfArrays<A, B> {
 }
 
 impl<A: PlainCollection, B: PlainCollection> PlainCollection for TupleOfArrays<A, B> {}
+
+impl<A: Extend<L>, B: Extend<R>, L, R> Extend<(L, R)> for TupleOfArrays<A, B> {
+    fn extend<T: IntoIterator<Item = (L, R)>>(&mut self, iter: T) {
+        let (a, b): (Vec<_>, Vec<_>) = iter.into_iter().collect();
+        self.0.extend(a);
+        self.1.extend(b);
+    }
+}
