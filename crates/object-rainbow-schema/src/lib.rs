@@ -635,7 +635,7 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             )),
             Self::Array(schema) => schema.default_value().map(From::from),
             Self::Numeric(schema) => schema.default_value().map(From::from),
-            Self::Enum(schema) => schema.default_value().map(InlineValue::Enum),
+            Self::Enum(schema) => schema.default_value().map(From::from),
         }
     }
 }
