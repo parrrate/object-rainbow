@@ -179,14 +179,10 @@ impl DefaultSchema<CollectionValue> for CollectionSchema {
 
 impl DefaultIsMin for CollectionSchema {
     fn default_is_min(&self) -> bool {
-        match self.clone() {
-            #[cfg(feature = "amt")]
+        match self {
             Self::AmtMap(_) => false,
-            #[cfg(feature = "amt")]
             Self::AmtSet(_) => false,
-            #[cfg(feature = "hamt")]
             Self::HamtMap(_) => false,
-            #[cfg(feature = "hamt")]
             Self::HamtSet(_) => false,
         }
     }
