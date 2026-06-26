@@ -5,6 +5,8 @@ use object_rainbow::{
 };
 #[cfg(feature = "amt")]
 use object_rainbow_amt::{AmtMap, AmtSet};
+#[cfg(feature = "hamt")]
+use object_rainbow_hamt::HamtMap;
 #[cfg(feature = "amt")]
 use object_rainbow_point::Extras;
 use object_rainbow_point::Point;
@@ -45,6 +47,8 @@ pub type AmtMapInner =
     AmtMap<MappedExtra<Arc<InlineValue>, Extra0>, MappedExtra<Arc<InlineValue>, Extra1>>;
 #[cfg(feature = "amt")]
 pub type AmtSetInner = AmtSet<Arc<InlineValue>>;
+#[cfg(feature = "hamt")]
+pub type HamtMapInner = HamtMap<Arc<InlineValue>>;
 
 #[cfg(feature = "_collections-map")]
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
