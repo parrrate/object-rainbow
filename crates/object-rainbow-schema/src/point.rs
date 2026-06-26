@@ -68,10 +68,9 @@ impl AbstractValue for ValuePoint {
 
 impl<I: PointInput<Extra = Arc<TailSchema>>> ParseInline<I> for ValuePoint {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let schema = input.extra().clone();
         Ok(Self {
-            schema: Extras(schema.clone()),
-            point: input.parse_inline_extra(schema)?,
+            schema: input.parse_inline()?,
+            point: input.parse_inline()?,
         })
     }
 }
