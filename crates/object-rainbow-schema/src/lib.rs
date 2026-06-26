@@ -9,7 +9,7 @@ use object_rainbow::{
 #[cfg(feature = "point")]
 use self::point::{PointSchema, ValuePoint};
 
-#[cfg(feature = "collections")]
+#[cfg(feature = "_collections")]
 pub mod collections;
 #[cfg(feature = "point")]
 pub mod point;
