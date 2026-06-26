@@ -847,6 +847,18 @@ impl<T: AbstractSchema> AbstractSchema for EnumSchema<T> {
     }
 }
 
+impl<T: AbstractValue<Schema: DefaultSchema<T>>> DefaultSchema<EnumValue<T>>
+    for EnumSchema<T::Schema>
+{
+    fn default_value(&self) -> Option<EnumValue<T>> {
+        Some(EnumValue {
+            kind: self.kind.default_value()?,
+            variants: self.variants.clone(),
+            value: Arc::new(self.variants.first()?.default_value()?),
+        })
+    }
+}
+
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, Tagged)]
 pub struct EnumValue<T: AbstractValue> {
     pub kind: NumericValue,
