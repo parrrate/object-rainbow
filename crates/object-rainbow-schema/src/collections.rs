@@ -115,7 +115,7 @@ impl AbstractValue for ItemValue<HamtMapInner> {
     }
 }
 
-#[derive(ToOutput, InlineOutput, ListHashes, Topological, ParseAsInline)]
+#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, ParseAsInline)]
 #[rainbow(untagged)]
 pub enum CollectionValue {
     #[cfg(feature = "amt")]
