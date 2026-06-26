@@ -22,6 +22,14 @@ impl<A: ToOutput, B: ToOutput> ToOutput for TupleOfArrays<A, B> {
     }
 }
 
+pub fn try_divide(n: usize, k: usize) -> crate::Result<usize> {
+    if !n.is_multiple_of(k) {
+        return Err(crate::error_parse!("doesn't divide evenly"));
+    }
+    n.checked_div(k)
+        .ok_or_else(|| crate::error_parse!("division failed"))
+}
+
 impl<
     A: Parse<I> + PlainCollection<Item = Ae>,
     B: Parse<I> + PlainCollection<Item = Be>,
@@ -33,12 +41,7 @@ impl<
     fn parse(input: I) -> crate::Result<Self> {
         let (mut input, n) = input.remaining()?;
         let k = Ae::SIZE + Be::SIZE;
-        if !n.is_multiple_of(k) {
-            return Err(crate::error_parse!("doesn't divide evenly"));
-        }
-        let n = n
-            .checked_div(k)
-            .ok_or_else(|| crate::error_parse!("division failed"))?;
+        let n = try_divide(n, k)?;
         Ok(Self(input.split_parse(n * Ae::SIZE)?, input.parse()?))
     }
 }
