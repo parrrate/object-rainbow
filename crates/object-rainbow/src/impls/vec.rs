@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use crate::*;
+use crate::{sequence::PlainCollection, *};
 
 impl<T: InlineOutput> ToOutput for Vec<T> {
     fn to_output(&self, output: &mut impl Output) {
@@ -35,6 +35,8 @@ impl<T: ByteOrd + InlineOutput> ByteOrd for Vec<T> {
         self.iter_bytes_cmp(other)
     }
 }
+
+impl<T> PlainCollection for Vec<T> {}
 
 impl<T: InlineOutput> ToOutput for VecDeque<T> {
     fn to_output(&self, output: &mut impl Output) {
