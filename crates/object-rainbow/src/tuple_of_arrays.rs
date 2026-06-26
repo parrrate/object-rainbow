@@ -31,4 +31,4 @@ impl<
     }
 }
 
-pub trait VecLike {}
+pub trait VecLike: IntoIterator {}
