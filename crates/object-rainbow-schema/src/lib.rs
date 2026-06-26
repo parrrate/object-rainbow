@@ -1202,6 +1202,8 @@ pub struct ValueZt {
     pub value: Zt<Arc<TailValue>>,
 }
 
+impl Tagged for ValueZt {}
+
 #[test]
 fn tuple_of_arrays() -> object_rainbow::Result<()> {
     use object_rainbow::{ParseSlice, ParseSliceExtra};
