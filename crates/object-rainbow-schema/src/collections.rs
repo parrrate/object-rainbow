@@ -27,7 +27,7 @@ impl Tagged for CollectionSchema {}
 impl AbstractSchema for CollectionSchema {
     fn niche(&self) -> SchemaNiche {
         match self {
-            Self::AmtMap(_) => SchemaNiche::point(),
+            Self::AmtMap(_) => SchemaNiche::Cut,
         }
     }
 }
