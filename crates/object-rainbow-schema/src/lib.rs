@@ -816,6 +816,18 @@ impl DefaultSchema<TailValue> for TailSchema {
     }
 }
 
+impl DefaultIsMin for TailSchema {
+    fn default_is_min(&self) -> bool {
+        match self {
+            Self::Cut => true,
+            Self::Option(_) => true,
+            Self::Sequence(_) => true,
+            Self::Concat(a, b) => a.default_is_min() && b.default_is_min(),
+            Self::Enum(schema) => schema.default_is_min(),
+        }
+    }
+}
+
 impl AbstractValue for TailValue {
     type Schema = TailSchema;
     fn schema(&self) -> Self::Schema {
