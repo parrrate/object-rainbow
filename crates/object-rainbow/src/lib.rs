@@ -843,6 +843,12 @@ pub trait ParseAsExtra<'a, Extra: Clone> {
     fn parse_as_extra<T: ParseSliceExtra<Extra>>(&self, extra: &Extra) -> crate::Result<T>;
 }
 
+impl<'a, Extra: Clone> ParseAsExtra<'a, Extra> for &'a [u8] {
+    fn parse_as_extra<T: ParseSliceExtra<Extra>>(&self, extra: &Extra) -> crate::Result<T> {
+        T::parse_slice_extra(self, &(Arc::new(Vec::new()) as _), extra)
+    }
+}
+
 #[derive(Debug, ToOutput)]
 pub struct DiffHashes {
     pub tags: Hash,
