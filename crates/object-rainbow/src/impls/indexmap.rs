@@ -1,6 +1,6 @@
 use indexmap::{IndexMap, IndexSet};
 
-use crate::*;
+use crate::{sequence::PlainCollection, *};
 
 impl<T: InlineOutput> ToOutput for IndexSet<T> {
     fn to_output(&self, output: &mut impl Output) {
@@ -29,6 +29,8 @@ impl<T: ParseInline<I> + Eq + std::hash::Hash, I: ParseInput> Parse<I> for Index
 impl<T: Tagged> Tagged for IndexSet<T> {
     const TAGS: Tags = T::TAGS;
 }
+
+impl<T> PlainCollection for IndexSet<T> {}
 
 impl<K: InlineOutput, V: InlineOutput> ToOutput for IndexMap<K, V> {
     fn to_output(&self, output: &mut impl Output) {
