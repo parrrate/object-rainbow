@@ -76,7 +76,7 @@ impl ItemSizeSchema for Infallible {
     }
 }
 
-pub trait ItemsSchema {
+pub trait AbstractCollection {
     fn items(&self) -> Vec<Arc<InlineValue>>;
 }
 
