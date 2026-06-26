@@ -5,6 +5,8 @@ use object_rainbow::{
 };
 #[cfg(feature = "amt")]
 use object_rainbow_amt::AmtMap;
+#[cfg(feature = "amt")]
+use object_rainbow_point::Point;
 
 use crate::*;
 
@@ -31,10 +33,14 @@ impl AbstractSchema for CollectionSchema {
 }
 
 #[cfg(feature = "amt")]
+pub type AmtMapInner =
+    AmtMap<MappedExtra<Arc<InlineValue>, Extra0>, MappedExtra<Arc<InlineValue>, Extra1>>;
+
+#[cfg(feature = "amt")]
 #[derive(ListHashes, Topological, Tagged, ParseAsInline)]
 pub struct AmtMapValue {
     pub kv: AmtMapSchema,
-    pub map: Arc<AmtMap<MappedExtra<InlineValue, Extra0>, MappedExtra<InlineValue, Extra1>>>,
+    pub map: Point<AmtMapInner>,
 }
 
 #[cfg(feature = "amt")]
@@ -48,10 +54,7 @@ impl ToOutput for AmtMapValue {
 impl InlineOutput for AmtMapValue {}
 
 #[cfg(feature = "amt")]
-impl<I: PointInput<Extra = AmtMapSchema>> ParseInline<I> for AmtMapValue
-where
-    InlineValue: ParseInline<I::WithExtra<Arc<InlineSchema>>>,
-{
+impl<I: PointInput<Extra = AmtMapSchema>> ParseInline<I> for AmtMapValue {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let kv = input.extra().clone();
         Ok(Self {
@@ -84,10 +87,7 @@ type AmtMapValue = Infallible;
 
 impl Tagged for CollectionValue {}
 
-impl<I: PointInput<Extra = CollectionSchema>> ParseInline<I> for CollectionValue
-where
-    AmtMapValue: ParseInline<I::WithExtra<AmtMapSchema>>,
-{
+impl<I: PointInput<Extra = CollectionSchema>> ParseInline<I> for CollectionValue {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         #[allow(unreachable_code, unused)]
         let schema = input.extra().clone();
@@ -129,7 +129,7 @@ impl DefaultIsMin for CollectionSchema {
         let schema = self.clone();
         match schema {
             #[cfg(feature = "amt")]
-            Self::AmtMap(_) => true,
+            Self::AmtMap(_) => false,
         }
     }
 }
