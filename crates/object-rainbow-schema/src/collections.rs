@@ -59,6 +59,12 @@ impl ToOutput for AmtMapValue {
         self.map.to_output(output);
     }
 }
+#[cfg(feature = "amt")]
+impl ToOutput for AmtSetValue {
+    fn to_output(&self, output: &mut impl Output) {
+        self.set.to_output(output);
+    }
+}
 
 #[cfg(feature = "amt")]
 impl InlineOutput for AmtMapValue {}
