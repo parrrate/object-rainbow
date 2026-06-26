@@ -77,3 +77,5 @@ impl<T: ByteOrd + InlineOutput> ByteOrd for VecDeque<T> {
         self.iter_bytes_cmp(other)
     }
 }
+
+impl<T> PlainCollection for VecDeque<T> {}
