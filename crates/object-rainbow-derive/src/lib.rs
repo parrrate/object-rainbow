@@ -1762,10 +1762,16 @@ fn gen_parse_inline(data: &Data) -> (proc_macro2::TokenStream, Option<proc_macro
                 quote! {
                     ::object_rainbow::enumkind::EnumParseInline::parse_as_inline_enum(input)
                 },
-                Some(quote! {
-                    Ok(match kind {
-                        #(#parse_inline)*
-                    })
+                Some(if data.variants.is_empty() {
+                    quote! {
+                        match kind {}
+                    }
+                } else {
+                    quote! {
+                        Ok(match kind {
+                            #(#parse_inline)*
+                        })
+                    }
                 }),
             )
         }
