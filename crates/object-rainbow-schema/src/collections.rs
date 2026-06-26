@@ -47,6 +47,7 @@ impl ToOutput for AmtMapValue {
 #[cfg(feature = "amt")]
 impl InlineOutput for AmtMapValue {}
 
+#[cfg(feature = "amt")]
 impl<I: PointInput<Extra = AmtMapSchema>> ParseInline<I> for AmtMapValue
 where
     InlineValue: ParseInline<I::WithExtra<Arc<InlineSchema>>>,
@@ -60,6 +61,7 @@ where
     }
 }
 
+#[cfg(feature = "amt")]
 impl AbstractValue for AmtMapValue {
     type Schema = CollectionSchema;
 
@@ -74,6 +76,11 @@ pub enum CollectionValue {
     #[cfg(feature = "amt")]
     AmtMap(AmtMapValue),
 }
+
+#[cfg(not(feature = "amt"))]
+type AmtMapSchema = Infallible;
+#[cfg(not(feature = "amt"))]
+type AmtMapValue = Infallible;
 
 impl Tagged for CollectionValue {}
 
@@ -96,6 +103,7 @@ impl AbstractValue for CollectionValue {
 
     fn schema(&self) -> Self::Schema {
         match *self {
+            #[cfg(feature = "amt")]
             Self::AmtMap(ref value) => value.schema(),
         }
     }
@@ -103,9 +111,12 @@ impl AbstractValue for CollectionValue {
 
 impl DefaultSchema<CollectionValue> for CollectionSchema {
     fn default_value(&self) -> Option<CollectionValue> {
-        match *self {
-            Self::AmtMap(ref kv) => Some(CollectionValue::AmtMap(AmtMapValue {
-                kv: kv.clone(),
+        #[allow(unreachable_code, unused)]
+        let schema = self.clone();
+        match schema {
+            #[cfg(feature = "amt")]
+            Self::AmtMap(kv) => Some(CollectionValue::AmtMap(AmtMapValue {
+                kv,
                 map: Default::default(),
             })),
         }
@@ -114,7 +125,10 @@ impl DefaultSchema<CollectionValue> for CollectionSchema {
 
 impl DefaultIsMin for CollectionSchema {
     fn default_is_min(&self) -> bool {
-        match *self {
+        #[allow(unreachable_code, unused)]
+        let schema = self.clone();
+        match schema {
+            #[cfg(feature = "amt")]
             Self::AmtMap(_) => true,
         }
     }
