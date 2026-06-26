@@ -505,7 +505,7 @@ where
     }
 }
 
-#[derive(ListHashes)]
+#[derive(ListHashes, Topological)]
 pub struct ValueToA(pub Arc<TailValue>, pub Arc<TailValue>);
 
 impl ToOutput for ValueToA {
