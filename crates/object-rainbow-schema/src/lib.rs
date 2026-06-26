@@ -507,6 +507,13 @@ where
 
 pub struct ValueToA(pub Arc<TailValue>, pub Arc<TailValue>);
 
+impl ToOutput for ValueToA {
+    fn to_output(&self, output: &mut impl Output) {
+        self.0.to_output(output);
+        self.1.to_output(output);
+    }
+}
+
 #[derive(ToOutput, ParseAsInline, ListHashes, Topological)]
 #[rainbow(untagged)]
 pub enum InlineValue {
