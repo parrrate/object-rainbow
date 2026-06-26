@@ -81,6 +81,16 @@ impl<I: PointInput<Extra = AmtMapSchema>> ParseInline<I> for AmtMapValue {
         })
     }
 }
+#[cfg(feature = "amt")]
+impl<I: PointInput<Extra = AmtSetSchema>> ParseInline<I> for AmtSetValue {
+    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
+        let item = input.extra().clone();
+        Ok(Self {
+            item,
+            set: input.parse_inline()?,
+        })
+    }
+}
 
 #[cfg(feature = "amt")]
 impl AbstractValue for AmtMapValue {
