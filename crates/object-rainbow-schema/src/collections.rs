@@ -41,6 +41,8 @@ impl ToOutput for AmtValue {
     }
 }
 
+impl InlineOutput for AmtValue {}
+
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, ParseAsInline)]
 #[rainbow(untagged)]
 pub enum CollectionValue {
