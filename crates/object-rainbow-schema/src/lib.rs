@@ -1446,3 +1446,17 @@ fn tuple_of_arrays() -> object_rainbow::Result<()> {
     );
     Ok(())
 }
+
+#[test]
+fn toa_se_equiv() -> object_rainbow::Result<()> {
+    use object_rainbow::{ParseSlice, ParseSliceExtra};
+    let resolve = &(Arc::new(object_rainbow::TopoVec::new()) as _);
+    let toa_schema = TailSchema::parse_slice(&[4, 2, 7, 0, 2, 7, 2], resolve)?;
+    let toa_value =
+        TailValue::parse_slice_extra(&[1, 2, 3, 4, 5, 6], resolve, &Arc::new(toa_schema))?;
+    let seq_schema = TailSchema::parse_slice(&[2, 5, 7, 0, 7, 2], resolve)?;
+    let seq_value =
+        TailValue::parse_slice_extra(&[1, 3, 4, 2, 5, 6], resolve, &Arc::new(seq_schema))?;
+    assert_eq!(toa_value.items(), seq_value.items());
+    Ok(())
+}
