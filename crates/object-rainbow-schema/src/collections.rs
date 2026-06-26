@@ -13,7 +13,7 @@ use crate::*;
 #[cfg(feature = "amt")]
 pub type AmtMapSchema = (Arc<InlineSchema>, Arc<InlineSchema>);
 #[cfg(feature = "amt")]
-pub type AmtSetSchema = Arc<InlineSchema>;
+pub type ItemSchema = Arc<InlineSchema>;
 
 #[derive(Enum, ToOutput, Parse, ParseInline, ListHashes, Topological, Clone)]
 pub enum CollectionSchema {
@@ -22,7 +22,7 @@ pub enum CollectionSchema {
         #[cfg(not(feature = "amt"))] Infallible,
     ),
     AmtSet(
-        #[cfg(feature = "amt")] AmtSetSchema,
+        #[cfg(feature = "amt")] ItemSchema,
         #[cfg(not(feature = "amt"))] Infallible,
     ),
 }
@@ -54,7 +54,7 @@ pub struct AmtMapValue {
 #[cfg(feature = "amt")]
 #[derive(ListHashes, Topological, Tagged, ParseAsInline)]
 pub struct AmtSetValue {
-    pub item: AmtSetSchema,
+    pub item: ItemSchema,
     pub set: Point<AmtSetInner>,
 }
 
@@ -87,7 +87,7 @@ impl<I: PointInput<Extra = AmtMapSchema>> ParseInline<I> for AmtMapValue {
     }
 }
 #[cfg(feature = "amt")]
-impl<I: PointInput<Extra = AmtSetSchema>> ParseInline<I> for AmtSetValue {
+impl<I: PointInput<Extra = ItemSchema>> ParseInline<I> for AmtSetValue {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let item = input.extra().clone();
         Ok(Self {
