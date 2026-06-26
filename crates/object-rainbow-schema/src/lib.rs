@@ -412,7 +412,7 @@ pub enum ValueOption<T: AbstractValue> {
     Some(Arc<T>),
 }
 
-#[derive(ParseAsInline, ListHashes, Topological)]
+#[derive(Debug, ParseAsInline, ListHashes, Topological)]
 pub struct ValueNt {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
@@ -460,7 +460,7 @@ where
     }
 }
 
-#[derive(ParseAsInline, ListHashes, Topological)]
+#[derive(Debug, ParseAsInline, ListHashes, Topological)]
 pub struct ValueArray {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
@@ -512,7 +512,7 @@ impl From<ValueArray> for InlineValue {
     }
 }
 
-#[derive(ToOutput, ListHashes, Topological, Parse)]
+#[derive(Debug, ToOutput, ListHashes, Topological, Parse)]
 pub struct ValueSequence {
     pub schema: Extras<Arc<InlineSchema>>,
     pub items: Vec<Arc<InlineValue>>,
@@ -534,7 +534,7 @@ impl AbstractValue for ValueSequence {
     }
 }
 
-#[derive(ListHashes, Topological)]
+#[derive(Debug, ListHashes, Topological)]
 pub struct ValueToA(
     pub MappedExtra<Arc<TailValue>, Extra0>,
     pub MappedExtra<Arc<TailValue>, Extra1>,
@@ -579,7 +579,7 @@ where
     }
 }
 
-#[derive(ToOutput, ParseAsInline, ListHashes, Topological)]
+#[derive(Debug, ToOutput, ParseAsInline, ListHashes, Topological)]
 #[rainbow(untagged)]
 pub enum InlineValue {
     Unit,
@@ -599,7 +599,7 @@ pub enum InlineValue {
 impl InlineOutput for InlineValue {}
 impl Tagged for InlineValue {}
 
-#[derive(ToOutput, ListHashes, Topological)]
+#[derive(Debug, ToOutput, ListHashes, Topological)]
 #[rainbow(untagged)]
 pub enum TailValue {
     Cut,
@@ -1266,7 +1266,7 @@ impl ItemSizeSchema for TailSchema {
     }
 }
 
-#[derive(ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline)]
+#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline)]
 pub struct ValueZt {
     pub schema: Extras<Arc<TailSchema>>,
     pub value: Zt<Arc<TailValue>>,
