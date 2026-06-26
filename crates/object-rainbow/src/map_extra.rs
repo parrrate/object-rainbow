@@ -19,6 +19,12 @@ use crate::*;
 )]
 pub struct MappedExtra<T, M = ()>(pub M, pub T);
 
+impl<T, M: Default> From<T> for MappedExtra<T, M> {
+    fn from(inner: T) -> Self {
+        Self(Default::default(), inner)
+    }
+}
+
 impl<T: IntoIterator, M> IntoIterator for MappedExtra<T, M> {
     type Item = T::Item;
 
