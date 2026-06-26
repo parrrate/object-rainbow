@@ -652,7 +652,7 @@ impl AbstractValue for InlineValue {
             Self::Concat(a, b) => InlineSchema::Concat(Arc::new(a.schema()), Arc::new(b.schema())),
             Self::Array(a) => a.schema().into(),
             Self::Numeric(n) => n.schema().into(),
-            Self::Enum(e) => InlineSchema::Enum(e.schema()),
+            Self::Enum(e) => e.schema().into(),
         }
     }
 }
@@ -836,6 +836,12 @@ where
 pub struct EnumSchema<T> {
     pub kind: NumericSchema,
     pub variants: Arc<LpVec<Arc<T>>>,
+}
+
+impl From<EnumSchema<InlineSchema>> for InlineSchema {
+    fn from(schema: EnumSchema<InlineSchema>) -> Self {
+        Self::Enum(schema)
+    }
 }
 
 impl<T> Clone for EnumSchema<T> {
