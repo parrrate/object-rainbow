@@ -1130,7 +1130,7 @@ impl<T: DefaultIsMin> DefaultIsMin for EnumSchema<T> {
     }
 }
 
-#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged)]
+#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, PartialEq)]
 pub struct EnumValue<T: AbstractValue> {
     pub kind: NumericValue,
     pub variants: Arc<LpVec<Arc<T::Schema>>>,
