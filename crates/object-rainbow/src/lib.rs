@@ -829,6 +829,8 @@ pub trait ParseSliceExtra<Extra: Clone>: for<'a> Parse<Input<'a, Extra>> {
 
 impl<T: for<'a> Parse<Input<'a, Extra>>, Extra: Clone> ParseSliceExtra<Extra> for T {}
 
+pub trait ParseAs<'a> {}
+
 #[derive(Debug, ToOutput)]
 pub struct DiffHashes {
     pub tags: Hash,
