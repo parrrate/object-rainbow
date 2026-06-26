@@ -30,3 +30,5 @@ impl<
         Ok(Self(input.split_parse(n * Ae::SIZE)?, input.parse()?))
     }
 }
+
+pub trait VecLike {}
