@@ -1091,6 +1091,18 @@ impl SizeSchema for ArraySchema {
     }
 }
 
+impl<T: SizeSchema> SizeSchema for EnumSchema<T> {
+    fn size(&self) -> Option<u64> {
+        let size = self.variants.first()?.size()?;
+        for schema in &self.variants[1..] {
+            if schema.size()? != size {
+                return None;
+            }
+        }
+        self.kind.size()?.checked_add(size)
+    }
+}
+
 impl SizeSchema for InlineSchema {
     fn size(&self) -> Option<u64> {
         match self {
@@ -1102,7 +1114,7 @@ impl SizeSchema for InlineSchema {
             Self::Concat(a, b) => a.size()?.checked_add(b.size()?),
             Self::Array(schema) => schema.size(),
             Self::Numeric(schema) => schema.size(),
-            Self::Enum(_) => None,
+            Self::Enum(schema) => schema.size(),
             #[cfg(feature = "_collections")]
             Self::Collection(schema) => schema.size(),
             #[cfg(not(feature = "_collections"))]
