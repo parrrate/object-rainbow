@@ -35,6 +35,12 @@ pub struct AmtValue {
     pub map: Point<AmtMap<MappedExtra<InlineValue, Extra0>, MappedExtra<InlineValue, Extra1>>>,
 }
 
+impl ToOutput for AmtValue {
+    fn to_output(&self, output: &mut impl Output) {
+        self.map.to_output(output);
+    }
+}
+
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, ParseAsInline)]
 #[rainbow(untagged)]
 pub enum CollectionValue {
