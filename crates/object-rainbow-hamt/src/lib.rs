@@ -827,6 +827,7 @@ impl<V: Component> HamtMap<V> {
 }
 
 #[derive(
+    Debug,
     ToOutput,
     InlineOutput,
     Tagged,
