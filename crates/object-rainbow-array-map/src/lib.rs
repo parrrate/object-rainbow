@@ -6,7 +6,7 @@ use std::{
 
 use bitvec::array::BitArray;
 use object_rainbow::{
-    Equivalent, EquivalentFor, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse,
+    ByteOrd, Equivalent, EquivalentFor, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse,
     ParseAsInline, ParseInline, ParseInput, PointInput, RainbowIterator, Size, Tagged, ToOutput,
     Topological, assert_impl,
 };
@@ -27,6 +27,12 @@ impl<T: InlineOutput> ToOutput for ArrayMap<T> {
 }
 
 impl<T: InlineOutput> InlineOutput for ArrayMap<T> {}
+
+impl<T: ByteOrd + InlineOutput> ByteOrd for ArrayMap<T> {
+    fn bytes_cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.iter_bytes_cmp(other)
+    }
+}
 
 impl<T: ParseInline<I>, I: ParseInput> ParseInline<I> for ArrayMap<T> {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
