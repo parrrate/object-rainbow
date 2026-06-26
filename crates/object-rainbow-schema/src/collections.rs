@@ -29,3 +29,14 @@ pub enum CollectionValue {
 }
 
 impl Tagged for CollectionValue {}
+
+impl<I: PointInput<Extra = CollectionSchema>> ParseInline<I> for CollectionValue {
+    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
+        #[allow(unreachable_code, unused)]
+        let schema = input.extra().clone();
+        match schema {
+            #[cfg(feature = "amt")]
+            CollectionSchema::Amt(kv) => Ok(Self::Amt(input.parse_inline_extra(kv)?)),
+        }
+    }
+}
