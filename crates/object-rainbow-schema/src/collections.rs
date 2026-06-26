@@ -36,12 +36,14 @@ pub struct AmtValue {
     pub map: Point<AmtMap<MappedExtra<InlineValue, Extra0>, MappedExtra<InlineValue, Extra1>>>,
 }
 
+#[cfg(feature = "amt")]
 impl ToOutput for AmtValue {
     fn to_output(&self, output: &mut impl Output) {
         self.map.to_output(output);
     }
 }
 
+#[cfg(feature = "amt")]
 impl InlineOutput for AmtValue {}
 
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, ParseAsInline)]
