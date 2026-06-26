@@ -19,7 +19,7 @@ pub enum CollectionSchema {
 impl InlineOutput for CollectionSchema {}
 impl Tagged for CollectionSchema {}
 
-#[derive(ToOutput, InlineOutput)]
+#[derive(ToOutput, InlineOutput, ListHashes)]
 #[rainbow(untagged)]
 pub enum CollectionValue {
     #[cfg(feature = "amt")]
