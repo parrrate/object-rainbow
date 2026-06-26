@@ -505,6 +505,10 @@ impl ToOutput for SchemaNiche {
 impl InlineOutput for SchemaNiche {}
 
 impl SchemaNiche {
+    pub fn point() -> Self {
+        Self::PointNiche(u128::MAX)
+    }
+
     pub fn needs_tag(&self) -> bool {
         match self {
             Self::Zeroes(_) => false,
@@ -598,7 +602,7 @@ impl AbstractSchema for InlineSchema {
             Self::Never => SchemaNiche::Zeroes(0),
             Self::Unit => SchemaNiche::ZeroNoNiche(0),
             Self::Option(schema) => schema.niche().option(),
-            Self::Point(_) => SchemaNiche::PointNiche(u128::MAX),
+            Self::Point(_) => SchemaNiche::point(),
             Self::Nt(schema) => Self::Option(schema.clone()).niche(),
             Self::Concat(a, b) => SchemaNiche::concat(Arc::new(a.niche()), Arc::new(b.niche())),
             Self::Array(schema) => schema.niche(),
