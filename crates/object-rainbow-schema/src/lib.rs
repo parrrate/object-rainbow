@@ -1308,6 +1308,12 @@ impl<T: AbstractValue + AbstractCollection> AbstractCollection for EnumValue<T> 
     }
 }
 
+impl AbstractCollection for ValueZt {
+    fn items(&self) -> Vec<Arc<InlineValue>> {
+        self.value.items()
+    }
+}
+
 impl AbstractCollection for InlineValue {
     fn items(&self) -> Vec<Arc<InlineValue>> {
         match self {
@@ -1320,7 +1326,7 @@ impl AbstractCollection for InlineValue {
             Self::Numeric(_) => Vec::new(),
             Self::Enum(value) => value.items(),
             Self::Collection(_) => Vec::new(),
-            Self::Zt(_) => Vec::new(),
+            Self::Zt(value) => value.items(),
         }
     }
 }
