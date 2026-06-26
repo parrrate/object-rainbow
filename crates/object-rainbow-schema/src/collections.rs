@@ -46,11 +46,11 @@ pub type AmtMapInner =
 #[cfg(feature = "amt")]
 pub type AmtSetInner = AmtSet<Arc<InlineValue>>;
 
-#[cfg(feature = "amt")]
+#[cfg(feature = "_collections-map")]
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
-pub struct AmtMapValue {
+pub struct MapValue<T> {
     pub kv: Extras<KvSchema>,
-    pub map: Point<AmtMapInner>,
+    pub map: Point<T>,
 }
 #[cfg(feature = "amt")]
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
@@ -60,7 +60,7 @@ pub struct AmtSetValue {
 }
 
 #[cfg(feature = "amt")]
-impl AbstractValue for AmtMapValue {
+impl AbstractValue for MapValue<AmtMapInner> {
     type Schema = CollectionSchema;
 
     fn schema(&self) -> Self::Schema {
@@ -80,7 +80,7 @@ impl AbstractValue for AmtSetValue {
 #[rainbow(untagged)]
 pub enum CollectionValue {
     #[cfg(feature = "amt")]
-    AmtMap(AmtMapValue),
+    AmtMap(MapValue<AmtMapInner>),
     #[cfg(feature = "amt")]
     AmtSet(AmtSetValue),
 }
@@ -115,7 +115,7 @@ impl DefaultSchema<CollectionValue> for CollectionSchema {
     fn default_value(&self) -> Option<CollectionValue> {
         match self.clone() {
             #[cfg(feature = "amt")]
-            Self::AmtMap(kv) => Some(CollectionValue::AmtMap(AmtMapValue {
+            Self::AmtMap(kv) => Some(CollectionValue::AmtMap(MapValue {
                 kv: Extras(kv),
                 map: Default::default(),
             })),
