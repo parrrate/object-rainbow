@@ -459,6 +459,12 @@ pub struct ValueArray {
     pub schema: Arc<InlineSchema>,
 }
 
+impl AbstractCollection for ValueArray {
+    fn items(&self) -> Vec<Arc<InlineValue>> {
+        self.items.clone()
+    }
+}
+
 impl ToOutput for ValueArray {
     fn to_output(&self, output: &mut impl Output) {
         self.items.to_output(output);
