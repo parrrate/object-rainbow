@@ -70,6 +70,17 @@ where
         }
     }
 }
+impl<T> SetValue<T>
+where
+    Point<T>: Default,
+{
+    pub fn schema_default(item: ItemSchema) -> Self {
+        Self {
+            item: Extras(item),
+            set: Default::default(),
+        }
+    }
+}
 
 #[cfg(feature = "amt")]
 impl AbstractValue for MapValue<AmtMapInner> {
@@ -129,10 +140,7 @@ impl DefaultSchema<CollectionValue> for CollectionSchema {
             #[cfg(feature = "amt")]
             Self::AmtMap(kv) => Some(CollectionValue::AmtMap(MapValue::schema_default(kv))),
             #[cfg(feature = "amt")]
-            Self::AmtSet(item) => Some(CollectionValue::AmtSet(SetValue {
-                item: Extras(item),
-                set: Default::default(),
-            })),
+            Self::AmtSet(item) => Some(CollectionValue::AmtSet(SetValue::schema_default(item))),
         }
     }
 }
