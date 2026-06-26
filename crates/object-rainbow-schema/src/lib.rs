@@ -1224,7 +1224,7 @@ impl ItemSizeSchema for TailSchema {
             Self::Concat(_, _) => None,
             Self::ToA(a, b) => a.item_size()?.checked_add(b.item_size()?),
             Self::Enum(_) => None,
-            Self::Bytes => None,
+            Self::Bytes => Some(1),
             Self::String => None,
         }
     }
