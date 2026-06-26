@@ -800,7 +800,7 @@ where
     }
 }
 
-#[derive(ToOutput, InlineOutput, Parse, ParseInline, ListHashes, Topological, Clone)]
+#[derive(ToOutput, InlineOutput, Parse, ParseInline, ListHashes, Topological, Tagged, Clone)]
 pub struct EnumSchema<T> {
     pub kind: NumericSchema,
     pub variants: LpVec<Arc<T>>,
