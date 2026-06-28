@@ -20,12 +20,23 @@ impl<T> Drop for RemoteMut<'_, T> {
     }
 }
 
-pub struct Lender<T>(oneshot::Sender<(T, oneshot::Sender<T>)>);
+struct Lent<T> {
+    value: T,
+    return_to: oneshot::Sender<T>,
+}
+
+pub struct Lender<T>(oneshot::Sender<Lent<T>>);
 
 impl<'a, T: Clone> RemoteMut<'a, T> {
     pub fn new(local: &'a mut T, remote: Lender<T>) -> Self {
         let (return_to, borrowed) = oneshot::channel();
-        remote.0.send((local.clone(), return_to)).ok();
+        remote
+            .0
+            .send(Lent {
+                value: local.clone(),
+                return_to,
+            })
+            .ok();
         Self { local, borrowed }
     }
 }
@@ -61,7 +72,7 @@ impl<T> Drop for NestedMut<'_, T> {
 }
 
 pub struct WaitingLease<'a, T> {
-    borrowing: oneshot::Receiver<(T, oneshot::Sender<T>)>,
+    borrowing: oneshot::Receiver<Lent<T>>,
     future: Option<BoxFuture<'a, object_rainbow::Result<()>>>,
 }
 
@@ -79,7 +90,7 @@ impl<'a, T> Future for WaitingLease<'a, T> {
         {
             Poll::Ready(Ok(None))
         } else {
-            let Ok((value, return_to)) = ready!(this.borrowing.poll_unpin(cx)) else {
+            let Ok(Lent { value, return_to }) = ready!(this.borrowing.poll_unpin(cx)) else {
                 return Poll::Ready(Ok(None));
             };
             Poll::Ready(Ok(Some(NestedMut::new(
