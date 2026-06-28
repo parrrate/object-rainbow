@@ -1,6 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
 use futures_channel::oneshot;
+use futures_util::{FutureExt, future::BoxFuture};
 
 pub struct RemoteMut<'a, T> {
     local: &'a mut T,
@@ -25,13 +26,13 @@ impl<'a, T: Clone> RemoteMut<'a, T> {
     }
 }
 
-pub struct NestedMut<T, F> {
+pub struct NestedMut<'a, T> {
     value: Option<T>,
     return_to: Option<oneshot::Sender<T>>,
-    _future: F,
+    _future: BoxFuture<'a, object_rainbow::Result<()>>,
 }
 
-impl<T, F> Deref for NestedMut<T, F> {
+impl<T> Deref for NestedMut<'_, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -39,13 +40,13 @@ impl<T, F> Deref for NestedMut<T, F> {
     }
 }
 
-impl<T, F> DerefMut for NestedMut<T, F> {
+impl<T> DerefMut for NestedMut<'_, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.value.as_mut().expect("invalid state")
     }
 }
 
-impl<T, F> Drop for NestedMut<T, F> {
+impl<T> Drop for NestedMut<'_, T> {
     fn drop(&mut self) {
         self.return_to
             .take()
@@ -55,12 +56,16 @@ impl<T, F> Drop for NestedMut<T, F> {
     }
 }
 
-impl<T, F: Future<Output = object_rainbow::Result<()>>> NestedMut<T, F> {
-    pub fn new(value: T, return_to: oneshot::Sender<T>, future: F) -> Self {
+impl<'a, T> NestedMut<'a, T> {
+    pub fn new(
+        value: T,
+        return_to: oneshot::Sender<T>,
+        future: impl 'a + Send + Future<Output = object_rainbow::Result<()>>,
+    ) -> Self {
         Self {
             value: Some(value),
             return_to: Some(return_to),
-            _future: future,
+            _future: future.boxed(),
         }
     }
 }

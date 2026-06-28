@@ -18,7 +18,7 @@ bitvec = { workspace = true, optional = true }
 bytes = { workspace = true, optional = true }
 cid = { workspace = true, optional = true }
 futures-channel.workspace = true
-futures-util.workspace = true
+futures-util = { workspace = true, features = ["std"] }
 generic-array.workspace = true
 ghost.workspace = true
 hex = { workspace = true, optional = true }
