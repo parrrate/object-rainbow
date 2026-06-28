@@ -33,6 +33,12 @@ impl<T> Deref for Lent<T> {
     }
 }
 
+impl<T> DerefMut for Lent<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.value
+    }
+}
+
 pub struct Lender<T>(oneshot::Sender<Lent<T>>);
 
 impl<'a, T: Clone> RemoteMut<'a, T> {
