@@ -25,6 +25,14 @@ struct Lent<T> {
     return_to: oneshot::Sender<T>,
 }
 
+impl<T> Deref for Lent<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
 pub struct Lender<T>(oneshot::Sender<Lent<T>>);
 
 impl<'a, T: Clone> RemoteMut<'a, T> {
