@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use futures_channel::oneshot;
 
 pub struct RemoteMut<'a, T> {
@@ -27,6 +29,14 @@ pub struct NestedMut<T, F> {
     value: Option<T>,
     return_to: Option<oneshot::Sender<T>>,
     _future: F,
+}
+
+impl<T, F> Deref for NestedMut<T, F> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        self.value.as_ref().expect("invalid state")
+    }
 }
 
 impl<T, F> Drop for NestedMut<T, F> {
