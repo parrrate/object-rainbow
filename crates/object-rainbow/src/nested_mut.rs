@@ -8,14 +8,14 @@ use futures_channel::oneshot;
 use futures_util::{FutureExt, future::BoxFuture};
 
 pub struct NestedGuard<'a, T> {
-    local: &'a mut T,
+    original: &'a mut T,
     borrowed: oneshot::Receiver<T>,
 }
 
 impl<T> Drop for NestedGuard<'_, T> {
     fn drop(&mut self) {
         if let Ok(Some(returned)) = self.borrowed.try_recv() {
-            *self.local = returned;
+            *self.original = returned;
         }
     }
 }
@@ -48,16 +48,16 @@ impl<T> Lent<T> {
 pub struct Lender<T>(oneshot::Sender<Lent<T>>);
 
 impl<'a, T: Clone> NestedGuard<'a, T> {
-    fn new(local: &'a mut T, remote: Lender<T>) -> Self {
+    fn new(original: &'a mut T, remote: Lender<T>) -> Self {
         let (return_to, borrowed) = oneshot::channel();
         remote
             .0
             .send(Lent {
-                value: local.clone(),
+                value: original.clone(),
                 return_to,
             })
             .ok();
-        Self { local, borrowed }
+        Self { original, borrowed }
     }
 }
 
