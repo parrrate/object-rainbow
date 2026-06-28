@@ -1630,6 +1630,7 @@ dependencies = [
  "bitvec",
  "bytes",
  "cid",
+ "futures-channel",
  "futures-util",
  "generic-array 1.4.1",
  "ghost",
