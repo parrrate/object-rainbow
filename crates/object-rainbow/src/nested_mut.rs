@@ -70,6 +70,8 @@ pub trait LendTo: Clone {
     }
 }
 
+impl<T: Clone> LendTo for T {}
+
 pub struct NestedMut<'a, T> {
     lent: Option<Lent<T>>,
     _future: BoxFuture<'a, object_rainbow::Result<()>>,
