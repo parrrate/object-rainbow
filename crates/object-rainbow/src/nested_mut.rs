@@ -55,7 +55,7 @@ impl<T, F> Drop for NestedMut<T, F> {
     }
 }
 
-impl<T, F> NestedMut<T, F> {
+impl<T, F: Future<Output = object_rainbow::Result<()>>> NestedMut<T, F> {
     pub fn new(value: T, return_to: oneshot::Sender<T>, future: F) -> Self {
         Self {
             value: Some(value),
