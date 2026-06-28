@@ -86,7 +86,7 @@ impl<T> Drop for NestedMut<'_, T> {
     }
 }
 
-pub struct WaitingLease<'a, T> {
+struct WaitingLease<'a, T> {
     borrowing: oneshot::Receiver<Lent<T>>,
     future: Option<BoxFuture<'a, object_rainbow::Result<()>>>,
 }
