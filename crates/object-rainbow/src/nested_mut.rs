@@ -7,7 +7,7 @@ use std::{
 use futures_channel::oneshot;
 use futures_util::{FutureExt, future::BoxFuture};
 
-pub struct NestedGuard<'a, T> {
+struct NestedGuard<'a, T> {
     original: &'a mut T,
     returned: oneshot::Receiver<T>,
 }
