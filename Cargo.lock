@@ -1624,7 +1624,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.66"
+version = "0.0.0-a.67"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -1647,7 +1647,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-amt"
-version = "0.0.0-a.6"
+version = "0.0.0-a.7"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1661,7 +1661,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-append-tree"
-version = "0.0.0-a.13"
+version = "0.0.0-a.14"
 dependencies = [
  "macro_rules_attribute",
  "object-rainbow",
@@ -1674,7 +1674,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-array-map"
-version = "0.0.0-a.12"
+version = "0.0.0-a.13"
 dependencies = [
  "bitvec",
  "object-rainbow",
@@ -1682,7 +1682,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-chain-tree"
-version = "0.0.0-a.10"
+version = "0.0.0-a.11"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
@@ -1696,7 +1696,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-derive"
-version = "0.0.0-a.21"
+version = "0.0.0-a.22"
 dependencies = [
  "darling",
  "object-rainbow",
@@ -1708,7 +1708,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-encrypted"
-version = "0.0.0-a.19"
+version = "0.0.0-a.20"
 dependencies = [
  "anyhow",
  "chacha20poly1305",
@@ -1725,7 +1725,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-encrypted-store"
-version = "0.0.0-a.0"
+version = "0.0.0-a.1"
 dependencies = [
  "macro_rules_attribute",
  "object-rainbow",
@@ -1738,7 +1738,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-fetchall"
-version = "0.0.0-a.8"
+version = "0.0.0-a.9"
 dependencies = [
  "anyhow",
  "async-executor",
@@ -1752,7 +1752,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-hamt"
-version = "0.0.0-a.11"
+version = "0.0.0-a.12"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1765,7 +1765,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.32"
+version = "0.0.0-a.33"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1783,7 +1783,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history-store"
-version = "0.0.0-a.6"
+version = "0.0.0-a.7"
 dependencies = [
  "anyhow",
  "object-rainbow",
@@ -1797,7 +1797,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-json"
-version = "0.0.0-a.22"
+version = "0.0.0-a.23"
 dependencies = [
  "futures-util",
  "object-rainbow",
@@ -1809,7 +1809,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-kubo-raw"
-version = "0.0.0-a.0"
+version = "0.0.0-a.1"
 dependencies = [
  "bytes",
  "cid",
@@ -1826,7 +1826,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-local-map"
-version = "0.0.0-a.7"
+version = "0.0.0-a.8"
 dependencies = [
  "imbl",
  "object-rainbow",
@@ -1834,7 +1834,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-marshall"
-version = "0.0.0-a.11"
+version = "0.0.0-a.12"
 dependencies = [
  "anyhow",
  "object-rainbow",
@@ -1846,14 +1846,14 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-parse-prefix"
-version = "0.0.0-a.4"
+version = "0.0.0-a.5"
 dependencies = [
  "object-rainbow",
 ]
 
 [[package]]
 name = "object-rainbow-point"
-version = "0.0.0-a.13"
+version = "0.0.0-a.14"
 dependencies = [
  "futures-util",
  "object-rainbow",
@@ -1872,7 +1872,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-store"
-version = "0.0.0-a.11"
+version = "0.0.0-a.12"
 dependencies = [
  "dashmap",
  "futures-util",
@@ -1883,7 +1883,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-store-opendal"
-version = "0.0.0-a.7"
+version = "0.0.0-a.8"
 dependencies = [
  "anyhow",
  "hex",
@@ -1896,7 +1896,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-trie"
-version = "0.0.0-a.18"
+version = "0.0.0-a.19"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
