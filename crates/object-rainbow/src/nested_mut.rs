@@ -36,3 +36,13 @@ impl<T, F> Drop for NestedMut<T, F> {
             .ok();
     }
 }
+
+impl<T, F> NestedMut<T, F> {
+    pub fn new(value: T, return_to: oneshot::Sender<T>, future: F) -> Self {
+        Self {
+            value: Some(value),
+            return_to: Some(return_to),
+            _future: future,
+        }
+    }
+}
