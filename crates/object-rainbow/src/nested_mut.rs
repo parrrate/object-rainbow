@@ -1,4 +1,4 @@
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 
 use futures_channel::oneshot;
 
@@ -36,6 +36,12 @@ impl<T, F> Deref for NestedMut<T, F> {
 
     fn deref(&self) -> &Self::Target {
         self.value.as_ref().expect("invalid state")
+    }
+}
+
+impl<T, F> DerefMut for NestedMut<T, F> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.value.as_mut().expect("invalid state")
     }
 }
 
