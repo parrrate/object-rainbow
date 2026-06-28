@@ -123,4 +123,16 @@ impl<'a, T> NestedMut<'a, T> {
             _future: future,
         }
     }
+
+    pub async fn from_fn<F: 'a + Send + Future<Output = object_rainbow::Result<()>>>(
+        f: impl FnOnce(Lender<T>) -> F,
+    ) -> object_rainbow::Result<Option<Self>> {
+        let (send, borrowing) = oneshot::channel();
+        let future = f(Lender(send)).boxed();
+        WaitingLease {
+            borrowing,
+            future: Some(future),
+        }
+        .await
+    }
 }
