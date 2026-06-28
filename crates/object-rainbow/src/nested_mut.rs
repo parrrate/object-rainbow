@@ -20,3 +20,19 @@ impl<'a, T: Clone> RemoteMut<'a, T> {
         Self { local, borrowed }
     }
 }
+
+pub struct NestedMut<T, F> {
+    value: Option<T>,
+    return_to: Option<oneshot::Sender<T>>,
+    _future: F,
+}
+
+impl<T, F> Drop for NestedMut<T, F> {
+    fn drop(&mut self) {
+        self.return_to
+            .take()
+            .expect("invalid state")
+            .send(self.value.take().expect("invalid state"))
+            .ok();
+    }
+}
