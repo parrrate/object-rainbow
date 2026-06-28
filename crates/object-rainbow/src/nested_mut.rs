@@ -39,6 +39,12 @@ impl<T> DerefMut for Lent<T> {
     }
 }
 
+impl<T> Lent<T> {
+    fn finish(self) {
+        self.return_to.send(self.value).ok();
+    }
+}
+
 pub struct Lender<T>(oneshot::Sender<Lent<T>>);
 
 impl<'a, T: Clone> RemoteMut<'a, T> {
@@ -76,8 +82,7 @@ impl<T> DerefMut for NestedMut<'_, T> {
 
 impl<T> Drop for NestedMut<'_, T> {
     fn drop(&mut self) {
-        let Lent { value, return_to } = self.lent.take().expect("invalid state");
-        return_to.send(value).ok();
+        self.lent.take().expect("invalid state").finish();
     }
 }
 
