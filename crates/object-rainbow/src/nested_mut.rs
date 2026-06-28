@@ -1,7 +1,11 @@
-use std::ops::{Deref, DerefMut};
+use std::{
+    ops::{Deref, DerefMut},
+    pin::Pin,
+    task::{Context, Poll, ready},
+};
 
 use futures_channel::oneshot;
-use futures_util::future::BoxFuture;
+use futures_util::{FutureExt, future::BoxFuture};
 
 pub struct RemoteMut<'a, T> {
     local: &'a mut T,
@@ -53,6 +57,37 @@ impl<T> Drop for NestedMut<'_, T> {
             .expect("invalid state")
             .send(self.value.take().expect("invalid state"))
             .ok();
+    }
+}
+
+pub struct WaitingLease<'a, T> {
+    borrowing: oneshot::Receiver<(T, oneshot::Sender<T>)>,
+    future: Option<BoxFuture<'a, object_rainbow::Result<()>>>,
+}
+
+impl<'a, T> Future for WaitingLease<'a, T> {
+    type Output = object_rainbow::Result<Option<NestedMut<'a, T>>>;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let this = self.get_mut();
+        if this
+            .future
+            .as_mut()
+            .expect("invalid state")
+            .poll_unpin(cx)?
+            .is_ready()
+        {
+            Poll::Ready(Ok(None))
+        } else {
+            let Ok((value, return_to)) = ready!(this.borrowing.poll_unpin(cx)) else {
+                return Poll::Ready(Ok(None));
+            };
+            Poll::Ready(Ok(Some(NestedMut::new(
+                value,
+                return_to,
+                this.future.take().expect("invalid state"),
+            ))))
+        }
     }
 }
 
