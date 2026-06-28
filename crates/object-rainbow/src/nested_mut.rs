@@ -48,9 +48,9 @@ impl<T> Lent<T> {
 pub struct Borrower<T>(oneshot::Sender<Lent<T>>);
 
 impl<'a, T: Clone> NestedGuard<'a, T> {
-    fn new(original: &'a mut T, remote: Borrower<T>) -> Self {
+    fn new(original: &'a mut T, borrower: Borrower<T>) -> Self {
         let (return_to, returned) = oneshot::channel();
-        remote
+        borrower
             .0
             .send(Lent {
                 value: original.clone(),
@@ -62,9 +62,9 @@ impl<'a, T: Clone> NestedGuard<'a, T> {
 }
 
 pub trait LendTo: Clone {
-    fn lend_to<T>(&mut self, remote: Borrower<Self>) -> impl Future<Output = T> {
+    fn lend_to<T>(&mut self, borrower: Borrower<Self>) -> impl Future<Output = T> {
         async move {
-            let _guard = NestedGuard::new(self, remote);
+            let _guard = NestedGuard::new(self, borrower);
             std::future::pending().await
         }
     }
