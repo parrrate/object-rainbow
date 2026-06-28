@@ -60,6 +60,7 @@ pub mod length_prefixed;
 pub mod map_extra;
 mod monostate;
 pub mod monostate_headers;
+pub mod nested_mut;
 mod niche;
 pub mod niche_cut;
 pub mod none_terminated;
