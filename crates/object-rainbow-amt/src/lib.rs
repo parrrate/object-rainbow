@@ -1,8 +1,13 @@
+use std::ops::DerefMut;
+
 use futures_util::{TryStreamExt, future::try_join};
 use object_rainbow::{
     Component, Enum, Equivalent, EquivalentFor, Fetch, Inline, InlineOutput, ListHashes, Parse,
     ParseInline, PointInput, Singular, Tagged, ToOutput, Topological, Traversible, assert_impl,
-    length_prefixed::LpBytes, map_extra::MappedExtra, tuple_extra::Extra1,
+    length_prefixed::LpBytes,
+    map_extra::MappedExtra,
+    nested_mut::{Borrower, LendTo, NestedMut},
+    tuple_extra::Extra1,
 };
 use object_rainbow_array_map::KeyedArrayMap;
 use object_rainbow_parse_prefix::{Prefix, PrefixRoot, WithByte, WithBytes, WithPrefix};
@@ -166,6 +171,34 @@ impl<K: Component, V: Component> Node<K, V> {
             }
             _ => Ok(None),
         }
+    }
+
+    async fn get_mut_inner(
+        &mut self,
+        key: &[u8],
+        borrower: Borrower<V>,
+    ) -> object_rainbow::Result<()> {
+        match self {
+            Self::Leaf(k, MappedExtra(_, v)) if k.vec() == key => v.lend_to(borrower).await,
+            Self::Sub(point) => {
+                if let MappedExtra(prefix, children) = &mut *point.fetch_mut().await?
+                    && let Some(key) = key.strip_prefix(&*prefix.0.0)
+                    && let Some((first, key)) = key.split_first()
+                    && let Some(sub) = children.get_mut(*first)
+                {
+                    Box::pin(sub.get_mut_inner(key, borrower)).await?;
+                }
+                Ok(())
+            }
+            _ => Ok(()),
+        }
+    }
+
+    async fn get_mut(
+        &mut self,
+        key: Vec<u8>,
+    ) -> object_rainbow::Result<Option<impl '_ + Send + Sync + DerefMut<Target = V>>> {
+        NestedMut::from_fn(async move |borrower| self.get_mut_inner(&key, borrower).await).await
     }
 
     fn from_kv(key: &[u8], k: K, v: V) -> object_rainbow::Result<Self> {
@@ -826,6 +859,13 @@ impl<K: Component, V: Component> AmtMap<K, V> {
         self.0.get(&k.vec()).await
     }
 
+    pub async fn get_mut(
+        &mut self,
+        k: &K,
+    ) -> object_rainbow::Result<Option<impl '_ + Send + Sync + DerefMut<Target = V>>> {
+        self.0.get_mut(k.vec()).await
+    }
+
     pub async fn insert(&mut self, k: K, v: V) -> object_rainbow::Result<Option<V>> {
         self.0
             .insert(&k.vec(), k, v, true)
@@ -1201,6 +1241,17 @@ mod test {
         assert_eq!(a.get(b"xxx2").await?, Some(true));
         assert_eq!(a.get(b"xxy1").await?, Some(true));
         assert_eq!(a.get(b"xxy2").await?, Some(true));
+        Ok(())
+    }
+
+    #[apply(test!)]
+    async fn get_mut() -> object_rainbow::Result<()> {
+        let mut amt = AmtMap::<[u8; 4], u8>::new();
+        amt.insert(*b"abcd", 1).await?;
+        amt.insert(*b"abce", 2).await?;
+        assert_eq!(amt.get(b"abce").await?, Some(2));
+        *amt.get_mut(b"abce").await?.unwrap() = 3;
+        assert_eq!(amt.get(b"abce").await?, Some(3));
         Ok(())
     }
 }
