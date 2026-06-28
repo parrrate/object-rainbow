@@ -61,6 +61,15 @@ impl<'a, T: Clone> RemoteMut<'a, T> {
     }
 }
 
+pub trait LendTo: Clone {
+    fn lend_to<T>(&mut self, remote: Lender<Self>) -> impl Future<Output = T> {
+        async move {
+            let _guard = RemoteMut::new(self, remote);
+            std::future::pending().await
+        }
+    }
+}
+
 pub struct NestedMut<'a, T> {
     lent: Option<Lent<T>>,
     _future: BoxFuture<'a, object_rainbow::Result<()>>,
