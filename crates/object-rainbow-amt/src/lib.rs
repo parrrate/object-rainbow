@@ -888,6 +888,10 @@ impl<K: Component, V: Component> AmtMap<K, V> {
     pub async fn count(&self) -> object_rainbow::Result<u64> {
         self.0.count().await
     }
+
+    pub async fn contains_key(&self, k: &K) -> object_rainbow::Result<bool> {
+        Ok(self.get(k).await?.is_some())
+    }
 }
 
 impl<K: 'static, V: 'static, U: 'static + Equivalent<V>> Equivalent<AmtMap<K, V>> for AmtMap<K, U> {
@@ -936,7 +940,7 @@ impl<T: Component> AmtSet<T> {
     }
 
     pub async fn contains(&self, value: &T) -> object_rainbow::Result<bool> {
-        Ok(self.0.get(value).await?.is_some())
+        self.0.contains_key(value).await
     }
 
     pub async fn insert(&mut self, value: T) -> object_rainbow::Result<bool> {
