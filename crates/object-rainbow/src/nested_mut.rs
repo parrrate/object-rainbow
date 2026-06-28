@@ -1,7 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
 use futures_channel::oneshot;
-use futures_util::{FutureExt, future::BoxFuture};
+use futures_util::future::BoxFuture;
 
 pub struct RemoteMut<'a, T> {
     local: &'a mut T,
@@ -60,12 +60,12 @@ impl<'a, T> NestedMut<'a, T> {
     pub fn new(
         value: T,
         return_to: oneshot::Sender<T>,
-        future: impl 'a + Send + Future<Output = object_rainbow::Result<()>>,
+        future: BoxFuture<'a, object_rainbow::Result<()>>,
     ) -> Self {
         Self {
             value: Some(value),
             return_to: Some(return_to),
-            _future: future.boxed(),
+            _future: future,
         }
     }
 }
