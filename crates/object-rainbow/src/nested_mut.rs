@@ -74,7 +74,7 @@ impl<T: Clone> LendTo for T {}
 
 pub struct NestedMut<'a, T> {
     lent: Option<Lent<T>>,
-    _future: BoxFuture<'a, object_rainbow::Result<()>>,
+    _guard: oneshot::Receiver<BoxFuture<'a, object_rainbow::Result<()>>>,
 }
 
 impl<T> Deref for NestedMut<'_, T> {
@@ -129,9 +129,11 @@ impl<'a, T> Future for WaitingLease<'a, T> {
 
 impl<'a, T> NestedMut<'a, T> {
     fn new(lent: Lent<T>, future: BoxFuture<'a, object_rainbow::Result<()>>) -> Self {
+        let (send, recv) = oneshot::channel();
+        send.send(future).ok();
         Self {
             lent: Some(lent),
-            _future: future,
+            _guard: recv,
         }
     }
 
