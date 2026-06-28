@@ -12,3 +12,11 @@ impl<T> Drop for RemoteMut<'_, T> {
         }
     }
 }
+
+impl<'a, T: Clone> RemoteMut<'a, T> {
+    pub fn new(local: &'a mut T, remote: oneshot::Sender<oneshot::Sender<T>>) -> Self {
+        let (return_to, borrowed) = oneshot::channel();
+        remote.send(return_to).ok();
+        Self { local, borrowed }
+    }
+}
