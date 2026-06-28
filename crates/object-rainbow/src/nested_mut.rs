@@ -48,7 +48,7 @@ impl<T> Lent<T> {
 pub struct Lender<T>(oneshot::Sender<Lent<T>>);
 
 impl<'a, T: Clone> RemoteMut<'a, T> {
-    pub fn new(local: &'a mut T, remote: Lender<T>) -> Self {
+    fn new(local: &'a mut T, remote: Lender<T>) -> Self {
         let (return_to, borrowed) = oneshot::channel();
         remote
             .0
