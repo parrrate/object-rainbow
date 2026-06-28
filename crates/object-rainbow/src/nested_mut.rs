@@ -56,8 +56,7 @@ impl<'a, T: Clone> RemoteMut<'a, T> {
 }
 
 pub struct NestedMut<'a, T> {
-    value: Option<T>,
-    return_to: Option<oneshot::Sender<T>>,
+    lent: Option<Lent<T>>,
     _future: BoxFuture<'a, object_rainbow::Result<()>>,
 }
 
@@ -65,23 +64,20 @@ impl<T> Deref for NestedMut<'_, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        self.value.as_ref().expect("invalid state")
+        self.lent.as_ref().expect("invalid state")
     }
 }
 
 impl<T> DerefMut for NestedMut<'_, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        self.value.as_mut().expect("invalid state")
+        self.lent.as_mut().expect("invalid state")
     }
 }
 
 impl<T> Drop for NestedMut<'_, T> {
     fn drop(&mut self) {
-        self.return_to
-            .take()
-            .expect("invalid state")
-            .send(self.value.take().expect("invalid state"))
-            .ok();
+        let Lent { value, return_to } = self.lent.take().expect("invalid state");
+        return_to.send(value).ok();
     }
 }
 
@@ -123,8 +119,7 @@ impl<'a, T> NestedMut<'a, T> {
         future: BoxFuture<'a, object_rainbow::Result<()>>,
     ) -> Self {
         Self {
-            value: Some(value),
-            return_to: Some(return_to),
+            lent: Some(Lent { value, return_to }),
             _future: future,
         }
     }
