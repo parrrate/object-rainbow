@@ -105,12 +105,11 @@ impl<'a, T> Future for WaitingLease<'a, T> {
         {
             Poll::Ready(Ok(None))
         } else {
-            let Ok(Lent { value, return_to }) = ready!(this.borrowing.poll_unpin(cx)) else {
+            let Ok(lent) = ready!(this.borrowing.poll_unpin(cx)) else {
                 return Poll::Ready(Ok(None));
             };
             Poll::Ready(Ok(Some(NestedMut::new(
-                value,
-                return_to,
+                lent,
                 this.future.take().expect("invalid state"),
             ))))
         }
@@ -118,13 +117,9 @@ impl<'a, T> Future for WaitingLease<'a, T> {
 }
 
 impl<'a, T> NestedMut<'a, T> {
-    pub fn new(
-        value: T,
-        return_to: oneshot::Sender<T>,
-        future: BoxFuture<'a, object_rainbow::Result<()>>,
-    ) -> Self {
+    fn new(lent: Lent<T>, future: BoxFuture<'a, object_rainbow::Result<()>>) -> Self {
         Self {
-            lent: Some(Lent { value, return_to }),
+            lent: Some(lent),
             _future: future,
         }
     }
