@@ -7,12 +7,12 @@ use std::{
 use futures_channel::oneshot;
 use futures_util::{FutureExt, future::BoxFuture};
 
-pub struct RemoteMut<'a, T> {
+pub struct NestedGuard<'a, T> {
     local: &'a mut T,
     borrowed: oneshot::Receiver<T>,
 }
 
-impl<T> Drop for RemoteMut<'_, T> {
+impl<T> Drop for NestedGuard<'_, T> {
     fn drop(&mut self) {
         if let Ok(Some(returned)) = self.borrowed.try_recv() {
             *self.local = returned;
@@ -47,7 +47,7 @@ impl<T> Lent<T> {
 
 pub struct Lender<T>(oneshot::Sender<Lent<T>>);
 
-impl<'a, T: Clone> RemoteMut<'a, T> {
+impl<'a, T: Clone> NestedGuard<'a, T> {
     fn new(local: &'a mut T, remote: Lender<T>) -> Self {
         let (return_to, borrowed) = oneshot::channel();
         remote
@@ -64,7 +64,7 @@ impl<'a, T: Clone> RemoteMut<'a, T> {
 pub trait LendTo: Clone {
     fn lend_to<T>(&mut self, remote: Lender<Self>) -> impl Future<Output = T> {
         async move {
-            let _guard = RemoteMut::new(self, remote);
+            let _guard = NestedGuard::new(self, remote);
             std::future::pending().await
         }
     }
