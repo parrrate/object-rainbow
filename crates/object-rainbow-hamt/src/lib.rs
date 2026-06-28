@@ -1,10 +1,11 @@
-use std::pin::Pin;
+use std::{ops::DerefMut, pin::Pin};
 
 use futures_util::TryStreamExt;
 use object_rainbow::{
     Component, Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse,
     ParseInline, PointInput, PointVisitor, Singular, Size, SizeExt, Tagged, Tags, ToOutput,
     Topological, Traversible, assert_impl,
+    nested_mut::{Borrower, LendTo, NestedMut},
 };
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
@@ -25,6 +26,7 @@ trait Amt<K>: Sized {
         key: K,
         f: impl 'a + Send + FnOnce(&Self::V) -> O,
     ) -> OptionFuture<'a, O>;
+    fn get_mut_inner<'a>(&'a mut self, key: K, borrower: Borrower<Self::V>) -> ActionFuture<'a>;
     fn append<'a>(&'a mut self, other: &'a mut Self) -> ActionFuture<'a>;
     fn intersect<'a>(&'a mut self, other: &'a Self) -> ActionFuture<'a>
     where
@@ -79,6 +81,15 @@ impl<V: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V> {
         f: impl 'a + Send + FnOnce(&Self::V) -> O,
     ) -> OptionFuture<'a, O> {
         Box::pin(async move { Ok(self.0.get(key).map(f)) })
+    }
+
+    fn get_mut_inner<'a>(&'a mut self, key: u8, borrower: Borrower<Self::V>) -> ActionFuture<'a> {
+        Box::pin(async move {
+            if let Some(value) = self.0.get_mut(key) {
+                value.lend_to(borrower).await
+            }
+            Ok(())
+        })
     }
 
     fn append<'a>(&'a mut self, other: &'a mut Self) -> ActionFuture<'a> {
@@ -227,6 +238,16 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
                 Self::Empty => Err(object_rainbow::error_consistency!(
                     "empty subtree? (invalid state)",
                 )),
+            }
+        })
+    }
+
+    fn get_mut_inner<'a>(&'a mut self, key: K, borrower: Borrower<Self::V>) -> ActionFuture<'a> {
+        Box::pin(async move {
+            match self {
+                Self::Leaf(existing, value) if *existing == key => value.lend_to(borrower).await,
+                Self::Sub(sub) => sub.fetch_mut().await?.get_mut_inner(key, borrower).await,
+                _ => Ok(()),
             }
         })
     }
@@ -497,6 +518,19 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
         })
     }
 
+    fn get_mut_inner<'a>(
+        &'a mut self,
+        (key, rest): (u8, K),
+        borrower: Borrower<Self::V>,
+    ) -> ActionFuture<'a> {
+        Box::pin(async move {
+            if let Some(sub) = self.0.get_mut(key) {
+                sub.get_mut_inner(rest, borrower).await?;
+            }
+            Ok(())
+        })
+    }
+
     fn append<'a>(&'a mut self, other: &'a mut Self) -> ActionFuture<'a> {
         Box::pin(async move {
             {
@@ -676,6 +710,14 @@ mod private {
                     self.0.get(key, f)
                 }
 
+                fn get_mut_inner<'a>(
+                    &'a mut self,
+                    key: $k,
+                    borrower: Borrower<Self::V>,
+                ) -> ActionFuture<'a> {
+                    self.0.get_mut_inner(key, borrower)
+                }
+
                 fn append<'a>(&'a mut self, other: &'a mut Self) -> ActionFuture<'a> {
                     self.0.append(&mut other.0)
                 }
@@ -795,6 +837,20 @@ impl<V: Component> HamtMap<V> {
             .await
     }
 
+    pub async fn get_mut(
+        &mut self,
+        hash: Hash,
+    ) -> object_rainbow::Result<Option<impl '_ + Send + Sync + DerefMut<Target = V>>> {
+        NestedMut::from_fn(async move |borrower| {
+            self.0
+                .fetch_mut()
+                .await?
+                .get_mut_inner(hash.reinterpret(), borrower)
+                .await
+        })
+        .await
+    }
+
     pub async fn contains(&self, hash: Hash) -> object_rainbow::Result<bool> {
         self.0
             .fetch()
@@ -908,7 +964,7 @@ impl HamtSet {
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
-    use object_rainbow::FullHash;
+    use object_rainbow::{FullHash, ToOutput};
     use smol_macros::test;
 
     use crate::{HamtMap, HamtSet};
@@ -983,6 +1039,17 @@ mod test {
         }
         l.subtract(&r).await?;
         assert!(l.is_empty());
+        Ok(())
+    }
+
+    #[apply(test!)]
+    async fn get_mut() -> object_rainbow::Result<()> {
+        let mut amt = HamtMap::<u8>::new();
+        amt.insert(b"abcd".data_hash(), 1).await?;
+        amt.insert(b"abce".data_hash(), 2).await?;
+        assert_eq!(amt.get(b"abce".data_hash()).await?, Some(2));
+        *amt.get_mut(b"abce".data_hash()).await?.unwrap() = 3;
+        assert_eq!(amt.get(b"abce".data_hash()).await?, Some(3));
         Ok(())
     }
 }
