@@ -12,10 +12,10 @@ use std::{
 use futures_util::{TryFutureExt, future::ready};
 pub use object_rainbow::extras::Extras;
 use object_rainbow::{
-    Address, ByteNode, DefaultHash, Equivalent, ExtraFor, FailFuture, Fetch, FetchBytes, FullHash,
-    Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, OptionalHash, Output, Parse,
-    ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular, Size, Tagged, Tags,
-    ToOutput, Topological, Traversible, object_marker::ObjectMarker,
+    Address, ByteNode, CanonicalExtra, DefaultHash, Equivalent, ExtraFor, FailFuture, Fetch,
+    FetchBytes, FullHash, Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, OptionalHash,
+    Output, Parse, ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular, Size,
+    Tagged, Tags, ToOutput, Topological, Traversible, object_marker::ObjectMarker,
 };
 
 #[cfg(feature = "serde")]
@@ -262,6 +262,14 @@ pub struct RawPoint<T, Extra = ()> {
     inner: RawPointInner,
     extra: Extras<Extra>,
     object: ObjectMarker<T>,
+}
+
+impl<T, Extra: Clone> CanonicalExtra for RawPoint<T, Extra> {
+    type Extra = Extra;
+
+    fn canonical_extra(&self) -> Self::Extra {
+        self.extra.canonical_extra()
+    }
 }
 
 impl<T, Extra> ListHashes for RawPoint<T, Extra> {
