@@ -21,7 +21,7 @@ use self::{
     nt::NtValue,
     numeric::{NumericSchema, NumericValue},
     sequence::SequenceValue,
-    zt::ZtValue,
+    zt::{ZtValue, zt_schema_default},
 };
 
 pub mod array;
@@ -438,7 +438,7 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             Self::Collection(schema) => schema.default_value().map(From::from),
             #[cfg(not(feature = "_collections"))]
             Self::Collection(_) => None,
-            Self::Zt(schema) => ZtValue::schema_default(schema.clone()).map(From::from),
+            Self::Zt(schema) => zt_schema_default(schema.clone()).map(From::from),
         }
     }
 }

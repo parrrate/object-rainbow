@@ -1,26 +1,20 @@
-use object_rainbow::zero_terminated::Zt;
+use object_rainbow::{CanonicalExtra, zero_terminated::Zt};
 
 use crate::*;
 
-#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline, PartialEq)]
-pub struct ZtValue {
-    pub schema: Extras<Arc<TailSchema>>,
-    pub value: Zt<Arc<TailValue>>,
-}
-
-impl Tagged for ZtValue {}
+pub type ZtValue = (Extras<Arc<TailSchema>>, Zt<Arc<TailValue>>);
 
 impl AbstractValue for ZtValue {
     type Schema = InlineSchema;
 
     fn schema(&self) -> Self::Schema {
-        InlineSchema::Zt(self.schema.0.clone())
+        InlineSchema::Zt(self.canonical_extra())
     }
 }
 
 impl AbstractCollection for ZtValue {
     fn items(&self) -> Vec<Arc<InlineValue>> {
-        self.value.items()
+        self.1.items()
     }
 }
 
@@ -30,12 +24,7 @@ impl From<ZtValue> for InlineValue {
     }
 }
 
-impl ZtValue {
-    pub fn schema_default(schema: Arc<TailSchema>) -> Option<Self> {
-        let value = Zt::new(Arc::new(schema.default_value()?)).ok()?;
-        Some(Self {
-            schema: Extras(schema),
-            value,
-        })
-    }
+pub fn zt_schema_default(schema: Arc<TailSchema>) -> Option<ZtValue> {
+    let value = Zt::new(Arc::new(schema.default_value()?)).ok()?;
+    Some((Extras(schema), value))
 }
