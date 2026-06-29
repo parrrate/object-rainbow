@@ -47,3 +47,26 @@ impl<T: AbstractValue + Parse<I>, I: PointInput<Extra = Arc<T::Schema>>> Parse<I
         }
     }
 }
+
+impl<T: AbstractValue + ParseInline<I>, I: PointInput<Extra = Arc<T::Schema>>> ParseInline<I>
+    for OptionValue<T>
+{
+    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
+        let schema = input.extra().clone();
+        let niche = schema.niche();
+        if niche.needs_tag() {
+            match input.parse_inline::<u8>()? {
+                0xff => Ok(Self::Some(input.parse_inline()?)),
+                0xfe => Ok(Self::None(schema)),
+                _ => Err(object_rainbow::Error::OutOfBounds),
+            }
+        } else {
+            input
+                .parse_compare_inline(&niche.vec())
+                .map(|value| match value {
+                    Some(value) => Self::Some(value),
+                    None => Self::None(schema),
+                })
+        }
+    }
+}
