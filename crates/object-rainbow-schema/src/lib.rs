@@ -1052,11 +1052,6 @@ impl<T: AbstractValue> ExtraNoneOutput<Arc<T::Schema>> for Shared<T> {
     }
 
     fn extra_none_output(schema: &Arc<T::Schema>, output: &mut impl Output) {
-        let niche = schema.niche();
-        if niche.needs_tag() {
-            0xfeu8.to_output(output);
-        } else {
-            niche.to_output(output);
-        }
+        schema.none_output(output);
     }
 }
