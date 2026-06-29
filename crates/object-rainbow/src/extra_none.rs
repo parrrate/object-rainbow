@@ -31,3 +31,9 @@ impl<T: ListHashes, E> ListHashes for ExtraNone<T, E> {
         self.as_ref().list_hashes(f);
     }
 }
+
+impl<T: Topological, E> Topological for ExtraNone<T, E> {
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        self.as_ref().traverse(visitor);
+    }
+}
