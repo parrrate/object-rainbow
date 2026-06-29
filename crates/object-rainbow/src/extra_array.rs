@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, PartialEq)]
+#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, PartialEq, ParseAsInline)]
 pub struct ExtraArray<T>(pub Vec<T>);
 
 /// Here we assume extra will match on re-parsing, which is a general requirement for
