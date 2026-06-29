@@ -624,15 +624,6 @@ where
     }
 }
 
-impl<T> Clone for EnumSchema<T> {
-    fn clone(&self) -> Self {
-        Self {
-            kind: self.kind.clone(),
-            variants: self.variants.clone(),
-        }
-    }
-}
-
 impl<T: AbstractSchema> AbstractSchema for EnumSchema<T> {
     fn niche(&self) -> SchemaNiche {
         self.kind.niche().stop()

@@ -8,6 +8,15 @@ pub struct EnumSchema<T> {
     pub variants: Arc<LpVec<Arc<T>>>,
 }
 
+impl<T> Clone for EnumSchema<T> {
+    fn clone(&self) -> Self {
+        Self {
+            kind: self.kind.clone(),
+            variants: self.variants.clone(),
+        }
+    }
+}
+
 impl From<EnumSchema<InlineSchema>> for InlineSchema {
     fn from(schema: EnumSchema<InlineSchema>) -> Self {
         Self::Enum(schema)
