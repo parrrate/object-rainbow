@@ -38,7 +38,7 @@ impl From<ArraySchema> for InlineSchema {
     }
 }
 
-#[derive(Debug, ToOutput, ParseAsInline, ListHashes, Topological, PartialEq)]
+#[derive(Debug, ToOutput, ParseAsInline, ParseInline, ListHashes, Topological, PartialEq)]
 pub struct ArrayValue {
     pub schema: MappedExtra<Extras<Arc<InlineSchema>>, Extra1>,
     pub items: ExtraArray<Arc<InlineValue>>,
@@ -46,18 +46,6 @@ pub struct ArrayValue {
 
 impl InlineOutput for ArrayValue {}
 impl Tagged for ArrayValue {}
-
-impl<I: PointInput<Extra = ArraySchema>> ParseInline<I> for ArrayValue
-where
-    InlineValue: ParseInline<I::WithExtra<Arc<InlineSchema>>>,
-{
-    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        Ok(Self {
-            schema: input.parse_inline()?,
-            items: input.parse_inline()?,
-        })
-    }
-}
 
 impl AbstractValue for ArrayValue {
     type Schema = ArraySchema;
