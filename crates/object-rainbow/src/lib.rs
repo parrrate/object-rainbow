@@ -1869,3 +1869,11 @@ pub trait CanonicalExtra {
     type Extra;
     fn canonical_extra(&self) -> Self::Extra;
 }
+
+impl<A: CanonicalExtra, B> CanonicalExtra for (A, B) {
+    type Extra = A::Extra;
+
+    fn canonical_extra(&self) -> Self::Extra {
+        self.0.canonical_extra()
+    }
+}
