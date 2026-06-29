@@ -624,12 +624,6 @@ where
     }
 }
 
-impl From<EnumSchema<InlineSchema>> for InlineSchema {
-    fn from(schema: EnumSchema<InlineSchema>) -> Self {
-        Self::Enum(schema)
-    }
-}
-
 impl From<EnumSchema<TailSchema>> for TailSchema {
     fn from(schema: EnumSchema<TailSchema>) -> Self {
         Self::Enum(schema)
