@@ -153,6 +153,7 @@ pub enum NumericValue {
 }
 
 impl InlineOutput for NumericValue {}
+impl Tagged for NumericValue {}
 
 impl NumericValue {
     pub fn index(&self) -> Option<usize> {
