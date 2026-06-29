@@ -101,3 +101,18 @@ impl DefaultIsMin for NumericSchema {
         true
     }
 }
+
+impl SizeSchema for NumericSchema {
+    fn size(&self) -> Option<u64> {
+        match self.clone() {
+            Self::U8 | Self::I8 | Self::NzU8 => Some(1),
+            Self::U16 | Self::I16 | Self::NzU16 => Some(2),
+            Self::U32 | Self::I32 | Self::NzU32 | Self::F32 => Some(4),
+            Self::U64 | Self::I64 | Self::NzU64 | Self::F64 => Some(8),
+            Self::U128 | Self::I128 | Self::NzU128 => Some(16),
+            Self::OpaqueChar => None,
+            Self::OpaqueBool => Some(1),
+            Self::LpU63 => None,
+        }
+    }
+}
