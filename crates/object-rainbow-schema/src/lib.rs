@@ -20,6 +20,7 @@ use self::{
     array::{ArraySchema, ArrayValue},
     numeric::{NumericSchema, NumericValue},
     sequence::SequenceValue,
+    zt::ZtValue,
 };
 
 pub mod array;
@@ -942,12 +943,6 @@ impl ItemSizeSchema for TailSchema {
             Self::String => None,
         }
     }
-}
-
-#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline, PartialEq)]
-pub struct ZtValue {
-    pub schema: Extras<Arc<TailSchema>>,
-    pub value: Zt<Arc<TailValue>>,
 }
 
 impl Tagged for ZtValue {}
