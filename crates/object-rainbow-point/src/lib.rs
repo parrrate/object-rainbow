@@ -960,3 +960,11 @@ impl<T, Extra: PartialEq> PartialEq for ExtraPoint<T, Extra> {
         self.extra == other.extra && self.point == other.point
     }
 }
+
+impl<T, Extra: Clone> CanonicalExtra for ExtraPoint<T, Extra> {
+    type Extra = Extra;
+
+    fn canonical_extra(&self) -> Self::Extra {
+        self.extra.canonical_extra()
+    }
+}
