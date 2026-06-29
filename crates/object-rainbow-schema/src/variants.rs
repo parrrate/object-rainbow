@@ -45,6 +45,18 @@ impl<T: DefaultIsMin> DefaultIsMin for EnumSchema<T> {
     }
 }
 
+impl<T: SizeSchema> SizeSchema for EnumSchema<T> {
+    fn size(&self) -> Option<u64> {
+        let size = self.variants.first()?.size()?;
+        for schema in &self.variants[1..] {
+            if schema.size()? != size {
+                return None;
+            }
+        }
+        self.kind.size()?.checked_add(size)
+    }
+}
+
 impl From<EnumSchema<InlineSchema>> for InlineSchema {
     fn from(schema: EnumSchema<InlineSchema>) -> Self {
         Self::Enum(schema)

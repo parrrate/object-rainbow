@@ -709,18 +709,6 @@ assert_impl!(
     impl ReflessInline for TailSchema {}
 );
 
-impl<T: SizeSchema> SizeSchema for EnumSchema<T> {
-    fn size(&self) -> Option<u64> {
-        let size = self.variants.first()?.size()?;
-        for schema in &self.variants[1..] {
-            if schema.size()? != size {
-                return None;
-            }
-        }
-        self.kind.size()?.checked_add(size)
-    }
-}
-
 impl SizeSchema for InlineSchema {
     fn size(&self) -> Option<u64> {
         match self {
