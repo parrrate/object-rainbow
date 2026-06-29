@@ -476,14 +476,6 @@ impl AbstractValue for InlineValue {
     }
 }
 
-impl<T: AbstractValue<Schema: OptionSchema>> AbstractValue for OptionValue<T> {
-    type Schema = T::Schema;
-
-    fn schema(&self) -> Self::Schema {
-        self.inner_schema().option()
-    }
-}
-
 impl AbstractSchema for TailSchema {
     fn niche(&self) -> SchemaNiche {
         match self {

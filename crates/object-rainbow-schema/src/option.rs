@@ -70,3 +70,11 @@ impl<T: AbstractValue + ParseInline<I>, I: PointInput<Extra = Arc<T::Schema>>> P
         }
     }
 }
+
+impl<T: AbstractValue<Schema: OptionSchema>> AbstractValue for OptionValue<T> {
+    type Schema = T::Schema;
+
+    fn schema(&self) -> Self::Schema {
+        self.inner_schema().option()
+    }
+}
