@@ -1029,7 +1029,9 @@ fn toa_seq_equiv() -> object_rainbow::Result<()> {
     Ok(())
 }
 
-#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, PartialEq, Parse)]
+#[derive(
+    Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, PartialEq, Parse, ParseInline,
+)]
 pub struct Shared<T>(pub Arc<T>);
 
 impl<T> Deref for Shared<T> {
