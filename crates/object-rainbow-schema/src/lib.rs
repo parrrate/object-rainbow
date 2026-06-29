@@ -17,7 +17,7 @@ use self::collections::{CollectionSchema, CollectionValue};
 #[cfg(feature = "point")]
 use self::point::{PointSchema, ValuePoint};
 use self::{
-    array::ArraySchema,
+    array::{ArraySchema, ArrayValue},
     numeric::{NumericSchema, NumericValue},
 };
 
@@ -205,12 +205,6 @@ where
         };
         Ok(Self { items, schema })
     }
-}
-
-#[derive(Debug, ParseAsInline, ListHashes, Topological, PartialEq)]
-pub struct ArrayValue {
-    pub schema: Arc<InlineSchema>,
-    pub items: Vec<Arc<InlineValue>>,
 }
 
 impl AbstractCollection for ArrayValue {

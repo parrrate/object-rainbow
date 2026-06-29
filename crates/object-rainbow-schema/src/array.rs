@@ -45,3 +45,9 @@ impl From<ArraySchema> for InlineSchema {
         Self::Array(schema)
     }
 }
+
+#[derive(Debug, ParseAsInline, ListHashes, Topological, PartialEq)]
+pub struct ArrayValue {
+    pub schema: Arc<InlineSchema>,
+    pub items: Vec<Arc<InlineValue>>,
+}
