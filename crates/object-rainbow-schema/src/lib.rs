@@ -170,14 +170,6 @@ impl AbstractCollection for NtValue {
     }
 }
 
-impl AbstractValue for NtValue {
-    type Schema = InlineSchema;
-
-    fn schema(&self) -> Self::Schema {
-        InlineSchema::Nt(self.schema.clone())
-    }
-}
-
 impl<I: PointInput<Extra = Arc<InlineSchema>>> ParseInline<I> for NtValue
 where
     ValueOption<InlineValue>: ParseInline<I>,

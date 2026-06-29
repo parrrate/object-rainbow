@@ -17,3 +17,11 @@ impl ToOutput for NtValue {
 
 impl InlineOutput for NtValue {}
 impl Tagged for NtValue {}
+
+impl AbstractValue for NtValue {
+    type Schema = InlineSchema;
+
+    fn schema(&self) -> Self::Schema {
+        InlineSchema::Nt(self.schema.clone())
+    }
+}
