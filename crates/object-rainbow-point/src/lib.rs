@@ -944,3 +944,12 @@ impl<T, Extra: std::fmt::Debug> std::fmt::Debug for ExtraPoint<T, Extra> {
             .finish()
     }
 }
+
+impl<T, Extra: Clone> Clone for ExtraPoint<T, Extra> {
+    fn clone(&self) -> Self {
+        Self {
+            extra: self.extra.clone(),
+            point: self.point.clone(),
+        }
+    }
+}
