@@ -82,28 +82,6 @@ pub trait AbstractCollection {
     fn items(&self) -> Vec<Arc<InlineValue>>;
 }
 
-impl AbstractSchema for NumericSchema {
-    fn niche(&self) -> SchemaNiche {
-        match self.clone() {
-            Self::U8 | Self::I8 => SchemaNiche::ZeroNoNiche(1),
-            Self::U16 | Self::I16 => SchemaNiche::ZeroNoNiche(2),
-            Self::U32 | Self::I32 => SchemaNiche::ZeroNoNiche(4),
-            Self::U64 | Self::I64 => SchemaNiche::ZeroNoNiche(8),
-            Self::U128 | Self::I128 => SchemaNiche::ZeroNoNiche(16),
-            Self::NzU8 => SchemaNiche::Zeroes(1),
-            Self::NzU16 => SchemaNiche::Zeroes(2),
-            Self::NzU32 => SchemaNiche::Zeroes(4),
-            Self::NzU64 => SchemaNiche::Zeroes(8),
-            Self::NzU128 => SchemaNiche::Zeroes(16),
-            Self::F32 => SchemaNiche::ZeroNoNiche(4),
-            Self::F64 => SchemaNiche::ZeroNoNiche(8),
-            Self::OpaqueChar => SchemaNiche::Cut,
-            Self::OpaqueBool => SchemaNiche::ZeroNoNiche(1),
-            Self::LpU63 => SchemaNiche::Cut,
-        }
-    }
-}
-
 impl DefaultSchema<NumericValue> for NumericSchema {
     fn default_value(&self) -> Option<NumericValue> {
         Some(match self.clone() {
