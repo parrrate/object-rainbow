@@ -476,8 +476,6 @@ impl AbstractValue for InlineValue {
     }
 }
 
-impl<T: AbstractValue + InlineOutput> InlineOutput for OptionValue<T> {}
-
 impl<T: AbstractValue> OptionValue<T> {
     pub fn inner_schema(&self) -> Arc<T::Schema> {
         match self {

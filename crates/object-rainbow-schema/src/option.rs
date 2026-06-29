@@ -15,3 +15,5 @@ impl<T: AbstractValue> ToOutput for OptionValue<T> {
         }
     }
 }
+
+impl<T: AbstractValue + InlineOutput> InlineOutput for OptionValue<T> {}
