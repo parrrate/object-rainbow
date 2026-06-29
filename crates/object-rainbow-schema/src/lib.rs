@@ -1029,7 +1029,7 @@ fn toa_seq_equiv() -> object_rainbow::Result<()> {
     Ok(())
 }
 
-#[derive(Debug, ToOutput, InlineOutput, ListHashes)]
+#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological)]
 pub struct Shared<T>(pub Arc<T>);
 
 impl<T: AbstractValue> ExtraNoneOutput<Arc<T::Schema>> for Shared<T> {
