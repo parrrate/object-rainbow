@@ -51,3 +51,5 @@ pub struct ArrayValue {
     pub schema: Extras<Arc<InlineSchema>>,
     pub items: Vec<Arc<InlineValue>>,
 }
+
+impl InlineOutput for ArrayValue {}
