@@ -21,3 +21,7 @@ impl<T: OptionOutput, E> ToOutput for ExtraNone<T, E> {
 }
 
 impl<T: OptionOutput + InlineOutput, E> InlineOutput for ExtraNone<T, E> {}
+
+impl<T: Tagged, E> Tagged for ExtraNone<T, E> {
+    const TAGS: Tags = T::TAGS;
+}
