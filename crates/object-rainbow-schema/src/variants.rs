@@ -68,3 +68,10 @@ impl From<EnumSchema<TailSchema>> for TailSchema {
         Self::Enum(schema)
     }
 }
+
+#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, PartialEq)]
+pub struct EnumValue<T: AbstractValue> {
+    pub kind: NumericValue,
+    pub variants: Arc<LpVec<Arc<T::Schema>>>,
+    pub value: Arc<T>,
+}

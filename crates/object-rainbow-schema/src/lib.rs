@@ -22,7 +22,7 @@ use self::{
     numeric::{NumericSchema, NumericValue},
     option::OptionValue,
     sequence::SequenceValue,
-    variants::EnumSchema,
+    variants::{EnumSchema, EnumValue},
     zt::{ZtValue, zt_schema_default},
 };
 
@@ -622,13 +622,6 @@ where
             TailSchema::String => Self::Bytes(input.parse()?),
         })
     }
-}
-
-#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, PartialEq)]
-pub struct EnumValue<T: AbstractValue> {
-    pub kind: NumericValue,
-    pub variants: Arc<LpVec<Arc<T::Schema>>>,
-    pub value: Arc<T>,
 }
 
 impl From<EnumValue<InlineValue>> for InlineValue {
