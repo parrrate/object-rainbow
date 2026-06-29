@@ -6,6 +6,15 @@ pub struct Ent<T, E = ()> {
     pub items: Nt<T>,
 }
 
+impl<T, E: PartialEq> PartialEq for Ent<T, E>
+where
+    for<'a> &'a T: IntoIterator<Item: PartialEq>,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.extra == other.extra && self.items == other.items
+    }
+}
+
 impl<T: IntoIterator> IntoIterator for Ent<T> {
     type Item = T::Item;
 
