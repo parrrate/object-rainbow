@@ -164,18 +164,18 @@ pub enum ValueOption<T: AbstractValue> {
 }
 
 #[derive(Debug, ParseAsInline, ListHashes, Topological, PartialEq)]
-pub struct ValueNt {
+pub struct NtValue {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
 }
 
-impl AbstractCollection for ValueNt {
+impl AbstractCollection for NtValue {
     fn items(&self) -> Vec<Arc<InlineValue>> {
         self.items.clone()
     }
 }
 
-impl ToOutput for ValueNt {
+impl ToOutput for NtValue {
     fn to_output(&self, output: &mut impl Output) {
         for item in &self.items {
             ValueOption::Some(item.clone()).to_output(output);
@@ -184,10 +184,10 @@ impl ToOutput for ValueNt {
     }
 }
 
-impl InlineOutput for ValueNt {}
-impl Tagged for ValueNt {}
+impl InlineOutput for NtValue {}
+impl Tagged for NtValue {}
 
-impl AbstractValue for ValueNt {
+impl AbstractValue for NtValue {
     type Schema = InlineSchema;
 
     fn schema(&self) -> Self::Schema {
@@ -195,7 +195,7 @@ impl AbstractValue for ValueNt {
     }
 }
 
-impl<I: PointInput<Extra = Arc<InlineSchema>>> ParseInline<I> for ValueNt
+impl<I: PointInput<Extra = Arc<InlineSchema>>> ParseInline<I> for NtValue
 where
     ValueOption<InlineValue>: ParseInline<I>,
 {
@@ -263,7 +263,7 @@ pub enum InlineValue {
     Option(ValueOption<Self>),
     #[cfg(feature = "point")]
     Point(ValuePoint),
-    Nt(ValueNt),
+    Nt(NtValue),
     Concat(Arc<Self>, Arc<Self>),
     Array(ArrayValue),
     Numeric(NumericValue),
@@ -455,7 +455,7 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             Self::Point(schema) => schema.default_value().map(From::from),
             #[cfg(not(feature = "point"))]
             Self::Point(_) => None,
-            Self::Nt(schema) => Some(InlineValue::Nt(ValueNt {
+            Self::Nt(schema) => Some(InlineValue::Nt(NtValue {
                 items: Default::default(),
                 schema: schema.clone(),
             })),
