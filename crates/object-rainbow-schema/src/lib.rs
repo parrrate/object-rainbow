@@ -213,7 +213,6 @@ impl AbstractCollection for ArrayValue {
     }
 }
 
-
 impl AbstractValue for ArrayValue {
     type Schema = ArraySchema;
 
