@@ -54,3 +54,20 @@ pub struct ArrayValue {
 
 impl InlineOutput for ArrayValue {}
 impl Tagged for ArrayValue {}
+
+impl<I: PointInput<Extra = ArraySchema>> ParseInline<I> for ArrayValue
+where
+    InlineValue: ParseInline<I::WithExtra<Arc<InlineSchema>>>,
+{
+    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
+        let ArraySchema { len, schema } = input.extra().clone();
+        let mut items = Vec::new();
+        for _ in 0..len {
+            items.push(input.parse_inline_extra(schema.clone())?);
+        }
+        Ok(Self {
+            schema: Extras(schema),
+            items,
+        })
+    }
+}
