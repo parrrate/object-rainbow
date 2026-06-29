@@ -53,3 +53,4 @@ pub struct ArrayValue {
 }
 
 impl InlineOutput for ArrayValue {}
+impl Tagged for ArrayValue {}
