@@ -82,12 +82,6 @@ pub trait AbstractCollection {
     fn items(&self) -> Vec<Arc<InlineValue>>;
 }
 
-impl DefaultIsMin for NumericSchema {
-    fn default_is_min(&self) -> bool {
-        true
-    }
-}
-
 impl SizeSchema for NumericSchema {
     fn size(&self) -> Option<u64> {
         match self.clone() {

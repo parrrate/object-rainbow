@@ -95,3 +95,9 @@ impl DefaultSchema<NumericValue> for NumericSchema {
         })
     }
 }
+
+impl DefaultIsMin for NumericSchema {
+    fn default_is_min(&self) -> bool {
+        true
+    }
+}
