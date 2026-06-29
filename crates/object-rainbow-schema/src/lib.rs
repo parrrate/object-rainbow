@@ -945,8 +945,6 @@ impl ItemSizeSchema for TailSchema {
     }
 }
 
-impl Tagged for ZtValue {}
-
 impl ZtValue {
     pub fn schema_default(schema: Arc<TailSchema>) -> Option<Self> {
         let value = Zt::new(Arc::new(schema.default_value()?)).ok()?;

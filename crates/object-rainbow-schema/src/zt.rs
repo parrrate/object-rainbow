@@ -6,6 +6,8 @@ pub struct ZtValue {
     pub value: Zt<Arc<TailValue>>,
 }
 
+impl Tagged for ZtValue {}
+
 impl AbstractValue for ZtValue {
     type Schema = InlineSchema;
 
