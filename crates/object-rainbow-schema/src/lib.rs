@@ -957,14 +957,6 @@ impl ZtValue {
     }
 }
 
-impl AbstractValue for ZtValue {
-    type Schema = InlineSchema;
-
-    fn schema(&self) -> Self::Schema {
-        InlineSchema::Zt(self.schema.0.clone())
-    }
-}
-
 impl From<ZtValue> for InlineValue {
     fn from(value: ZtValue) -> Self {
         Self::Zt(value)
