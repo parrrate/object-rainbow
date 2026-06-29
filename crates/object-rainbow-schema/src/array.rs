@@ -38,7 +38,7 @@ impl From<ArraySchema> for InlineSchema {
     }
 }
 
-#[derive(Debug, ToOutput, ParseAsInline, ParseInline, ListHashes, Topological, PartialEq)]
+#[derive(Debug, ToOutput, Parse, ParseInline, ListHashes, Topological, PartialEq)]
 pub struct ArrayValue {
     pub schema: MappedExtra<Extras<Arc<InlineSchema>>, Extra1>,
     pub items: ExtraArray<Arc<InlineValue>>,
