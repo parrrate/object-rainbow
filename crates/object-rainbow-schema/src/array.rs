@@ -11,9 +11,9 @@ impl AbstractSchema for ArraySchema {
 impl DefaultSchema<ArrayValue> for ArraySchema {
     fn default_value(&self) -> Option<ArrayValue> {
         Some(ArrayValue {
+            schema: Extras(self.1.clone()),
             items: std::iter::repeat_n(self.1.default_value().map(Arc::new), self.0 as _)
                 .collect::<Option<_>>()?,
-            schema: Extras(self.1.clone()),
         })
     }
 }
