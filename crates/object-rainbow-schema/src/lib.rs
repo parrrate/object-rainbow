@@ -209,8 +209,8 @@ where
 
 #[derive(Debug, ParseAsInline, ListHashes, Topological, PartialEq)]
 pub struct ArrayValue {
-    pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
+    pub items: Vec<Arc<InlineValue>>,
 }
 
 impl AbstractCollection for ArrayValue {
@@ -249,7 +249,7 @@ where
         for _ in 0..len {
             items.push(input.parse_inline_extra(schema.clone())?);
         }
-        Ok(Self { items, schema })
+        Ok(Self { schema, items })
     }
 }
 
