@@ -3,7 +3,16 @@ use crate::{
 };
 
 #[derive(
-    Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline, PartialEq,
+    Debug,
+    ToOutput,
+    InlineOutput,
+    ListHashes,
+    Topological,
+    Tagged,
+    Parse,
+    ParseInline,
+    PartialEq,
+    Clone,
 )]
 pub struct ExtraArray<T, E> {
     pub extra: MappedExtra<Extras<E>, Extra1>,
