@@ -3,6 +3,14 @@ use crate::*;
 #[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, PartialEq, ParseAsInline)]
 pub struct ExtraArray<T>(pub Vec<T>);
 
+impl<T> Deref for ExtraArray<T> {
+    type Target = Vec<T>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 impl<A> FromIterator<A> for ExtraArray<A> {
     fn from_iter<T: IntoIterator<Item = A>>(iter: T) -> Self {
         Self(iter.into_iter().collect())
