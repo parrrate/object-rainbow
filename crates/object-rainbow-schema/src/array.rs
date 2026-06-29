@@ -1,4 +1,4 @@
-use object_rainbow::runtime_array::RuntimeArray;
+use object_rainbow::{CanonicalExtra, extra_array::ExtraArray};
 
 use crate::*;
 
@@ -12,8 +12,8 @@ impl AbstractSchema for ArraySchema {
 
 impl DefaultSchema<ArrayValue> for ArraySchema {
     fn default_value(&self) -> Option<ArrayValue> {
-        Some(ArrayValue {
-            schema: MappedExtra(Default::default(), Extras(self.1.clone())),
+        Some(ExtraArray {
+            extra: MappedExtra(Default::default(), Extras(self.1.clone())),
             items: std::iter::repeat_n(self.1.default_value().map(Arc::new), self.0 as _)
                 .collect::<Option<_>>()?,
         })
@@ -38,20 +38,13 @@ impl From<ArraySchema> for InlineSchema {
     }
 }
 
-#[derive(Debug, ToOutput, Parse, ParseInline, ListHashes, Topological, PartialEq)]
-pub struct ArrayValue {
-    pub schema: MappedExtra<Extras<Arc<InlineSchema>>, Extra1>,
-    pub items: RuntimeArray<Arc<InlineValue>>,
-}
-
-impl InlineOutput for ArrayValue {}
-impl Tagged for ArrayValue {}
+pub type ArrayValue = ExtraArray<Arc<InlineValue>, Arc<InlineSchema>>;
 
 impl AbstractValue for ArrayValue {
     type Schema = ArraySchema;
 
     fn schema(&self) -> Self::Schema {
-        (self.items.len() as _, self.schema.1.0.clone())
+        self.canonical_extra()
     }
 }
 
