@@ -20,6 +20,7 @@ use self::point::{PointSchema, ValuePoint};
 
 #[cfg(feature = "_collections")]
 pub mod collections;
+pub mod numeric;
 #[cfg(feature = "point")]
 pub mod point;
 
