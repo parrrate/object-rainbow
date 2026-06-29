@@ -49,3 +49,9 @@ impl<T: Topological, E> Topological for ExtraNone<T, E> {
         self.as_ref().traverse(visitor);
     }
 }
+
+impl<T: OptionParse<I>, I: PointInput> Parse<I> for ExtraNone<T, I::Extra> {
+    fn parse(input: I) -> crate::Result<Self> {
+        input.parse().map(Self::from_tuple)
+    }
+}
