@@ -25,7 +25,7 @@ impl<T: IntoIterator, E> IntoIterator for Ent<T, E> {
     }
 }
 
-impl<'a, T> IntoIterator for &'a Ent<T>
+impl<'a, T, E> IntoIterator for &'a Ent<T, E>
 where
     &'a T: IntoIterator,
 {
