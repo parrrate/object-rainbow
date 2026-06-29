@@ -1,4 +1,4 @@
-use std::{convert::Infallible, sync::Arc};
+use std::{convert::Infallible, ops::Deref, sync::Arc};
 
 use object_rainbow::{
     Enum, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline,
@@ -1031,6 +1031,14 @@ fn toa_seq_equiv() -> object_rainbow::Result<()> {
 
 #[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, PartialEq)]
 pub struct Shared<T>(pub Arc<T>);
+
+impl<T> Deref for Shared<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 impl<T: AbstractValue> ExtraNoneOutput<Arc<T::Schema>> for Shared<T> {
     fn extra_none_output(option: &ExtraNone<Self, Arc<T::Schema>>, output: &mut impl Output) {
