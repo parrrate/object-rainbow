@@ -749,6 +749,10 @@ pub trait OptionOutput {
     fn to_option_output(option: Option<&Self>, output: &mut impl Output);
 }
 
+pub trait OptionParse<I: ParseInput>: Parse<I> {
+    fn parse_option(input: I) -> crate::Result<Option<Self>>;
+}
+
 pub trait ListHashes {
     fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
         let _ = f;

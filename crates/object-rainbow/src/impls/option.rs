@@ -224,10 +224,6 @@ impl<
     }
 }
 
-pub trait OptionParse<I: ParseInput>: Parse<I> {
-    fn parse_option(input: I) -> crate::Result<Option<Self>>;
-}
-
 impl<
     T: Parse<I> + MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B>>>,
     B: OptionParseBit<T, I>,
