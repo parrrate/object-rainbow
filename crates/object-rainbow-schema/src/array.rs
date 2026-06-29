@@ -17,3 +17,9 @@ pub struct ArraySchema {
     pub len: u64,
     pub schema: Arc<InlineSchema>,
 }
+
+impl AbstractSchema for ArraySchema {
+    fn niche(&self) -> SchemaNiche {
+        self.schema.niche().repeat(self.len)
+    }
+}

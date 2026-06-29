@@ -85,12 +85,6 @@ pub trait AbstractCollection {
     fn items(&self) -> Vec<Arc<InlineValue>>;
 }
 
-impl AbstractSchema for ArraySchema {
-    fn niche(&self) -> SchemaNiche {
-        self.schema.niche().repeat(self.len)
-    }
-}
-
 impl DefaultSchema<ArrayValue> for ArraySchema {
     fn default_value(&self) -> Option<ArrayValue> {
         Some(ArrayValue {
