@@ -2,7 +2,7 @@ use object_rainbow::none_terminated::Nt;
 
 use crate::*;
 
-#[derive(Debug, ParseAsInline, ParseInline, ListHashes, Topological, PartialEq)]
+#[derive(Debug, Parse, ParseInline, ListHashes, Topological, PartialEq)]
 pub struct NtValue {
     pub schema: Extras<Arc<InlineSchema>>,
     pub items: Nt<Vec<Shared<InlineValue>>>,
