@@ -15,3 +15,9 @@ impl AbstractValue for SequenceValue {
         TailSchema::Sequence(self.schema.0.clone())
     }
 }
+
+impl AbstractCollection for SequenceValue {
+    fn items(&self) -> Vec<Arc<InlineValue>> {
+        self.items.clone()
+    }
+}

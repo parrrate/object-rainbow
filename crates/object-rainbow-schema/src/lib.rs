@@ -209,12 +209,6 @@ where
     }
 }
 
-impl AbstractCollection for SequenceValue {
-    fn items(&self) -> Vec<Arc<InlineValue>> {
-        self.items.clone()
-    }
-}
-
 #[derive(Debug, ListHashes, Topological, PartialEq)]
 pub struct ValueToA(
     pub MappedExtra<Arc<TailValue>, Extra0>,
