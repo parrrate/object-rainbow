@@ -478,6 +478,14 @@ impl AbstractValue for InlineValue {
     }
 }
 
+impl CanonicalExtra for InlineValue {
+    type Extra = Arc<InlineSchema>;
+
+    fn canonical_extra(&self) -> Self::Extra {
+        Arc::new(self.schema())
+    }
+}
+
 impl AbstractSchema for TailSchema {
     fn niche(&self) -> SchemaNiche {
         match self {
