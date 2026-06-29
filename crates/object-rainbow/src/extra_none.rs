@@ -27,10 +27,25 @@ impl<T, E> ExtraNone<T, E> {
 }
 
 pub trait ExtraNoneOutput<E>: Sized {
-    fn extra_option_output(option: &ExtraNone<Self, E>, output: &mut impl Output);
+    fn extra_some_output(&self, output: &mut impl Output);
+    fn extra_none_output(extra: &E, output: &mut impl Output);
+    fn extra_option_output(option: &ExtraNone<Self, E>, output: &mut impl Output) {
+        match option {
+            ExtraNone::Some(value) => value.extra_some_output(output),
+            ExtraNone::None(extra) => Self::extra_none_output(extra, output),
+        }
+    }
 }
 
 impl<T: OptionOutput, E> ExtraNoneOutput<E> for T {
+    fn extra_some_output(&self, output: &mut impl Output) {
+        T::to_option_output(Some(self), output);
+    }
+
+    fn extra_none_output(_: &E, output: &mut impl Output) {
+        T::to_option_output(None, output);
+    }
+
     fn extra_option_output(option: &ExtraNone<Self, E>, output: &mut impl Output) {
         T::to_option_output(option.as_ref(), output);
     }
