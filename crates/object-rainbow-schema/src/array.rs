@@ -1,3 +1,5 @@
+use object_rainbow::extra_array::ExtraArray;
+
 use crate::*;
 
 pub type ArraySchema = (u64, Arc<InlineSchema>);
@@ -39,7 +41,7 @@ impl From<ArraySchema> for InlineSchema {
 #[derive(Debug, ToOutput, ParseAsInline, ListHashes, Topological, PartialEq)]
 pub struct ArrayValue {
     pub schema: Extras<Arc<InlineSchema>>,
-    pub items: Vec<Arc<InlineValue>>,
+    pub items: ExtraArray<Arc<InlineValue>>,
 }
 
 impl InlineOutput for ArrayValue {}
@@ -50,14 +52,10 @@ where
     InlineValue: ParseInline<I::WithExtra<Arc<InlineSchema>>>,
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let (len, schema) = input.extra().clone();
-        let mut items = Vec::new();
-        for _ in 0..len {
-            items.push(input.parse_inline_extra(schema.clone())?);
-        }
+        let (_, schema) = input.extra().clone();
         Ok(Self {
             schema: Extras(schema),
-            items,
+            items: input.parse_inline()?,
         })
     }
 }
