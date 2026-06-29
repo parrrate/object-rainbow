@@ -82,12 +82,6 @@ pub trait AbstractCollection {
     fn items(&self) -> Vec<Arc<InlineValue>>;
 }
 
-impl From<NumericSchema> for InlineSchema {
-    fn from(schema: NumericSchema) -> Self {
-        Self::Numeric(schema)
-    }
-}
-
 #[derive(Debug, ToOutput, ListHashes, Topological, ParseAsInline, PartialEq)]
 #[rainbow(untagged)]
 pub enum NumericValue {
