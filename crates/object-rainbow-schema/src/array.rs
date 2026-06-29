@@ -1,4 +1,4 @@
-use object_rainbow::extra_array::ExtraArray;
+use object_rainbow::runtime_array::RuntimeArray;
 
 use crate::*;
 
@@ -41,7 +41,7 @@ impl From<ArraySchema> for InlineSchema {
 #[derive(Debug, ToOutput, Parse, ParseInline, ListHashes, Topological, PartialEq)]
 pub struct ArrayValue {
     pub schema: MappedExtra<Extras<Arc<InlineSchema>>, Extra1>,
-    pub items: ExtraArray<Arc<InlineValue>>,
+    pub items: RuntimeArray<Arc<InlineValue>>,
 }
 
 impl InlineOutput for ArrayValue {}

@@ -1,9 +1,9 @@
 use crate::*;
 
 #[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, PartialEq, ParseAsInline)]
-pub struct ExtraArray<T>(pub Vec<T>);
+pub struct RuntimeArray<T>(pub Vec<T>);
 
-impl<T> Deref for ExtraArray<T> {
+impl<T> Deref for RuntimeArray<T> {
     type Target = Vec<T>;
 
     fn deref(&self) -> &Self::Target {
@@ -11,13 +11,13 @@ impl<T> Deref for ExtraArray<T> {
     }
 }
 
-impl<T> DerefMut for ExtraArray<T> {
+impl<T> DerefMut for RuntimeArray<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<A> FromIterator<A> for ExtraArray<A> {
+impl<A> FromIterator<A> for RuntimeArray<A> {
     fn from_iter<T: IntoIterator<Item = A>>(iter: T) -> Self {
         Self(iter.into_iter().collect())
     }
@@ -25,10 +25,10 @@ impl<A> FromIterator<A> for ExtraArray<A> {
 
 /// Here we assume extra will match on re-parsing, which is a general requirement for
 /// correctness anyway.
-impl<T: InlineOutput> InlineOutput for ExtraArray<T> {}
+impl<T: InlineOutput> InlineOutput for RuntimeArray<T> {}
 
 impl<T: ParseInline<I::WithExtra<E>>, I: PointInput<Extra = (u64, E)>, E: 'static + Clone>
-    ParseInline<I> for ExtraArray<T>
+    ParseInline<I> for RuntimeArray<T>
 {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         let (n, extra) = input.extra().clone();
