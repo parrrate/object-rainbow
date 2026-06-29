@@ -953,3 +953,9 @@ impl<T, Extra: Clone> Clone for ExtraPoint<T, Extra> {
         }
     }
 }
+
+impl<T, Extra: PartialEq> PartialEq for ExtraPoint<T, Extra> {
+    fn eq(&self, other: &Self) -> bool {
+        self.extra == other.extra && self.point == other.point
+    }
+}
