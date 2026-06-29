@@ -930,3 +930,8 @@ impl<'a, T: FullHash> PointMut<'a, T> {
         *self.hash = self.full_hash().into();
     }
 }
+
+pub struct ExtraPoint<T, Extra = ()> {
+    pub extra: Extras<Extra>,
+    pub point: Point<T>,
+}
