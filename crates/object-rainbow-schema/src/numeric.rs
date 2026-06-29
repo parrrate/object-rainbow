@@ -186,6 +186,14 @@ impl AbstractValue for NumericValue {
     type Schema = NumericSchema;
 
     fn schema(&self) -> Self::Schema {
+        self.canonical_extra()
+    }
+}
+
+impl CanonicalExtra for NumericValue {
+    type Extra = NumericSchema;
+
+    fn canonical_extra(&self) -> Self::Extra {
         match self {
             Self::U8(_) => NumericSchema::U8,
             Self::I8(_) => NumericSchema::I8,
