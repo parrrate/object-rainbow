@@ -269,7 +269,7 @@ pub enum InlineValue {
     Enum(EnumValue<Self>),
     #[cfg(feature = "_collections")]
     Collection(CollectionValue),
-    Zt(ValueZt),
+    Zt(ZtValue),
 }
 
 impl InlineOutput for InlineValue {}
@@ -469,7 +469,7 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             Self::Collection(schema) => schema.default_value().map(From::from),
             #[cfg(not(feature = "_collections"))]
             Self::Collection(_) => None,
-            Self::Zt(schema) => ValueZt::schema_default(schema.clone()).map(From::from),
+            Self::Zt(schema) => ZtValue::schema_default(schema.clone()).map(From::from),
         }
     }
 }
@@ -945,14 +945,14 @@ impl ItemSizeSchema for TailSchema {
 }
 
 #[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline, PartialEq)]
-pub struct ValueZt {
+pub struct ZtValue {
     pub schema: Extras<Arc<TailSchema>>,
     pub value: Zt<Arc<TailValue>>,
 }
 
-impl Tagged for ValueZt {}
+impl Tagged for ZtValue {}
 
-impl ValueZt {
+impl ZtValue {
     pub fn schema_default(schema: Arc<TailSchema>) -> Option<Self> {
         let value = Zt::new(Arc::new(schema.default_value()?)).ok()?;
         Some(Self {
@@ -962,7 +962,7 @@ impl ValueZt {
     }
 }
 
-impl AbstractValue for ValueZt {
+impl AbstractValue for ZtValue {
     type Schema = InlineSchema;
 
     fn schema(&self) -> Self::Schema {
@@ -970,8 +970,8 @@ impl AbstractValue for ValueZt {
     }
 }
 
-impl From<ValueZt> for InlineValue {
-    fn from(value: ValueZt) -> Self {
+impl From<ZtValue> for InlineValue {
+    fn from(value: ZtValue) -> Self {
         Self::Zt(value)
     }
 }
@@ -991,7 +991,7 @@ impl<T: AbstractValue + AbstractCollection> AbstractCollection for EnumValue<T> 
     }
 }
 
-impl AbstractCollection for ValueZt {
+impl AbstractCollection for ZtValue {
     fn items(&self) -> Vec<Arc<InlineValue>> {
         self.value.items()
     }
