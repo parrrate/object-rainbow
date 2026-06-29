@@ -23,3 +23,13 @@ impl AbstractSchema for ArraySchema {
         self.schema.niche().repeat(self.len)
     }
 }
+
+impl DefaultSchema<ArrayValue> for ArraySchema {
+    fn default_value(&self) -> Option<ArrayValue> {
+        Some(ArrayValue {
+            items: std::iter::repeat_n(self.schema.default_value().map(Arc::new), self.len as _)
+                .collect::<Option<_>>()?,
+            schema: self.schema.clone(),
+        })
+    }
+}

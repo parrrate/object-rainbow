@@ -85,16 +85,6 @@ pub trait AbstractCollection {
     fn items(&self) -> Vec<Arc<InlineValue>>;
 }
 
-impl DefaultSchema<ArrayValue> for ArraySchema {
-    fn default_value(&self) -> Option<ArrayValue> {
-        Some(ArrayValue {
-            items: std::iter::repeat_n(self.schema.default_value().map(Arc::new), self.len as _)
-                .collect::<Option<_>>()?,
-            schema: self.schema.clone(),
-        })
-    }
-}
-
 impl DefaultIsMin for ArraySchema {
     fn default_is_min(&self) -> bool {
         self.len == 0 || self.schema.default_is_min()
