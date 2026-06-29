@@ -20,12 +20,12 @@ impl Tagged for NtValue {}
 
 impl<I: PointInput<Extra = Arc<InlineSchema>>> ParseInline<I> for NtValue
 where
-    OptionValue<InlineValue>: ParseInline<I>,
+    Option<Shared<InlineValue>>: ParseInline<I>,
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let mut items = Vec::new();
         let schema = input.extra().clone();
-        while let OptionValue::Some(item) = input.parse_inline()? {
+        while let Some(Shared(item)) = input.parse_inline()? {
             items.push(item);
         }
         Ok(Self { items, schema })
