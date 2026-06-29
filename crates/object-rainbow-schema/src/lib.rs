@@ -556,6 +556,14 @@ impl AbstractValue for TailValue {
     }
 }
 
+impl CanonicalExtra for TailValue {
+    type Extra = Arc<TailSchema>;
+
+    fn canonical_extra(&self) -> Self::Extra {
+        Arc::new(self.schema())
+    }
+}
+
 impl<
     I: PointInput<
             Extra = Arc<InlineSchema>,
