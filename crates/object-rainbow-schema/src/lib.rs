@@ -624,12 +624,6 @@ where
     }
 }
 
-impl From<EnumSchema<TailSchema>> for TailSchema {
-    fn from(schema: EnumSchema<TailSchema>) -> Self {
-        Self::Enum(schema)
-    }
-}
-
 impl<T> Clone for EnumSchema<T> {
     fn clone(&self) -> Self {
         Self {
