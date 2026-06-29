@@ -71,3 +71,9 @@ where
         })
     }
 }
+
+impl AbstractCollection for ArrayValue {
+    fn items(&self) -> Vec<Arc<InlineValue>> {
+        self.items.clone()
+    }
+}
