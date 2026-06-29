@@ -1,5 +1,6 @@
 use crate::*;
 
+#[derive(Debug)]
 pub enum ExtraNone<T, E = ()> {
     Some(T),
     None(E),
