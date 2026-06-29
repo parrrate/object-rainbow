@@ -1,4 +1,4 @@
-use std::{convert::Infallible, num::NonZero, sync::Arc};
+use std::{convert::Infallible, sync::Arc};
 
 use object_rainbow::{
     Enum, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline,
@@ -9,7 +9,6 @@ use object_rainbow::{
     map_extra::MappedExtra,
     tuple_extra::{Extra0, Extra1},
     tuple_of_arrays::try_divide,
-    u63::U63,
     zero_terminated::Zt,
 };
 
