@@ -30,6 +30,12 @@ pub trait ExtraNoneOutput<E>: Sized {
     fn extra_none_output(option: &ExtraNone<Self, E>, output: &mut impl Output);
 }
 
+impl<T: OptionOutput, E> ExtraNoneOutput<E> for T {
+    fn extra_none_output(option: &ExtraNone<Self, E>, output: &mut impl Output) {
+        T::to_option_output(option.as_ref(), output);
+    }
+}
+
 impl<T: OptionOutput, E> ToOutput for ExtraNone<T, E> {
     fn to_output(&self, output: &mut impl Output) {
         T::to_option_output(self.as_ref(), output);
