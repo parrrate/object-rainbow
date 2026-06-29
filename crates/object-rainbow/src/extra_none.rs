@@ -27,18 +27,18 @@ impl<T, E> ExtraNone<T, E> {
 }
 
 pub trait ExtraNoneOutput<E>: Sized {
-    fn extra_none_output(option: &ExtraNone<Self, E>, output: &mut impl Output);
+    fn extra_option_output(option: &ExtraNone<Self, E>, output: &mut impl Output);
 }
 
 impl<T: OptionOutput, E> ExtraNoneOutput<E> for T {
-    fn extra_none_output(option: &ExtraNone<Self, E>, output: &mut impl Output) {
+    fn extra_option_output(option: &ExtraNone<Self, E>, output: &mut impl Output) {
         T::to_option_output(option.as_ref(), output);
     }
 }
 
 impl<T: ExtraNoneOutput<E>, E> ToOutput for ExtraNone<T, E> {
     fn to_output(&self, output: &mut impl Output) {
-        T::extra_none_output(self, output);
+        T::extra_option_output(self, output);
     }
 }
 

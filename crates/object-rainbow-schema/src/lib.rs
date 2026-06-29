@@ -1044,7 +1044,7 @@ impl<T> Deref for Shared<T> {
 }
 
 impl<T: AbstractValue> ExtraNoneOutput<Arc<T::Schema>> for Shared<T> {
-    fn extra_none_output(option: &ExtraNone<Self, Arc<T::Schema>>, output: &mut impl Output) {
+    fn extra_option_output(option: &ExtraNone<Self, Arc<T::Schema>>, output: &mut impl Output) {
         match option {
             ExtraNone::None(schema) => {
                 let niche = schema.niche();
