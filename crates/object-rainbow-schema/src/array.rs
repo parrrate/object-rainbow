@@ -39,3 +39,9 @@ impl DefaultIsMin for ArraySchema {
         self.len == 0 || self.schema.default_is_min()
     }
 }
+
+impl From<ArraySchema> for InlineSchema {
+    fn from(schema: ArraySchema) -> Self {
+        Self::Array(schema)
+    }
+}

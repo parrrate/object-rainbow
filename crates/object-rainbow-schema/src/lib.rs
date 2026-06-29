@@ -85,12 +85,6 @@ pub trait AbstractCollection {
     fn items(&self) -> Vec<Arc<InlineValue>>;
 }
 
-impl From<ArraySchema> for InlineSchema {
-    fn from(schema: ArraySchema) -> Self {
-        Self::Array(schema)
-    }
-}
-
 #[derive(
     Debug,
     Enum,
