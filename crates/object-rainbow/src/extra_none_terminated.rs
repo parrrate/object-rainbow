@@ -38,7 +38,7 @@ where
     }
 }
 
-impl<'a, T> IntoIterator for &'a mut Ent<T>
+impl<'a, T, E> IntoIterator for &'a mut Ent<T, E>
 where
     &'a mut T: IntoIterator,
 {
