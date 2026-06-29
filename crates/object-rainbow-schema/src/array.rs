@@ -72,6 +72,17 @@ where
     }
 }
 
+impl AbstractValue for ArrayValue {
+    type Schema = ArraySchema;
+
+    fn schema(&self) -> Self::Schema {
+        ArraySchema {
+            len: self.items.len() as _,
+            schema: self.schema.0.clone(),
+        }
+    }
+}
+
 impl AbstractCollection for ArrayValue {
     fn items(&self) -> Vec<Arc<InlineValue>> {
         self.items.clone()

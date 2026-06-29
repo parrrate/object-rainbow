@@ -207,17 +207,6 @@ where
     }
 }
 
-impl AbstractValue for ArrayValue {
-    type Schema = ArraySchema;
-
-    fn schema(&self) -> Self::Schema {
-        ArraySchema {
-            len: self.items.len() as _,
-            schema: self.schema.0.clone(),
-        }
-    }
-}
-
 impl From<ArrayValue> for InlineValue {
     fn from(value: ArrayValue) -> Self {
         Self::Array(value)
