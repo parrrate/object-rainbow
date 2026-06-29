@@ -624,18 +624,6 @@ where
     }
 }
 
-impl From<EnumValue<InlineValue>> for InlineValue {
-    fn from(value: EnumValue<InlineValue>) -> Self {
-        Self::Enum(value)
-    }
-}
-
-impl From<EnumValue<TailValue>> for TailValue {
-    fn from(value: EnumValue<TailValue>) -> Self {
-        Self::Enum(value)
-    }
-}
-
 impl<T: AbstractValue> AbstractValue for EnumValue<T> {
     type Schema = EnumSchema<T::Schema>;
 

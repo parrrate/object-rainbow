@@ -75,3 +75,15 @@ pub struct EnumValue<T: AbstractValue> {
     pub variants: Arc<LpVec<Arc<T::Schema>>>,
     pub value: Arc<T>,
 }
+
+impl From<EnumValue<InlineValue>> for InlineValue {
+    fn from(value: EnumValue<InlineValue>) -> Self {
+        Self::Enum(value)
+    }
+}
+
+impl From<EnumValue<TailValue>> for TailValue {
+    fn from(value: EnumValue<TailValue>) -> Self {
+        Self::Enum(value)
+    }
+}
