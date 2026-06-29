@@ -88,3 +88,9 @@ impl AbstractCollection for ArrayValue {
         self.items.clone()
     }
 }
+
+impl From<ArrayValue> for InlineValue {
+    fn from(value: ArrayValue) -> Self {
+        Self::Array(value)
+    }
+}

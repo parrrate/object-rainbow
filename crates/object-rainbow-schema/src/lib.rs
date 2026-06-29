@@ -207,12 +207,6 @@ where
     }
 }
 
-impl From<ArrayValue> for InlineValue {
-    fn from(value: ArrayValue) -> Self {
-        Self::Array(value)
-    }
-}
-
 #[derive(Debug, ToOutput, ListHashes, Topological, Parse, PartialEq)]
 pub struct ValueSequence {
     pub schema: Extras<Arc<InlineSchema>>,
