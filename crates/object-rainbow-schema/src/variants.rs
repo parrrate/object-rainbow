@@ -29,7 +29,7 @@ impl<T: AbstractValue<Schema: DefaultSchema<T>>> DefaultSchema<EnumValue<T>>
     fn default_value(&self) -> Option<EnumValue<T>> {
         Some(EnumValue {
             kind: self.kind.default_value()?,
-            variants: self.variants.clone(),
+            variants: Extras(self.variants.clone()),
             value: Arc::new(self.variants.first()?.default_value()?),
         })
     }
@@ -72,7 +72,7 @@ impl From<EnumSchema<TailSchema>> for TailSchema {
 #[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, PartialEq)]
 pub struct EnumValue<T: AbstractValue> {
     pub kind: NumericValue,
-    pub variants: Arc<LpVec<Arc<T::Schema>>>,
+    pub variants: Extras<Arc<LpVec<Arc<T::Schema>>>>,
     pub value: Arc<T>,
 }
 
@@ -89,6 +89,7 @@ impl<
             .ok_or(object_rainbow::Error::OutOfBounds)?
             .clone();
         let value = input.parse_extra(schema)?;
+        let variants = Extras(variants);
         Ok(Self {
             kind,
             variants,
@@ -110,6 +111,7 @@ impl<
             .ok_or(object_rainbow::Error::OutOfBounds)?
             .clone();
         let value = input.parse_inline_extra(schema)?;
+        let variants = Extras(variants);
         Ok(Self {
             kind,
             variants,
@@ -124,7 +126,7 @@ impl<T: AbstractValue> AbstractValue for EnumValue<T> {
     fn schema(&self) -> Self::Schema {
         EnumSchema {
             kind: self.kind.schema(),
-            variants: self.variants.clone(),
+            variants: self.variants.0.clone(),
         }
     }
 }
