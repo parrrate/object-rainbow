@@ -25,6 +25,7 @@ use self::{
 pub mod array;
 #[cfg(feature = "_collections")]
 pub mod collections;
+pub mod nt;
 pub mod numeric;
 #[cfg(feature = "point")]
 pub mod point;
