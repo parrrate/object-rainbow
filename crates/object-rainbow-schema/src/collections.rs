@@ -89,6 +89,15 @@ pub struct ItemValue<T> {
 }
 
 #[cfg(feature = "_collections-kv")]
+impl<T> CanonicalExtra for KvValue<T> {
+    type Extra = KvSchema;
+
+    fn canonical_extra(&self) -> Self::Extra {
+        self.kv.canonical_extra()
+    }
+}
+
+#[cfg(feature = "_collections-kv")]
 impl<T: Default> KvValue<T> {
     pub fn schema_default(kv: KvSchema) -> Self {
         Self {
