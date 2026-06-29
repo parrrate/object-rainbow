@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{extras::Extras, *};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExtraNone<T, E = ()> {
@@ -19,6 +19,10 @@ impl<T, E> ExtraNone<T, E> {
             Some(value) => Self::Some(value),
             None => Self::None(extra),
         }
+    }
+
+    pub fn from_tuple((Extras(extra), value): (Extras<E>, Option<T>)) -> Self {
+        Self::new(extra, value)
     }
 }
 
