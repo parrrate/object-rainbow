@@ -170,7 +170,6 @@ impl AbstractCollection for NtValue {
     }
 }
 
-impl InlineOutput for NtValue {}
 impl Tagged for NtValue {}
 
 impl AbstractValue for NtValue {

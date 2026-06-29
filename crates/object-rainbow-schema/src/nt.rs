@@ -14,3 +14,5 @@ impl ToOutput for NtValue {
         ValueOption::<InlineValue>::None(self.schema.clone()).to_output(output);
     }
 }
+
+impl InlineOutput for NtValue {}
