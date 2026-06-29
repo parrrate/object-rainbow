@@ -211,6 +211,12 @@ impl AbstractValue for NumericValue {
     }
 }
 
+impl From<NumericValue> for InlineValue {
+    fn from(value: NumericValue) -> Self {
+        Self::Numeric(value)
+    }
+}
+
 impl NumericValue {
     pub fn index(&self) -> Option<usize> {
         match self {

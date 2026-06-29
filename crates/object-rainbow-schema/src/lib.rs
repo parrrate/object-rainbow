@@ -81,12 +81,6 @@ pub trait AbstractCollection {
     fn items(&self) -> Vec<Arc<InlineValue>>;
 }
 
-impl From<NumericValue> for InlineValue {
-    fn from(value: NumericValue) -> Self {
-        Self::Numeric(value)
-    }
-}
-
 #[derive(
     Debug,
     ToOutput,
