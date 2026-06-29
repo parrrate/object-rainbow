@@ -196,6 +196,23 @@ impl AbstractValue for CollectionValue {
     }
 }
 
+impl CanonicalExtra for CollectionValue {
+    type Extra = CollectionSchema;
+
+    fn canonical_extra(&self) -> Self::Extra {
+        match *self {
+            #[cfg(feature = "amt")]
+            Self::AmtMap(ref value) => CollectionSchema::AmtMap(value.canonical_extra()),
+            #[cfg(feature = "amt")]
+            Self::AmtSet(ref value) => CollectionSchema::AmtSet(value.canonical_extra()),
+            #[cfg(feature = "hamt")]
+            Self::HamtMap(ref value) => CollectionSchema::HamtMap(value.canonical_extra()),
+            #[cfg(feature = "hamt")]
+            Self::HamtSet(_) => CollectionSchema::HamtSet(()),
+        }
+    }
+}
+
 impl DefaultSchema<CollectionValue> for CollectionSchema {
     fn default_value(&self) -> Option<CollectionValue> {
         match self.clone() {
