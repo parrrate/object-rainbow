@@ -9,7 +9,7 @@ pub struct NtValue {
 impl ToOutput for NtValue {
     fn to_output(&self, output: &mut impl Output) {
         for item in &self.items {
-            OptionValue::Some(item.clone()).to_output(output);
+            item.some_output(output);
         }
         self.schema.none_output(output);
     }

@@ -53,6 +53,12 @@ pub trait OptionSchema: AbstractSchema {
 pub trait AbstractValue: ToOutput {
     type Schema: AbstractSchema;
     fn schema(&self) -> Self::Schema;
+    fn some_output(&self, output: &mut impl Output) {
+        if self.schema().niche().needs_tag() {
+            0xffu8.to_output(output);
+        }
+        self.to_output(output);
+    }
 }
 
 impl AbstractSchema for Infallible {
@@ -479,12 +485,7 @@ impl<T: AbstractValue> ToOutput for OptionValue<T> {
     fn to_output(&self, output: &mut impl Output) {
         match self {
             Self::None(schema) => schema.none_output(output),
-            Self::Some(value) => {
-                if value.schema().niche().needs_tag() {
-                    0xffu8.to_output(output);
-                }
-                value.to_output(output);
-            }
+            Self::Some(value) => value.some_output(output),
         }
     }
 }
@@ -1045,10 +1046,7 @@ impl<T> Deref for Shared<T> {
 
 impl<T: AbstractValue> ExtraNoneOutput<Arc<T::Schema>> for Shared<T> {
     fn extra_some_output(&self, output: &mut impl Output) {
-        if self.schema().niche().needs_tag() {
-            0xffu8.to_output(output);
-        }
-        self.to_output(output);
+        self.some_output(output);
     }
 
     fn extra_none_output(schema: &Arc<T::Schema>, output: &mut impl Output) {
