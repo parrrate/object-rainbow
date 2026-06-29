@@ -85,12 +85,6 @@ pub trait AbstractCollection {
     fn items(&self) -> Vec<Arc<InlineValue>>;
 }
 
-impl DefaultIsMin for ArraySchema {
-    fn default_is_min(&self) -> bool {
-        self.len == 0 || self.schema.default_is_min()
-    }
-}
-
 impl From<ArraySchema> for InlineSchema {
     fn from(schema: ArraySchema) -> Self {
         Self::Array(schema)
