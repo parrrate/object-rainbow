@@ -17,6 +17,12 @@ impl<T> Clone for EnumSchema<T> {
     }
 }
 
+impl<T: AbstractSchema> AbstractSchema for EnumSchema<T> {
+    fn niche(&self) -> SchemaNiche {
+        self.kind.niche().stop()
+    }
+}
+
 impl From<EnumSchema<InlineSchema>> for InlineSchema {
     fn from(schema: EnumSchema<InlineSchema>) -> Self {
         Self::Enum(schema)

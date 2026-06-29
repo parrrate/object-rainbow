@@ -624,12 +624,6 @@ where
     }
 }
 
-impl<T: AbstractSchema> AbstractSchema for EnumSchema<T> {
-    fn niche(&self) -> SchemaNiche {
-        self.kind.niche().stop()
-    }
-}
-
 impl<T: AbstractValue<Schema: DefaultSchema<T>>> DefaultSchema<EnumValue<T>>
     for EnumSchema<T::Schema>
 {
