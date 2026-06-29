@@ -86,3 +86,14 @@ impl<T: OptionParseInline<I>, I: PointInput> ParseInline<I> for ExtraNone<T, I::
         input.parse_inline().map(Self::from_tuple)
     }
 }
+
+impl<T: CanonicalExtra<Extra = E>, E: Clone> CanonicalExtra for ExtraNone<T, E> {
+    type Extra = T::Extra;
+
+    fn canonical_extra(&self) -> Self::Extra {
+        match self {
+            Self::Some(value) => value.canonical_extra(),
+            Self::None(extra) => extra.clone(),
+        }
+    }
+}
