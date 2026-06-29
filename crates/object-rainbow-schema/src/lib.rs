@@ -213,12 +213,6 @@ impl AbstractCollection for ArrayValue {
     }
 }
 
-impl ToOutput for ArrayValue {
-    fn to_output(&self, output: &mut impl Output) {
-        self.items.to_output(output);
-    }
-}
-
 impl InlineOutput for ArrayValue {}
 impl Tagged for ArrayValue {}
 

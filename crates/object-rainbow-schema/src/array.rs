@@ -46,7 +46,7 @@ impl From<ArraySchema> for InlineSchema {
     }
 }
 
-#[derive(Debug, ParseAsInline, ListHashes, Topological, PartialEq)]
+#[derive(Debug, ToOutput, ParseAsInline, ListHashes, Topological, PartialEq)]
 pub struct ArrayValue {
     pub schema: Extras<Arc<InlineSchema>>,
     pub items: Vec<Arc<InlineValue>>,
