@@ -1,4 +1,4 @@
-use object_rainbow::none_terminated::Nt;
+use object_rainbow::{extra_none_terminated::Ent, none_terminated::Nt};
 
 use crate::*;
 
@@ -35,5 +35,13 @@ impl AbstractCollection for NtValue {
             .cloned()
             .map(|Shared(value)| value)
             .collect()
+    }
+}
+
+impl AbstractValue for Ent<Vec<Shared<InlineValue>>, Arc<InlineSchema>> {
+    type Schema = InlineSchema;
+
+    fn schema(&self) -> Self::Schema {
+        InlineSchema::Nt(self.extra.0.clone())
     }
 }
