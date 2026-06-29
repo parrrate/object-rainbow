@@ -8,7 +8,7 @@ impl AbstractValue for Ent<Vec<Shared<InlineValue>>, Arc<InlineSchema>> {
     type Schema = InlineSchema;
 
     fn schema(&self) -> Self::Schema {
-        InlineSchema::Nt(self.extra.0.clone())
+        InlineSchema::Nt(self.extra.canonical_extra())
     }
 }
 
