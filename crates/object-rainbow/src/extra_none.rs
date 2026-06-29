@@ -19,3 +19,5 @@ impl<T: OptionOutput, E> ToOutput for ExtraNone<T, E> {
         T::to_option_output(self.as_ref(), output);
     }
 }
+
+impl<T: OptionOutput + InlineOutput, E> InlineOutput for ExtraNone<T, E> {}
