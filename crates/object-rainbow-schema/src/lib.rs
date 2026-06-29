@@ -22,6 +22,7 @@ use self::{
     numeric::{NumericSchema, NumericValue},
     option::OptionValue,
     sequence::SequenceValue,
+    variants::EnumSchema,
     zt::{ZtValue, zt_schema_default},
 };
 
@@ -34,6 +35,7 @@ pub mod option;
 #[cfg(feature = "point")]
 pub mod point;
 pub mod sequence;
+pub mod variants;
 pub mod zt;
 
 pub trait AbstractSchema: ReflessInline + Traversible {
@@ -620,14 +622,6 @@ where
             TailSchema::String => Self::Bytes(input.parse()?),
         })
     }
-}
-
-#[derive(
-    Debug, ToOutput, InlineOutput, Parse, ParseInline, ListHashes, Topological, Tagged, PartialEq,
-)]
-pub struct EnumSchema<T> {
-    pub kind: NumericSchema,
-    pub variants: Arc<LpVec<Arc<T>>>,
 }
 
 impl From<EnumSchema<InlineSchema>> for InlineSchema {
