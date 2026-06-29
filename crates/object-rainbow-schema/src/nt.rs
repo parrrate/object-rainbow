@@ -24,12 +24,10 @@ where
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let mut items = Vec::new();
-        let schema = loop {
-            match input.parse_inline()? {
-                OptionValue::Some(item) => items.push(item),
-                OptionValue::None(schema) => break schema,
-            }
-        };
+        let schema = input.extra().clone();
+        while let OptionValue::Some(item) = input.parse_inline()? {
+            items.push(item);
+        }
         Ok(Self { items, schema })
     }
 }
