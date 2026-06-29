@@ -476,15 +476,6 @@ impl AbstractValue for InlineValue {
     }
 }
 
-impl<T: AbstractValue> ToOutput for OptionValue<T> {
-    fn to_output(&self, output: &mut impl Output) {
-        match self {
-            Self::None(schema) => schema.none_output(output),
-            Self::Some(value) => value.some_output(output),
-        }
-    }
-}
-
 impl<T: AbstractValue + InlineOutput> InlineOutput for OptionValue<T> {}
 
 impl<T: AbstractValue> OptionValue<T> {
