@@ -11,6 +11,12 @@ impl<T> Deref for ExtraArray<T> {
     }
 }
 
+impl<T> DerefMut for ExtraArray<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 impl<A> FromIterator<A> for ExtraArray<A> {
     fn from_iter<T: IntoIterator<Item = A>>(iter: T) -> Self {
         Self(iter.into_iter().collect())
