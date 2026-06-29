@@ -1036,6 +1036,12 @@ fn toa_seq_equiv() -> object_rainbow::Result<()> {
 )]
 pub struct Shared<T>(pub Arc<T>);
 
+impl<T> Clone for Shared<T> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
 impl<T> Deref for Shared<T> {
     type Target = T;
 
