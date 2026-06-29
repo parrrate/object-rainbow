@@ -23,6 +23,18 @@ impl<T: AbstractSchema> AbstractSchema for EnumSchema<T> {
     }
 }
 
+impl<T: AbstractValue<Schema: DefaultSchema<T>>> DefaultSchema<EnumValue<T>>
+    for EnumSchema<T::Schema>
+{
+    fn default_value(&self) -> Option<EnumValue<T>> {
+        Some(EnumValue {
+            kind: self.kind.default_value()?,
+            variants: self.variants.clone(),
+            value: Arc::new(self.variants.first()?.default_value()?),
+        })
+    }
+}
+
 impl From<EnumSchema<InlineSchema>> for InlineSchema {
     fn from(schema: EnumSchema<InlineSchema>) -> Self {
         Self::Enum(schema)
