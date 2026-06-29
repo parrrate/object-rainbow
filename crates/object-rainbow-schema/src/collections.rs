@@ -96,6 +96,14 @@ impl<T> CanonicalExtra for KvValue<T> {
         self.kv.canonical_extra()
     }
 }
+#[cfg(feature = "_collections-item")]
+impl<T> CanonicalExtra for ItemValue<T> {
+    type Extra = ItemSchema;
+
+    fn canonical_extra(&self) -> Self::Extra {
+        self.item.canonical_extra()
+    }
+}
 
 #[cfg(feature = "_collections-kv")]
 impl<T: Default> KvValue<T> {
