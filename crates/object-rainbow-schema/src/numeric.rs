@@ -182,6 +182,35 @@ impl<I: PointInput<Extra = NumericSchema>> ParseInline<I> for NumericValue {
     }
 }
 
+impl AbstractValue for NumericValue {
+    type Schema = NumericSchema;
+
+    fn schema(&self) -> Self::Schema {
+        match self {
+            Self::U8(_) => NumericSchema::U8,
+            Self::I8(_) => NumericSchema::I8,
+            Self::U16(_) => NumericSchema::U16,
+            Self::I16(_) => NumericSchema::I16,
+            Self::U32(_) => NumericSchema::U32,
+            Self::I32(_) => NumericSchema::I32,
+            Self::U64(_) => NumericSchema::U64,
+            Self::I64(_) => NumericSchema::I64,
+            Self::U128(_) => NumericSchema::U128,
+            Self::I128(_) => NumericSchema::I128,
+            Self::NzU8(_) => NumericSchema::NzU8,
+            Self::NzU16(_) => NumericSchema::NzU16,
+            Self::NzU32(_) => NumericSchema::NzU32,
+            Self::NzU64(_) => NumericSchema::NzU64,
+            Self::NzU128(_) => NumericSchema::NzU128,
+            Self::F32(_) => NumericSchema::F32,
+            Self::F64(_) => NumericSchema::F64,
+            Self::OpaqueChar(_) => NumericSchema::OpaqueChar,
+            Self::OpaqueBool(_) => NumericSchema::OpaqueBool,
+            Self::LpU63(_) => NumericSchema::LpU63,
+        }
+    }
+}
+
 impl NumericValue {
     pub fn index(&self) -> Option<usize> {
         match self {
