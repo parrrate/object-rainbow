@@ -105,9 +105,9 @@ impl AbstractSchema for ArraySchema {
     }
 }
 
-impl DefaultSchema<ValueArray> for ArraySchema {
-    fn default_value(&self) -> Option<ValueArray> {
-        Some(ValueArray {
+impl DefaultSchema<ArrayValue> for ArraySchema {
+    fn default_value(&self) -> Option<ArrayValue> {
+        Some(ArrayValue {
             items: std::iter::repeat_n(self.schema.default_value().map(Arc::new), self.len as _)
                 .collect::<Option<_>>()?,
             schema: self.schema.clone(),
@@ -250,27 +250,27 @@ where
 }
 
 #[derive(Debug, ParseAsInline, ListHashes, Topological, PartialEq)]
-pub struct ValueArray {
+pub struct ArrayValue {
     pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
 }
 
-impl AbstractCollection for ValueArray {
+impl AbstractCollection for ArrayValue {
     fn items(&self) -> Vec<Arc<InlineValue>> {
         self.items.clone()
     }
 }
 
-impl ToOutput for ValueArray {
+impl ToOutput for ArrayValue {
     fn to_output(&self, output: &mut impl Output) {
         self.items.to_output(output);
     }
 }
 
-impl InlineOutput for ValueArray {}
-impl Tagged for ValueArray {}
+impl InlineOutput for ArrayValue {}
+impl Tagged for ArrayValue {}
 
-impl AbstractValue for ValueArray {
+impl AbstractValue for ArrayValue {
     type Schema = ArraySchema;
 
     fn schema(&self) -> Self::Schema {
@@ -281,7 +281,7 @@ impl AbstractValue for ValueArray {
     }
 }
 
-impl<I: PointInput<Extra = ArraySchema>> ParseInline<I> for ValueArray
+impl<I: PointInput<Extra = ArraySchema>> ParseInline<I> for ArrayValue
 where
     InlineValue: ParseInline<I::WithExtra<Arc<InlineSchema>>>,
 {
@@ -295,8 +295,8 @@ where
     }
 }
 
-impl From<ValueArray> for InlineValue {
-    fn from(value: ValueArray) -> Self {
+impl From<ArrayValue> for InlineValue {
+    fn from(value: ArrayValue) -> Self {
         Self::Array(value)
     }
 }
@@ -377,7 +377,7 @@ pub enum InlineValue {
     Point(ValuePoint),
     Nt(ValueNt),
     Concat(Arc<Self>, Arc<Self>),
-    Array(ValueArray),
+    Array(ArrayValue),
     Numeric(NumericValue),
     Enum(EnumValue<Self>),
     #[cfg(feature = "_collections")]
