@@ -1027,3 +1027,5 @@ fn toa_seq_equiv() -> object_rainbow::Result<()> {
     assert_eq!(toa_value.items(), seq_value.items());
     Ok(())
 }
+
+pub struct Shared<T>(pub Arc<T>);
