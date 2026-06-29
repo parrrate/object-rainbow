@@ -935,3 +935,12 @@ pub struct ExtraPoint<T, Extra = ()> {
     pub extra: Extras<Extra>,
     pub point: Point<T>,
 }
+
+impl<T, Extra: std::fmt::Debug> std::fmt::Debug for ExtraPoint<T, Extra> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ExtraPoint")
+            .field("extra", &self.extra)
+            .field("point", &self.point)
+            .finish()
+    }
+}
