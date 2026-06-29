@@ -27,6 +27,7 @@ pub mod collections;
 pub mod numeric;
 #[cfg(feature = "point")]
 pub mod point;
+pub mod sequence;
 
 pub trait AbstractSchema: ReflessInline + Traversible {
     fn niche(&self) -> SchemaNiche;
