@@ -463,7 +463,7 @@ impl AbstractValue for InlineValue {
     fn schema(&self) -> Self::Schema {
         match self {
             Self::Unit => InlineSchema::Unit,
-            Self::Option(o) => o.schema(),
+            Self::Option(o) => InlineSchema::Option(o.canonical_extra()),
             #[cfg(feature = "point")]
             Self::Point(p) => p.schema().into(),
             Self::Nt(nt) => nt.schema(),
