@@ -82,7 +82,6 @@ pub trait AbstractCollection {
     fn items(&self) -> Vec<Arc<InlineValue>>;
 }
 
-impl InlineOutput for NumericSchema {}
 impl Tagged for NumericSchema {}
 
 impl AbstractSchema for NumericSchema {

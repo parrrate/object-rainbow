@@ -43,3 +43,5 @@ pub enum NumericSchema {
     OpaqueBool,
     LpU63,
 }
+
+impl InlineOutput for NumericSchema {}
