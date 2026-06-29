@@ -12,3 +12,14 @@ impl<A> FromIterator<A> for ExtraArray<A> {
 /// Here we assume extra will match on re-parsing, which is a general requirement for
 /// correctness anyway.
 impl<T: InlineOutput> InlineOutput for ExtraArray<T> {}
+
+impl<T: ParseInline<I::WithExtra<E>>, I: PointInput<Extra = (u64, E)>, E: 'static + Clone>
+    ParseInline<I> for ExtraArray<T>
+{
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        let (n, extra) = input.extra().clone();
+        (0..n)
+            .map(|_| input.parse_inline_extra(extra.clone()))
+            .collect()
+    }
+}
