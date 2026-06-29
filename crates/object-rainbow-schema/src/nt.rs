@@ -3,7 +3,7 @@ use crate::*;
 #[derive(Debug, ParseAsInline, ListHashes, Topological, PartialEq)]
 pub struct NtValue {
     pub schema: Arc<InlineSchema>,
-    pub items: Vec<Arc<InlineValue>>,
+    pub items: Vec<Shared<InlineValue>>,
 }
 
 impl ToOutput for NtValue {
@@ -25,7 +25,7 @@ where
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let mut items = Vec::new();
         let schema = input.extra().clone();
-        while let Some(Shared(item)) = input.parse_inline()? {
+        while let Some(item) = input.parse_inline()? {
             items.push(item);
         }
         Ok(Self { schema, items })
@@ -42,6 +42,10 @@ impl AbstractValue for NtValue {
 
 impl AbstractCollection for NtValue {
     fn items(&self) -> Vec<Arc<InlineValue>> {
-        self.items.clone()
+        self.items
+            .iter()
+            .cloned()
+            .map(|Shared(value)| value)
+            .collect()
     }
 }
