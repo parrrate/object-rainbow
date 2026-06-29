@@ -1,4 +1,4 @@
 use crate::*;
 
-#[derive(ToOutput, InlineOutput)]
+#[derive(ToOutput, InlineOutput, ListHashes)]
 pub struct ExtraArray<T>(pub Vec<T>);
