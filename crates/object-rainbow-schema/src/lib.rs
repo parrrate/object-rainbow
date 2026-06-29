@@ -624,16 +624,6 @@ where
     }
 }
 
-impl<T: DefaultIsMin> DefaultIsMin for EnumSchema<T> {
-    fn default_is_min(&self) -> bool {
-        self.kind.default_is_min()
-            && self
-                .variants
-                .first()
-                .is_some_and(|schema| schema.default_is_min())
-    }
-}
-
 #[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, PartialEq)]
 pub struct EnumValue<T: AbstractValue> {
     pub kind: NumericValue,

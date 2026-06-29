@@ -35,6 +35,16 @@ impl<T: AbstractValue<Schema: DefaultSchema<T>>> DefaultSchema<EnumValue<T>>
     }
 }
 
+impl<T: DefaultIsMin> DefaultIsMin for EnumSchema<T> {
+    fn default_is_min(&self) -> bool {
+        self.kind.default_is_min()
+            && self
+                .variants
+                .first()
+                .is_some_and(|schema| schema.default_is_min())
+    }
+}
+
 impl From<EnumSchema<InlineSchema>> for InlineSchema {
     fn from(schema: EnumSchema<InlineSchema>) -> Self {
         Self::Enum(schema)
