@@ -1864,3 +1864,8 @@ impl<T: Default> TryDefault for T {
         Ok(Self::default())
     }
 }
+
+pub trait CanonicalExtra {
+    type Extra;
+    fn canonical_extra(&self) -> Self::Extra;
+}
