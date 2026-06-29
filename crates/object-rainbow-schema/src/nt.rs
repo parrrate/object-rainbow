@@ -16,3 +16,4 @@ impl ToOutput for NtValue {
 }
 
 impl InlineOutput for NtValue {}
+impl Tagged for NtValue {}

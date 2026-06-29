@@ -170,7 +170,6 @@ impl AbstractCollection for NtValue {
     }
 }
 
-impl Tagged for NtValue {}
 
 impl AbstractValue for NtValue {
     type Schema = InlineSchema;
