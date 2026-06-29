@@ -624,17 +624,6 @@ where
     }
 }
 
-impl<T: AbstractValue> AbstractValue for EnumValue<T> {
-    type Schema = EnumSchema<T::Schema>;
-
-    fn schema(&self) -> Self::Schema {
-        EnumSchema {
-            kind: self.kind.schema(),
-            variants: self.variants.clone(),
-        }
-    }
-}
-
 impl<
     T: AbstractValue + Parse<I::WithExtra<Arc<T::Schema>>>,
     I: PointInput<Extra = EnumSchema<T::Schema>>,
