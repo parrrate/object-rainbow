@@ -841,12 +841,6 @@ assert_impl!(
     impl ReflessInline for TailSchema {}
 );
 
-impl SizeSchema for ArraySchema {
-    fn size(&self) -> Option<u64> {
-        self.len.checked_mul(self.schema.size()?)
-    }
-}
-
 impl<T: SizeSchema> SizeSchema for EnumSchema<T> {
     fn size(&self) -> Option<u64> {
         let size = self.variants.first()?.size()?;

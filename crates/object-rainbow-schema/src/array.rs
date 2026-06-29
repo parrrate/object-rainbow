@@ -36,7 +36,12 @@ impl DefaultSchema<ArrayValue> for ArraySchema {
 
 impl DefaultIsMin for ArraySchema {
     fn default_is_min(&self) -> bool {
-        self.len == 0 || self.schema.default_is_min()
+    }
+}
+
+impl SizeSchema for ArraySchema {
+    fn size(&self) -> Option<u64> {
+        self.len.checked_mul(self.schema.size()?)
     }
 }
 
