@@ -955,12 +955,6 @@ impl ZtValue {
     }
 }
 
-impl From<ZtValue> for InlineValue {
-    fn from(value: ZtValue) -> Self {
-        Self::Zt(value)
-    }
-}
-
 impl<T: AbstractValue + AbstractCollection> AbstractCollection for ValueOption<T> {
     fn items(&self) -> Vec<Arc<InlineValue>> {
         match self {

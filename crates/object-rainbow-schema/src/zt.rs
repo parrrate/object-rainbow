@@ -21,3 +21,9 @@ impl AbstractCollection for ZtValue {
         self.value.items()
     }
 }
+
+impl From<ZtValue> for InlineValue {
+    fn from(value: ZtValue) -> Self {
+        Self::Zt(value)
+    }
+}
