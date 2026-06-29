@@ -4,7 +4,7 @@ use crate::*;
 
 #[derive(Debug, ParseAsInline, ParseInline, ListHashes, Topological, PartialEq)]
 pub struct NtValue {
-    pub schema: Arc<InlineSchema>,
+    pub schema: Extras<Arc<InlineSchema>>,
     pub items: Nt<Vec<Shared<InlineValue>>>,
 }
 
@@ -24,7 +24,7 @@ impl AbstractValue for NtValue {
     type Schema = InlineSchema;
 
     fn schema(&self) -> Self::Schema {
-        InlineSchema::Nt(self.schema.clone())
+        InlineSchema::Nt(self.schema.0.clone())
     }
 }
 
