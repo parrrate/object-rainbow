@@ -215,14 +215,6 @@ impl AbstractCollection for SequenceValue {
     }
 }
 
-impl AbstractValue for SequenceValue {
-    type Schema = TailSchema;
-
-    fn schema(&self) -> Self::Schema {
-        TailSchema::Sequence(self.schema.0.clone())
-    }
-}
-
 #[derive(Debug, ListHashes, Topological, PartialEq)]
 pub struct ValueToA(
     pub MappedExtra<Arc<TailValue>, Extra0>,
