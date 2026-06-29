@@ -1,23 +1,19 @@
+use object_rainbow::CanonicalExtra;
+
 use crate::*;
 
-#[derive(Debug, ToOutput, ListHashes, Topological, Parse, PartialEq)]
-pub struct SequenceValue {
-    pub schema: Extras<Arc<InlineSchema>>,
-    pub items: Vec<Arc<InlineValue>>,
-}
-
-impl Tagged for SequenceValue {}
+pub type SequenceValue = (Extras<Arc<InlineSchema>>, Vec<Arc<InlineValue>>);
 
 impl AbstractValue for SequenceValue {
     type Schema = TailSchema;
 
     fn schema(&self) -> Self::Schema {
-        TailSchema::Sequence(self.schema.0.clone())
+        TailSchema::Sequence(self.canonical_extra())
     }
 }
 
 impl AbstractCollection for SequenceValue {
     fn items(&self) -> Vec<Arc<InlineValue>> {
-        self.items.clone()
+        self.1.clone()
     }
 }

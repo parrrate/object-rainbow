@@ -579,10 +579,10 @@ impl DefaultSchema<TailValue> for TailSchema {
         match self {
             Self::Cut => Some(TailValue::Cut),
             Self::Option(schema) => Some(TailValue::Option(OptionValue::None(schema.clone()))),
-            Self::Sequence(schema) => Some(TailValue::Sequence(SequenceValue {
-                schema: Extras(schema.clone()),
-                items: Default::default(),
-            })),
+            Self::Sequence(schema) => Some(TailValue::Sequence((
+                Extras(schema.clone()),
+                Default::default(),
+            ))),
             Self::Concat(a, b) => Some(TailValue::Concat(
                 Arc::new(a.default_value()?),
                 Arc::new(b.default_value()?),
@@ -978,23 +978,23 @@ fn tuple_of_arrays() -> object_rainbow::Result<()> {
         TailValue::ToA(ValueToA(
             MappedExtra(
                 Default::default(),
-                Arc::new(TailValue::Sequence(SequenceValue {
-                    schema: Extras(Arc::new(InlineSchema::Numeric(NumericSchema::U8))),
-                    items: vec![
+                Arc::new(TailValue::Sequence((
+                    Extras(Arc::new(InlineSchema::Numeric(NumericSchema::U8))),
+                    vec![
                         Arc::new(InlineValue::Numeric(NumericValue::U8(1))),
                         Arc::new(InlineValue::Numeric(NumericValue::U8(2))),
                     ]
-                })),
+                ))),
             ),
             MappedExtra(
                 Default::default(),
-                Arc::new(TailValue::Sequence(SequenceValue {
-                    schema: Extras(Arc::new(InlineSchema::Numeric(NumericSchema::U16))),
-                    items: vec![
+                Arc::new(TailValue::Sequence((
+                    Extras(Arc::new(InlineSchema::Numeric(NumericSchema::U16))),
+                    vec![
                         Arc::new(InlineValue::Numeric(NumericValue::U16(0x0304))),
                         Arc::new(InlineValue::Numeric(NumericValue::U16(0x0506))),
                     ]
-                })),
+                ))),
             ),
         )),
     );
