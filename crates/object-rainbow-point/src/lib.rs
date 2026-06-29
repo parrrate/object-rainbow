@@ -931,7 +931,7 @@ impl<'a, T: FullHash> PointMut<'a, T> {
     }
 }
 
-#[derive(ToOutput, InlineOutput)]
+#[derive(ToOutput, InlineOutput, ListHashes)]
 pub struct ExtraPoint<T, Extra = ()> {
     pub extra: Extras<Extra>,
     pub point: Point<T>,
