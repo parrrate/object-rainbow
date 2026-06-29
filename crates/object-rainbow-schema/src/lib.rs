@@ -209,20 +209,20 @@ where
 }
 
 #[derive(Debug, ToOutput, ListHashes, Topological, Parse, PartialEq)]
-pub struct ValueSequence {
+pub struct SequenceValue {
     pub schema: Extras<Arc<InlineSchema>>,
     pub items: Vec<Arc<InlineValue>>,
 }
 
-impl AbstractCollection for ValueSequence {
+impl AbstractCollection for SequenceValue {
     fn items(&self) -> Vec<Arc<InlineValue>> {
         self.items.clone()
     }
 }
 
-impl Tagged for ValueSequence {}
+impl Tagged for SequenceValue {}
 
-impl AbstractValue for ValueSequence {
+impl AbstractValue for SequenceValue {
     type Schema = TailSchema;
 
     fn schema(&self) -> Self::Schema {
@@ -300,7 +300,7 @@ impl Tagged for InlineValue {}
 pub enum TailValue {
     Cut,
     Option(ValueOption<Self>),
-    Sequence(ValueSequence),
+    Sequence(SequenceValue),
     Concat(Arc<InlineValue>, Arc<Self>),
     ToA(ValueToA),
     Enum(EnumValue<Self>),
@@ -642,7 +642,7 @@ impl DefaultSchema<TailValue> for TailSchema {
         match self {
             Self::Cut => Some(TailValue::Cut),
             Self::Option(schema) => Some(TailValue::Option(ValueOption::None(schema.clone()))),
-            Self::Sequence(schema) => Some(TailValue::Sequence(ValueSequence {
+            Self::Sequence(schema) => Some(TailValue::Sequence(SequenceValue {
                 schema: Extras(schema.clone()),
                 items: Default::default(),
             })),
@@ -1079,7 +1079,7 @@ fn tuple_of_arrays() -> object_rainbow::Result<()> {
         TailValue::ToA(ValueToA(
             MappedExtra(
                 Default::default(),
-                Arc::new(TailValue::Sequence(ValueSequence {
+                Arc::new(TailValue::Sequence(SequenceValue {
                     schema: Extras(Arc::new(InlineSchema::Numeric(NumericSchema::U8))),
                     items: vec![
                         Arc::new(InlineValue::Numeric(NumericValue::U8(1))),
@@ -1089,7 +1089,7 @@ fn tuple_of_arrays() -> object_rainbow::Result<()> {
             ),
             MappedExtra(
                 Default::default(),
-                Arc::new(TailValue::Sequence(ValueSequence {
+                Arc::new(TailValue::Sequence(SequenceValue {
                     schema: Extras(Arc::new(InlineSchema::Numeric(NumericSchema::U16))),
                     items: vec![
                         Arc::new(InlineValue::Numeric(NumericValue::U16(0x0304))),
