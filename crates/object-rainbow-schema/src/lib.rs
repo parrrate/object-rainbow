@@ -17,6 +17,7 @@ use self::collections::{CollectionSchema, CollectionValue};
 use self::point::{PointSchema, ValuePoint};
 use self::{
     array::{ArraySchema, ArrayValue},
+    nt::NtValue,
     numeric::{NumericSchema, NumericValue},
     sequence::SequenceValue,
     zt::ZtValue,
@@ -161,12 +162,6 @@ impl Tagged for TailSchema {}
 pub enum ValueOption<T: AbstractValue> {
     None(Arc<T::Schema>),
     Some(Arc<T>),
-}
-
-#[derive(Debug, ParseAsInline, ListHashes, Topological, PartialEq)]
-pub struct NtValue {
-    pub items: Vec<Arc<InlineValue>>,
-    pub schema: Arc<InlineSchema>,
 }
 
 impl AbstractCollection for NtValue {
