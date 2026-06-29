@@ -78,3 +78,12 @@ impl<T: AbstractValue<Schema: OptionSchema>> AbstractValue for OptionValue<T> {
         self.inner_schema().option()
     }
 }
+
+impl<T: AbstractValue + AbstractCollection> AbstractCollection for OptionValue<T> {
+    fn items(&self) -> Vec<Arc<InlineValue>> {
+        match self {
+            Self::None(_) => Vec::new(),
+            Self::Some(value) => value.items(),
+        }
+    }
+}

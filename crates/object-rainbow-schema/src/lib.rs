@@ -818,15 +818,6 @@ impl ItemSizeSchema for TailSchema {
     }
 }
 
-impl<T: AbstractValue + AbstractCollection> AbstractCollection for OptionValue<T> {
-    fn items(&self) -> Vec<Arc<InlineValue>> {
-        match self {
-            Self::None(_) => Vec::new(),
-            Self::Some(value) => value.items(),
-        }
-    }
-}
-
 impl<T: AbstractValue + AbstractCollection> AbstractCollection for EnumValue<T> {
     fn items(&self) -> Vec<Arc<InlineValue>> {
         self.value.items()
