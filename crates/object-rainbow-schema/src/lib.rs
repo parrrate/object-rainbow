@@ -14,16 +14,19 @@ use object_rainbow::{
 
 #[cfg(feature = "_collections")]
 use self::collections::{CollectionSchema, CollectionValue};
-use self::numeric::{NumericSchema, NumericValue};
 #[cfg(feature = "point")]
 use self::point::{PointSchema, ValuePoint};
+use self::{
+    array::ArraySchema,
+    numeric::{NumericSchema, NumericValue},
+};
 
+pub mod array;
 #[cfg(feature = "_collections")]
 pub mod collections;
 pub mod numeric;
 #[cfg(feature = "point")]
 pub mod point;
-pub mod array;
 
 pub trait AbstractSchema: ReflessInline + Traversible {
     fn niche(&self) -> SchemaNiche;
@@ -80,24 +83,6 @@ impl ItemSizeSchema for Infallible {
 
 pub trait AbstractCollection {
     fn items(&self) -> Vec<Arc<InlineValue>>;
-}
-
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Parse,
-    ParseInline,
-    MaybeHasNiche,
-    ListHashes,
-    Topological,
-    Tagged,
-    Clone,
-    PartialEq,
-)]
-pub struct ArraySchema {
-    pub len: u64,
-    pub schema: Arc<InlineSchema>,
 }
 
 impl AbstractSchema for ArraySchema {
