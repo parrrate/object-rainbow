@@ -5,3 +5,5 @@ pub struct SequenceValue {
     pub schema: Extras<Arc<InlineSchema>>,
     pub items: Vec<Arc<InlineValue>>,
 }
+
+impl Tagged for SequenceValue {}

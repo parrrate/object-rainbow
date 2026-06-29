@@ -215,8 +215,6 @@ impl AbstractCollection for SequenceValue {
     }
 }
 
-impl Tagged for SequenceValue {}
-
 impl AbstractValue for SequenceValue {
     type Schema = TailSchema;
 
