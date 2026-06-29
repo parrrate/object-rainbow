@@ -13,6 +13,13 @@ impl<T, E> ExtraNone<T, E> {
             Self::None(_) => None,
         }
     }
+
+    pub fn new(extra: E, value: Option<T>) -> Self {
+        match value {
+            Some(value) => Self::Some(value),
+            None => Self::None(extra),
+        }
+    }
 }
 
 impl<T: OptionOutput, E> ToOutput for ExtraNone<T, E> {
