@@ -25,3 +25,9 @@ impl AbstractValue for NtValue {
         InlineSchema::Nt(self.schema.clone())
     }
 }
+
+impl AbstractCollection for NtValue {
+    fn items(&self) -> Vec<Arc<InlineValue>> {
+        self.items.clone()
+    }
+}

@@ -164,12 +164,6 @@ pub enum ValueOption<T: AbstractValue> {
     Some(Arc<T>),
 }
 
-impl AbstractCollection for NtValue {
-    fn items(&self) -> Vec<Arc<InlineValue>> {
-        self.items.clone()
-    }
-}
-
 impl<I: PointInput<Extra = Arc<InlineSchema>>> ParseInline<I> for NtValue
 where
     ValueOption<InlineValue>: ParseInline<I>,
