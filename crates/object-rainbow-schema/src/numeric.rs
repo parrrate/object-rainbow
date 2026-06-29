@@ -155,6 +155,33 @@ pub enum NumericValue {
 impl InlineOutput for NumericValue {}
 impl Tagged for NumericValue {}
 
+impl<I: PointInput<Extra = NumericSchema>> ParseInline<I> for NumericValue {
+    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
+        Ok(match input.extra().clone() {
+            NumericSchema::U8 => Self::U8(input.parse_inline()?),
+            NumericSchema::I8 => Self::I8(input.parse_inline()?),
+            NumericSchema::U16 => Self::U16(input.parse_inline()?),
+            NumericSchema::I16 => Self::I16(input.parse_inline()?),
+            NumericSchema::U32 => Self::U32(input.parse_inline()?),
+            NumericSchema::I32 => Self::I32(input.parse_inline()?),
+            NumericSchema::U64 => Self::U64(input.parse_inline()?),
+            NumericSchema::I64 => Self::I64(input.parse_inline()?),
+            NumericSchema::U128 => Self::U128(input.parse_inline()?),
+            NumericSchema::I128 => Self::I128(input.parse_inline()?),
+            NumericSchema::NzU8 => Self::NzU8(input.parse_inline()?),
+            NumericSchema::NzU16 => Self::NzU16(input.parse_inline()?),
+            NumericSchema::NzU32 => Self::NzU32(input.parse_inline()?),
+            NumericSchema::NzU64 => Self::NzU64(input.parse_inline()?),
+            NumericSchema::NzU128 => Self::NzU128(input.parse_inline()?),
+            NumericSchema::F32 => Self::F32(input.parse_inline()?),
+            NumericSchema::F64 => Self::F64(input.parse_inline()?),
+            NumericSchema::OpaqueChar => Self::OpaqueChar(input.parse_inline()?),
+            NumericSchema::OpaqueBool => Self::OpaqueBool(input.parse_inline()?),
+            NumericSchema::LpU63 => Self::LpU63(input.parse_inline()?),
+        })
+    }
+}
+
 impl NumericValue {
     pub fn index(&self) -> Option<usize> {
         match self {
