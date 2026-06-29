@@ -20,6 +20,7 @@ use self::{
     array::{ArraySchema, ArrayValue},
     nt::NtValue,
     numeric::{NumericSchema, NumericValue},
+    option::OptionValue,
     sequence::SequenceValue,
     zt::{ZtValue, zt_schema_default},
 };
@@ -29,6 +30,7 @@ pub mod array;
 pub mod collections;
 pub mod nt;
 pub mod numeric;
+pub mod option;
 #[cfg(feature = "point")]
 pub mod point;
 pub mod sequence;
@@ -171,13 +173,6 @@ pub enum TailSchema {
 
 impl InlineOutput for TailSchema {}
 impl Tagged for TailSchema {}
-
-#[derive(Debug, ListHashes, Topological, Tagged, PartialEq)]
-#[rainbow(untagged)]
-pub enum OptionValue<T: AbstractValue> {
-    None(Arc<T::Schema>),
-    Some(Shared<T>),
-}
 
 #[derive(Debug, ListHashes, Topological, PartialEq)]
 pub struct ValueToA(
