@@ -136,9 +136,8 @@ where
     }
 }
 
-impl<T: IntoIterator<Item = A> + FromIterator<A>, A, I: ParseInput> ParseInline<I> for Nt<T>
-where
-    Option<A>: ParseInline<I>,
+impl<T: IntoIterator<Item = A> + FromIterator<A>, A: OptionParseInline<I>, I: ParseInput>
+    ParseInline<I> for Nt<T>
 {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         let mut items = Vec::new();
