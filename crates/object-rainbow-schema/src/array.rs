@@ -50,7 +50,7 @@ impl AbstractValue for ArrayValue {
 
 impl AbstractCollection for ArrayValue {
     fn items(&self) -> Vec<Arc<InlineValue>> {
-        self.items.clone()
+        self.items.0.clone()
     }
 }
 
