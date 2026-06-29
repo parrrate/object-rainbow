@@ -51,16 +51,25 @@ where
     }
 }
 
-impl<T, E> ToOutput for Ent<T, E>
-where
-    for<'a> &'a T: IntoIterator,
-    for<'a> <&'a T as IntoIterator>::Item: ExtraNoneOutput<E> + InlineOutput,
-{
-    fn to_output(&self, output: &mut impl Output) {
+pub trait EntOutput<E> {
+    fn ent_output(self, extra: &E, output: &mut impl Output);
+}
+
+impl<T: IntoIterator<Item = A>, E, A: ExtraNoneOutput<E> + InlineOutput> EntOutput<E> for T {
+    fn ent_output(self, extra: &E, output: &mut impl Output) {
         for item in self {
             item.extra_some_output(output);
         }
-        <&T as IntoIterator>::Item::extra_none_output(&self.extra, output);
+        A::extra_none_output(extra, output);
+    }
+}
+
+impl<T, E> ToOutput for Ent<T, E>
+where
+    for<'a> &'a T: EntOutput<E>,
+{
+    fn to_output(&self, output: &mut impl Output) {
+        self.items.ent_output(&self.extra, output);
     }
 }
 
