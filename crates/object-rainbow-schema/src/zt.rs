@@ -1,3 +1,5 @@
+use object_rainbow::zero_terminated::Zt;
+
 use crate::*;
 
 #[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline, PartialEq)]

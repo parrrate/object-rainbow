@@ -9,7 +9,6 @@ use object_rainbow::{
     map_extra::MappedExtra,
     tuple_extra::{Extra0, Extra1},
     tuple_of_arrays::try_divide,
-    zero_terminated::Zt,
 };
 
 #[cfg(feature = "_collections")]
