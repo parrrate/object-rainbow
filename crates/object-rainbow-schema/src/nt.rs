@@ -9,9 +9,9 @@ pub struct NtValue {
 impl ToOutput for NtValue {
     fn to_output(&self, output: &mut impl Output) {
         for item in &self.items {
-            ValueOption::Some(item.clone()).to_output(output);
+            OptionValue::Some(item.clone()).to_output(output);
         }
-        ValueOption::<InlineValue>::None(self.schema.clone()).to_output(output);
+        OptionValue::<InlineValue>::None(self.schema.clone()).to_output(output);
     }
 }
 
@@ -20,14 +20,14 @@ impl Tagged for NtValue {}
 
 impl<I: PointInput<Extra = Arc<InlineSchema>>> ParseInline<I> for NtValue
 where
-    ValueOption<InlineValue>: ParseInline<I>,
+    OptionValue<InlineValue>: ParseInline<I>,
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let mut items = Vec::new();
         let schema = loop {
             match input.parse_inline()? {
-                ValueOption::Some(item) => items.push(item),
-                ValueOption::None(schema) => break schema,
+                OptionValue::Some(item) => items.push(item),
+                OptionValue::None(schema) => break schema,
             }
         };
         Ok(Self { items, schema })

@@ -159,7 +159,7 @@ impl Tagged for TailSchema {}
 
 #[derive(Debug, ListHashes, Topological, Tagged, PartialEq)]
 #[rainbow(untagged)]
-pub enum ValueOption<T: AbstractValue> {
+pub enum OptionValue<T: AbstractValue> {
     None(Arc<T::Schema>),
     Some(Arc<T>),
 }
@@ -213,7 +213,7 @@ where
 #[rainbow(untagged)]
 pub enum InlineValue {
     Unit,
-    Option(ValueOption<Self>),
+    Option(OptionValue<Self>),
     #[cfg(feature = "point")]
     Point(ValuePoint),
     Nt(NtValue),
@@ -233,7 +233,7 @@ impl Tagged for InlineValue {}
 #[rainbow(untagged)]
 pub enum TailValue {
     Cut,
-    Option(ValueOption<Self>),
+    Option(OptionValue<Self>),
     Sequence(SequenceValue),
     Concat(Arc<InlineValue>, Arc<Self>),
     ToA(ValueToA),
@@ -403,7 +403,7 @@ impl DefaultSchema<InlineValue> for InlineSchema {
         match self {
             Self::Never => None,
             Self::Unit => Some(InlineValue::Unit),
-            Self::Option(schema) => Some(InlineValue::Option(ValueOption::None(schema.clone()))),
+            Self::Option(schema) => Some(InlineValue::Option(OptionValue::None(schema.clone()))),
             #[cfg(feature = "point")]
             Self::Point(schema) => schema.default_value().map(From::from),
             #[cfg(not(feature = "point"))]
@@ -466,7 +466,7 @@ impl AbstractValue for InlineValue {
     }
 }
 
-impl<T: AbstractValue> ToOutput for ValueOption<T> {
+impl<T: AbstractValue> ToOutput for OptionValue<T> {
     fn to_output(&self, output: &mut impl Output) {
         match self {
             Self::None(schema) => {
@@ -487,9 +487,9 @@ impl<T: AbstractValue> ToOutput for ValueOption<T> {
     }
 }
 
-impl<T: AbstractValue + InlineOutput> InlineOutput for ValueOption<T> {}
+impl<T: AbstractValue + InlineOutput> InlineOutput for OptionValue<T> {}
 
-impl<T: AbstractValue> ValueOption<T> {
+impl<T: AbstractValue> OptionValue<T> {
     pub fn inner_schema(&self) -> Arc<T::Schema> {
         match self {
             Self::None(schema) => schema.clone(),
@@ -499,7 +499,7 @@ impl<T: AbstractValue> ValueOption<T> {
 }
 
 impl<T: AbstractValue + Parse<I>, I: PointInput<Extra = Arc<T::Schema>>> Parse<I>
-    for ValueOption<T>
+    for OptionValue<T>
 {
     fn parse(mut input: I) -> object_rainbow::Result<Self> {
         let schema = input.extra().clone();
@@ -520,7 +520,7 @@ impl<T: AbstractValue + Parse<I>, I: PointInput<Extra = Arc<T::Schema>>> Parse<I
 }
 
 impl<T: AbstractValue + ParseInline<I>, I: PointInput<Extra = Arc<T::Schema>>> ParseInline<I>
-    for ValueOption<T>
+    for OptionValue<T>
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let schema = input.extra().clone();
@@ -542,7 +542,7 @@ impl<T: AbstractValue + ParseInline<I>, I: PointInput<Extra = Arc<T::Schema>>> P
     }
 }
 
-impl<T: AbstractValue<Schema: OptionSchema>> AbstractValue for ValueOption<T> {
+impl<T: AbstractValue<Schema: OptionSchema>> AbstractValue for OptionValue<T> {
     type Schema = T::Schema;
 
     fn schema(&self) -> Self::Schema {
@@ -575,7 +575,7 @@ impl DefaultSchema<TailValue> for TailSchema {
     fn default_value(&self) -> Option<TailValue> {
         match self {
             Self::Cut => Some(TailValue::Cut),
-            Self::Option(schema) => Some(TailValue::Option(ValueOption::None(schema.clone()))),
+            Self::Option(schema) => Some(TailValue::Option(OptionValue::None(schema.clone()))),
             Self::Sequence(schema) => Some(TailValue::Sequence(SequenceValue {
                 schema: Extras(schema.clone()),
                 items: Default::default(),
@@ -898,7 +898,7 @@ impl ItemSizeSchema for TailSchema {
     }
 }
 
-impl<T: AbstractValue + AbstractCollection> AbstractCollection for ValueOption<T> {
+impl<T: AbstractValue + AbstractCollection> AbstractCollection for OptionValue<T> {
     fn items(&self) -> Vec<Arc<InlineValue>> {
         match self {
             Self::None(_) => Vec::new(),
