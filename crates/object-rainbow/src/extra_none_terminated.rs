@@ -76,3 +76,11 @@ where
 }
 
 impl<T, E> InlineOutput for Ent<T, E> where Self: ToOutput {}
+
+impl<T, E: Clone> CanonicalExtra for Ent<T, E> {
+    type Extra = E;
+
+    fn canonical_extra(&self) -> Self::Extra {
+        self.extra.canonical_extra()
+    }
+}
