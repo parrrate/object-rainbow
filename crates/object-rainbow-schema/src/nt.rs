@@ -45,3 +45,13 @@ impl AbstractValue for Ent<Vec<Shared<InlineValue>>, Arc<InlineSchema>> {
         InlineSchema::Nt(self.extra.0.clone())
     }
 }
+
+impl AbstractCollection for Ent<Vec<Shared<InlineValue>>, Arc<InlineSchema>> {
+    fn items(&self) -> Vec<Arc<InlineValue>> {
+        self.items
+            .iter()
+            .cloned()
+            .map(|Shared(value)| value)
+            .collect()
+    }
+}
