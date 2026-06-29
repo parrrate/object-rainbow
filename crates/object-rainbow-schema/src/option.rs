@@ -17,3 +17,12 @@ impl<T: AbstractValue> ToOutput for OptionValue<T> {
 }
 
 impl<T: AbstractValue + InlineOutput> InlineOutput for OptionValue<T> {}
+
+impl<T: AbstractValue> OptionValue<T> {
+    pub fn inner_schema(&self) -> Arc<T::Schema> {
+        match self {
+            Self::None(schema) => schema.clone(),
+            Self::Some(value) => Arc::new(value.schema()),
+        }
+    }
+}

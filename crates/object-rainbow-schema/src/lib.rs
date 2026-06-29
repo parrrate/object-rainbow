@@ -476,15 +476,6 @@ impl AbstractValue for InlineValue {
     }
 }
 
-impl<T: AbstractValue> OptionValue<T> {
-    pub fn inner_schema(&self) -> Arc<T::Schema> {
-        match self {
-            Self::None(schema) => schema.clone(),
-            Self::Some(value) => Arc::new(value.schema()),
-        }
-    }
-}
-
 impl<T: AbstractValue + Parse<I>, I: PointInput<Extra = Arc<T::Schema>>> Parse<I>
     for OptionValue<T>
 {
