@@ -55,3 +55,9 @@ impl<T: OptionParse<I>, I: PointInput> Parse<I> for ExtraNone<T, I::Extra> {
         input.parse().map(Self::from_tuple)
     }
 }
+
+impl<T: OptionParseInline<I>, I: PointInput> ParseInline<I> for ExtraNone<T, I::Extra> {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        input.parse_inline().map(Self::from_tuple)
+    }
+}
