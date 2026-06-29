@@ -1,4 +1,4 @@
-use crate::{extras::Extras, none_terminated::Nt, *};
+use crate::{extra_none::ExtraNoneOutput, extras::Extras, none_terminated::Nt, *};
 
 #[derive(Debug, ListHashes, Topological, Parse, ParseInline, Tagged)]
 pub struct Ent<T, E = ()> {
@@ -48,5 +48,18 @@ where
 
     fn into_iter(self) -> Self::IntoIter {
         self.items.into_iter()
+    }
+}
+
+impl<T, E> ToOutput for Ent<T, E>
+where
+    for<'a> &'a T: IntoIterator,
+    for<'a> <&'a T as IntoIterator>::Item: ExtraNoneOutput<E> + InlineOutput,
+{
+    fn to_output(&self, output: &mut impl Output) {
+        for item in self {
+            item.extra_some_output(output);
+        }
+        <&T as IntoIterator>::Item::extra_none_output(&self.extra, output);
     }
 }
