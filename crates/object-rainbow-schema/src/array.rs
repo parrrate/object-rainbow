@@ -13,7 +13,7 @@ impl AbstractSchema for ArraySchema {
 impl DefaultSchema<ArrayValue> for ArraySchema {
     fn default_value(&self) -> Option<ArrayValue> {
         Some(ArrayValue {
-            schema: Extras(self.1.clone()),
+            schema: MappedExtra(Default::default(), Extras(self.1.clone())),
             items: std::iter::repeat_n(self.1.default_value().map(Arc::new), self.0 as _)
                 .collect::<Option<_>>()?,
         })
@@ -40,7 +40,7 @@ impl From<ArraySchema> for InlineSchema {
 
 #[derive(Debug, ToOutput, ParseAsInline, ListHashes, Topological, PartialEq)]
 pub struct ArrayValue {
-    pub schema: Extras<Arc<InlineSchema>>,
+    pub schema: MappedExtra<Extras<Arc<InlineSchema>>, Extra1>,
     pub items: ExtraArray<Arc<InlineValue>>,
 }
 
@@ -52,9 +52,8 @@ where
     InlineValue: ParseInline<I::WithExtra<Arc<InlineSchema>>>,
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let (_, schema) = input.extra().clone();
         Ok(Self {
-            schema: Extras(schema),
+            schema: input.parse_inline()?,
             items: input.parse_inline()?,
         })
     }
@@ -64,7 +63,7 @@ impl AbstractValue for ArrayValue {
     type Schema = ArraySchema;
 
     fn schema(&self) -> Self::Schema {
-        (self.items.len() as _, self.schema.0.clone())
+        (self.items.len() as _, self.schema.1.0.clone())
     }
 }
 
