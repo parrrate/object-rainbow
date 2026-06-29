@@ -176,7 +176,7 @@ impl Tagged for TailSchema {}
 #[rainbow(untagged)]
 pub enum OptionValue<T: AbstractValue> {
     None(Arc<T::Schema>),
-    Some(Arc<T>),
+    Some(Shared<T>),
 }
 
 #[derive(Debug, ListHashes, Topological, PartialEq)]
