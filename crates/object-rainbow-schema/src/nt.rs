@@ -1,9 +1,11 @@
+use object_rainbow::none_terminated::Nt;
+
 use crate::*;
 
 #[derive(Debug, ParseAsInline, ListHashes, Topological, PartialEq)]
 pub struct NtValue {
     pub schema: Arc<InlineSchema>,
-    pub items: Vec<Shared<InlineValue>>,
+    pub items: Nt<Vec<Shared<InlineValue>>>,
 }
 
 impl ToOutput for NtValue {
@@ -23,12 +25,11 @@ where
     Option<Shared<InlineValue>>: ParseInline<I>,
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let mut items = Vec::new();
         let schema = input.extra().clone();
-        while let Some(item) = input.parse_inline()? {
-            items.push(item);
-        }
-        Ok(Self { schema, items })
+        Ok(Self {
+            schema,
+            items: input.parse_inline()?,
+        })
     }
 }
 
