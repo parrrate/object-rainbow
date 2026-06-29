@@ -94,3 +94,9 @@ impl From<ArrayValue> for InlineValue {
         Self::Array(value)
     }
 }
+
+impl AbstractSchema for (u64, Arc<InlineSchema>) {
+    fn niche(&self) -> SchemaNiche {
+        self.1.niche().repeat(self.0)
+    }
+}
