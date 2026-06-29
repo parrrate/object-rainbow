@@ -1,8 +1,8 @@
 use std::{convert::Infallible, ops::Deref, sync::Arc};
 
 use object_rainbow::{
-    Enum, Inline, InlineOutput, ListHashes, MaybeHasNiche, OptionParse, Output, Parse,
-    ParseAsInline, ParseInline, PointInput, ReflessInline, Tagged, ToOutput, Topological,
+    Enum, Inline, InlineOutput, ListHashes, MaybeHasNiche, OptionParse, OptionParseInline, Output,
+    Parse, ParseAsInline, ParseInline, PointInput, ReflessInline, Tagged, ToOutput, Topological,
     Traversible, assert_impl,
     extra_none::ExtraNoneOutput,
     extras::Extras,
@@ -1068,6 +1068,24 @@ impl<T: AbstractValue + Parse<I>, I: PointInput<Extra = Arc<T::Schema>>> OptionP
             }
         } else {
             input.parse_compare(&niche.vec())
+        }
+    }
+}
+
+impl<T: AbstractValue + ParseInline<I>, I: PointInput<Extra = Arc<T::Schema>>> OptionParseInline<I>
+    for Shared<T>
+{
+    fn parse_option_inline(input: &mut I) -> object_rainbow::Result<Option<Self>> {
+        let schema = input.extra().clone();
+        let niche = schema.niche();
+        if niche.needs_tag() {
+            match input.parse_inline::<u8>()? {
+                0xff => Ok(Some(input.parse_inline()?)),
+                0xfe => Ok(None),
+                _ => Err(object_rainbow::Error::OutOfBounds),
+            }
+        } else {
+            input.parse_compare_inline(&niche.vec())
         }
     }
 }
