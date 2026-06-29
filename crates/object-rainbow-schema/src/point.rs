@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Tagged, ToOutput, Topological,
+    CanonicalExtra, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Tagged, ToOutput,
+    Topological,
 };
-use object_rainbow_point::{Extras, IntoPoint, Point};
+use object_rainbow_point::{ExtraPoint, Extras, IntoPoint};
 
 use crate::{
     AbstractSchema, AbstractValue, DefaultSchema, InlineSchema, InlineValue, SchemaNiche,
@@ -36,7 +37,7 @@ impl AbstractSchema for PointSchema {
 impl DefaultSchema<ValuePoint> for PointSchema {
     fn default_value(&self) -> Option<ValuePoint> {
         Some(ValuePoint {
-            schema: Extras(self.schema.clone()),
+            extra: Extras(self.schema.clone()),
             point: Arc::new(self.schema.default_value()?).point(),
         })
     }
@@ -48,20 +49,14 @@ impl From<PointSchema> for InlineSchema {
     }
 }
 
-#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline, PartialEq)]
-pub struct ValuePoint {
-    pub schema: Extras<Arc<TailSchema>>,
-    pub point: Point<Arc<TailValue>>,
-}
-
-impl Tagged for ValuePoint {}
+pub type ValuePoint = ExtraPoint<Arc<TailValue>, Arc<TailSchema>>;
 
 impl AbstractValue for ValuePoint {
     type Schema = PointSchema;
 
     fn schema(&self) -> Self::Schema {
         PointSchema {
-            schema: self.schema.0.clone(),
+            schema: self.extra.canonical_extra(),
         }
     }
 }
