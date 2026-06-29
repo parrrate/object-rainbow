@@ -188,10 +188,10 @@ impl<K: Component, V: Component> Node<K, V> {
                 {
                     Box::pin(sub.get_mut_inner(key, borrower)).await?;
                 }
-                Ok(())
             }
-            _ => Ok(()),
+            _ => {}
         }
+        Ok(())
     }
 
     async fn get_mut(
