@@ -11,7 +11,7 @@ impl ToOutput for NtValue {
         for item in &self.items {
             OptionValue::Some(item.clone()).to_output(output);
         }
-        OptionValue::<InlineValue>::None(self.schema.clone()).to_output(output);
+        self.schema.none_output(output);
     }
 }
 

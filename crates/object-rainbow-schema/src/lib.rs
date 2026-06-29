@@ -36,6 +36,14 @@ pub mod zt;
 
 pub trait AbstractSchema: ReflessInline + Traversible {
     fn niche(&self) -> SchemaNiche;
+    fn none_output(&self, output: &mut impl Output) {
+        let niche = self.niche();
+        if niche.needs_tag() {
+            0xfeu8.to_output(output);
+        } else {
+            niche.to_output(output);
+        }
+    }
 }
 
 pub trait OptionSchema: AbstractSchema {
@@ -470,14 +478,7 @@ impl AbstractValue for InlineValue {
 impl<T: AbstractValue> ToOutput for OptionValue<T> {
     fn to_output(&self, output: &mut impl Output) {
         match self {
-            Self::None(schema) => {
-                let niche = schema.niche();
-                if niche.needs_tag() {
-                    0xfeu8.to_output(output);
-                } else {
-                    niche.to_output(output);
-                }
-            }
+            Self::None(schema) => schema.none_output(output),
             Self::Some(value) => {
                 if value.schema().niche().needs_tag() {
                     0xffu8.to_output(output);
