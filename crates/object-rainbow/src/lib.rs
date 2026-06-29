@@ -49,7 +49,6 @@ pub mod default_chain;
 pub mod default_terminated;
 pub mod enumkind;
 mod error;
-pub mod extra_array;
 pub mod extra_none;
 pub mod extra_none_terminated;
 pub mod extras;
