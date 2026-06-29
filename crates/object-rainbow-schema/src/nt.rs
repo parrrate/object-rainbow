@@ -2,7 +2,7 @@ use object_rainbow::none_terminated::Nt;
 
 use crate::*;
 
-#[derive(Debug, ParseAsInline, ListHashes, Topological, PartialEq)]
+#[derive(Debug, ParseAsInline, ParseInline, ListHashes, Topological, PartialEq)]
 pub struct NtValue {
     pub schema: Arc<InlineSchema>,
     pub items: Nt<Vec<Shared<InlineValue>>>,
@@ -19,18 +19,6 @@ impl ToOutput for NtValue {
 
 impl InlineOutput for NtValue {}
 impl Tagged for NtValue {}
-
-impl<I: PointInput<Extra = Arc<InlineSchema>>> ParseInline<I> for NtValue
-where
-    Option<Shared<InlineValue>>: ParseInline<I>,
-{
-    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        Ok(Self {
-            schema: input.parse_inline()?,
-            items: input.parse_inline()?,
-        })
-    }
-}
 
 impl AbstractValue for NtValue {
     type Schema = InlineSchema;
