@@ -183,16 +183,7 @@ impl AbstractValue for CollectionValue {
     type Schema = CollectionSchema;
 
     fn schema(&self) -> Self::Schema {
-        match *self {
-            #[cfg(feature = "amt")]
-            Self::AmtMap(ref value) => value.schema(),
-            #[cfg(feature = "amt")]
-            Self::AmtSet(ref value) => value.schema(),
-            #[cfg(feature = "hamt")]
-            Self::HamtMap(ref value) => value.schema(),
-            #[cfg(feature = "hamt")]
-            Self::HamtSet(_) => CollectionSchema::HamtSet(()),
-        }
+        self.canonical_extra()
     }
 }
 
