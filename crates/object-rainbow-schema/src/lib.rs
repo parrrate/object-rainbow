@@ -164,22 +164,6 @@ pub enum ValueOption<T: AbstractValue> {
     Some(Arc<T>),
 }
 
-impl<I: PointInput<Extra = Arc<InlineSchema>>> ParseInline<I> for NtValue
-where
-    ValueOption<InlineValue>: ParseInline<I>,
-{
-    fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let mut items = Vec::new();
-        let schema = loop {
-            match input.parse_inline()? {
-                ValueOption::Some(item) => items.push(item),
-                ValueOption::None(schema) => break schema,
-            }
-        };
-        Ok(Self { items, schema })
-    }
-}
-
 #[derive(Debug, ListHashes, Topological, PartialEq)]
 pub struct ValueToA(
     pub MappedExtra<Arc<TailValue>, Extra0>,
