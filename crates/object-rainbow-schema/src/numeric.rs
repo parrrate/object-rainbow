@@ -152,6 +152,8 @@ pub enum NumericValue {
     LpU63(U63),
 }
 
+impl InlineOutput for NumericValue {}
+
 impl NumericValue {
     pub fn index(&self) -> Option<usize> {
         match self {

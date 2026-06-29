@@ -109,8 +109,6 @@ impl AbstractValue for NumericValue {
         }
     }
 }
-
-impl InlineOutput for NumericValue {}
 impl Tagged for NumericValue {}
 
 impl<I: PointInput<Extra = NumericSchema>> ParseInline<I> for NumericValue {
