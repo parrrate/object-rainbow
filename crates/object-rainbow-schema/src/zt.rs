@@ -13,3 +13,9 @@ impl AbstractValue for ZtValue {
         InlineSchema::Zt(self.schema.0.clone())
     }
 }
+
+impl AbstractCollection for ZtValue {
+    fn items(&self) -> Vec<Arc<InlineValue>> {
+        self.value.items()
+    }
+}

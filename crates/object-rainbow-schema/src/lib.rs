@@ -978,12 +978,6 @@ impl<T: AbstractValue + AbstractCollection> AbstractCollection for EnumValue<T> 
     }
 }
 
-impl AbstractCollection for ZtValue {
-    fn items(&self) -> Vec<Arc<InlineValue>> {
-        self.value.items()
-    }
-}
-
 impl AbstractCollection for InlineValue {
     fn items(&self) -> Vec<Arc<InlineValue>> {
         match self {
