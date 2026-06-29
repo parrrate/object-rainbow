@@ -124,6 +124,14 @@ impl<T: AbstractValue> AbstractValue for EnumValue<T> {
     type Schema = EnumSchema<T::Schema>;
 
     fn schema(&self) -> Self::Schema {
+        self.canonical_extra()
+    }
+}
+
+impl<T: AbstractValue> CanonicalExtra for EnumValue<T> {
+    type Extra = EnumSchema<T::Schema>;
+
+    fn canonical_extra(&self) -> Self::Extra {
         EnumSchema {
             kind: self.kind.schema(),
             variants: self.variants.0.clone(),
