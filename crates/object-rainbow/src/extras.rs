@@ -26,3 +26,11 @@ impl<I: PointInput> ParseInline<I> for Extras<I::Extra> {
 impl<Extra> Tagged for Extras<Extra> {}
 impl<Extra> ListHashes for Extras<Extra> {}
 impl<Extra> Topological for Extras<Extra> {}
+
+impl<Extra: Clone> CanonicalExtra for Extras<Extra> {
+    type Extra = Extra;
+
+    fn canonical_extra(&self) -> Self::Extra {
+        self.0.clone()
+    }
+}
