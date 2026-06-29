@@ -945,16 +945,6 @@ impl ItemSizeSchema for TailSchema {
     }
 }
 
-impl ZtValue {
-    pub fn schema_default(schema: Arc<TailSchema>) -> Option<Self> {
-        let value = Zt::new(Arc::new(schema.default_value()?)).ok()?;
-        Some(Self {
-            schema: Extras(schema),
-            value,
-        })
-    }
-}
-
 impl<T: AbstractValue + AbstractCollection> AbstractCollection for ValueOption<T> {
     fn items(&self) -> Vec<Arc<InlineValue>> {
         match self {
