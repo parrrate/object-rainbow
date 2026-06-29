@@ -63,3 +63,5 @@ where
         <&T as IntoIterator>::Item::extra_none_output(&self.extra, output);
     }
 }
+
+impl<T, E> InlineOutput for Ent<T, E> where Self: ToOutput {}
