@@ -2,8 +2,8 @@ use crate::*;
 
 #[derive(Debug, ParseAsInline, ListHashes, Topological, PartialEq)]
 pub struct NtValue {
-    pub items: Vec<Arc<InlineValue>>,
     pub schema: Arc<InlineSchema>,
+    pub items: Vec<Arc<InlineValue>>,
 }
 
 impl ToOutput for NtValue {
@@ -28,7 +28,7 @@ where
         while let Some(Shared(item)) = input.parse_inline()? {
             items.push(item);
         }
-        Ok(Self { items, schema })
+        Ok(Self { schema, items })
     }
 }
 
