@@ -1209,7 +1209,7 @@ fn tuple_of_arrays() -> object_rainbow::Result<()> {
 }
 
 #[test]
-fn toa_se_equiv() -> object_rainbow::Result<()> {
+fn toa_seq_equiv() -> object_rainbow::Result<()> {
     use object_rainbow::{ParseAs, ParseAsExtra};
     let toa_schema = [4, 2, 7, 0, 2, 7, 2].as_slice().parse_as()?;
     let toa_value: TailValue = [1, 2, 3, 4, 5, 6].as_slice().parse_as_extra(&toa_schema)?;
