@@ -19,6 +19,7 @@ use self::point::{PointSchema, ValuePoint};
 use self::{
     array::{ArraySchema, ArrayValue},
     numeric::{NumericSchema, NumericValue},
+    sequence::SequenceValue,
 };
 
 pub mod array;
@@ -206,12 +207,6 @@ where
         };
         Ok(Self { items, schema })
     }
-}
-
-#[derive(Debug, ToOutput, ListHashes, Topological, Parse, PartialEq)]
-pub struct SequenceValue {
-    pub schema: Extras<Arc<InlineSchema>>,
-    pub items: Vec<Arc<InlineValue>>,
 }
 
 impl AbstractCollection for SequenceValue {
