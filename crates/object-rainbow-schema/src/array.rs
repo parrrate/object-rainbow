@@ -29,7 +29,7 @@ impl DefaultSchema<ArrayValue> for ArraySchema {
         Some(ArrayValue {
             items: std::iter::repeat_n(self.schema.default_value().map(Arc::new), self.len as _)
                 .collect::<Option<_>>()?,
-            schema: self.schema.clone(),
+            schema: Extras(self.schema.clone()),
         })
     }
 }
@@ -48,6 +48,6 @@ impl From<ArraySchema> for InlineSchema {
 
 #[derive(Debug, ParseAsInline, ListHashes, Topological, PartialEq)]
 pub struct ArrayValue {
-    pub schema: Arc<InlineSchema>,
+    pub schema: Extras<Arc<InlineSchema>>,
     pub items: Vec<Arc<InlineValue>>,
 }

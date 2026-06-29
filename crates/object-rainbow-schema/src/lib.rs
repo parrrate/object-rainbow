@@ -228,7 +228,7 @@ impl AbstractValue for ArrayValue {
     fn schema(&self) -> Self::Schema {
         ArraySchema {
             len: self.items.len() as _,
-            schema: self.schema.clone(),
+            schema: self.schema.0.clone(),
         }
     }
 }
@@ -243,7 +243,10 @@ where
         for _ in 0..len {
             items.push(input.parse_inline_extra(schema.clone())?);
         }
-        Ok(Self { schema, items })
+        Ok(Self {
+            schema: Extras(schema),
+            items,
+        })
     }
 }
 
