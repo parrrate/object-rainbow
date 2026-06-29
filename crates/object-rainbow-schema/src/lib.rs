@@ -424,7 +424,7 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             #[cfg(not(feature = "point"))]
             Self::Point(_) => None,
             Self::Nt(schema) => Some(InlineValue::Nt(NtValue {
-                schema: Extras(schema.clone()),
+                extra: Extras(schema.clone()),
                 items: Default::default(),
             })),
             Self::Concat(a, b) => Some(InlineValue::Concat(
