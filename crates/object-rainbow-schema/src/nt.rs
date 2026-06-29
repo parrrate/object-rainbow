@@ -25,9 +25,8 @@ where
     Option<Shared<InlineValue>>: ParseInline<I>,
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let schema = input.extra().clone();
         Ok(Self {
-            schema,
+            schema: input.parse_inline()?,
             items: input.parse_inline()?,
         })
     }
