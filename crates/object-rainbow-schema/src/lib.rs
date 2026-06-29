@@ -4,6 +4,7 @@ use object_rainbow::{
     Enum, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse, ParseAsInline,
     ParseInline, PointInput, ReflessInline, Tagged, ToOutput, Topological, Traversible,
     assert_impl,
+    extra_none::{ExtraNone, ExtraNoneOutput},
     extras::Extras,
     length_prefixed::LpVec,
     map_extra::MappedExtra,
@@ -1029,3 +1030,24 @@ fn toa_seq_equiv() -> object_rainbow::Result<()> {
 }
 
 pub struct Shared<T>(pub Arc<T>);
+
+impl<T: AbstractValue> ExtraNoneOutput<Arc<T::Schema>> for Shared<T> {
+    fn extra_none_output(option: &ExtraNone<Self, Arc<T::Schema>>, output: &mut impl Output) {
+        match option {
+            ExtraNone::None(schema) => {
+                let niche = schema.niche();
+                if niche.needs_tag() {
+                    0xfeu8.to_output(output);
+                } else {
+                    niche.to_output(output);
+                }
+            }
+            ExtraNone::Some(Shared(value)) => {
+                if value.schema().niche().needs_tag() {
+                    0xffu8.to_output(output);
+                }
+                value.to_output(output);
+            }
+        }
+    }
+}
