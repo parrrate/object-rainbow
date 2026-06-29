@@ -15,7 +15,7 @@ where
     }
 }
 
-impl<T: IntoIterator> IntoIterator for Ent<T> {
+impl<T: IntoIterator, E> IntoIterator for Ent<T, E> {
     type Item = T::Item;
 
     type IntoIter = T::IntoIter;
