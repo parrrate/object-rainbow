@@ -36,9 +36,9 @@ impl<T: OptionOutput, E> ExtraNoneOutput<E> for T {
     }
 }
 
-impl<T: OptionOutput, E> ToOutput for ExtraNone<T, E> {
+impl<T: ExtraNoneOutput<E>, E> ToOutput for ExtraNone<T, E> {
     fn to_output(&self, output: &mut impl Output) {
-        T::to_option_output(self.as_ref(), output);
+        T::extra_none_output(self, output);
     }
 }
 
