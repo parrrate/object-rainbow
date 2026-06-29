@@ -1,9 +1,9 @@
 use std::{convert::Infallible, ops::Deref, sync::Arc};
 
 use object_rainbow::{
-    Enum, Inline, InlineOutput, ListHashes, MaybeHasNiche, OptionParse, OptionParseInline, Output,
-    Parse, ParseAsInline, ParseInline, PointInput, ReflessInline, Tagged, ToOutput, Topological,
-    Traversible, assert_impl,
+    CanonicalExtra, Enum, Inline, InlineOutput, ListHashes, MaybeHasNiche, OptionParse,
+    OptionParseInline, Output, Parse, ParseAsInline, ParseInline, PointInput, ReflessInline,
+    Tagged, ToOutput, Topological, Traversible, assert_impl,
     extra_none::ExtraNoneOutput,
     extras::Extras,
     length_prefixed::LpVec,
@@ -1001,5 +1001,13 @@ impl<T: AbstractValue + ParseInline<I>, I: PointInput<Extra = Arc<T::Schema>>> O
         } else {
             input.parse_compare_inline(&niche.vec())
         }
+    }
+}
+
+impl<T: AbstractValue> CanonicalExtra for Shared<T> {
+    type Extra = Arc<T::Schema>;
+
+    fn canonical_extra(&self) -> Self::Extra {
+        Arc::new(self.schema())
     }
 }
