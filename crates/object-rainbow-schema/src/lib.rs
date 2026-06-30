@@ -18,6 +18,7 @@ use self::collections::{CollectionSchema, CollectionValue};
 use self::point::{PointSchema, ValuePoint};
 use self::{
     array::{ArraySchema, ArrayValue},
+    map::InlineMap,
     nt::NtValue,
     numeric::{NumericSchema, NumericValue},
     option::OptionValue,
@@ -146,6 +147,7 @@ pub enum InlineSchema {
     Zt(Arc<TailSchema>),
     InlineSchema,
     TailSchema,
+    Map,
 }
 
 impl InlineOutput for InlineSchema {}
@@ -242,6 +244,7 @@ pub enum InlineValue {
     Zt(ZtValue),
     InlineSchema(Arc<InlineSchema>),
     TailSchema(Arc<TailSchema>),
+    Map(Arc<InlineMap>),
 }
 
 impl InlineOutput for InlineValue {}
@@ -408,6 +411,7 @@ impl AbstractSchema for InlineSchema {
             Self::Zt(_) => SchemaNiche::Cut,
             Self::InlineSchema => SchemaNiche::Cut,
             Self::TailSchema => SchemaNiche::Cut,
+            Self::Map => SchemaNiche::Cut,
         }
     }
 }
@@ -446,6 +450,7 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             Self::Zt(schema) => zt_schema_default(schema.clone()).map(From::from),
             Self::InlineSchema => Some(InlineValue::InlineSchema(Arc::new(InlineSchema::Unit))),
             Self::TailSchema => Some(InlineValue::TailSchema(Arc::new(TailSchema::Cut))),
+            Self::Map => None,
         }
     }
 }
@@ -466,6 +471,7 @@ impl DefaultIsMin for InlineSchema {
             Self::Zt(schema) => schema.default_is_min(),
             Self::InlineSchema => false,
             Self::TailSchema => false,
+            Self::Map => false,
         }
     }
 }
@@ -488,6 +494,7 @@ impl AbstractValue for InlineValue {
             Self::Zt(z) => z.schema(),
             Self::InlineSchema(_) => InlineSchema::InlineSchema,
             Self::TailSchema(_) => InlineSchema::TailSchema,
+            Self::Map(_) => InlineSchema::Map,
         }
     }
 }
@@ -630,6 +637,7 @@ impl<
             InlineSchema::Zt(schema) => Self::Zt(input.parse_inline_extra(schema.clone())?),
             InlineSchema::InlineSchema => Self::InlineSchema(input.parse_inline()?),
             InlineSchema::TailSchema => Self::TailSchema(input.parse_inline()?),
+            InlineSchema::Map => Self::InlineSchema(input.parse_inline()?),
         })
     }
 }
@@ -694,6 +702,7 @@ impl SizeSchema for InlineSchema {
             Self::Zt(_) => None,
             Self::InlineSchema => None,
             Self::TailSchema => None,
+            Self::Map => None,
         }
     }
 }
@@ -736,6 +745,7 @@ impl AbstractCollection for InlineValue {
             Self::Zt(value) => value.items(),
             Self::InlineSchema(_) => Vec::new(),
             Self::TailSchema(_) => Vec::new(),
+            Self::Map(_) => Vec::new(),
         }
     }
 }
