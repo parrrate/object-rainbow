@@ -1,1 +1,3 @@
-pub enum InlineMap {}
+pub enum InlineMap {
+    I,
+}
