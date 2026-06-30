@@ -6,7 +6,9 @@ use object_rainbow::{
 
 use crate::InlineValue;
 
-#[derive(Enum, Debug, ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline)]
+#[derive(
+    Enum, Debug, ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline, PartialEq,
+)]
 pub enum InlineMap {
     I,
     K1(Arc<InlineValue>),
