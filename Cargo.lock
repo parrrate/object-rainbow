@@ -1647,7 +1647,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-amt"
-version = "0.0.0-a.7"
+version = "0.0.0-a.8"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1712,7 +1712,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-derive"
-version = "0.0.0-a.22"
+version = "0.0.0-a.23"
 dependencies = [
  "darling",
  "object-rainbow",
@@ -1781,7 +1781,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.33"
+version = "0.0.0-a.34"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1798,7 +1798,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history-store"
-version = "0.0.0-a.7"
+version = "0.0.0-a.8"
 dependencies = [
  "anyhow",
  "object-rainbow",
@@ -1862,14 +1862,14 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-parse-prefix"
-version = "0.0.0-a.5"
+version = "0.0.0-a.6"
 dependencies = [
  "object-rainbow",
 ]
 
 [[package]]
 name = "object-rainbow-point"
-version = "0.0.0-a.14"
+version = "0.0.0-a.15"
 dependencies = [
  "futures-util",
  "object-rainbow",
@@ -1878,7 +1878,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-schema"
-version = "0.0.0-a.0"
+version = "0.0.0-a.1"
 dependencies = [
  "object-rainbow",
  "object-rainbow-amt",
