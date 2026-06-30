@@ -6,6 +6,7 @@ use crate::InlineValue;
 
 pub enum InlineMap {
     I,
+    K1(Arc<InlineValue>),
 }
 
 impl Map<Arc<InlineValue>> for InlineMap {
@@ -14,6 +15,7 @@ impl Map<Arc<InlineValue>> for InlineMap {
     fn map(&self, value: Arc<InlineValue>) -> Self::Mapped {
         match self {
             Self::I => value,
+            Self::K1(value) => value.clone(),
         }
     }
 }
