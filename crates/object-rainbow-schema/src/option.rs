@@ -14,9 +14,6 @@ impl<T: AbstractValue<Schema: OptionSchema>> AbstractValue for OptionValue<T> {
 
 impl<T: AbstractValue + AbstractCollection> AbstractCollection for OptionValue<T> {
     fn items(&self) -> Vec<Arc<InlineValue>> {
-        match self {
-            Self::None(_) => Vec::new(),
-            Self::Some(value) => value.items(),
-        }
+        self.as_ref().map(|value| value.items()).unwrap_or_default()
     }
 }
