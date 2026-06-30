@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
-use object_rainbow::{Enum, ToOutput, map_extra::Map};
+use object_rainbow::{Enum, InlineOutput, ToOutput, map_extra::Map};
 
 use crate::InlineValue;
 
-#[derive(Enum, Debug, ToOutput)]
+#[derive(Enum, Debug, ToOutput, InlineOutput)]
 pub enum InlineMap {
     I,
     K1(Arc<InlineValue>),
