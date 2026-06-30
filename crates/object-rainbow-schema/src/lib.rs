@@ -4,7 +4,7 @@ use object_rainbow::{
     CanonicalExtra, Enum, Inline, InlineOutput, ListHashes, MaybeHasNiche, OptionParse,
     OptionParseInline, Output, Parse, ParseAsInline, ParseInline, PointInput, ReflessInline,
     Tagged, ToOutput, Topological, Traversible, assert_impl,
-    extra_none::ExtraNoneOutput,
+    extra_option::ExtraNoneOutput,
     extras::Extras,
     length_prefixed::LpVec,
     map_extra::MappedExtra,

@@ -2,12 +2,12 @@ use crate::{extras::Extras, *};
 
 #[derive(Enum, Debug, Clone, PartialEq, ListHashes, Topological, Tagged)]
 #[rainbow(untagged)]
-pub enum ExtraNone<T, E = ()> {
+pub enum ExtraOption<T, E = ()> {
     Some(T),
     None(Extras<E>),
 }
 
-impl<T, E> ExtraNone<T, E> {
+impl<T, E> ExtraOption<T, E> {
     pub fn as_ref(&self) -> Option<&T> {
         match self {
             Self::Some(value) => Some(value),
@@ -30,10 +30,10 @@ impl<T, E> ExtraNone<T, E> {
 pub trait ExtraNoneOutput<E>: Sized {
     fn extra_some_output(&self, output: &mut impl Output);
     fn extra_none_output(extra: &E, output: &mut impl Output);
-    fn extra_option_output(option: &ExtraNone<Self, E>, output: &mut impl Output) {
+    fn extra_option_output(option: &ExtraOption<Self, E>, output: &mut impl Output) {
         match option {
-            ExtraNone::Some(value) => value.extra_some_output(output),
-            ExtraNone::None(extra) => Self::extra_none_output(extra, output),
+            ExtraOption::Some(value) => value.extra_some_output(output),
+            ExtraOption::None(extra) => Self::extra_none_output(extra, output),
         }
     }
 }
@@ -47,32 +47,32 @@ impl<T: OptionOutput, E> ExtraNoneOutput<E> for T {
         T::to_option_output(None, output);
     }
 
-    fn extra_option_output(option: &ExtraNone<Self, E>, output: &mut impl Output) {
+    fn extra_option_output(option: &ExtraOption<Self, E>, output: &mut impl Output) {
         T::to_option_output(option.as_ref(), output);
     }
 }
 
-impl<T: ExtraNoneOutput<E>, E> ToOutput for ExtraNone<T, E> {
+impl<T: ExtraNoneOutput<E>, E> ToOutput for ExtraOption<T, E> {
     fn to_output(&self, output: &mut impl Output) {
         T::extra_option_output(self, output);
     }
 }
 
-impl<T: OptionOutput + InlineOutput, E> InlineOutput for ExtraNone<T, E> {}
+impl<T: OptionOutput + InlineOutput, E> InlineOutput for ExtraOption<T, E> {}
 
-impl<T: OptionParse<I>, I: PointInput> Parse<I> for ExtraNone<T, I::Extra> {
+impl<T: OptionParse<I>, I: PointInput> Parse<I> for ExtraOption<T, I::Extra> {
     fn parse(input: I) -> crate::Result<Self> {
         input.parse().map(Self::from_tuple)
     }
 }
 
-impl<T: OptionParseInline<I>, I: PointInput> ParseInline<I> for ExtraNone<T, I::Extra> {
+impl<T: OptionParseInline<I>, I: PointInput> ParseInline<I> for ExtraOption<T, I::Extra> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         input.parse_inline().map(Self::from_tuple)
     }
 }
 
-impl<T: CanonicalExtra<Extra = E>, E: Clone> CanonicalExtra for ExtraNone<T, E> {
+impl<T: CanonicalExtra<Extra = E>, E: Clone> CanonicalExtra for ExtraOption<T, E> {
     type Extra = T::Extra;
 
     fn canonical_extra(&self) -> Self::Extra {

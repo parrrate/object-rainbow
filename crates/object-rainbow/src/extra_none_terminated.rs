@@ -1,4 +1,4 @@
-use crate::{extra_none::ExtraNoneOutput, extras::Extras, none_terminated::Nt, *};
+use crate::{extra_option::ExtraNoneOutput, extras::Extras, none_terminated::Nt, *};
 
 #[derive(Debug, ListHashes, Topological, Parse, ParseInline, Tagged)]
 pub struct Ent<T, E = ()> {

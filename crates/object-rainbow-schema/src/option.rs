@@ -1,8 +1,8 @@
-use object_rainbow::extra_none::ExtraNone;
+use object_rainbow::extra_option::ExtraOption;
 
 use crate::*;
 
-pub type OptionValue<T> = ExtraNone<Shared<T>, Arc<<T as AbstractValue>::Schema>>;
+pub type OptionValue<T> = ExtraOption<Shared<T>, Arc<<T as AbstractValue>::Schema>>;
 
 impl<T: AbstractValue<Schema: OptionSchema>> AbstractValue for OptionValue<T> {
     type Schema = T::Schema;
