@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    ToOutput, inline_extra::InlineExtra, map_extra::MappedExtra, tuple_extra::Extra0,
+    InlineOutput, ToOutput, inline_extra::InlineExtra, map_extra::MappedExtra, tuple_extra::Extra0,
 };
 
 use crate::{InlineSchema, InlineValue};
 
-#[derive(Debug, ToOutput)]
+#[derive(Debug, ToOutput, InlineOutput)]
 pub struct InlineDynamic(
     pub MappedExtra<MappedExtra<Arc<InlineSchema>, Extra0>, InlineExtra<Arc<InlineValue>>>,
 );
