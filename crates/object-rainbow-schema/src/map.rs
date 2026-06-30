@@ -4,6 +4,7 @@ use object_rainbow::map_extra::Map;
 
 use crate::InlineValue;
 
+#[derive(Debug)]
 pub enum InlineMap {
     I,
     K1(Arc<InlineValue>),
