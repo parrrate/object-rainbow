@@ -4,12 +4,11 @@
 
 use futures_util::TryStreamExt;
 use object_rainbow::{
-    Component, Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline,
-    Size, Tagged, ToOutput, Topological, Traversible, assert_impl,
+    Component, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline, Size,
+    Tagged, ToOutput, Topological, Traversible, assert_impl,
 };
 use object_rainbow_apply::Apply;
 use object_rainbow_chain_tree::ChainTree;
-use object_rainbow_point::Point;
 
 pub mod enforce_unique;
 pub mod remap;
@@ -138,34 +137,5 @@ impl<T: Component + Default + Apply<D>, D: Clone + Traversible> Apply<D> for His
         diff: D,
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
         self.commit(diff)
-    }
-}
-
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Default,
-)]
-pub struct Points<T>(pub T);
-
-impl<T: Apply<D>, D: Send + Traversible> Apply<Point<D>> for Points<T> {
-    type Output = T::Output;
-
-    async fn apply(&mut self, diff: Point<D>) -> object_rainbow::Result<Self::Output> {
-        self.0.apply(diff.fetch().await?).await
     }
 }

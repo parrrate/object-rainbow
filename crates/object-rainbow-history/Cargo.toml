@@ -13,7 +13,6 @@ object-rainbow.workspace = true
 object-rainbow-apply.workspace = true
 object-rainbow-chain-tree.workspace = true
 object-rainbow-hamt = { workspace = true, optional = true }
-object-rainbow-point.workspace = true
 
 futures-util.workspace = true
 thiserror.workspace = true

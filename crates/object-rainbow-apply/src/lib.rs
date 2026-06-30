@@ -13,7 +13,7 @@ mod amt;
 #[cfg(feature = "hamt")]
 mod hamt;
 #[cfg(feature = "point")]
-mod point;
+pub mod point;
 #[cfg(feature = "trie")]
 mod trie;
 
