@@ -60,9 +60,9 @@ impl<T, M> DerefMut for MappedExtra<T, M> {
 }
 
 #[derive_for_wrapped]
-pub trait MapExtra<Extra: 'static + Clone = ()> {
+pub trait MapExtra<Arg: 'static + Clone = ()> {
     type Mapped: 'static + Clone;
-    fn map(&self, extra: Extra) -> Self::Mapped;
+    fn map(&self, arg: Arg) -> Self::Mapped;
 }
 
 impl<
