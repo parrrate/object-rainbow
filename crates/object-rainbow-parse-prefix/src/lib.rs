@@ -247,7 +247,7 @@ pub struct WithBytes(pub LpBytes);
 impl<E: 'static + Clone> MapExtra<(Prefix, E)> for WithBytes {
     type Mapped = (Prefix, E);
 
-    fn map_extra(&self, (prefix, e): (Prefix, E)) -> Self::Mapped {
+    fn map(&self, (prefix, e): (Prefix, E)) -> Self::Mapped {
         (prefix.with(self.0.0.clone()), e)
     }
 }

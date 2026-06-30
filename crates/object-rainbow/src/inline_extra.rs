@@ -9,7 +9,7 @@ pub struct InlineExtra<Extra = ()>(pub Extra);
 impl<E: 'static + Clone, X: 'static + Clone> MapExtra<X> for InlineExtra<E> {
     type Mapped = (E, X);
 
-    fn map_extra(&self, extra: X) -> Self::Mapped {
+    fn map(&self, extra: X) -> Self::Mapped {
         (self.0.clone(), extra)
     }
 }

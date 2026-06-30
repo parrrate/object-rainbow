@@ -62,7 +62,7 @@ impl<T, M> DerefMut for MappedExtra<T, M> {
 #[derive_for_wrapped]
 pub trait MapExtra<Extra: 'static + Clone = ()> {
     type Mapped: 'static + Clone;
-    fn map_extra(&self, extra: Extra) -> Self::Mapped;
+    fn map(&self, extra: Extra) -> Self::Mapped;
 }
 
 impl<
@@ -77,7 +77,7 @@ impl<
     fn parse(mut input: I) -> crate::Result<Self> {
         let m = input.parse_inline::<M>()?;
         let x = input.extra().clone();
-        let t = input.parse_extra(m.map_extra(x))?;
+        let t = input.parse_extra(m.map(x))?;
         Ok(Self(m, t))
     }
 }
@@ -94,7 +94,7 @@ impl<
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         let m = input.parse_inline::<M>()?;
         let x = input.extra().clone();
-        let t = input.parse_inline_extra(m.map_extra(x))?;
+        let t = input.parse_inline_extra(m.map(x))?;
         Ok(Self(m, t))
     }
 }
@@ -182,7 +182,7 @@ impl<M, I: ParseInput> ParseInline<I> for SmExtra<M> {
 impl<M: StaticMap<E, Mapped: 'static + Clone>, E: 'static + Clone> MapExtra<E> for SmExtra<M> {
     type Mapped = M::Mapped;
 
-    fn map_extra(&self, e: E) -> Self::Mapped {
+    fn map(&self, e: E) -> Self::Mapped {
         M::static_map(e)
     }
 }
