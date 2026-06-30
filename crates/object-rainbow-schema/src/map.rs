@@ -12,6 +12,7 @@ use crate::{InlineValue, dynamic::InlineDynamic};
 pub enum InlineMap {
     I,
     K1(InlineDynamic),
+    K,
 }
 
 impl Map<Arc<InlineValue>> for InlineMap {
@@ -21,6 +22,9 @@ impl Map<Arc<InlineValue>> for InlineMap {
         match self {
             Self::I => value,
             Self::K1(value) => value.value(),
+            Self::K => Arc::new(InlineValue::Map(Arc::new(Self::K1(InlineDynamic::new(
+                value,
+            ))))),
         }
     }
 }
