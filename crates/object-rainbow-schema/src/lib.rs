@@ -29,6 +29,7 @@ use self::{
 pub mod array;
 #[cfg(feature = "_collections")]
 pub mod collections;
+pub mod map;
 pub mod nt;
 pub mod numeric;
 pub mod option;
