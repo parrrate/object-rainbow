@@ -3,7 +3,7 @@ use crate::{extras::Extras, *};
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExtraNone<T, E = ()> {
     Some(T),
-    None(E),
+    None(Extras<E>),
 }
 
 impl<T, E> ExtraNone<T, E> {
@@ -14,14 +14,14 @@ impl<T, E> ExtraNone<T, E> {
         }
     }
 
-    pub fn new(extra: E, value: Option<T>) -> Self {
+    pub fn new(extra: Extras<E>, value: Option<T>) -> Self {
         match value {
             Some(value) => Self::Some(value),
             None => Self::None(extra),
         }
     }
 
-    pub fn from_tuple((Extras(extra), value): (Extras<E>, Option<T>)) -> Self {
+    pub fn from_tuple((extra, value): (Extras<E>, Option<T>)) -> Self {
         Self::new(extra, value)
     }
 }
@@ -93,7 +93,7 @@ impl<T: CanonicalExtra<Extra = E>, E: Clone> CanonicalExtra for ExtraNone<T, E> 
     fn canonical_extra(&self) -> Self::Extra {
         match self {
             Self::Some(value) => value.canonical_extra(),
-            Self::None(extra) => extra.clone(),
+            Self::None(extra) => extra.canonical_extra(),
         }
     }
 }

@@ -415,7 +415,9 @@ impl DefaultSchema<InlineValue> for InlineSchema {
         match self {
             Self::Never => None,
             Self::Unit => Some(InlineValue::Unit),
-            Self::Option(schema) => Some(InlineValue::Option(OptionValue::None(schema.clone()))),
+            Self::Option(schema) => Some(InlineValue::Option(OptionValue::None(Extras(
+                schema.clone(),
+            )))),
             #[cfg(feature = "point")]
             Self::Point(schema) => schema.default_value().map(From::from),
             #[cfg(not(feature = "point"))]
@@ -511,7 +513,9 @@ impl DefaultSchema<TailValue> for TailSchema {
     fn default_value(&self) -> Option<TailValue> {
         match self {
             Self::Cut => Some(TailValue::Cut),
-            Self::Option(schema) => Some(TailValue::Option(OptionValue::None(schema.clone()))),
+            Self::Option(schema) => {
+                Some(TailValue::Option(OptionValue::None(Extras(schema.clone()))))
+            }
             Self::Sequence(schema) => Some(TailValue::Sequence((
                 Extras(schema.clone()),
                 Default::default(),
