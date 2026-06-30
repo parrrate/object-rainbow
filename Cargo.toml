@@ -3,6 +3,7 @@ members = [
     "crates/object-rainbow",
     "crates/object-rainbow-amt",
     "crates/object-rainbow-append-tree",
+    "crates/object-rainbow-apply",
     "crates/object-rainbow-array-map",
     "crates/object-rainbow-chain-tree",
     "crates/object-rainbow-derive",
@@ -39,6 +40,7 @@ authors = ["Alisa Feistel <alisafeistel@gmail.com>"]
 object-rainbow = { version = "0.0.0-a.67", path = "crates/object-rainbow" }
 object-rainbow-amt = { version = "0.0.0-a.7", path = "crates/object-rainbow-amt" }
 object-rainbow-append-tree = { version = "0.0.0-a.14", path = "crates/object-rainbow-append-tree" }
+object-rainbow-apply = { version = "0.0.0-a.0", path = "crates/object-rainbow-apply" }
 object-rainbow-array-map = { version = "0.0.0-a.13", path = "crates/object-rainbow-array-map" }
 object-rainbow-chain-tree = { version = "0.0.0-a.11", path = "crates/object-rainbow-chain-tree" }
 object-rainbow-encrypted = { version = "0.0.0-a.20", path = "crates/object-rainbow-encrypted" }

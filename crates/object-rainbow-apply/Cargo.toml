@@ -1,0 +1,29 @@
+[package]
+name = "object-rainbow-apply"
+version = "0.0.0-a.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "asynchronous map trait for object-rainbow-history"
+
+[dependencies]
+object-rainbow.workspace = true
+object-rainbow-amt = { workspace = true, optional = true }
+object-rainbow-hamt = { workspace = true, optional = true }
+object-rainbow-point = { workspace = true, optional = true }
+object-rainbow-trie = { workspace = true, optional = true }
+
+futures-util.workspace = true
+
+[features]
+amt = ["dep:object-rainbow-amt"]
+hamt = ["dep:object-rainbow-hamt"]
+point = ["dep:object-rainbow-point"]
+trie = ["dep:object-rainbow-trie"]
+
+[dev-dependencies]
+macro_rules_attribute.workspace = true
+smol.workspace = true
+smol-macros.workspace = true

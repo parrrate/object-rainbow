@@ -3,9 +3,10 @@ use object_rainbow::{
     assert_impl,
     map_extra::{Return, ToHash},
 };
+use object_rainbow_apply::Apply;
 use object_rainbow_hamt::HamtSet;
 
-use crate::{Apply, Parallel, Sequential, skip::FilterDiffs};
+use crate::{Parallel, Sequential, skip::FilterDiffs};
 
 #[derive(
     ToOutput,

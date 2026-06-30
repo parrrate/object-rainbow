@@ -1,6 +1,5 @@
 use object_rainbow::{InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological};
-
-use crate::Apply;
+use object_rainbow_apply::Apply;
 
 pub trait Collision<Diff: Send, State>: Send + Sized {
     type Output: Send;

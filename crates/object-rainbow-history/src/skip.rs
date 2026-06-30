@@ -2,8 +2,7 @@ use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
     Topological,
 };
-
-use crate::Apply;
+use object_rainbow_apply::Apply;
 
 #[derive(
     Debug,

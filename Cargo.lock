@@ -1673,6 +1673,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "object-rainbow-apply"
+version = "0.0.0-a.0"
+dependencies = [
+ "futures-util",
+ "macro_rules_attribute",
+ "object-rainbow",
+ "object-rainbow-amt",
+ "object-rainbow-hamt",
+ "object-rainbow-point",
+ "object-rainbow-trie",
+ "smol",
+ "smol-macros",
+]
+
+[[package]]
 name = "object-rainbow-array-map"
 version = "0.0.0-a.13"
 dependencies = [
@@ -1771,6 +1786,7 @@ dependencies = [
  "macro_rules_attribute",
  "object-rainbow",
  "object-rainbow-amt",
+ "object-rainbow-apply",
  "object-rainbow-chain-tree",
  "object-rainbow-hamt",
  "object-rainbow-point",
@@ -1787,6 +1803,7 @@ version = "0.0.0-a.7"
 dependencies = [
  "anyhow",
  "object-rainbow",
+ "object-rainbow-apply",
  "object-rainbow-history",
  "object-rainbow-store",
  "object-rainbow-store-opendal",

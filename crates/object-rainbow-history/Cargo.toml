@@ -10,23 +10,22 @@ description = "Git-ish diff-by-diff change history"
 
 [dependencies]
 object-rainbow.workspace = true
-object-rainbow-amt = { workspace = true, optional = true }
+object-rainbow-apply.workspace = true
 object-rainbow-chain-tree.workspace = true
 object-rainbow-hamt = { workspace = true, optional = true }
 object-rainbow-point.workspace = true
-object-rainbow-trie = { workspace = true, optional = true }
 
 futures-util.workspace = true
 thiserror.workspace = true
 
 [features]
-amt = ["dep:object-rainbow-amt"]
-hamt = ["dep:object-rainbow-hamt"]
-trie = ["dep:object-rainbow-trie"]
-unique-diffs = ["hamt"]
+unique-diffs = ["object-rainbow-apply/hamt", "dep:object-rainbow-hamt"]
 
 [dev-dependencies]
 object-rainbow = { workspace = true, features = ["ulid"] }
+object-rainbow-amt.workspace = true
+object-rainbow-apply = { workspace = true, features = ["amt", "trie"] }
+object-rainbow-trie.workspace = true
 
 macro_rules_attribute.workspace = true
 smol.workspace = true

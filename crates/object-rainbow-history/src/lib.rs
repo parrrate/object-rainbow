@@ -5,22 +5,15 @@
 use futures_util::TryStreamExt;
 use object_rainbow::{
     Component, Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline,
-    Size, Tagged, ToOutput, Topological, Traversible, assert_impl, derive_for_wrapped,
-    map_extra::{SmExtra, StaticMap},
-    tuple_extra::ToTuple2,
+    Size, Tagged, ToOutput, Topological, Traversible, assert_impl, tuple_extra::ToTuple2,
 };
+use object_rainbow_apply::Apply;
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
 
-#[cfg(feature = "amt")]
-mod amt;
 pub mod enforce_unique;
-#[cfg(feature = "hamt")]
-mod hamt;
 pub mod remap;
 pub mod skip;
-#[cfg(feature = "trie")]
-mod trie;
 #[cfg(feature = "unique-diffs")]
 pub mod unique_diffs;
 
@@ -59,16 +52,6 @@ impl<T, D> History<T, D> {
     pub const fn new() -> Self {
         Self::ROOT
     }
-}
-
-#[derive_for_wrapped]
-pub trait Apply<Diff: Send>: Send {
-    type Output: Send;
-    /// Must stay isomorphic under [`Equivalent`] conversions.
-    fn apply(
-        &mut self,
-        diff: Diff,
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>>;
 }
 
 impl<T: Component + Default + Apply<D>, D: Clone + Traversible> History<T, D> {
@@ -264,42 +247,4 @@ impl<Diff: Send, First: Apply<Diff>, Second: Apply<First::Output>> Apply<Diff>
     }
 }
 
-impl Apply<()> for () {
-    type Output = ();
-
-    fn apply(
-        &mut self,
-        (): (),
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        futures_util::future::ready(Ok(()))
-    }
-}
-
-impl<A: Apply<DiffA>, B: Apply<DiffB>, DiffA: Send, DiffB: Send> Apply<(DiffA, DiffB)> for (A, B) {
-    type Output = (A::Output, B::Output);
-
-    fn apply(
-        &mut self,
-        (a, b): (DiffA, DiffB),
-    ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        futures_util::future::try_join(self.0.apply(a), self.1.apply(b))
-    }
-}
-
-impl<T: Clone + Traversible + Apply<D>, D: Send> Apply<D> for Point<T> {
-    type Output = T::Output;
-
-    async fn apply(&mut self, diff: D) -> object_rainbow::Result<Self::Output> {
-        self.fetch_mut().await?.apply(diff).await
-    }
-}
-
 pub type Parallel<A, B> = Sequential<ToTuple2, (A, B)>;
-
-impl<M: Send + StaticMap<D, Mapped: Send>, D: Send> Apply<D> for SmExtra<M> {
-    type Output = M::Mapped;
-
-    fn apply(&mut self, d: D) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        core::future::ready(Ok(M::static_map(d)))
-    }
-}

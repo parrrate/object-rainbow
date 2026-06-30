@@ -1,7 +1,8 @@
 use std::{marker::PhantomData, sync::Arc};
 
 use object_rainbow::{Fetch, Inline, Object};
-use object_rainbow_history::{Apply, History};
+use object_rainbow_apply::Apply;
+use object_rainbow_history::History;
 use object_rainbow_store::{RainbowStoreMut, StoreMut};
 
 pub struct HistoryStore<T, D, S, Extra = ()> {

@@ -10,11 +10,13 @@ description = "object-rainbow-{history+store} integration"
 
 [dependencies]
 object-rainbow.workspace = true
+object-rainbow-apply.workspace = true
 object-rainbow-history.workspace = true
 object-rainbow-store.workspace = true
 
 [dev-dependencies]
-object-rainbow-history = { workspace = true, features = ["trie"] }
+object-rainbow-apply = { workspace = true, features = ["trie"] }
+object-rainbow-history.workspace = true
 object-rainbow-store-opendal.workspace = true
 object-rainbow-trie.workspace = true
 
