@@ -2414,6 +2414,7 @@ pub fn derive_for_wrapped(args: TokenStream, input: TokenStream) -> TokenStream 
             .collect::<Vec<_>>();
         let extra = extra.into_iter().map(|(k, _)| k);
         derived.push(quote! {
+            #[automatically_derived]
             impl #impl_generics #name #ty_generics for ::object_rainbow::#path<
                 __T,
                 #(#extra),*
