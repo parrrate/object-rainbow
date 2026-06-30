@@ -7,7 +7,7 @@ use object_rainbow::{
     Component, Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline,
     Size, Tagged, ToOutput, Topological, Traversible, assert_impl, tuple_extra::ToTuple2,
 };
-use object_rainbow_apply::Apply;
+use object_rainbow_apply::{Apply, Sequential};
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
 
@@ -202,48 +202,6 @@ impl<T: Apply<D>, D: Send + Traversible> Apply<Point<D>> for Points<T> {
 
     async fn apply(&mut self, diff: Point<D>) -> object_rainbow::Result<Self::Output> {
         self.0.apply(diff.fetch().await?).await
-    }
-}
-
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Default,
-)]
-pub struct Sequential<First, Second> {
-    first: First,
-    second: Second,
-}
-
-impl<First, Second> Sequential<First, Second> {
-    pub fn first(&self) -> &First {
-        &self.first
-    }
-
-    pub fn second(&self) -> &Second {
-        &self.second
-    }
-}
-
-impl<Diff: Send, First: Apply<Diff>, Second: Apply<First::Output>> Apply<Diff>
-    for Sequential<First, Second>
-{
-    type Output = Second::Output;
-
-    async fn apply(&mut self, diff: Diff) -> object_rainbow::Result<Self::Output> {
-        self.second.apply(self.first.apply(diff).await?).await
     }
 }
 

@@ -6,9 +6,9 @@ use object_rainbow::{
     zero_terminated::Zt,
 };
 use object_rainbow_amt::{AmtMap, AmtSet};
-use object_rainbow_apply::Apply;
+use object_rainbow_apply::{Apply, Sequential};
 use object_rainbow_history::{
-    FromIter, Parallel, Sequential,
+    FromIter, Parallel,
     remap::{MappedToSet, ToSet},
 };
 use smol_macros::main;

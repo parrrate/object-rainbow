@@ -2,7 +2,8 @@ use core::future::ready;
 
 use futures_util::future::try_join;
 use object_rainbow::{
-    derive_for_wrapped,
+    InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
+    Topological, derive_for_wrapped,
     map_extra::{SmExtra, StaticMap},
 };
 
@@ -52,5 +53,47 @@ impl<M: Send + StaticMap<D, Mapped: Send>, D: Send> Apply<D> for SmExtra<M> {
 
     fn apply(&mut self, d: D) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
         core::future::ready(Ok(M::static_map(d)))
+    }
+}
+
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Size,
+    MaybeHasNiche,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Default,
+)]
+pub struct Sequential<First, Second> {
+    first: First,
+    second: Second,
+}
+
+impl<First, Second> Sequential<First, Second> {
+    pub fn first(&self) -> &First {
+        &self.first
+    }
+
+    pub fn second(&self) -> &Second {
+        &self.second
+    }
+}
+
+impl<Diff: Send, First: Apply<Diff>, Second: Apply<First::Output>> Apply<Diff>
+    for Sequential<First, Second>
+{
+    type Output = Second::Output;
+
+    async fn apply(&mut self, diff: Diff) -> object_rainbow::Result<Self::Output> {
+        self.second.apply(self.first.apply(diff).await?).await
     }
 }
