@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological,
+    CanonicalExtra, InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological,
     inline_extra::InlineExtra, map_extra::MappedExtra, tuple_extra::Extra0,
 };
 
@@ -15,6 +15,13 @@ pub struct InlineDynamic(
 );
 
 impl InlineDynamic {
+    pub fn new(value: Arc<InlineValue>) -> Self {
+        Self(MappedExtra(
+            InlineExtra(value.canonical_extra()),
+            MappedExtra(Default::default(), value),
+        ))
+    }
+
     pub fn value(&self) -> Arc<InlineValue> {
         self.0.1.1.clone()
     }
