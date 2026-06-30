@@ -10,6 +10,7 @@ use object_rainbow::{
 
 #[cfg(feature = "amt")]
 mod amt;
+pub mod enforce_unique;
 #[cfg(feature = "hamt")]
 mod hamt;
 #[cfg(feature = "point")]

@@ -15,7 +15,6 @@ object-rainbow-chain-tree.workspace = true
 object-rainbow-hamt = { workspace = true, optional = true }
 
 futures-util.workspace = true
-thiserror.workspace = true
 
 [features]
 unique-diffs = ["object-rainbow-apply/hamt", "dep:object-rainbow-hamt"]

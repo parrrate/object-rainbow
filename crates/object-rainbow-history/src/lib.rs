@@ -10,7 +10,6 @@ use object_rainbow::{
 use object_rainbow_apply::Apply;
 use object_rainbow_chain_tree::ChainTree;
 
-pub mod enforce_unique;
 #[cfg(feature = "unique-diffs")]
 pub mod unique_diffs;
 
