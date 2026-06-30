@@ -11,7 +11,6 @@ use object_rainbow_apply::Apply;
 use object_rainbow_chain_tree::ChainTree;
 
 pub mod enforce_unique;
-pub mod remap;
 pub mod skip;
 #[cfg(feature = "unique-diffs")]
 pub mod unique_diffs;

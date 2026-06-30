@@ -6,8 +6,10 @@ use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
     Topological, map_extra::Return,
 };
-use object_rainbow_apply::{FromIter, Parallel, Sequential};
-use object_rainbow_history::remap::{MapToSet, MappedToSet};
+use object_rainbow_apply::{
+    FromIter, Parallel, Sequential,
+    remap::{MapToSet, MappedToSet},
+};
 use object_rainbow_trie::{TrieMap, TrieSet};
 use smol_macros::main;
 use ulid::Ulid;

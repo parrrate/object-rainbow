@@ -2,7 +2,8 @@ use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
     Topological, derive_for_wrapped,
 };
-use object_rainbow_apply::Apply;
+
+use crate::Apply;
 
 #[derive_for_wrapped]
 pub trait MapToSet<K: Send, V: Send>: Send + Sync {
