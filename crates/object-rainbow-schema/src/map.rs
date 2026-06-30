@@ -20,7 +20,7 @@ impl Map<Arc<InlineValue>> for InlineMap {
     fn map(&self, value: Arc<InlineValue>) -> Self::Mapped {
         match self {
             Self::I => value,
-            Self::K1(value) => value.0.0.0.clone(),
+            Self::K1(value) => value.value(),
         }
     }
 }

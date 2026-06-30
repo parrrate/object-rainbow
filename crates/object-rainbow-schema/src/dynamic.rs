@@ -13,3 +13,9 @@ use crate::{InlineSchema, InlineValue};
 pub struct InlineDynamic(
     pub MappedExtra<MappedExtra<Arc<InlineSchema>, Extra0>, InlineExtra<Arc<InlineValue>>>,
 );
+
+impl InlineDynamic {
+    pub fn value(&self) -> Arc<InlineValue> {
+        self.0.0.0.clone()
+    }
+}
