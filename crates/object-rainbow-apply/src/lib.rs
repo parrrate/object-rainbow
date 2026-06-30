@@ -100,3 +100,38 @@ impl<Diff: Send, First: Apply<Diff>, Second: Apply<First::Output>> Apply<Diff>
 }
 
 pub type Parallel<A, B> = Sequential<ToTuple2, (A, B)>;
+
+#[derive(
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Size,
+    MaybeHasNiche,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Default,
+)]
+pub struct FromIter<T>(pub T);
+
+impl<T: Apply<D>, D: Send, I: Send + IntoIterator<Item = D, IntoIter: Send>> Apply<I>
+    for FromIter<T>
+{
+    type Output = Vec<T::Output>;
+
+    async fn apply(&mut self, diff: I) -> object_rainbow::Result<Self::Output> {
+        let mut output = Vec::new();
+        for diff in diff {
+            output.push(self.0.apply(diff).await?);
+        }
+        Ok(output)
+    }
+}

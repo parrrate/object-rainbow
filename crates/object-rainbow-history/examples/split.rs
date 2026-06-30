@@ -6,11 +6,8 @@ use object_rainbow::{
     zero_terminated::Zt,
 };
 use object_rainbow_amt::{AmtMap, AmtSet};
-use object_rainbow_apply::{Apply, Parallel, Sequential};
-use object_rainbow_history::{
-    FromIter,
-    remap::{MappedToSet, ToSet},
-};
+use object_rainbow_apply::{Apply, FromIter, Parallel, Sequential};
+use object_rainbow_history::remap::{MappedToSet, ToSet};
 use smol_macros::main;
 use ulid::Ulid;
 

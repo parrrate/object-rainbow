@@ -160,41 +160,6 @@ impl<T: Component + Default + Apply<D>, D: Clone + Traversible> Apply<D> for His
     Ord,
     Default,
 )]
-pub struct FromIter<T>(pub T);
-
-impl<T: Apply<D>, D: Send, I: Send + IntoIterator<Item = D, IntoIter: Send>> Apply<I>
-    for FromIter<T>
-{
-    type Output = Vec<T::Output>;
-
-    async fn apply(&mut self, diff: I) -> object_rainbow::Result<Self::Output> {
-        let mut output = Vec::new();
-        for diff in diff {
-            output.push(self.0.apply(diff).await?);
-        }
-        Ok(output)
-    }
-}
-
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Default,
-)]
 pub struct Points<T>(pub T);
 
 impl<T: Apply<D>, D: Send + Traversible> Apply<Point<D>> for Points<T> {
