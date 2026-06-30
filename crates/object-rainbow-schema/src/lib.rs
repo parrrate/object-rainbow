@@ -142,6 +142,7 @@ pub enum InlineSchema {
         #[cfg(not(feature = "_collections"))] Infallible,
     ),
     Zt(Arc<TailSchema>),
+    InlineSchema,
 }
 
 impl InlineOutput for InlineSchema {}
@@ -236,6 +237,7 @@ pub enum InlineValue {
     #[cfg(feature = "_collections")]
     Collection(CollectionValue),
     Zt(ZtValue),
+    InlineSchema(Arc<InlineSchema>),
 }
 
 impl InlineOutput for InlineValue {}
@@ -400,6 +402,7 @@ impl AbstractSchema for InlineSchema {
             Self::Enum(schema) => schema.niche(),
             Self::Collection(schema) => schema.niche(),
             Self::Zt(_) => SchemaNiche::Cut,
+            Self::InlineSchema => SchemaNiche::Cut,
         }
     }
 }
@@ -436,6 +439,7 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             #[cfg(not(feature = "_collections"))]
             Self::Collection(_) => None,
             Self::Zt(schema) => zt_schema_default(schema.clone()).map(From::from),
+            Self::InlineSchema => Some(InlineValue::InlineSchema(Arc::new(InlineSchema::Never))),
         }
     }
 }
@@ -454,6 +458,7 @@ impl DefaultIsMin for InlineSchema {
             Self::Enum(schema) => schema.default_is_min(),
             Self::Collection(schema) => schema.default_is_min(),
             Self::Zt(schema) => schema.default_is_min(),
+            Self::InlineSchema => true,
         }
     }
 }
@@ -474,6 +479,7 @@ impl AbstractValue for InlineValue {
             #[cfg(feature = "_collections")]
             Self::Collection(c) => c.schema().into(),
             Self::Zt(z) => z.schema(),
+            Self::InlineSchema(_) => InlineSchema::InlineSchema,
         }
     }
 }
@@ -614,6 +620,7 @@ impl<
             #[cfg(not(feature = "_collections"))]
             InlineSchema::Collection(i) => match *i {},
             InlineSchema::Zt(schema) => Self::Zt(input.parse_inline_extra(schema.clone())?),
+            InlineSchema::InlineSchema => Self::InlineSchema(input.parse_inline()?),
         })
     }
 }
@@ -676,6 +683,7 @@ impl SizeSchema for InlineSchema {
             #[cfg(not(feature = "_collections"))]
             Self::Collection(i) => match *i {},
             Self::Zt(_) => None,
+            Self::InlineSchema => None,
         }
     }
 }
@@ -716,6 +724,7 @@ impl AbstractCollection for InlineValue {
             #[cfg(feature = "_collections")]
             Self::Collection(_) => Vec::new(),
             Self::Zt(value) => value.items(),
+            Self::InlineSchema(_) => Vec::new(),
         }
     }
 }
