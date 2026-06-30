@@ -11,11 +11,11 @@ use crate::{InlineSchema, InlineValue};
     Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline, PartialEq,
 )]
 pub struct InlineDynamic(
-    pub MappedExtra<MappedExtra<Arc<InlineSchema>, Extra0>, InlineExtra<Arc<InlineValue>>>,
+    pub MappedExtra<MappedExtra<Arc<InlineValue>, Extra0>, InlineExtra<Arc<InlineSchema>>>,
 );
 
 impl InlineDynamic {
     pub fn value(&self) -> Arc<InlineValue> {
-        self.0.0.0.clone()
+        self.0.1.1.clone()
     }
 }
