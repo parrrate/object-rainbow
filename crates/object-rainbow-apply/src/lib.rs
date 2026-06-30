@@ -19,6 +19,8 @@ pub mod remap;
 pub mod skip;
 #[cfg(feature = "trie")]
 mod trie;
+#[cfg(feature = "unique-diffs")]
+pub mod unique_diffs;
 
 #[derive_for_wrapped]
 pub trait Apply<Diff: Send>: Send {

@@ -16,9 +16,6 @@ object-rainbow-hamt = { workspace = true, optional = true }
 
 futures-util.workspace = true
 
-[features]
-unique-diffs = ["object-rainbow-apply/hamt", "dep:object-rainbow-hamt"]
-
 [dev-dependencies]
 object-rainbow = { workspace = true, features = ["ulid"] }
 object-rainbow-amt.workspace = true

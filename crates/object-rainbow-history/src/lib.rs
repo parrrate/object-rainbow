@@ -10,9 +10,6 @@ use object_rainbow::{
 use object_rainbow_apply::Apply;
 use object_rainbow_chain_tree::ChainTree;
 
-#[cfg(feature = "unique-diffs")]
-pub mod unique_diffs;
-
 #[derive(
     ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Size, MaybeHasNiche,
 )]

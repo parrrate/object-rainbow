@@ -23,6 +23,7 @@ amt = ["dep:object-rainbow-amt"]
 hamt = ["dep:object-rainbow-hamt"]
 point = ["dep:object-rainbow-point"]
 trie = ["dep:object-rainbow-trie"]
+unique-diffs = ["hamt"]
 
 [dev-dependencies]
 macro_rules_attribute.workspace = true
