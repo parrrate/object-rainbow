@@ -5,6 +5,7 @@ use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
     Topological, derive_for_wrapped,
     map_extra::{SmExtra, StaticMap},
+    tuple_extra::ToTuple2,
 };
 
 #[cfg(feature = "amt")]
@@ -97,3 +98,5 @@ impl<Diff: Send, First: Apply<Diff>, Second: Apply<First::Output>> Apply<Diff>
         self.second.apply(self.first.apply(diff).await?).await
     }
 }
+
+pub type Parallel<A, B> = Sequential<ToTuple2, (A, B)>;

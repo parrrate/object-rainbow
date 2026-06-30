@@ -6,9 +6,9 @@ use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
     Topological, map_extra::Return,
 };
-use object_rainbow_apply::Sequential;
+use object_rainbow_apply::{Parallel, Sequential};
 use object_rainbow_history::{
-    FromIter, Parallel,
+    FromIter,
     remap::{MapToSet, MappedToSet},
 };
 use object_rainbow_trie::{TrieMap, TrieSet};

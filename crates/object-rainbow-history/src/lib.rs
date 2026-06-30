@@ -5,9 +5,9 @@
 use futures_util::TryStreamExt;
 use object_rainbow::{
     Component, Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline,
-    Size, Tagged, ToOutput, Topological, Traversible, assert_impl, tuple_extra::ToTuple2,
+    Size, Tagged, ToOutput, Topological, Traversible, assert_impl,
 };
-use object_rainbow_apply::{Apply, Sequential};
+use object_rainbow_apply::Apply;
 use object_rainbow_chain_tree::ChainTree;
 use object_rainbow_point::Point;
 
@@ -204,5 +204,3 @@ impl<T: Apply<D>, D: Send + Traversible> Apply<Point<D>> for Points<T> {
         self.0.apply(diff.fetch().await?).await
     }
 }
-
-pub type Parallel<A, B> = Sequential<ToTuple2, (A, B)>;
