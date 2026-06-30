@@ -439,7 +439,7 @@ impl DefaultSchema<InlineValue> for InlineSchema {
             #[cfg(not(feature = "_collections"))]
             Self::Collection(_) => None,
             Self::Zt(schema) => zt_schema_default(schema.clone()).map(From::from),
-            Self::InlineSchema => Some(InlineValue::InlineSchema(Arc::new(InlineSchema::Never))),
+            Self::InlineSchema => Some(InlineValue::InlineSchema(Arc::new(InlineSchema::Unit))),
         }
     }
 }
@@ -458,7 +458,7 @@ impl DefaultIsMin for InlineSchema {
             Self::Enum(schema) => schema.default_is_min(),
             Self::Collection(schema) => schema.default_is_min(),
             Self::Zt(schema) => schema.default_is_min(),
-            Self::InlineSchema => true,
+            Self::InlineSchema => false,
         }
     }
 }
