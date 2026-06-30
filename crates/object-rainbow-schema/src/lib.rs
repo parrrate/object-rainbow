@@ -845,6 +845,16 @@ impl<T: AbstractValue> ExtraNoneOutput<Arc<T::Schema>> for Shared<T> {
     }
 }
 
+impl<T: AbstractValue> ExtraNoneOutput<Arc<T::Schema>> for &Shared<T> {
+    fn extra_some_output(&self, output: &mut impl Output) {
+        self.some_output(output);
+    }
+
+    fn extra_none_output(schema: &Arc<T::Schema>, output: &mut impl Output) {
+        schema.none_output(output);
+    }
+}
+
 impl<T: AbstractValue + Parse<I>, I: PointInput<Extra = Arc<T::Schema>>> OptionParse<I>
     for Shared<T>
 {
