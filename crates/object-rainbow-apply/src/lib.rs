@@ -15,6 +15,7 @@ mod hamt;
 #[cfg(feature = "point")]
 pub mod point;
 pub mod remap;
+pub mod skip;
 #[cfg(feature = "trie")]
 mod trie;
 
