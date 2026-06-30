@@ -1,6 +1,6 @@
 use crate::{extras::Extras, *};
 
-#[derive(Enum, Debug, Clone, PartialEq, ListHashes, Topological)]
+#[derive(Enum, Debug, Clone, PartialEq, ListHashes, Topological, Tagged)]
 #[rainbow(untagged)]
 pub enum ExtraNone<T, E = ()> {
     Some(T),
@@ -59,10 +59,6 @@ impl<T: ExtraNoneOutput<E>, E> ToOutput for ExtraNone<T, E> {
 }
 
 impl<T: OptionOutput + InlineOutput, E> InlineOutput for ExtraNone<T, E> {}
-
-impl<T: Tagged, E> Tagged for ExtraNone<T, E> {
-    const TAGS: Tags = T::TAGS;
-}
 
 impl<T: OptionParse<I>, I: PointInput> Parse<I> for ExtraNone<T, I::Extra> {
     fn parse(input: I) -> crate::Result<Self> {
