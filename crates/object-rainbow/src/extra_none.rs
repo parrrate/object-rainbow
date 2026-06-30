@@ -1,6 +1,7 @@
 use crate::{extras::Extras, *};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Enum, Debug, Clone, PartialEq, ListHashes)]
+#[rainbow(untagged)]
 pub enum ExtraNone<T, E = ()> {
     Some(T),
     None(Extras<E>),
@@ -61,12 +62,6 @@ impl<T: OptionOutput + InlineOutput, E> InlineOutput for ExtraNone<T, E> {}
 
 impl<T: Tagged, E> Tagged for ExtraNone<T, E> {
     const TAGS: Tags = T::TAGS;
-}
-
-impl<T: ListHashes, E> ListHashes for ExtraNone<T, E> {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
-        self.as_ref().list_hashes(f);
-    }
 }
 
 impl<T: Topological, E> Topological for ExtraNone<T, E> {
