@@ -15,7 +15,7 @@ impl<T, E> ExtraOption<T, E> {
         }
     }
 
-    pub fn new(extra: Extras<E>, value: Option<T>) -> Self {
+    fn new(extra: Extras<E>, value: Option<T>) -> Self {
         match value {
             Some(value) => Self::Some(value),
             None => Self::None(extra),
