@@ -25,6 +25,10 @@ impl<T, E> ExtraOption<T, E> {
     pub fn from_tuple((extra, value): (Extras<E>, Option<T>)) -> Self {
         Self::new(extra, value)
     }
+
+    pub fn none(extra: E) -> Self {
+        Self::None(Extras(extra))
+    }
 }
 
 pub trait ExtraNoneOutput<E>: Sized {
