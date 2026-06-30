@@ -7,7 +7,9 @@ use object_rainbow::{
 
 use crate::{InlineSchema, InlineValue};
 
-#[derive(Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
+#[derive(
+    Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline, PartialEq,
+)]
 pub struct InlineDynamic(
     pub MappedExtra<MappedExtra<Arc<InlineSchema>, Extra0>, InlineExtra<Arc<InlineValue>>>,
 );
