@@ -1,4 +1,4 @@
-use crate::{map_extra::MapExtra, *};
+use crate::{map_extra::Map, *};
 
 /// Parses `Extra`, then provides it to `T`'s parser.
 #[derive(
@@ -6,7 +6,7 @@ use crate::{map_extra::MapExtra, *};
 )]
 pub struct InlineExtra<Extra = ()>(pub Extra);
 
-impl<E: 'static + Clone, X: 'static + Clone> MapExtra<X> for InlineExtra<E> {
+impl<E: 'static + Clone, X: 'static + Clone> Map<X> for InlineExtra<E> {
     type Mapped = (E, X);
 
     fn map(&self, extra: X) -> Self::Mapped {

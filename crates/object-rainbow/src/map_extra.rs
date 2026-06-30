@@ -60,13 +60,13 @@ impl<T, M> DerefMut for MappedExtra<T, M> {
 }
 
 #[derive_for_wrapped]
-pub trait MapExtra<Arg: 'static + Clone = ()> {
+pub trait Map<Arg: 'static + Clone = ()> {
     type Mapped: 'static + Clone;
     fn map(&self, arg: Arg) -> Self::Mapped;
 }
 
 impl<
-    M: 'static + Send + Sync + Clone + ParseInline<I> + MapExtra<X, Mapped = E>,
+    M: 'static + Send + Sync + Clone + ParseInline<I> + Map<X, Mapped = E>,
     E: 'static + Send + Sync + Clone,
     X: 'static + Send + Sync + Clone,
     T: Parse<J>,
@@ -83,7 +83,7 @@ impl<
 }
 
 impl<
-    M: 'static + Send + Sync + Clone + ParseInline<I> + MapExtra<X, Mapped = E>,
+    M: 'static + Send + Sync + Clone + ParseInline<I> + Map<X, Mapped = E>,
     E: 'static + Send + Sync + Clone,
     X: 'static + Send + Sync + Clone,
     T: ParseInline<J>,
@@ -179,7 +179,7 @@ impl<M, I: ParseInput> ParseInline<I> for SmExtra<M> {
     }
 }
 
-impl<M: StaticMap<E, Mapped: 'static + Clone>, E: 'static + Clone> MapExtra<E> for SmExtra<M> {
+impl<M: StaticMap<E, Mapped: 'static + Clone>, E: 'static + Clone> Map<E> for SmExtra<M> {
     type Mapped = M::Mapped;
 
     fn map(&self, e: E) -> Self::Mapped {

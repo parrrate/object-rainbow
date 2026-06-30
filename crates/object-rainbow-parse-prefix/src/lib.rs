@@ -4,7 +4,7 @@ use object_rainbow::{
     InlineOutput, ListHashes, Output, Parse, ParseInline, PointInput, Tagged, ToOutput,
     Topological,
     length_prefixed::LpBytes,
-    map_extra::{MapExtra, SmExtra, StaticMap},
+    map_extra::{Map, SmExtra, StaticMap},
 };
 
 #[derive(Debug, Clone, Default)]
@@ -244,7 +244,7 @@ pub type WithByte = SmExtra<StaticWithByte>;
 )]
 pub struct WithBytes(pub LpBytes);
 
-impl<E: 'static + Clone> MapExtra<(Prefix, E)> for WithBytes {
+impl<E: 'static + Clone> Map<(Prefix, E)> for WithBytes {
     type Mapped = (Prefix, E);
 
     fn map(&self, (prefix, e): (Prefix, E)) -> Self::Mapped {
