@@ -250,6 +250,25 @@ pub enum MaybeLambda {
 }
 
 #[macro_export]
+macro_rules! inline_map {
+    (I) => {
+        InlineMap::I
+    };
+    (K) => {
+        InlineMap::K
+    };
+    (S) => {
+        InlineMap::S
+    };
+    (unpack) => {
+        InlineMap::Unpack
+    };
+    (pack) => {
+        InlineMap::Pack
+    };
+}
+
+#[macro_export]
 macro_rules! lambda {
     (($($a:tt)*) ($($b:tt)*)) => {
         Arc::new(MaybeLambda::Apply($crate::lambda!($($a)*), $crate::lambda!($($b)*)))
@@ -260,8 +279,8 @@ macro_rules! lambda {
     (|$var:literal| $($definition:tt)*) => {
         Arc::new(MaybeLambda::Define($var.into(), $crate::lambda!($($definition)*)))
     };
-    (::$($primitive:tt)*) => {
-        Arc::new(MaybeLambda::Primitive(Arc::new(InlineMap::$($primitive)*)))
+    (!$($primitive:tt)*) => {
+        Arc::new(MaybeLambda::Primitive(Arc::new($crate::inline_map!($($primitive)*))))
     };
 }
 pub use lambda;
@@ -377,7 +396,7 @@ fn primitive() {
     .primitive()
     .unwrap();
     assert_eq!(map, InlineMap::swap());
-    let map = lambda!(|"t"| ((::Unpack)("t"))(|"a"| |"b"| ((::Pack)("b"))("a")))
+    let map = lambda!(|"t"| ((!unpack)("t"))(|"a"| |"b"| ((!pack)("b"))("a")))
         .primitive()
         .unwrap();
     assert_eq!(map, InlineMap::swap());
