@@ -233,3 +233,10 @@ fn swap() -> object_rainbow::Result<()> {
     assert_eq!(value.vec(), [2, 1]);
     Ok(())
 }
+
+#[derive(Debug)]
+pub enum MaybeFree {
+    Apply(Arc<Self>, Arc<Self>),
+    Refer(Arc<str>),
+    Primitive(Arc<InlineMap>),
+}
