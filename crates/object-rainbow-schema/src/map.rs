@@ -249,6 +249,23 @@ pub enum MaybeLambda {
     Primitive(Arc<InlineMap>),
 }
 
+#[macro_export]
+macro_rules! lambda {
+    (($($a:tt)*) $($b:tt)*) => {
+        Arc::new(MaybeLambda::Apply(lambda!($($a)*), lambda!($($b)*)))
+    };
+    ($var:literal) => {
+        Arc::new(MaybeLambda::Refer($var.into()))
+    };
+    (|$var:literal| $($definition:tt)*) => {
+        Arc::new(MaybeLambda::Define($var.into(), lambda!($($definition)*)))
+    };
+    (::$($primitive:tt)*) => {
+        Arc::new(MaybeLambda::Primitive(Arc::new(InlineMap::$($primitive)*)))
+    };
+}
+pub use lambda;
+
 impl MaybeFree {
     pub fn maybe_lambda(&self) -> Arc<MaybeLambda> {
         Arc::new(match self {
@@ -359,5 +376,9 @@ fn primitive() {
     )
     .primitive()
     .unwrap();
+    assert_eq!(map, InlineMap::swap());
+    let map = lambda!(|"t"| ((::Unpack) "t") |"a"| |"b"| ((::Pack) "b") "a")
+        .primitive()
+        .unwrap();
     assert_eq!(map, InlineMap::swap());
 }
