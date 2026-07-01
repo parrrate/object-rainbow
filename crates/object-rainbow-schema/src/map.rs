@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    Enum, InlineOutput, ListHashes, Parse, ParseInline, ToOutput, Topological,
+    Enum, InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological,
     extra_option::ExtraOption, map_extra::TryMap,
 };
 
@@ -15,6 +15,8 @@ pub enum InlineMap {
     K1(InlineDynamic),
     K,
 }
+
+impl Tagged for InlineMap {}
 
 impl TryMap<Arc<InlineValue>> for InlineMap {
     type Mapped = Arc<InlineValue>;
