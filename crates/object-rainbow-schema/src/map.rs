@@ -45,7 +45,7 @@ impl TryMap<Arc<InlineValue>> for InlineMap {
         Ok(match self {
             Self::Point(_) => {
                 return Err(object_rainbow::error_operation!(
-                    "point can only map in async"
+                    "point can only map in async",
                 ));
             }
             Self::I => value,
