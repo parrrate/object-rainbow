@@ -32,6 +32,7 @@ pub enum InlineMap {
     S1(Arc<Self>),
     S,
     Index(U63),
+    Unpack,
 }
 
 impl InlineOutput for InlineMap {}
@@ -59,6 +60,15 @@ impl TryMap<Arc<InlineValue>> for InlineMap {
                 .get(index.as_usize()?)
                 .ok_or_else(|| object_rainbow::error_operation!("index out of bounds"))?
                 .clone(),
+            Self::Unpack => {
+                let InlineValue::Concat(a, b) = &*value else {
+                    return Err(object_rainbow::error_operation!("not a tuple"));
+                };
+                let a = Self::K1(InlineDynamic::new(a.clone()));
+                let b = Self::K1(InlineDynamic::new(b.clone()));
+                let a = Self::S2(Arc::new(Self::I), Arc::new(a));
+                Arc::new(Self::S2(Arc::new(a), Arc::new(b)).into())
+            }
         })
     }
 }
