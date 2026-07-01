@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    Enum, InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological,
-    extra_option::ExtraOption, map_extra::TryMap,
+    Enum, Fetch, FetchBytes, InlineOutput, ListHashes, Parse, ParseInline, Singular, Tagged,
+    ToOutput, Topological, extra_option::ExtraOption, map_extra::TryMap,
 };
 use object_rainbow_point::Point;
 
-use crate::{AsMap, InlineValue, IsUnit, dynamic::InlineDynamic};
+use crate::{AsMap, InlineValue, IsMap, IsUnit, TailValue, dynamic::InlineDynamic};
 
 #[derive(
     Enum, Debug, ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline, PartialEq,
@@ -55,7 +55,47 @@ impl AsMap<Arc<InlineMap>> for InlineValue {
             }
             Self::Enum(value) => value.value.as_map(),
             Self::Map(map) => Ok(map.clone()),
+            Self::Point(value) if value.extra.is_map() => Ok(Arc::new(InlineMap::Point(
+                Point::from_singular(FetchInlineMap {
+                    value: value.point.clone(),
+                }),
+            ))),
             _ => Err(object_rainbow::error_operation!("not a map")),
         }
+    }
+}
+
+struct FetchInlineMap {
+    value: Point<Arc<TailValue>>,
+}
+
+impl FetchBytes for FetchInlineMap {
+    fn fetch_bytes(&'_ self) -> object_rainbow::FailFuture<'_, object_rainbow::ByteNode> {
+        self.value.fetch_bytes()
+    }
+
+    fn fetch_data(&'_ self) -> object_rainbow::FailFuture<'_, Vec<u8>> {
+        self.value.fetch_data()
+    }
+}
+
+impl Fetch for FetchInlineMap {
+    type T = Arc<InlineMap>;
+
+    fn fetch_full(&'_ self) -> object_rainbow::FailFuture<'_, object_rainbow::Node<Self::T>> {
+        Box::pin(async move {
+            let (value, resolve) = self.value.fetch_full().await?;
+            Ok((value.as_map()?, resolve))
+        })
+    }
+
+    fn fetch(&'_ self) -> object_rainbow::FailFuture<'_, Self::T> {
+        Box::pin(async move { self.value.fetch().await.and_then(|value| value.as_map()) })
+    }
+}
+
+impl Singular for FetchInlineMap {
+    fn hash(&self) -> object_rainbow::Hash {
+        self.value.hash()
     }
 }
