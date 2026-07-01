@@ -1004,3 +1004,18 @@ impl IsUnit for TailSchema {
         }
     }
 }
+
+impl IsMap for TailSchema {
+    fn is_map(&self) -> bool {
+        match self {
+            Self::Cut => false,
+            Self::Option(_) => false,
+            Self::Sequence(_) => false,
+            Self::Concat(a, b) => a.is_map() && b.is_unit() || a.is_unit() && b.is_map(),
+            Self::ToA(a, b) => a.is_map() && b.is_unit() || a.is_unit() && b.is_map(),
+            Self::Enum(_) => false,
+            Self::Bytes => false,
+            Self::String => false,
+        }
+    }
+}
