@@ -79,7 +79,7 @@ impl<Arg: 'static + Clone, M: Map<Arg>> TryMap<Arg> for M {
 }
 
 impl<
-    M: 'static + Send + Sync + Clone + ParseInline<I> + Map<X, Mapped = E>,
+    M: 'static + Send + Sync + Clone + ParseInline<I> + TryMap<X, Mapped = E>,
     E: 'static + Send + Sync + Clone,
     X: 'static + Send + Sync + Clone,
     T: Parse<J>,
@@ -90,7 +90,7 @@ impl<
     fn parse(mut input: I) -> crate::Result<Self> {
         let m = input.parse_inline::<M>()?;
         let x = input.extra().clone();
-        let t = input.parse_extra(m.map(x))?;
+        let t = input.parse_extra(m.map(x)?)?;
         Ok(Self(m, t))
     }
 }
