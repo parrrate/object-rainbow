@@ -213,14 +213,6 @@ impl InlineMap {
             self,
         )))))
     }
-
-    fn swap_receiver() -> Arc<Self> {
-        Arc::new(Self::Pack).s1().k1().s2(Arc::new(Self::K))
-    }
-
-    pub fn swap() -> Arc<Self> {
-        Arc::new(Self::Unpack).s2(Self::swap_receiver().k1())
-    }
 }
 
 #[test]
@@ -284,6 +276,21 @@ macro_rules! lambda {
     };
 }
 pub use lambda;
+
+macro_rules! static_lambda {
+    ($($l:tt)*) => {{
+        static LAMBDA: std::sync::LazyLock<Arc<InlineMap>> = std::sync::LazyLock::new(
+            || lambda!($($l)*).primitive().unwrap().as_map().unwrap()
+        );
+        LAMBDA.clone()
+    }};
+}
+
+impl InlineMap {
+    pub fn swap() -> Arc<Self> {
+        static_lambda!(|"t"| ((!unpack)("t"))(|"a"| |"b"| ((!pack)("b"))("a")))
+    }
+}
 
 impl MaybeFree {
     pub fn maybe_lambda(&self) -> Arc<MaybeLambda> {
@@ -372,41 +379,4 @@ impl MaybeLambda {
             Self::Primitive(primitive) => Ok(primitive.clone()),
         }
     }
-}
-
-#[test]
-fn primitive() {
-    let map = MaybeLambda::Define(
-        "t".into(),
-        Arc::new(MaybeLambda::Apply(
-            Arc::new(MaybeLambda::Apply(
-                Arc::new(MaybeLambda::Primitive(Arc::new(InlineMap::Unpack.into()))),
-                Arc::new(MaybeLambda::Refer("t".into())),
-            )),
-            Arc::new(MaybeLambda::Define(
-                "a".into(),
-                Arc::new(MaybeLambda::Define(
-                    "b".into(),
-                    Arc::new(MaybeLambda::Apply(
-                        Arc::new(MaybeLambda::Apply(
-                            Arc::new(MaybeLambda::Primitive(Arc::new(InlineMap::Pack.into()))),
-                            Arc::new(MaybeLambda::Refer("b".into())),
-                        )),
-                        Arc::new(MaybeLambda::Refer("a".into())),
-                    )),
-                )),
-            )),
-        )),
-    )
-    .primitive()
-    .unwrap()
-    .as_map()
-    .unwrap();
-    assert_eq!(map, InlineMap::swap());
-    let map = lambda!(|"t"| ((!unpack)("t"))(|"a"| |"b"| ((!pack)("b"))("a")))
-        .primitive()
-        .unwrap()
-        .as_map()
-        .unwrap();
-    assert_eq!(map, InlineMap::swap());
 }
