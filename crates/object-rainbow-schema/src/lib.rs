@@ -78,6 +78,10 @@ pub trait IsUnit {
     fn is_unit(&self) -> bool;
 }
 
+pub trait AsMap<M> {
+    fn as_map(&self) -> object_rainbow::Result<M>;
+}
+
 impl DefaultIsMin for Infallible {
     fn default_is_min(&self) -> bool {
         match *self {}
