@@ -258,6 +258,9 @@ macro_rules! inline_map {
     (pack) => {
         InlineMap::Pack
     };
+    (index($index:literal)) => {
+        InlineMap::Index(U63::from_u64($index).unwrap())
+    };
 }
 
 #[macro_export]
