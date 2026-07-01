@@ -4,7 +4,7 @@ use object_rainbow::{
     CanonicalExtra, Enum, Inline, InlineOutput, ListHashes, MaybeHasNiche, OptionParse,
     OptionParseInline, Output, Parse, ParseAsInline, ParseInline, PointInput, ReflessInline,
     Tagged, ToOutput, Topological, Traversible, assert_impl,
-    extra_option::ExtraNoneOutput,
+    extra_option::{ExtraNoneOutput, ExtraOption},
     extras::Extras,
     length_prefixed::LpVec,
     map_extra::MappedExtra,
@@ -930,5 +930,26 @@ impl<T: AbstractValue> CanonicalExtra for Shared<T> {
 
     fn canonical_extra(&self) -> Self::Extra {
         Arc::new(self.schema())
+    }
+}
+
+impl IsUnit for InlineValue {
+    fn is_unit(&self) -> bool {
+        match self {
+            Self::Unit => true,
+            Self::Option(ExtraOption::None(schema)) if ***schema == InlineSchema::Never => true,
+            Self::Option(_) => false,
+            Self::Point(_) => false,
+            Self::Nt(_) => false,
+            Self::Concat(a, b) => a.is_unit() && b.is_unit(),
+            Self::Array(array) => array.items.iter().all(|item| item.is_unit()),
+            Self::Numeric(_) => false,
+            Self::Enum(_) => false,
+            Self::Collection(_) => false,
+            Self::Zt(_) => false,
+            Self::InlineSchema(_) => false,
+            Self::TailSchema(_) => false,
+            Self::Map(_) => false,
+        }
     }
 }
