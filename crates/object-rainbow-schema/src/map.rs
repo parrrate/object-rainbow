@@ -33,6 +33,7 @@ pub enum InlineMap {
     S,
     Index(U63),
     Unpack,
+    Pack1(Arc<InlineValue>),
 }
 
 impl InlineOutput for InlineMap {}
@@ -69,6 +70,7 @@ impl TryMap<Arc<InlineValue>> for InlineMap {
                 let a = Self::S2(Arc::new(Self::I), Arc::new(a));
                 Arc::new(Self::S2(Arc::new(a), Arc::new(b)).into())
             }
+            Self::Pack1(a) => Arc::new(InlineValue::Concat(a.clone(), value)),
         })
     }
 }
