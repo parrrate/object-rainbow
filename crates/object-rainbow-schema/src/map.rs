@@ -34,6 +34,7 @@ pub enum InlineMap {
     Index(U63),
     Unpack,
     Pack1(InlineDynamic),
+    Pack,
 }
 
 impl InlineOutput for InlineMap {}
@@ -71,6 +72,7 @@ impl TryMap<Arc<InlineValue>> for InlineMap {
                 Arc::new(Self::S2(Arc::new(a), Arc::new(b)).into())
             }
             Self::Pack1(a) => Arc::new(InlineValue::Concat(a.value(), value)),
+            Self::Pack => Arc::new(Self::Pack1(InlineDynamic::new(value)).into()),
         })
     }
 }
