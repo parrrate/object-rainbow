@@ -252,13 +252,13 @@ pub enum MaybeLambda {
 #[macro_export]
 macro_rules! lambda {
     (($($a:tt)*) ($($b:tt)*)) => {
-        Arc::new(MaybeLambda::Apply(lambda!($($a)*), lambda!($($b)*)))
+        Arc::new(MaybeLambda::Apply($crate::lambda!($($a)*), $crate::lambda!($($b)*)))
     };
     ($var:literal) => {
         Arc::new(MaybeLambda::Refer($var.into()))
     };
     (|$var:literal| $($definition:tt)*) => {
-        Arc::new(MaybeLambda::Define($var.into(), lambda!($($definition)*)))
+        Arc::new(MaybeLambda::Define($var.into(), $crate::lambda!($($definition)*)))
     };
     (::$($primitive:tt)*) => {
         Arc::new(MaybeLambda::Primitive(Arc::new(InlineMap::$($primitive)*)))
