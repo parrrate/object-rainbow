@@ -251,7 +251,7 @@ pub enum MaybeLambda {
 
 #[macro_export]
 macro_rules! lambda {
-    (($($a:tt)*), $($b:tt)*) => {
+    (($($a:tt)*) ($($b:tt)*)) => {
         Arc::new(MaybeLambda::Apply(lambda!($($a)*), lambda!($($b)*)))
     };
     ($var:literal) => {
@@ -377,7 +377,7 @@ fn primitive() {
     .primitive()
     .unwrap();
     assert_eq!(map, InlineMap::swap());
-    let map = lambda!(|"t"| ((::Unpack), "t"), |"a"| |"b"| ((::Pack), "b"), "a")
+    let map = lambda!(|"t"| ((::Unpack)("t"))(|"a"| |"b"| ((::Pack)("b"))("a")))
         .primitive()
         .unwrap();
     assert_eq!(map, InlineMap::swap());
