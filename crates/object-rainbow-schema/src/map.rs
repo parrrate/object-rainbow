@@ -200,22 +200,21 @@ impl From<InlineMap> for InlineValue {
 }
 
 impl InlineMap {
+    pub fn s2(self: Arc<Self>, other: Arc<Self>) -> Arc<Self> {
+        Arc::new(Self::S2(self, other))
+    }
+
     fn swap_receiver() -> Arc<Self> {
-        Arc::new(Self::S2(
-            Arc::new(Self::K1(InlineDynamic::new(Arc::new(
-                Self::S1(Arc::new(Self::Pack)).into(),
-            )))),
-            Arc::new(Self::K),
-        ))
+        Arc::new(Self::K1(InlineDynamic::new(Arc::new(
+            Self::S1(Arc::new(Self::Pack)).into(),
+        ))))
+        .s2(Arc::new(Self::K))
     }
 
     pub fn swap() -> Arc<Self> {
-        Arc::new(Self::S2(
-            Arc::new(Self::Unpack),
-            Arc::new(Self::K1(InlineDynamic::new(Arc::new(InlineValue::Map(
-                Self::swap_receiver(),
-            ))))),
-        ))
+        Arc::new(Self::Unpack).s2(Arc::new(Self::K1(InlineDynamic::new(Arc::new(
+            InlineValue::Map(Self::swap_receiver()),
+        )))))
     }
 }
 
