@@ -9,12 +9,13 @@ use object_rainbow_point::Point;
 use crate::{AsMap, InlineValue, IsMap, IsUnit, TailValue, ValueToA, dynamic::InlineDynamic};
 
 #[derive(Enum, Debug, ToOutput, ListHashes, Topological, Parse, ParseInline, PartialEq)]
-#[topology(recursive)]
+#[topology(unchecked)]
 pub enum InlineMap {
     Point(Point<Arc<Self>>),
     I,
     K1(InlineDynamic),
     K,
+    S2(Arc<Self>, Arc<Self>),
 }
 
 impl InlineOutput for InlineMap {}
@@ -36,6 +37,7 @@ impl TryMap<Arc<InlineValue>> for InlineMap {
             Self::K => Arc::new(InlineValue::Map(Arc::new(Self::K1(InlineDynamic::new(
                 value,
             ))))),
+            Self::S2(a, b) => a.map(value.clone())?.as_map()?.map(b.map(value)?)?,
         })
     }
 }
