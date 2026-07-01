@@ -70,7 +70,7 @@ impl InlineMap {
             #[cfg(feature = "point")]
             Self::Point(point) => Box::pin(point.fetch().await?.apply(value)).await,
             #[cfg(not(feature = "point"))]
-            Self::Point(i) => match i {},
+            Self::Point(i) => match *i {},
             Self::S2(a, b) => {
                 let (a, b) = try_join(
                     Box::pin(a.apply_then_map(value.clone())),
