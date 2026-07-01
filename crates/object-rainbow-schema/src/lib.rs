@@ -989,3 +989,18 @@ impl IsMap for InlineSchema {
         }
     }
 }
+
+impl IsUnit for TailSchema {
+    fn is_unit(&self) -> bool {
+        match self {
+            Self::Cut => true,
+            Self::Option(_) => false,
+            Self::Sequence(_) => false,
+            Self::Concat(a, b) => a.is_unit() && b.is_unit(),
+            Self::ToA(a, b) => a.is_unit() && b.is_unit(),
+            Self::Enum(_) => false,
+            Self::Bytes => false,
+            Self::String => false,
+        }
+    }
+}
