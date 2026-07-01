@@ -309,6 +309,10 @@ impl MaybeLambda {
         }
     }
 
+    pub fn free_var(&self, var: &Arc<str>) -> bool {
+        self.free().contains(var)
+    }
+
     pub fn primitive(&self) -> Result<Arc<InlineValue>, Arc<MaybeFree>> {
         match self {
             Self::Define(var, definition)
@@ -317,7 +321,7 @@ impl MaybeLambda {
             {
                 Ok(Arc::new(InlineMap::I.into()))
             }
-            Self::Define(var, definition) if !definition.free().contains(var) => Self::Apply(
+            Self::Define(var, definition) if !definition.free_var(var) => Self::Apply(
                 Arc::new(Self::Primitive(Arc::new(InlineMap::K.into()))),
                 definition.clone(),
             )
@@ -326,7 +330,7 @@ impl MaybeLambda {
                 if let Self::Apply(a, b) = &**definition
                     && let Self::Refer(refer) = &**b
                     && var == refer
-                    && !a.free().contains(var) =>
+                    && !a.free_var(var) =>
             {
                 a.primitive()
             }
