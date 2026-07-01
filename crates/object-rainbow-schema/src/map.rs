@@ -5,7 +5,7 @@ use std::sync::Arc;
 use futures_util::future::try_join;
 use object_rainbow::{
     Enum, InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological,
-    extra_option::ExtraOption, map_extra::TryMap,
+    extra_option::ExtraOption, map_extra::TryMap, u63::U63,
 };
 #[cfg(feature = "point")]
 use object_rainbow::{Fetch, FetchBytes, Singular};
@@ -16,7 +16,7 @@ use object_rainbow_point::Point;
 
 #[cfg(feature = "point")]
 use crate::IsMap;
-use crate::{InlineValue, IsUnit, TailValue, ValueToA, dynamic::InlineDynamic};
+use crate::{AbstractCollection, InlineValue, IsUnit, TailValue, ValueToA, dynamic::InlineDynamic};
 
 #[derive(Enum, Debug, ToOutput, ListHashes, Topological, Parse, ParseInline, PartialEq)]
 #[topology(unchecked)]
@@ -31,6 +31,7 @@ pub enum InlineMap {
     S2(Arc<Self>, Arc<Self>),
     S1(Arc<Self>),
     S,
+    Index(U63),
 }
 
 impl InlineOutput for InlineMap {}
@@ -58,6 +59,11 @@ impl TryMap<Arc<InlineValue>> for InlineMap {
                 value.as_map()?,
             )))),
             Self::S => Arc::new(InlineValue::Map(Arc::new(Self::S1(value.as_map()?)))),
+            Self::Index(index) => value
+                .items()
+                .get(index.as_usize()?)
+                .ok_or_else(|| object_rainbow::error_operation!("index out of bounds"))?
+                .clone(),
         })
     }
 }
