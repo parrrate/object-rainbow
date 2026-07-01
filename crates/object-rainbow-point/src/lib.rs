@@ -14,8 +14,9 @@ pub use object_rainbow::extras::Extras;
 use object_rainbow::{
     Address, ByteNode, CanonicalExtra, DefaultHash, Equivalent, ExtraFor, FailFuture, Fetch,
     FetchBytes, FullHash, Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, OptionalHash,
-    Output, Parse, ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular, Size,
-    Tagged, Tags, ToOutput, Topological, Traversible, object_marker::ObjectMarker,
+    Output, Parse, ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular,
+    SingularFetch, Size, Tagged, Tags, ToOutput, Topological, Traversible,
+    object_marker::ObjectMarker,
 };
 
 #[cfg(feature = "serde")]
@@ -404,6 +405,10 @@ impl<T> Point<T> {
             hash: hash.into(),
             fetch,
         }
+    }
+
+    pub fn from_singular(singular: impl 'static + SingularFetch<T = T>) -> Self {
+        Self::from_fetch(singular.hash(), Arc::new(singular))
     }
 
     fn map_fetch<U>(
