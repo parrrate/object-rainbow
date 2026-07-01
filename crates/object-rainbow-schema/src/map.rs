@@ -13,7 +13,7 @@ use crate::{AsMap, InlineValue, IsUnit, dynamic::InlineDynamic};
 )]
 #[topology(recursive)]
 pub enum InlineMap {
-    Point(Point<Self>),
+    Point(Point<Arc<Self>>),
     I,
     K1(InlineDynamic),
     K,
