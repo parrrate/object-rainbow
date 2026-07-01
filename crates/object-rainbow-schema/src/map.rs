@@ -208,17 +208,18 @@ impl InlineMap {
         Arc::new(Self::S1(self))
     }
 
-    fn swap_receiver() -> Arc<Self> {
+    pub fn k1(self: Arc<Self>) -> Arc<Self> {
         Arc::new(Self::K1(InlineDynamic::new(Arc::new(InlineValue::Map(
-            Arc::new(Self::Pack).s1(),
+            self,
         )))))
-        .s2(Arc::new(Self::K))
+    }
+
+    fn swap_receiver() -> Arc<Self> {
+        Arc::new(Self::Pack).s1().k1().s2(Arc::new(Self::K))
     }
 
     pub fn swap() -> Arc<Self> {
-        Arc::new(Self::Unpack).s2(Arc::new(Self::K1(InlineDynamic::new(Arc::new(
-            InlineValue::Map(Self::swap_receiver()),
-        )))))
+        Arc::new(Self::Unpack).s2(Self::swap_receiver().k1())
     }
 }
 
