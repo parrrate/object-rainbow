@@ -310,7 +310,12 @@ impl MaybeLambda {
     }
 
     pub fn free_var(&self, var: &Arc<str>) -> bool {
-        self.free().contains(var)
+        match self {
+            Self::Apply(a, b) => a.free_var(var) || b.free_var(var),
+            Self::Refer(refer) => var == refer,
+            Self::Define(refer, definition) => var != refer && definition.free_var(var),
+            Self::Primitive(_) => false,
+        }
     }
 
     pub fn primitive(&self) -> Result<Arc<InlineValue>, Arc<MaybeFree>> {
