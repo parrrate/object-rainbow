@@ -96,7 +96,7 @@ impl<
 }
 
 impl<
-    M: 'static + Send + Sync + Clone + ParseInline<I> + Map<X, Mapped = E>,
+    M: 'static + Send + Sync + Clone + ParseInline<I> + TryMap<X, Mapped = E>,
     E: 'static + Send + Sync + Clone,
     X: 'static + Send + Sync + Clone,
     T: ParseInline<J>,
@@ -107,7 +107,7 @@ impl<
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         let m = input.parse_inline::<M>()?;
         let x = input.extra().clone();
-        let t = input.parse_inline_extra(m.map(x))?;
+        let t = input.parse_inline_extra(m.map(x)?)?;
         Ok(Self(m, t))
     }
 }
