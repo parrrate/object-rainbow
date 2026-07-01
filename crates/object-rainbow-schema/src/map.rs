@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    Enum, InlineOutput, ListHashes, Parse, ParseInline, ToOutput, Topological, map_extra::Map,
+    Enum, InlineOutput, ListHashes, Parse, ParseInline, ToOutput, Topological, map_extra::TryMap,
 };
 
 use crate::{InlineValue, dynamic::InlineDynamic};
@@ -15,16 +15,16 @@ pub enum InlineMap {
     K,
 }
 
-impl Map<Arc<InlineValue>> for InlineMap {
+impl TryMap<Arc<InlineValue>> for InlineMap {
     type Mapped = Arc<InlineValue>;
 
-    fn map(&self, value: Arc<InlineValue>) -> Self::Mapped {
-        match self {
+    fn map(&self, value: Arc<InlineValue>) -> object_rainbow::Result<Self::Mapped> {
+        Ok(match self {
             Self::I => value,
             Self::K1(value) => value.value(),
             Self::K => Arc::new(InlineValue::Map(Arc::new(Self::K1(InlineDynamic::new(
                 value,
             ))))),
-        }
+        })
     }
 }
