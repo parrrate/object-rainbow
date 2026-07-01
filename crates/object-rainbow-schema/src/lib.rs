@@ -968,3 +968,24 @@ impl IsUnit for InlineValue {
         self.schema().is_unit()
     }
 }
+
+impl IsMap for InlineSchema {
+    fn is_map(&self) -> bool {
+        match self {
+            Self::Never => false,
+            Self::Unit => false,
+            Self::Option(_) => false,
+            Self::Point(_) => false,
+            Self::Nt(_) => false,
+            Self::Concat(a, b) => a.is_map() && b.is_unit() || a.is_unit() && b.is_map(),
+            Self::Array((n, schema)) => *n == 1 && schema.is_map(),
+            Self::Numeric(_) => false,
+            Self::Enum(_) => false,
+            Self::Collection(_) => false,
+            Self::Zt(_) => false,
+            Self::InlineSchema => false,
+            Self::TailSchema => false,
+            Self::Map => true,
+        }
+    }
+}
