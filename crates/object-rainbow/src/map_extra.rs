@@ -70,6 +70,14 @@ pub trait TryMap<Arg: 'static + Clone> {
     fn map(&self, arg: Arg) -> crate::Result<Self::Mapped>;
 }
 
+impl<Arg: 'static + Clone, M: Map<Arg>> TryMap<Arg> for M {
+    type Mapped = M::Mapped;
+
+    fn map(&self, arg: Arg) -> crate::Result<Self::Mapped> {
+        Ok(self.map(arg))
+    }
+}
+
 impl<
     M: 'static + Send + Sync + Clone + ParseInline<I> + Map<X, Mapped = E>,
     E: 'static + Send + Sync + Clone,
