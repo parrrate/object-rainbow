@@ -1005,6 +1005,12 @@ impl IsUnit for TailSchema {
     }
 }
 
+impl IsUnit for TailValue {
+    fn is_unit(&self) -> bool {
+        self.schema().is_map()
+    }
+}
+
 impl IsMap for TailSchema {
     fn is_map(&self) -> bool {
         match self {
