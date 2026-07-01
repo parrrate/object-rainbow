@@ -238,7 +238,7 @@ fn swap() -> object_rainbow::Result<()> {
 pub enum MaybeFree {
     Apply(Arc<Self>, Arc<Self>),
     Refer(Arc<str>),
-    Primitive(Arc<InlineMap>),
+    Primitive(Arc<InlineValue>),
 }
 
 #[derive(Debug)]
@@ -246,7 +246,7 @@ pub enum MaybeLambda {
     Apply(Arc<Self>, Arc<Self>),
     Refer(Arc<str>),
     Define(Arc<str>, Arc<Self>),
-    Primitive(Arc<InlineMap>),
+    Primitive(Arc<InlineValue>),
 }
 
 #[macro_export]
@@ -280,7 +280,7 @@ macro_rules! lambda {
         Arc::new(MaybeLambda::Define($var.into(), $crate::lambda!($($definition)*)))
     };
     (!$($primitive:tt)*) => {
-        Arc::new(MaybeLambda::Primitive(Arc::new($crate::inline_map!($($primitive)*))))
+        Arc::new(MaybeLambda::Primitive(Arc::new($crate::inline_map!($($primitive)*).into())))
     };
 }
 pub use lambda;
@@ -309,16 +309,16 @@ impl MaybeLambda {
         }
     }
 
-    pub fn primitive(&self) -> Result<Arc<InlineMap>, Arc<MaybeFree>> {
+    pub fn primitive(&self) -> Result<Arc<InlineValue>, Arc<MaybeFree>> {
         match self {
             Self::Define(var, definition)
                 if let Self::Refer(refer) = &**definition
                     && var == refer =>
             {
-                Ok(Arc::new(InlineMap::I))
+                Ok(Arc::new(InlineMap::I.into()))
             }
             Self::Define(var, definition) if !definition.free().contains(var) => Self::Apply(
-                Arc::new(Self::Primitive(Arc::new(InlineMap::K))),
+                Arc::new(Self::Primitive(Arc::new(InlineMap::K.into()))),
                 definition.clone(),
             )
             .primitive(),
@@ -332,7 +332,7 @@ impl MaybeLambda {
             }
             Self::Define(var, definition) if let Self::Apply(a, b) = &**definition => Self::Apply(
                 Arc::new(Self::Apply(
-                    Arc::new(Self::Primitive(Arc::new(InlineMap::S))),
+                    Arc::new(Self::Primitive(Arc::new(InlineMap::S.into()))),
                     Arc::new(Self::Define(var.clone(), a.clone())),
                 )),
                 Arc::new(Self::Define(var.clone(), b.clone())),
@@ -343,16 +343,12 @@ impl MaybeLambda {
                 Err(definition) => Self::Define(var.clone(), definition.maybe_lambda()).primitive(),
             },
             Self::Apply(a, b) => match (a.primitive(), b.primitive()) {
-                (Ok(a), Ok(b)) => a
-                    .clone()
-                    .map(Arc::new(InlineValue::Map(b.clone())))
-                    .and_then(|value| value.as_map())
-                    .map_err(|_| {
-                        Arc::new(MaybeFree::Apply(
-                            Arc::new(MaybeFree::Primitive(a)),
-                            Arc::new(MaybeFree::Primitive(b)),
-                        ))
-                    }),
+                (Ok(a), Ok(b)) => a.as_map().and_then(|a| a.map(b.clone())).map_err(|_| {
+                    Arc::new(MaybeFree::Apply(
+                        Arc::new(MaybeFree::Primitive(a)),
+                        Arc::new(MaybeFree::Primitive(b)),
+                    ))
+                }),
                 (Ok(a), Err(b)) => Err(Arc::new(MaybeFree::Apply(
                     Arc::new(MaybeFree::Primitive(a)),
                     b,
@@ -375,7 +371,7 @@ fn primitive() {
         "t".into(),
         Arc::new(MaybeLambda::Apply(
             Arc::new(MaybeLambda::Apply(
-                Arc::new(MaybeLambda::Primitive(Arc::new(InlineMap::Unpack))),
+                Arc::new(MaybeLambda::Primitive(Arc::new(InlineMap::Unpack.into()))),
                 Arc::new(MaybeLambda::Refer("t".into())),
             )),
             Arc::new(MaybeLambda::Define(
@@ -384,7 +380,7 @@ fn primitive() {
                     "b".into(),
                     Arc::new(MaybeLambda::Apply(
                         Arc::new(MaybeLambda::Apply(
-                            Arc::new(MaybeLambda::Primitive(Arc::new(InlineMap::Pack))),
+                            Arc::new(MaybeLambda::Primitive(Arc::new(InlineMap::Pack.into()))),
                             Arc::new(MaybeLambda::Refer("b".into())),
                         )),
                         Arc::new(MaybeLambda::Refer("a".into())),
@@ -394,10 +390,14 @@ fn primitive() {
         )),
     )
     .primitive()
+    .unwrap()
+    .as_map()
     .unwrap();
     assert_eq!(map, InlineMap::swap());
     let map = lambda!(|"t"| ((!unpack)("t"))(|"a"| |"b"| ((!pack)("b"))("a")))
         .primitive()
+        .unwrap()
+        .as_map()
         .unwrap();
     assert_eq!(map, InlineMap::swap());
 }
