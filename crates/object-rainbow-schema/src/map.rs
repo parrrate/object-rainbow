@@ -309,8 +309,7 @@ impl MaybeLambda {
             Self::Apply(a, b) => match (a.primitive(), b.primitive()) {
                 (Ok(a), Ok(b)) => Ok(a
                     .map(Arc::new(InlineValue::Map(b)))
-                    .unwrap()
-                    .as_map()
+                    .and_then(|value| value.as_map())
                     .unwrap()),
                 (Ok(a), Err(b)) => Err(Arc::new(MaybeFree::Apply(
                     Arc::new(MaybeFree::Primitive(a)),
