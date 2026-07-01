@@ -1880,6 +1880,7 @@ dependencies = [
 name = "object-rainbow-schema"
 version = "0.0.0-a.1"
 dependencies = [
+ "futures-util",
  "object-rainbow",
  "object-rainbow-amt",
  "object-rainbow-hamt",

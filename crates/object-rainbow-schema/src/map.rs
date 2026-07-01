@@ -2,6 +2,7 @@
 use std::convert::Infallible;
 use std::sync::Arc;
 
+use futures_util::future::try_join;
 use object_rainbow::{
     Enum, InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological,
     extra_option::ExtraOption, map_extra::TryMap,
@@ -56,6 +57,30 @@ impl TryMap<Arc<InlineValue>> for InlineMap {
             )))),
             Self::S => Arc::new(InlineValue::Map(Arc::new(Self::S1(value.as_map()?)))),
         })
+    }
+}
+
+impl InlineMap {
+    async fn apply_then_map(&self, value: Arc<InlineValue>) -> object_rainbow::Result<Arc<Self>> {
+        self.apply(value).await?.as_map()
+    }
+
+    pub async fn apply(&self, value: Arc<InlineValue>) -> object_rainbow::Result<Arc<InlineValue>> {
+        match self {
+            #[cfg(feature = "point")]
+            Self::Point(point) => Box::pin(point.fetch().await?.apply(value)).await,
+            #[cfg(not(feature = "point"))]
+            Self::Point(i) => match i {},
+            Self::S2(a, b) => {
+                let (a, b) = try_join(
+                    Box::pin(a.apply_then_map(value.clone())),
+                    Box::pin(b.apply(value)),
+                )
+                .await?;
+                Box::pin(a.apply(b)).await
+            }
+            _ => self.map(value),
+        }
     }
 }
 
