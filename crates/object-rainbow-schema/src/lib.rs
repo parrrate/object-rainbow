@@ -74,6 +74,10 @@ impl AbstractSchema for Infallible {
     }
 }
 
+pub trait IsUnit {
+    fn is_unit(&self) -> bool;
+}
+
 impl DefaultIsMin for Infallible {
     fn default_is_min(&self) -> bool {
         match *self {}
