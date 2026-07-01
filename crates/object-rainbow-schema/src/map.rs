@@ -1,6 +1,6 @@
 #[cfg(not(feature = "point"))]
 use std::convert::Infallible;
-use std::sync::Arc;
+use std::{collections::BTreeSet, sync::Arc};
 
 use futures_util::future::try_join;
 use object_rainbow::{
@@ -256,5 +256,20 @@ impl MaybeFree {
             Self::Refer(var) => MaybeLambda::Refer(var.clone()),
             Self::Primitive(primitive) => MaybeLambda::Primitive(primitive.clone()),
         })
+    }
+}
+
+impl MaybeLambda {
+    pub fn free(&self) -> BTreeSet<Arc<str>> {
+        match self {
+            Self::Apply(a, b) => a.free().union(&b.free()).cloned().collect(),
+            Self::Refer(var) => [var.clone()].into(),
+            Self::Define(var, definition) => {
+                let mut free = definition.free();
+                free.remove(var);
+                free
+            }
+            Self::Primitive(_) => Default::default(),
+        }
     }
 }
