@@ -248,3 +248,13 @@ pub enum MaybeLambda {
     Define(Arc<str>, Arc<Self>),
     Primitive(Arc<InlineMap>),
 }
+
+impl MaybeFree {
+    pub fn maybe_lambda(&self) -> Arc<MaybeLambda> {
+        Arc::new(match self {
+            Self::Apply(a, b) => MaybeLambda::Apply(a.maybe_lambda(), b.maybe_lambda()),
+            Self::Refer(var) => MaybeLambda::Refer(var.clone()),
+            Self::Primitive(primitive) => MaybeLambda::Primitive(primitive.clone()),
+        })
+    }
+}
