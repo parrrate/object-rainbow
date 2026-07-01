@@ -307,10 +307,16 @@ impl MaybeLambda {
                 Err(definition) => Self::Define(var.clone(), definition.maybe_lambda()).primitive(),
             },
             Self::Apply(a, b) => match (a.primitive(), b.primitive()) {
-                (Ok(a), Ok(b)) => Ok(a
-                    .map(Arc::new(InlineValue::Map(b)))
+                (Ok(a), Ok(b)) => a
+                    .clone()
+                    .map(Arc::new(InlineValue::Map(b.clone())))
                     .and_then(|value| value.as_map())
-                    .unwrap()),
+                    .map_err(|_| {
+                        Arc::new(MaybeFree::Apply(
+                            Arc::new(MaybeFree::Primitive(a)),
+                            Arc::new(MaybeFree::Primitive(b)),
+                        ))
+                    }),
                 (Ok(a), Err(b)) => Err(Arc::new(MaybeFree::Apply(
                     Arc::new(MaybeFree::Primitive(a)),
                     b,
