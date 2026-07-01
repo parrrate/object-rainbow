@@ -50,15 +50,10 @@ impl TryMap<Arc<InlineValue>> for InlineMap {
             }
             Self::I => value,
             Self::K1(value) => value.value(),
-            Self::K => Arc::new(InlineValue::Map(Arc::new(Self::K1(InlineDynamic::new(
-                value,
-            ))))),
+            Self::K => Arc::new(Self::K1(InlineDynamic::new(value)).into()),
             Self::S2(a, b) => a.map(value.clone())?.as_map()?.map(b.map(value)?)?,
-            Self::S1(a) => Arc::new(InlineValue::Map(Arc::new(Self::S2(
-                a.clone(),
-                value.as_map()?,
-            )))),
-            Self::S => Arc::new(InlineValue::Map(Arc::new(Self::S1(value.as_map()?)))),
+            Self::S1(a) => Arc::new(Self::S2(a.clone(), value.as_map()?).into()),
+            Self::S => Arc::new(Self::S1(value.as_map()?).into()),
             Self::Index(index) => value
                 .items()
                 .get(index.as_usize()?)
@@ -181,5 +176,11 @@ impl Fetch for FetchInlineMap {
 impl Singular for FetchInlineMap {
     fn hash(&self) -> object_rainbow::Hash {
         self.value.hash()
+    }
+}
+
+impl From<InlineMap> for InlineValue {
+    fn from(map: InlineMap) -> Self {
+        Self::Map(Arc::new(map))
     }
 }
