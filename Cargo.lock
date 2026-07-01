@@ -1883,6 +1883,7 @@ dependencies = [
  "futures-util",
  "object-rainbow",
  "object-rainbow-amt",
+ "object-rainbow-apply",
  "object-rainbow-hamt",
  "object-rainbow-point",
 ]

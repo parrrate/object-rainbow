@@ -11,6 +11,7 @@ description = "interpretable schema for `object-rainbow`"
 [dependencies]
 object-rainbow.workspace = true
 object-rainbow-amt = { workspace = true, optional = true }
+object-rainbow-apply = { workspace = true, optional = true }
 object-rainbow-hamt = { workspace = true, optional = true }
 object-rainbow-point = { workspace = true, optional = true }
 
@@ -21,5 +22,6 @@ _collections = ["point"]
 _collections-item = ["_collections"]
 _collections-kv = ["_collections"]
 amt = ["dep:object-rainbow-amt", "_collections-item", "_collections-kv"]
+apply = ["dep:object-rainbow-apply"]
 hamt = ["dep:object-rainbow-hamt", "_collections-item"]
-point = ["dep:object-rainbow-point"]
+point = ["dep:object-rainbow-point", "object-rainbow-apply/point"]

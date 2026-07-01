@@ -9,6 +9,8 @@ use object_rainbow::{
 };
 #[cfg(feature = "point")]
 use object_rainbow::{Fetch, FetchBytes, Singular};
+#[cfg(feature = "apply")]
+use object_rainbow_apply::Apply;
 #[cfg(feature = "point")]
 use object_rainbow_point::Point;
 
@@ -81,6 +83,15 @@ impl InlineMap {
             }
             _ => self.map(value),
         }
+    }
+}
+
+#[cfg(feature = "apply")]
+impl Apply<Arc<InlineValue>> for InlineMap {
+    type Output = Arc<InlineValue>;
+
+    async fn apply(&mut self, value: Arc<InlineValue>) -> object_rainbow::Result<Self::Output> {
+        (*self).apply(value).await
     }
 }
 
