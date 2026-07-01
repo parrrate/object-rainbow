@@ -272,4 +272,87 @@ impl MaybeLambda {
             Self::Primitive(_) => Default::default(),
         }
     }
+
+    pub fn primitive(&self) -> Result<Arc<InlineMap>, Arc<MaybeFree>> {
+        match self {
+            Self::Define(var, definition)
+                if let Self::Refer(refer) = &**definition
+                    && var == refer =>
+            {
+                Ok(Arc::new(InlineMap::I))
+            }
+            Self::Define(var, definition) if !definition.free().contains(var) => Self::Apply(
+                Arc::new(Self::Primitive(Arc::new(InlineMap::K))),
+                definition.clone(),
+            )
+            .primitive(),
+            Self::Define(var, definition)
+                if let Self::Apply(a, b) = &**definition
+                    && let Self::Refer(refer) = &**b
+                    && var == refer
+                    && !a.free().contains(var) =>
+            {
+                a.primitive()
+            }
+            Self::Define(var, definition) if let Self::Apply(a, b) = &**definition => Self::Apply(
+                Arc::new(Self::Apply(
+                    Arc::new(Self::Primitive(Arc::new(InlineMap::S))),
+                    Arc::new(Self::Define(var.clone(), a.clone())),
+                )),
+                Arc::new(Self::Define(var.clone(), b.clone())),
+            )
+            .primitive(),
+            Self::Define(var, definition) => match definition.primitive() {
+                Ok(_) => unreachable!(),
+                Err(definition) => Self::Define(var.clone(), definition.maybe_lambda()).primitive(),
+            },
+            Self::Apply(a, b) => match (a.primitive(), b.primitive()) {
+                (Ok(a), Ok(b)) => Ok(a
+                    .map(Arc::new(InlineValue::Map(b)))
+                    .unwrap()
+                    .as_map()
+                    .unwrap()),
+                (Ok(a), Err(b)) => Err(Arc::new(MaybeFree::Apply(
+                    Arc::new(MaybeFree::Primitive(a)),
+                    b,
+                ))),
+                (Err(a), Ok(b)) => Err(Arc::new(MaybeFree::Apply(
+                    a,
+                    Arc::new(MaybeFree::Primitive(b)),
+                ))),
+                (Err(a), Err(b)) => Err(Arc::new(MaybeFree::Apply(a, b))),
+            },
+            Self::Refer(var) => Err(Arc::new(MaybeFree::Refer(var.clone()))),
+            Self::Primitive(primitive) => Ok(primitive.clone()),
+        }
+    }
+}
+
+#[test]
+fn primitive() {
+    let map = MaybeLambda::Define(
+        "t".into(),
+        Arc::new(MaybeLambda::Apply(
+            Arc::new(MaybeLambda::Apply(
+                Arc::new(MaybeLambda::Primitive(Arc::new(InlineMap::Unpack))),
+                Arc::new(MaybeLambda::Refer("t".into())),
+            )),
+            Arc::new(MaybeLambda::Define(
+                "a".into(),
+                Arc::new(MaybeLambda::Define(
+                    "b".into(),
+                    Arc::new(MaybeLambda::Apply(
+                        Arc::new(MaybeLambda::Apply(
+                            Arc::new(MaybeLambda::Primitive(Arc::new(InlineMap::Pack))),
+                            Arc::new(MaybeLambda::Refer("b".into())),
+                        )),
+                        Arc::new(MaybeLambda::Refer("a".into())),
+                    )),
+                )),
+            )),
+        )),
+    )
+    .primitive()
+    .unwrap();
+    assert_eq!(map, InlineMap::swap());
 }
