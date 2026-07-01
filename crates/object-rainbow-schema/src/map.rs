@@ -240,3 +240,11 @@ pub enum MaybeFree {
     Refer(Arc<str>),
     Primitive(Arc<InlineMap>),
 }
+
+#[derive(Debug)]
+pub enum MaybeLambda {
+    Apply(Arc<Self>, Arc<Self>),
+    Refer(Arc<str>),
+    Define(Arc<str>, Arc<Self>),
+    Primitive(Arc<InlineMap>),
+}
