@@ -13,7 +13,7 @@ use object_rainbow_point::Point;
 
 #[cfg(feature = "point")]
 use crate::IsMap;
-use crate::{AsMap, InlineValue, IsUnit, TailValue, ValueToA, dynamic::InlineDynamic};
+use crate::{InlineValue, IsUnit, TailValue, ValueToA, dynamic::InlineDynamic};
 
 #[derive(Enum, Debug, ToOutput, ListHashes, Topological, Parse, ParseInline, PartialEq)]
 #[topology(unchecked)]
@@ -97,6 +97,10 @@ impl AsMap<Arc<InlineMap>> for TailValue {
             _ => Err(object_rainbow::error_operation!("not a map")),
         }
     }
+}
+
+pub trait AsMap<M> {
+    fn as_map(&self) -> object_rainbow::Result<M>;
 }
 
 #[cfg(feature = "point")]

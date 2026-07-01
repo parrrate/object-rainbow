@@ -78,10 +78,6 @@ pub trait IsUnit {
     fn is_unit(&self) -> bool;
 }
 
-pub trait AsMap<M> {
-    fn as_map(&self) -> object_rainbow::Result<M>;
-}
-
 pub trait IsMap {
     fn is_map(&self) -> bool;
 }
