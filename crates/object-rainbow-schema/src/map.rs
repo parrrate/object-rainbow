@@ -1,17 +1,27 @@
+#[cfg(not(feature = "point"))]
+use std::convert::Infallible;
 use std::sync::Arc;
 
 use object_rainbow::{
-    Enum, Fetch, FetchBytes, InlineOutput, ListHashes, Parse, ParseInline, Singular, Tagged,
-    ToOutput, Topological, extra_option::ExtraOption, map_extra::TryMap,
+    Enum, InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological,
+    extra_option::ExtraOption, map_extra::TryMap,
 };
+#[cfg(feature = "point")]
+use object_rainbow::{Fetch, FetchBytes, Singular};
+#[cfg(feature = "point")]
 use object_rainbow_point::Point;
 
-use crate::{AsMap, InlineValue, IsMap, IsUnit, TailValue, ValueToA, dynamic::InlineDynamic};
+#[cfg(feature = "point")]
+use crate::IsMap;
+use crate::{AsMap, InlineValue, IsUnit, TailValue, ValueToA, dynamic::InlineDynamic};
 
 #[derive(Enum, Debug, ToOutput, ListHashes, Topological, Parse, ParseInline, PartialEq)]
 #[topology(unchecked)]
 pub enum InlineMap {
-    Point(Point<Arc<Self>>),
+    Point(
+        #[cfg(feature = "point")] Point<Arc<Self>>,
+        #[cfg(not(feature = "point"))] Infallible,
+    ),
     I,
     K1(InlineDynamic),
     K,
@@ -64,6 +74,7 @@ impl AsMap<Arc<InlineMap>> for InlineValue {
             }
             Self::Enum(value) => value.value.as_map(),
             Self::Map(map) => Ok(map.clone()),
+            #[cfg(feature = "point")]
             Self::Point(value) if value.extra.is_map() => Ok(Arc::new(InlineMap::Point(
                 Point::from_singular(FetchInlineMap {
                     value: value.point.clone(),
@@ -88,10 +99,12 @@ impl AsMap<Arc<InlineMap>> for TailValue {
     }
 }
 
+#[cfg(feature = "point")]
 struct FetchInlineMap {
     value: Point<Arc<TailValue>>,
 }
 
+#[cfg(feature = "point")]
 impl FetchBytes for FetchInlineMap {
     fn fetch_bytes(&'_ self) -> object_rainbow::FailFuture<'_, object_rainbow::ByteNode> {
         self.value.fetch_bytes()
@@ -102,6 +115,7 @@ impl FetchBytes for FetchInlineMap {
     }
 }
 
+#[cfg(feature = "point")]
 impl Fetch for FetchInlineMap {
     type T = Arc<InlineMap>;
 
@@ -117,6 +131,7 @@ impl Fetch for FetchInlineMap {
     }
 }
 
+#[cfg(feature = "point")]
 impl Singular for FetchInlineMap {
     fn hash(&self) -> object_rainbow::Hash {
         self.value.hash()
