@@ -17,6 +17,7 @@ pub enum InlineMap {
     K,
     S2(Arc<Self>, Arc<Self>),
     S1(Arc<Self>),
+    S,
 }
 
 impl InlineOutput for InlineMap {}
@@ -43,6 +44,7 @@ impl TryMap<Arc<InlineValue>> for InlineMap {
                 a.clone(),
                 value.as_map()?,
             )))),
+            Self::S => Arc::new(InlineValue::Map(Arc::new(Self::S1(value.as_map()?)))),
         })
     }
 }
