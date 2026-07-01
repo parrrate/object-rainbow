@@ -4,7 +4,7 @@ use object_rainbow::{
     CanonicalExtra, Enum, Inline, InlineOutput, ListHashes, MaybeHasNiche, OptionParse,
     OptionParseInline, Output, Parse, ParseAsInline, ParseInline, PointInput, ReflessInline,
     Tagged, ToOutput, Topological, Traversible, assert_impl,
-    extra_option::{ExtraNoneOutput, ExtraOption},
+    extra_option::ExtraNoneOutput,
     extras::Extras,
     length_prefixed::LpVec,
     map_extra::MappedExtra,
@@ -1022,20 +1022,6 @@ impl IsMap for TailSchema {
             Self::Enum(_) => false,
             Self::Bytes => false,
             Self::String => false,
-        }
-    }
-}
-
-impl AsMap<Arc<crate::map::InlineMap>> for TailValue {
-    fn as_map(&self) -> object_rainbow::Result<Arc<crate::map::InlineMap>> {
-        match self {
-            Self::Option(ExtraOption::Some(value)) => value.as_map(),
-            Self::Concat(a, b) if b.is_unit() => a.as_map(),
-            Self::Concat(a, b) if a.is_unit() => b.as_map(),
-            Self::ToA(ValueToA(a, b)) if b.is_unit() => a.as_map(),
-            Self::ToA(ValueToA(a, b)) if a.is_unit() => b.as_map(),
-            Self::Enum(value) => value.value.as_map(),
-            _ => Err(object_rainbow::error_operation!("not a map")),
         }
     }
 }

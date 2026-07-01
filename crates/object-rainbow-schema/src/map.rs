@@ -6,7 +6,7 @@ use object_rainbow::{
 };
 use object_rainbow_point::Point;
 
-use crate::{AsMap, InlineValue, IsMap, IsUnit, TailValue, dynamic::InlineDynamic};
+use crate::{AsMap, InlineValue, IsMap, IsUnit, TailValue, ValueToA, dynamic::InlineDynamic};
 
 #[derive(
     Enum, Debug, ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline, PartialEq,
@@ -60,6 +60,20 @@ impl AsMap<Arc<InlineMap>> for InlineValue {
                     value: value.point.clone(),
                 }),
             ))),
+            _ => Err(object_rainbow::error_operation!("not a map")),
+        }
+    }
+}
+
+impl AsMap<Arc<InlineMap>> for TailValue {
+    fn as_map(&self) -> object_rainbow::Result<Arc<InlineMap>> {
+        match self {
+            Self::Option(ExtraOption::Some(value)) => value.as_map(),
+            Self::Concat(a, b) if b.is_unit() => a.as_map(),
+            Self::Concat(a, b) if a.is_unit() => b.as_map(),
+            Self::ToA(ValueToA(a, b)) if b.is_unit() => a.as_map(),
+            Self::ToA(ValueToA(a, b)) if a.is_unit() => b.as_map(),
+            Self::Enum(value) => value.value.as_map(),
             _ => Err(object_rainbow::error_operation!("not a map")),
         }
     }
