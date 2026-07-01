@@ -198,3 +198,34 @@ impl From<InlineMap> for InlineValue {
         Self::Map(Arc::new(map))
     }
 }
+
+impl InlineMap {
+    fn swap_receiver() -> Arc<Self> {
+        Arc::new(Self::S2(
+            Arc::new(Self::K1(InlineDynamic::new(Arc::new(
+                Self::S1(Arc::new(Self::Pack)).into(),
+            )))),
+            Arc::new(Self::K),
+        ))
+    }
+
+    pub fn swap() -> Arc<Self> {
+        Arc::new(Self::S2(
+            Arc::new(Self::Unpack),
+            Arc::new(Self::K1(InlineDynamic::new(Arc::new(InlineValue::Map(
+                Self::swap_receiver(),
+            ))))),
+        ))
+    }
+}
+
+#[test]
+fn swap() -> object_rainbow::Result<()> {
+    use object_rainbow::{ParseAs, ParseAsExtra};
+    let schema = [5, 7, 0, 7, 0].as_slice().parse_as()?;
+    let value: Arc<InlineValue> = [1, 2].as_slice().parse_as_extra(&schema)?;
+    assert_eq!(value.vec(), [1, 2]);
+    let value = InlineMap::swap().map(value)?;
+    assert_eq!(value.vec(), [2, 1]);
+    Ok(())
+}
