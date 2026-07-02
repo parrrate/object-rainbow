@@ -293,6 +293,29 @@ impl InlineMap {
     pub fn swap() -> Arc<Self> {
         static_lambda!(|"t"| ((!unpack)("t"))(|"a"| |"b"| ((!pack)("b"))("a")))
     }
+
+    pub fn rotate_l() -> Arc<Self> {
+        static_lambda!(
+            |"abc"| ((!unpack)("abc"))(|"a"| |"bc"| ((!unpack)("bc"))(|"b"| |"c"| ((!pack)(
+                ((!pack)("a"))("b")
+            ))(
+                "c"
+            )))
+        )
+    }
+}
+
+#[test]
+fn rotate_l() -> object_rainbow::Result<()> {
+    use crate::AbstractValue;
+    use object_rainbow::{ParseAs, ParseAsExtra};
+    let schema = [5, 7, 0, 5, 7, 0, 7, 0].as_slice().parse_as()?;
+    let value: Arc<InlineValue> = [1, 2, 3].as_slice().parse_as_extra(&schema)?;
+    assert_eq!(value.vec(), [1, 2, 3]);
+    let value = InlineMap::rotate_l().map(value)?;
+    assert_eq!(value.vec(), [1, 2, 3]);
+    assert_eq!(value.schema().vec(), [5, 5, 7, 0, 7, 0, 7, 0]);
+    Ok(())
 }
 
 impl MaybeFree {
