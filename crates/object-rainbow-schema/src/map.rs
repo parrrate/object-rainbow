@@ -314,6 +314,10 @@ impl InlineMap {
             )))
         )
     }
+
+    pub fn map_l() -> Arc<Self> {
+        static_lambda!(|"f"| |"ab"| (!unpack)("ab")(|"a"| |"b"| (!pack)(("f")("a"))("b")))
+    }
 }
 
 #[test]
