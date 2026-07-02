@@ -268,6 +268,9 @@ macro_rules! lambda {
     (($($a:tt)*) ($($b:tt)*)) => {
         Arc::new(MaybeLambda::Apply($crate::lambda!($($a)*), $crate::lambda!($($b)*)))
     };
+    (($($a:tt)*) ($($b:tt)*) $($c:tt)*) => {
+        lambda!((($($a)*)($($b)*))$($c)*)
+    };
     ($var:literal) => {
         Arc::new(MaybeLambda::Refer($var.into()))
     };
@@ -291,23 +294,23 @@ macro_rules! static_lambda {
 
 impl InlineMap {
     pub fn swap() -> Arc<Self> {
-        static_lambda!(|"t"| ((!unpack)("t"))(|"a"| |"b"| ((!pack)("b"))("a")))
+        static_lambda!(|"t"| (!unpack)("t")(|"a"| |"b"| (!pack)("b")("a")))
     }
 
     pub fn rotate_l() -> Arc<Self> {
         static_lambda!(
-            |"abc"| ((!unpack)("abc"))(|"a"| |"bc"| ((!unpack)("bc"))(|"b"| |"c"| ((!pack)(
-                ((!pack)("a"))("b")
-            ))(
-                "c"
-            )))
+            |"abc"| (!unpack)("abc")(|"a"| |"bc"| (!unpack)("bc")(|"b"| |"c"| (!pack)((!pack)(
+                "a"
+            )(
+                "b"
+            ))("c")))
         )
     }
 
     pub fn rotate_r() -> Arc<Self> {
         static_lambda!(
-            |"abc"| ((!unpack)("abc"))(|"ab"| |"c"| ((!unpack)("ab"))(|"a"| |"b"| ((!pack)("a"))(
-                ((!pack)("b"))("c")
+            |"abc"| (!unpack)("abc")(|"ab"| |"c"| (!unpack)("ab")(|"a"| |"b"| (!pack)("a")(
+                (!pack)("b")("c")
             )))
         )
     }
