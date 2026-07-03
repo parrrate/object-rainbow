@@ -117,7 +117,6 @@ pub trait StaticMap<T> {
     fn static_map(x: T) -> Self::Mapped;
 }
 
-#[allow(clippy::repr_packed_without_abi)]
 mod private {
     use ghost::phantom;
 
