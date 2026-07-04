@@ -378,15 +378,18 @@ macro_rules! float {
                 }
             }
 
+            fn from_unsigned(mut n: $u) -> $n {
+                if n & BIT == 0 {
+                    n ^= <$u>::MAX;
+                } else {
+                    n ^= BIT;
+                }
+                <$n>::from_bits(n)
+            }
+
             impl<I: ParseInput> ParseInline<I> for $n {
                 fn parse_inline(input: &mut I) -> crate::Result<Self> {
-                    let mut n: $u = input.parse_inline()?;
-                    if n & BIT == 0 {
-                        n ^= <$u>::MAX;
-                    } else {
-                        n ^= BIT;
-                    }
-                    Ok(Self::from_bits(n))
+                    Ok(from_unsigned(input.parse_inline()?))
                 }
             }
 
