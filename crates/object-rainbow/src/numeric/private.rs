@@ -485,6 +485,12 @@ macro_rules! byte_ordered {
                 self.cmp(other)
             }
         }
+
+        impl FromSized for $n {
+            fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self {
+                Self::from_be_bytes(From::from(Clone::clone(data))) ^ Self::MIN
+            }
+        }
     };
 }
 
