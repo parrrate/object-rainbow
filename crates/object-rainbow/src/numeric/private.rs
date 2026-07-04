@@ -447,6 +447,12 @@ macro_rules! float {
                     self.total_cmp(other)
                 }
             }
+
+            impl FromSized for $n {
+                fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self {
+                    from_unsigned(FromSized::from_sized(data))
+                }
+            }
         };
     };
 }
