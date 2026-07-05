@@ -947,7 +947,7 @@ impl<K: Component, V: Component> AmtMap<K, V> {
         Ok(self.get(k).await?.is_some())
     }
 
-    pub async fn stream(&self) -> impl Stream<Item = object_rainbow::Result<(K, V)>> {
+    pub fn stream(&self) -> impl Stream<Item = object_rainbow::Result<(K, V)>> {
         try_stream(async |co| self.0.stream(&co).await)
     }
 }
