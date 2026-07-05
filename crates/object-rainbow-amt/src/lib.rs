@@ -740,7 +740,7 @@ impl<K: Component, V: Component> Node<K, V> {
             Self::Leaf(k, v) => co.yield_((k.value().clone(), v.1.clone())).await,
             Self::Sub(point) => {
                 for (_, sub) in point.fetch().await?.1 {
-                    sub.stream(co).await?;
+                    Box::pin(sub.stream(co)).await?;
                 }
             }
         }
