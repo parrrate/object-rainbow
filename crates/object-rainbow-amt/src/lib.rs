@@ -1,6 +1,7 @@
 use std::ops::DerefMut;
 
-use futures_util::{TryStreamExt, future::try_join};
+use futures_util::{Stream, TryStreamExt, future::try_join};
+use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
     Component, Enum, Equivalent, EquivalentFor, Fetch, Inline, InlineOutput, ListHashes, Parse,
     ParseInline, PointInput, Singular, Tagged, ToOutput, Topological, Traversible, assert_impl,
@@ -732,6 +733,19 @@ impl<K: Component, V: Component> Node<K, V> {
             .sum()),
         }
     }
+
+    async fn stream(&self, co: &Co<(K, V), object_rainbow::Error>) -> object_rainbow::Result<()> {
+        match self {
+            Self::Empty => {}
+            Self::Leaf(k, v) => co.yield_((k.value().clone(), v.1.clone())).await,
+            Self::Sub(point) => {
+                for (_, sub) in point.fetch().await?.1 {
+                    sub.stream(co).await?;
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
 trait TraitOp<K: Send, V, U: Send>: Send + Sync {
@@ -931,6 +945,10 @@ impl<K: Component, V: Component> AmtMap<K, V> {
 
     pub async fn contains_key(&self, k: &K) -> object_rainbow::Result<bool> {
         Ok(self.get(k).await?.is_some())
+    }
+
+    pub async fn stream(&self) -> impl Stream<Item = object_rainbow::Result<(K, V)>> {
+        try_stream(async |co| self.0.stream(&co).await)
     }
 }
 

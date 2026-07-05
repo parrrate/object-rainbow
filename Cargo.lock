@@ -1650,6 +1650,7 @@ name = "object-rainbow-amt"
 version = "0.0.0-a.8"
 dependencies = [
  "futures-util",
+ "genawaiter-try-stream",
  "macro_rules_attribute",
  "object-rainbow",
  "object-rainbow-array-map",
