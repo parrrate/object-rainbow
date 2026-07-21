@@ -17,6 +17,14 @@ impl Apply<bool> for Inserted {
     }
 }
 
+impl<T: Send> Apply<Option<T>> for Inserted {
+    type Output = bool;
+
+    async fn apply(&mut self, old: Option<T>) -> object_rainbow::Result<Self::Output> {
+        Ok(old.is_none())
+    }
+}
+
 #[derive(
     ToOutput,
     InlineOutput,
