@@ -20,10 +20,12 @@ impl<K: Component, V: Component> Apply<(Option<V>, K)> for AmtMap<K, V> {
 }
 
 impl<K: Component, V: Component> Apply<(V, K)> for AmtMap<K, V> {
-    type Output = Option<V>;
+    type Output = Option<(V, K)>;
 
     async fn apply(&mut self, (value, key): (V, K)) -> object_rainbow::Result<Self::Output> {
-        self.insert(key, value).await
+        self.insert_replace(key, value)
+            .await
+            .map(|o| o.map(|(k, v)| (v, k)))
     }
 }
 
