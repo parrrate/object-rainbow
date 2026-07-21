@@ -57,10 +57,10 @@ impl Apply<(Option<()>, Hash)> for HamtSet {
 }
 
 impl Apply<Hash> for HamtSet {
-    type Output = bool;
+    type Output = Option<Hash>;
 
     async fn apply(&mut self, hash: Hash) -> object_rainbow::Result<Self::Output> {
-        self.insert(hash).await
+        Ok((!self.insert(hash).await?).then_some(hash))
     }
 }
 
