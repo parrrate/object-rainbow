@@ -70,9 +70,9 @@ impl<T: ReflessObject> Apply<T> for TrieSet<T> {
 }
 
 impl<T: ReflessObject> Apply<((), T)> for TrieSet<T> {
-    type Output = bool;
+    type Output = Option<T>;
 
     async fn apply(&mut self, ((), value): ((), T)) -> object_rainbow::Result<Self::Output> {
-        self.insert(&value).await
+        Ok((!self.insert(&value).await?).then_some(value))
     }
 }
