@@ -85,10 +85,10 @@ impl<T: Component> Apply<T> for AmtSet<T> {
 }
 
 impl<T: Component> Apply<((), T)> for AmtSet<T> {
-    type Output = bool;
+    type Output = Option<T>;
 
     async fn apply(&mut self, ((), value): ((), T)) -> object_rainbow::Result<Self::Output> {
-        self.insert(value).await
+        self.replace(value).await
     }
 }
 
