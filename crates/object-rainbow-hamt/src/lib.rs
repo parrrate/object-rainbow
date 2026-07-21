@@ -923,6 +923,14 @@ impl HamtSet {
         Ok(self.0.insert(hash, ()).await?.is_none())
     }
 
+    pub async fn insert_replace(&mut self, hash: Hash) -> object_rainbow::Result<Option<Hash>> {
+        Ok(if self.insert(hash).await? {
+            None
+        } else {
+            Some(hash)
+        })
+    }
+
     pub async fn remove(&mut self, hash: Hash) -> object_rainbow::Result<bool> {
         Ok(self.0.remove(hash).await?.is_some())
     }
