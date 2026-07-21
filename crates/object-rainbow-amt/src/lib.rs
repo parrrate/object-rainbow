@@ -1017,6 +1017,13 @@ impl<T: Component> AmtSet<T> {
         Ok(self.0.insert(value, ()).await?.is_none())
     }
 
+    pub async fn take(&mut self, value: &T) -> object_rainbow::Result<Option<T>> {
+        self.0
+            .remove_entry(value)
+            .await
+            .map(|o| o.map(|(value, ())| value))
+    }
+
     pub async fn remove(&mut self, value: &T) -> object_rainbow::Result<bool> {
         Ok(self.0.remove(value).await?.is_some())
     }
