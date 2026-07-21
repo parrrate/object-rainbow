@@ -1006,7 +1006,7 @@ impl<T: Component> AmtSet<T> {
         self.0.contains_key(value).await
     }
 
-    pub async fn insert_replace(&mut self, value: T) -> object_rainbow::Result<Option<T>> {
+    pub async fn replace(&mut self, value: T) -> object_rainbow::Result<Option<T>> {
         self.0
             .insert_replace(value, ())
             .await
