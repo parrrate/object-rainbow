@@ -61,6 +61,21 @@ impl<T: Component> Apply<(bool, T)> for AmtSet<T> {
     }
 }
 
+impl<T: Component> Apply<(Option<()>, T)> for AmtSet<T> {
+    type Output = Option<T>;
+
+    async fn apply(
+        &mut self,
+        (target, value): (Option<()>, T),
+    ) -> object_rainbow::Result<Self::Output> {
+        if target.is_some() {
+            self.replace(value).await
+        } else {
+            self.take(&value).await
+        }
+    }
+}
+
 impl<T: Component> Apply<T> for AmtSet<T> {
     type Output = bool;
 
