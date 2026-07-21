@@ -20,6 +20,7 @@ use crate::{Apply, Parallel, Sequential, skip::FilterDiffs};
     ParseInline,
     PartialEq,
     Eq,
+    Default,
 )]
 pub struct Inserted;
 
