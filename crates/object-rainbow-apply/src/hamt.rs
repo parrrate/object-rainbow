@@ -41,6 +41,21 @@ impl Apply<(bool, Hash)> for HamtSet {
     }
 }
 
+impl Apply<(Option<()>, Hash)> for HamtSet {
+    type Output = Option<Hash>;
+
+    async fn apply(
+        &mut self,
+        (target, hash): (Option<()>, Hash),
+    ) -> object_rainbow::Result<Self::Output> {
+        if target.is_some() {
+            self.replace(hash).await
+        } else {
+            self.take(hash).await
+        }
+    }
+}
+
 impl Apply<Hash> for HamtSet {
     type Output = bool;
 
