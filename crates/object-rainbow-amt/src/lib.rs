@@ -888,8 +888,12 @@ impl<K: Component, V: Component> AmtMap<K, V> {
         self.insert_replace(k, v).await.map(|o| o.map(|(_, v)| v))
     }
 
+    pub async fn remove_entry(&mut self, k: &K) -> object_rainbow::Result<Option<(K, V)>> {
+        self.0.remove(&k.vec()).await
+    }
+
     pub async fn remove(&mut self, k: &K) -> object_rainbow::Result<Option<V>> {
-        self.0.remove(&k.vec()).await.map(|r| r.map(|(_, v)| v))
+        self.remove_entry(k).await.map(|r| r.map(|(_, v)| v))
     }
 
     pub fn clear(&mut self) {
