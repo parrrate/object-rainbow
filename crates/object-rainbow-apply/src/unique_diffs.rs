@@ -7,7 +7,9 @@ use object_rainbow_hamt::HamtSet;
 
 use crate::{Apply, Parallel, Sequential, skip::FilterDiffs};
 
-#[derive(Debug, Clone, Copy, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse)]
+#[derive(
+    Debug, Clone, Copy, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline,
+)]
 pub struct Inserted;
 
 impl Apply<bool> for Inserted {
