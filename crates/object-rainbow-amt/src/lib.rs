@@ -1002,6 +1002,13 @@ impl<T: Component> AmtSet<T> {
         self.0.contains_key(value).await
     }
 
+    pub async fn insert_replace(&mut self, value: T) -> object_rainbow::Result<Option<T>> {
+        self.0
+            .insert_replace(value, ())
+            .await
+            .map(|o| o.map(|(value, ())| value))
+    }
+
     pub async fn insert(&mut self, value: T) -> object_rainbow::Result<bool> {
         Ok(self.0.insert(value, ()).await?.is_none())
     }
