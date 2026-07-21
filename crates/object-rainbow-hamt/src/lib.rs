@@ -935,6 +935,14 @@ impl HamtSet {
         Ok(self.0.remove(hash).await?.is_some())
     }
 
+    pub async fn take(&mut self, hash: Hash) -> object_rainbow::Result<Option<Hash>> {
+        Ok(if self.remove(hash).await? {
+            Some(hash)
+        } else {
+            None
+        })
+    }
+
     pub async fn contains(&self, hash: Hash) -> object_rainbow::Result<bool> {
         self.0.contains(hash).await
     }
