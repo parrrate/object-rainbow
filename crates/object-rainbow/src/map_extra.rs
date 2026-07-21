@@ -292,3 +292,5 @@ impl<T: IntoIterator> StaticMap<T> for StaticItem0 {
         x.into_iter().next()
     }
 }
+
+pub type Item0 = SmExtra<StaticItem0>;
