@@ -282,3 +282,5 @@ impl<T, I: IntoIterator<Item = T>, C: FromIterator<T>> StaticMap<I> for StaticCo
 }
 
 pub type Collect<C> = SmExtra<StaticCollect<C>>;
+
+pub struct Item0;
