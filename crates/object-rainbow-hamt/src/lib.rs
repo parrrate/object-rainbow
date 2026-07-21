@@ -825,6 +825,16 @@ impl<V: Component> HamtMap<V> {
             .await
     }
 
+    pub async fn insert_replace(
+        &mut self,
+        hash: Hash,
+        value: V,
+    ) -> object_rainbow::Result<Option<(Hash, V)>> {
+        self.insert(hash, value)
+            .await
+            .map(|o| o.map(|value| (hash, value)))
+    }
+
     pub async fn remove(&mut self, hash: Hash) -> object_rainbow::Result<Option<V>> {
         self.0.fetch_mut().await?.remove(hash.reinterpret()).await
     }
