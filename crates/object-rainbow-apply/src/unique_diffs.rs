@@ -9,6 +9,14 @@ use crate::{Apply, Parallel, Sequential, skip::FilterDiffs};
 
 pub struct Inserted;
 
+impl Apply<bool> for Inserted {
+    type Output = bool;
+
+    async fn apply(&mut self, inserted: bool) -> object_rainbow::Result<Self::Output> {
+        Ok(inserted)
+    }
+}
+
 #[derive(
     ToOutput,
     InlineOutput,
