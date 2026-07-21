@@ -14,7 +14,7 @@ type ActionFuture<'a, T = ()> =
     Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<T>>>>;
 type OptionFuture<'a, T> = ActionFuture<'a, Option<T>>;
 
-trait Amt<K>: Sized {
+trait Amt<K>: Sized + Send {
     type V: Send + Sync;
     fn is_empty(&self) -> bool;
     fn insert(&mut self, key: K, value: Self::V, replace: bool) -> OptionFuture<'_, Self::V>;
