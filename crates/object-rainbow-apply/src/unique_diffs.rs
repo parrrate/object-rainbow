@@ -7,6 +7,8 @@ use object_rainbow_hamt::HamtSet;
 
 use crate::{Apply, Parallel, Sequential, skip::FilterDiffs};
 
+pub struct Inserted;
+
 #[derive(
     ToOutput,
     InlineOutput,
