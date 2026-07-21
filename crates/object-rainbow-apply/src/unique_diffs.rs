@@ -40,6 +40,8 @@ impl<T: Send> Apply<Option<T>> for Inserted {
     }
 }
 
+pub type TrackInserted = Sequential<HamtSet, Inserted>;
+
 #[derive(
     ToOutput,
     InlineOutput,
@@ -54,7 +56,7 @@ impl<T: Send> Apply<Option<T>> for Inserted {
     Default,
 )]
 pub struct UniqueDiffs<T> {
-    inner: Sequential<Parallel<Sequential<ToHash, HamtSet>, Return>, FilterDiffs<T>>,
+    inner: Sequential<Parallel<Sequential<ToHash, TrackInserted>, Return>, FilterDiffs<T>>,
 }
 
 assert_impl!(
