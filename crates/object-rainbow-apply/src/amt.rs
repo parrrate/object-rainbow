@@ -4,17 +4,18 @@ use object_rainbow_amt::{AmtMap, AmtSet};
 use crate::Apply;
 
 impl<K: Component, V: Component> Apply<(Option<V>, K)> for AmtMap<K, V> {
-    type Output = Option<V>;
+    type Output = Option<(V, K)>;
 
     async fn apply(
         &mut self,
         (value, key): (Option<V>, K),
     ) -> object_rainbow::Result<Self::Output> {
         if let Some(value) = value {
-            self.insert(key, value).await
+            self.insert_replace(key, value).await
         } else {
-            self.remove(&key).await
+            self.remove_entry(&key).await
         }
+        .map(|o| o.map(|(k, v)| (v, k)))
     }
 }
 
