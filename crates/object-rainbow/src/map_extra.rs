@@ -294,3 +294,5 @@ impl<T: IntoIterator> StaticMap<T> for StaticItem0 {
 }
 
 pub type Item0 = SmExtra<StaticItem0>;
+
+pub type OptionMap<M> = Compose<FMap<M>, Item0>;
