@@ -738,7 +738,7 @@ pub trait ToOutput {
 }
 
 /// Marker trait indicating that [`ToOutput`] result cannot be extended (no value, when represented
-/// as a `Vec<u8>`, may be a prefix of another value).
+/// as a `Vec<u8>`, may be a prefix of another value). Effectively means prefix property.
 pub trait InlineOutput: ToOutput {
     fn slice_to_output(slice: &[Self], output: &mut impl Output)
     where
