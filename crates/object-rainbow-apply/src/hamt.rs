@@ -65,9 +65,9 @@ impl Apply<Hash> for HamtSet {
 }
 
 impl Apply<((), Hash)> for HamtSet {
-    type Output = bool;
+    type Output = Option<Hash>;
 
     async fn apply(&mut self, ((), hash): ((), Hash)) -> object_rainbow::Result<Self::Output> {
-        self.insert(hash).await
+        self.apply(hash).await
     }
 }
