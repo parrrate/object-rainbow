@@ -284,3 +284,11 @@ impl<T, I: IntoIterator<Item = T>, C: FromIterator<T>> StaticMap<I> for StaticCo
 pub type Collect<C> = SmExtra<StaticCollect<C>>;
 
 pub struct StaticItem0;
+
+impl<T: IntoIterator> StaticMap<T> for StaticItem0 {
+    type Mapped = Option<T::Item>;
+
+    fn static_map(x: T) -> Self::Mapped {
+        x.into_iter().next()
+    }
+}
