@@ -25,10 +25,12 @@ impl<K: ReflessObject, V: 'static + Send + Sync + Clone> Apply<(V, K)> for TrieM
 where
     Option<V>: Traversible + InlineOutput,
 {
-    type Output = Option<V>;
+    type Output = Option<(V, K)>;
 
     async fn apply(&mut self, (value, key): (V, K)) -> object_rainbow::Result<Self::Output> {
-        self.insert(&key, value).await
+        self.insert(&key, value)
+            .await
+            .map(|o| o.map(|value| (value, key)))
     }
 }
 
