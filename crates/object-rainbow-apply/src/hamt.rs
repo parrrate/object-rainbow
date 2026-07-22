@@ -4,17 +4,18 @@ use object_rainbow_hamt::{HamtMap, HamtSet};
 use crate::Apply;
 
 impl<V: 'static + Send + Sync + Component> Apply<(Option<V>, Hash)> for HamtMap<V> {
-    type Output = Option<V>;
+    type Output = Option<(V, Hash)>;
 
     async fn apply(
         &mut self,
         (value, hash): (Option<V>, Hash),
     ) -> object_rainbow::Result<Self::Output> {
         if let Some(value) = value {
-            self.insert(hash, value).await
+            self.insert_replace(hash, value).await
         } else {
-            self.remove(hash).await
+            self.remove_entry(hash).await
         }
+        .map(|o| o.map(|(k, v)| (v, k)))
     }
 }
 
