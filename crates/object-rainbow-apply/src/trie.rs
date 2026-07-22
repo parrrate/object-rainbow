@@ -7,7 +7,7 @@ impl<K: ReflessObject, V: 'static + Send + Sync + Clone> Apply<(Option<V>, K)> f
 where
     Option<V>: Traversible + InlineOutput,
 {
-    type Output = Option<V>;
+    type Output = Option<(V, K)>;
 
     async fn apply(
         &mut self,
@@ -18,6 +18,7 @@ where
         } else {
             self.remove(&key).await
         }
+        .map(|o| o.map(|value| (value, key)))
     }
 }
 
