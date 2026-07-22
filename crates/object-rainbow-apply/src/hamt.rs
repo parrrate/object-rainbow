@@ -19,10 +19,12 @@ impl<V: 'static + Send + Sync + Component> Apply<(Option<V>, Hash)> for HamtMap<
 }
 
 impl<V: 'static + Send + Sync + Component> Apply<(V, Hash)> for HamtMap<V> {
-    type Output = Option<V>;
+    type Output = Option<(V, Hash)>;
 
     async fn apply(&mut self, (value, hash): (V, Hash)) -> object_rainbow::Result<Self::Output> {
-        self.insert(hash, value).await
+        self.insert_replace(hash, value)
+            .await
+            .map(|o| o.map(|(k, v)| (v, k)))
     }
 }
 
