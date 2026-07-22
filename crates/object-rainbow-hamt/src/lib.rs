@@ -839,6 +839,12 @@ impl<V: Component> HamtMap<V> {
         self.0.fetch_mut().await?.remove(hash.reinterpret()).await
     }
 
+    pub async fn remove_entry(&mut self, hash: Hash) -> object_rainbow::Result<Option<(Hash, V)>> {
+        self.remove(hash)
+            .await
+            .map(|o| o.map(|value| (hash, value)))
+    }
+
     pub async fn get(&self, hash: Hash) -> object_rainbow::Result<Option<V>> {
         self.0
             .fetch()
