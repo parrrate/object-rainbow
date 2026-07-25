@@ -101,6 +101,10 @@ impl<T: Component + Default + Apply<D>, D: Clone + Traversible> History<T, D> {
             .unwrap_or_default())
     }
 
+    pub async fn len(&self) -> object_rainbow::Result<u64> {
+        self.0.len().await
+    }
+
     pub async fn rebase(&mut self, base: &Self) -> object_rainbow::Result<()> {
         let mut base = base.clone();
         base.rebase_other(self).await?;
