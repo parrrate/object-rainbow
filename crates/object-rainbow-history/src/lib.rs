@@ -105,6 +105,10 @@ impl<T: Component + Default + Apply<D>, D: Clone + Traversible> History<T, D> {
         self.0.len().await
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
     pub async fn rebase(&mut self, base: &Self) -> object_rainbow::Result<()> {
         let mut base = base.clone();
         base.rebase_other(self).await?;
