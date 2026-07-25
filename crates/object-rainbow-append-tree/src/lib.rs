@@ -556,9 +556,8 @@ impl<T: Send + Sync + Component> AppendTree<T> {
             TreeKind::N8((node, history)) => {
                 if len == N8::<T>::CAPACITY {
                     return Err(PushError::RootOverflow(value));
-                } else {
-                    node.push(len, value, history)?;
                 }
+                node.push(len, value, history)?;
             }
         }
         self.len += 1;
