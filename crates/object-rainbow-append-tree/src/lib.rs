@@ -3,7 +3,7 @@ use std::{fmt::Debug, future::ready, marker::PhantomData};
 use object_rainbow::{
     Component, Enum, ExtraFor, Fetch, FullHash, Inline, InlineOutput, ListHashes, Object, Output,
     Parse, ParseAsInline, ParseInline, ParseInput, PointInput, Tagged, ToOutput, Topological,
-    Traversible, assert_impl, numeric::Be,
+    Traversible, assert_impl,
 };
 use object_rainbow_point::{IntoPoint, Point};
 use typenum::{U256, Unsigned};
@@ -433,7 +433,7 @@ enum TreeKind<T> {
 
 #[derive(Tagged, ListHashes, Topological, Clone, ParseAsInline, PartialEq, Eq, Debug)]
 pub struct AppendTree<T> {
-    len: Be<u64>,
+    len: u64,
     kind: TreeKind<T>,
 }
 
@@ -483,16 +483,16 @@ where
     N8<T>: ParseWithLen<I, History = H8<T>>,
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        let len = input.parse_inline::<Be<u64>>()?;
-        let kind = match len.0 {
-            0..=C1 => TreeKind::N1(N1::<T>::parse_with_len(input, len.0)?),
-            C2_MIN..=C2 => TreeKind::N2(N2::<T>::parse_with_len(input, len.0)?),
-            C3_MIN..=C3 => TreeKind::N3(N3::<T>::parse_with_len(input, len.0)?),
-            C4_MIN..=C4 => TreeKind::N4(N4::<T>::parse_with_len(input, len.0)?),
-            C5_MIN..=C5 => TreeKind::N5(N5::<T>::parse_with_len(input, len.0)?),
-            C6_MIN..=C6 => TreeKind::N6(N6::<T>::parse_with_len(input, len.0)?),
-            C7_MIN..=C7 => TreeKind::N7(N7::<T>::parse_with_len(input, len.0)?),
-            C8_MIN..=C8 => TreeKind::N8(N8::<T>::parse_with_len(input, len.0)?),
+        let len = input.parse_inline()?;
+        let kind = match len {
+            0..=C1 => TreeKind::N1(N1::<T>::parse_with_len(input, len)?),
+            C2_MIN..=C2 => TreeKind::N2(N2::<T>::parse_with_len(input, len)?),
+            C3_MIN..=C3 => TreeKind::N3(N3::<T>::parse_with_len(input, len)?),
+            C4_MIN..=C4 => TreeKind::N4(N4::<T>::parse_with_len(input, len)?),
+            C5_MIN..=C5 => TreeKind::N5(N5::<T>::parse_with_len(input, len)?),
+            C6_MIN..=C6 => TreeKind::N6(N6::<T>::parse_with_len(input, len)?),
+            C7_MIN..=C7 => TreeKind::N7(N7::<T>::parse_with_len(input, len)?),
+            C8_MIN..=C8 => TreeKind::N8(N8::<T>::parse_with_len(input, len)?),
         };
         Ok(Self { len, kind })
     }
@@ -510,13 +510,13 @@ assert_impl!(
 impl<T: Send + Sync + Component> AppendTree<T> {
     pub const fn new() -> Self {
         Self {
-            len: Be::<u64>::new(0u64),
+            len: 0,
             kind: TreeKind::N1((Node::new(None, Vec::new()), ())),
         }
     }
 
     pub async fn get(&self, index: u64) -> object_rainbow::Result<Option<T>> {
-        if index < self.len.0 {
+        if index < self.len {
             match &self.kind {
                 TreeKind::N1((node, history)) => node.get(index, Some(history)).await,
                 TreeKind::N2((node, history)) => node.get(index, Some(history)).await,
@@ -534,7 +534,7 @@ impl<T: Send + Sync + Component> AppendTree<T> {
     }
 
     pub fn push(&mut self, value: T) -> Result<(), PushError<T>> {
-        let len = self.len.0;
+        let len = self.len;
         macro_rules! upgrade {
             ($history:ident, $node:ident, $child:ident, $parent:ident) => {
                 if len == $child::<T>::CAPACITY {
@@ -561,16 +561,16 @@ impl<T: Send + Sync + Component> AppendTree<T> {
                 }
             }
         }
-        self.len.0 += 1;
+        self.len += 1;
         Ok(())
     }
 
     pub fn is_empty(&self) -> bool {
-        self.len.0 == 0
+        self.len == 0
     }
 
     pub fn len(&self) -> u64 {
-        self.len.0
+        self.len
     }
 
     pub fn last(&self) -> Option<&T> {
