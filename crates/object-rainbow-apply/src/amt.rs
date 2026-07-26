@@ -101,10 +101,10 @@ impl<T: Component> Apply<Self> for AmtSet<T> {
     }
 }
 
-impl<T: Component> Apply<AmtMap<T, bool>> for AmtSet<T> {
+impl<T: Component> Apply<AmtMap<T, Option<()>>> for AmtSet<T> {
     type Output = Self;
 
-    async fn apply(&mut self, bulk: AmtMap<T, bool>) -> object_rainbow::Result<Self::Output> {
+    async fn apply(&mut self, bulk: AmtMap<T, Option<()>>) -> object_rainbow::Result<Self::Output> {
         self.bulk(bulk).await
     }
 }
