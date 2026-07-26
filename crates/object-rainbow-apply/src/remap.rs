@@ -36,7 +36,7 @@ pub struct MappedToSet<M>(M);
 impl<K: Send + Clone, V: Send, M: MapToSet<K, V>> Apply<(Option<V>, (Option<V>, K))>
     for MappedToSet<M>
 {
-    type Output = Vec<(bool, M::T)>;
+    type Output = Vec<(Option<()>, M::T)>;
 
     async fn apply(
         &mut self,
@@ -44,10 +44,10 @@ impl<K: Send + Clone, V: Send, M: MapToSet<K, V>> Apply<(Option<V>, (Option<V>, 
     ) -> object_rainbow::Result<Self::Output> {
         let mut diff = Vec::new();
         if let Some(value) = old {
-            diff.push((true, self.0.map(key.clone(), value).await?));
+            diff.push((None, self.0.map(key.clone(), value).await?));
         }
         if let Some(value) = new {
-            diff.push((false, self.0.map(key, value).await?));
+            diff.push((Some(()), self.0.map(key, value).await?));
         }
         Ok(diff)
     }
