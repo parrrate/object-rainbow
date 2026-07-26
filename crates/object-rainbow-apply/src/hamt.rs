@@ -29,21 +29,6 @@ impl<V: 'static + Send + Sync + Component> Apply<(V, Hash)> for HamtMap<V> {
     }
 }
 
-impl Apply<(bool, Hash)> for HamtSet {
-    type Output = bool;
-
-    async fn apply(
-        &mut self,
-        (remove, hash): (bool, Hash),
-    ) -> object_rainbow::Result<Self::Output> {
-        Ok(if remove {
-            !self.remove(hash).await?
-        } else {
-            self.insert(hash).await?
-        })
-    }
-}
-
 impl Apply<(Option<()>, Hash)> for HamtSet {
     type Output = Option<Hash>;
 
