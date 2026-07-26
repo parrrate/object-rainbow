@@ -1044,8 +1044,8 @@ impl<T: Component> AmtSet<T> {
         self.0.append_swap(&mut other.0).await
     }
 
-    pub async fn bulk(&mut self, bulk: AmtMap<T, bool>) -> object_rainbow::Result<Self> {
-        let bulk = self.0.bulk(bulk.equivalent_for()).await?;
+    pub async fn bulk(&mut self, bulk: AmtMap<T, Option<()>>) -> object_rainbow::Result<Self> {
+        let bulk = self.0.bulk(bulk).await?;
         Ok(Self(bulk))
     }
 
