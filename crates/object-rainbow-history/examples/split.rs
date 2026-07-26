@@ -40,7 +40,7 @@ async fn main() -> object_rainbow::Result<()> {
     let id = Ulid::new();
     let x = history.apply((Some("a b a".parse()?), id)).await?;
     for (a, (b, (c, d))) in x {
-        println!("{a} {b} {c} {d}");
+        println!("{} {} {c} {d}", a.is_none(), b.is_none());
     }
     for key in ["a", "b"] {
         assert!(
@@ -59,7 +59,7 @@ async fn main() -> object_rainbow::Result<()> {
     println!();
     let x = history.apply((Some("a b c".parse()?), id)).await?;
     for (a, (b, (c, d))) in x {
-        println!("{a} {b} {c} {d}");
+        println!("{} {} {c} {d}", a.is_none(), b.is_none());
     }
     Ok(())
 }

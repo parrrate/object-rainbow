@@ -56,7 +56,7 @@ impl<K: Send + Clone, V: Send, M: MapToSet<K, V>> Apply<(Option<V>, (Option<V>, 
 impl<K: Send, V: Send, M: MapToSet<K, V>> Apply<(Option<(V, K)>, (Option<V>, K))>
     for MappedToSet<M>
 {
-    type Output = Vec<(bool, M::T)>;
+    type Output = Vec<(Option<()>, M::T)>;
 
     async fn apply(
         &mut self,
@@ -64,10 +64,10 @@ impl<K: Send, V: Send, M: MapToSet<K, V>> Apply<(Option<(V, K)>, (Option<V>, K))
     ) -> object_rainbow::Result<Self::Output> {
         let mut diff = Vec::new();
         if let Some((value, key)) = old {
-            diff.push((true, self.0.map(key, value).await?));
+            diff.push((None, self.0.map(key, value).await?));
         }
         if let Some(value) = new {
-            diff.push((false, self.0.map(key, value).await?));
+            diff.push((Some(()), self.0.map(key, value).await?));
         }
         Ok(diff)
     }
