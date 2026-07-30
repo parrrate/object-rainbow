@@ -1,6 +1,7 @@
 use crate::*;
 
 pub mod array;
+pub mod delayed;
 
 #[derive(Debug, Clone, ParseAsInline, PartialEq)]
 pub struct Extras<Extra>(pub Extra);
