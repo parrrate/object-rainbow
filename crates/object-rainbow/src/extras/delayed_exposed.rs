@@ -3,9 +3,9 @@ use std::marker::PhantomData;
 use crate::*;
 
 #[derive(ToOutput)]
-pub struct DelayedExtra<E, F, T>(pub E, pub F, pub PhantomData<T>);
+pub struct DelayedExposed<E, F, T>(pub E, pub F, pub PhantomData<T>);
 
-impl<E, F: FetchBytes, T> FetchBytes for DelayedExtra<E, F, T> {
+impl<E, F: FetchBytes, T> FetchBytes for DelayedExposed<E, F, T> {
     fn fetch_bytes(&'_ self) -> crate::FailFuture<'_, crate::ByteNode> {
         self.1.fetch_bytes()
     }
@@ -15,7 +15,7 @@ impl<E, F: FetchBytes, T> FetchBytes for DelayedExtra<E, F, T> {
     }
 }
 
-impl<E: Send + Sync, F: Singular, T: Send + Sync> Singular for DelayedExtra<E, F, T> {
+impl<E: Send + Sync, F: Singular, T: Send + Sync> Singular for DelayedExposed<E, F, T> {
     fn hash(&self) -> crate::Hash {
         self.1.hash()
     }
@@ -25,7 +25,7 @@ impl<
     E: Send + Sync + Fetch<T: Send + Sync + Clone>,
     F: 'static + Send + Sync + FetchBytes,
     T: Send + Sync + ParseSliceExtra<E::T>,
-> DelayedExtra<E, F, T>
+> DelayedExposed<E, F, T>
 {
     async fn fetch_node(&self) -> object_rainbow::Result<crate::Node<T>> {
         let (data, resolve) = self.fetch_bytes().await?;
@@ -38,7 +38,7 @@ impl<
     E: Send + Sync + Fetch<T: Send + Sync + Clone>,
     F: 'static + Send + Sync + FetchBytes,
     T: Send + Sync + ParseSliceExtra<E::T>,
-> Fetch for DelayedExtra<E, F, T>
+> Fetch for DelayedExposed<E, F, T>
 {
     type T = T;
 
