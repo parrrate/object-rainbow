@@ -1,6 +1,8 @@
+use std::marker::PhantomData;
+
 use crate::FetchBytes;
 
-pub struct DelayedExtra<E, F, T>(pub E, pub F, pub T);
+pub struct DelayedExtra<E, F, T>(pub E, pub F, pub PhantomData<T>);
 
 impl<E, F: FetchBytes, T> FetchBytes for DelayedExtra<E, F, T> {
     fn fetch_bytes(&'_ self) -> crate::FailFuture<'_, crate::ByteNode> {
