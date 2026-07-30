@@ -11,3 +11,15 @@ pub trait ParseDelayedOpaqueInline<E: 'static + Clone>: Sized {
 }
 
 pub struct DelayedOpaque<F>(pub F);
+
+impl<
+    E: 'static + Clone,
+    F: ParseDelayedOpaque<E>,
+    X: 'static + Clone + Fetch<T = E>,
+    I: PointInput<Extra = X>,
+> Parse<I> for DelayedOpaque<F>
+{
+    fn parse(input: I) -> crate::Result<Self> {
+        F::parse_delayed_opaque(input).map(Self)
+    }
+}
