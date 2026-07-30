@@ -9,3 +9,5 @@ pub trait ParseDelayedOpaqueInline<E: 'static + Clone>: Sized {
         input: &mut I,
     ) -> Result<Self>;
 }
+
+pub struct DelayedOpaque<F>(pub F);
