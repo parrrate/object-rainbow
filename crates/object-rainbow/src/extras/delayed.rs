@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::{Fetch, FetchBytes, ParseSliceExtra};
+use crate::{Fetch, FetchBytes, ParseSliceExtra, Singular};
 
 pub struct DelayedExtra<E, F, T>(pub E, pub F, pub PhantomData<T>);
 
@@ -11,6 +11,12 @@ impl<E, F: FetchBytes, T> FetchBytes for DelayedExtra<E, F, T> {
 
     fn fetch_data(&'_ self) -> crate::FailFuture<'_, Vec<u8>> {
         self.1.fetch_data()
+    }
+}
+
+impl<E: Send + Sync, F: Singular, T: Send + Sync> Singular for DelayedExtra<E, F, T> {
+    fn hash(&self) -> crate::Hash {
+        self.1.hash()
     }
 }
 
