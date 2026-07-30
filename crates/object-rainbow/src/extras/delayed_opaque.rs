@@ -23,3 +23,15 @@ impl<
         F::parse_delayed_opaque(input).map(Self)
     }
 }
+
+impl<
+    E: 'static + Clone,
+    F: ParseDelayedOpaqueInline<E>,
+    X: 'static + Clone + Fetch<T = E>,
+    I: PointInput<Extra = X>,
+> ParseInline<I> for DelayedOpaque<F>
+{
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        F::parse_delayed_opaque_inline(input).map(Self)
+    }
+}
