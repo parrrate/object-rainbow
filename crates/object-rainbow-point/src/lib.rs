@@ -16,7 +16,7 @@ use object_rainbow::{
     FetchBytes, FullHash, Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, OptionalHash,
     Output, Parse, ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Size, Tagged, Tags, ToOutput, Topological, Traversible,
-    object_marker::ObjectMarker,
+    extras::delayed_opaque::ParseDelayedOpaque, object_marker::ObjectMarker,
 };
 
 #[cfg(feature = "serde")]
@@ -1035,5 +1035,21 @@ impl<T, Extra: Clone> CanonicalExtra for ExtraPoint<T, Extra> {
 
     fn canonical_extra(&self) -> Self::Extra {
         self.extra.canonical_extra()
+    }
+}
+
+impl<T: 'static + Send + FullHash, E: 'static + Send + Sync + Clone + ExtraFor<T>>
+    ParseDelayedOpaque<E> for Point<T>
+{
+    fn parse_delayed_opaque<I: PointInput<Extra: Fetch<T = E>>>(
+        input: I,
+    ) -> object_rainbow::Result<Self> {
+        input.parse_as_inline(|input| {
+            Ok(Self::from_delayed(
+                input.parse_inline()?,
+                input.resolve(),
+                input.extra().clone(),
+            ))
+        })
     }
 }
