@@ -16,7 +16,8 @@ use object_rainbow::{
     FetchBytes, FullHash, Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, OptionalHash,
     Output, Parse, ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Size, Tagged, Tags, ToOutput, Topological, Traversible,
-    extras::delayed_opaque::ParseDelayedOpaque, object_marker::ObjectMarker,
+    extras::delayed_opaque::{ParseDelayedOpaque, ParseDelayedOpaqueInline},
+    object_marker::ObjectMarker,
 };
 
 #[cfg(feature = "serde")]
@@ -1044,12 +1045,20 @@ impl<T: 'static + Send + FullHash, E: 'static + Send + Sync + Clone + ExtraFor<T
     fn parse_delayed_opaque<I: PointInput<Extra: Fetch<T = E>>>(
         input: I,
     ) -> object_rainbow::Result<Self> {
-        input.parse_as_inline(|input| {
-            Ok(Self::from_delayed(
-                input.parse_inline()?,
-                input.resolve(),
-                input.extra().clone(),
-            ))
-        })
+        Self::parse_delayed_opaque_as_inline(input)
+    }
+}
+
+impl<T: 'static + Send + FullHash, E: 'static + Send + Sync + Clone + ExtraFor<T>>
+    ParseDelayedOpaqueInline<E> for Point<T>
+{
+    fn parse_delayed_opaque_inline<I: PointInput<Extra: Fetch<T = E>>>(
+        input: &mut I,
+    ) -> object_rainbow::Result<Self> {
+        Ok(Self::from_delayed(
+            input.parse_inline()?,
+            input.resolve(),
+            input.extra().clone(),
+        ))
     }
 }
