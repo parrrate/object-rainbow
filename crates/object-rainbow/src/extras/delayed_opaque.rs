@@ -8,6 +8,12 @@ pub trait ParseDelayedOpaqueInline<E: 'static + Clone>: ParseDelayedOpaque<E> {
     fn parse_delayed_opaque_inline<I: PointInput<Extra: Fetch<T = E>>>(
         input: &mut I,
     ) -> Result<Self>;
+
+    fn parse_delayed_opaque_as_inline<I: PointInput<Extra: Fetch<T = E>>>(
+        input: I,
+    ) -> Result<Self> {
+        input.parse_as_inline(Self::parse_delayed_opaque_inline)
+    }
 }
 
 pub struct DelayedOpaque<F>(pub F);
