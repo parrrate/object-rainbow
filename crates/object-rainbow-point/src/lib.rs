@@ -145,6 +145,56 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for ByAddress<T, Extra
     }
 }
 
+struct Delayed<T, D> {
+    inner: ByAddressInner,
+    delayed: D,
+    _object: PhantomData<fn() -> T>,
+}
+
+impl<T, D> Delayed<T, D> {
+    fn from_inner(inner: ByAddressInner, delayed: D) -> Self {
+        Self {
+            inner,
+            delayed,
+            _object: PhantomData,
+        }
+    }
+}
+
+impl<T, D> FetchBytes for Delayed<T, D> {
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
+        self.inner.fetch_bytes()
+    }
+
+    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
+        self.inner.fetch_data()
+    }
+}
+
+impl<T: FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> Delayed<T, D> {
+    async fn fetch_object(&self) -> object_rainbow::Result<Node<T>> {
+        let ((data, resolve), extra) =
+            futures_util::future::try_join(self.fetch_bytes(), self.delayed.fetch()).await?;
+        let object = extra.parse_checked(self.inner.address.hash, &data, &resolve)?;
+        Ok((object, resolve))
+    }
+}
+
+impl<T: Send + FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> Fetch for Delayed<T, D> {
+    type T = T;
+
+    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
+        Box::pin(self.fetch_object())
+    }
+
+    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
+        Box::pin(async {
+            let (object, _) = self.fetch_object().await?;
+            Ok(object)
+        })
+    }
+}
+
 trait FromInner {
     type Inner: 'static + Clone;
     type Extra: 'static + Clone;
@@ -542,6 +592,20 @@ impl<T: 'static + FullHash> Point<T> {
         extra: Extra,
     ) -> Self {
         Self::from_address_extra(Address::from_hash(self.hash()), resolve, extra)
+    }
+
+    pub fn from_delayed<Extra: 'static + Send + Sync + Clone + ExtraFor<T>>(
+        address: Address,
+        resolve: Arc<dyn Resolve>,
+        delayed: impl 'static + Fetch<T = Extra>,
+    ) -> Self
+    where
+        T: Send,
+    {
+        Self::from_fetch(
+            address.hash,
+            Delayed::from_inner(ByAddressInner { address, resolve }, delayed).into_dyn_fetch(),
+        )
     }
 }
 
