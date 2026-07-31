@@ -1586,6 +1586,15 @@ pub trait ParseInput: Sized {
     ) -> crate::Result<T>;
 
     fn parse_refless<T: for<'r> Parse<ReflessInput<'r>>>(self) -> crate::Result<T>;
+
+    fn parse_as_inline<T>(
+        mut self,
+        f: impl FnOnce(&mut Self) -> crate::Result<T>,
+    ) -> crate::Result<T> {
+        let object = f(&mut self)?;
+        self.empty()?;
+        Ok(object)
+    }
 }
 
 pub struct AsRead<'a, I> {
@@ -1666,10 +1675,8 @@ pub trait ParseInline<I: ParseInput>: Parse<I> {
     /// Parse without consuming the whole stream. Errors on unexpected EOF.
     fn parse_inline(input: &mut I) -> crate::Result<Self>;
     /// For implementing [`Parse::parse`].
-    fn parse_as_inline(mut input: I) -> crate::Result<Self> {
-        let object = Self::parse_inline(&mut input)?;
-        input.empty()?;
-        Ok(object)
+    fn parse_as_inline(input: I) -> crate::Result<Self> {
+        input.parse_as_inline(|input| input.parse_inline())
     }
     /// Parse a `Vec` of `Self`. Customisable for optimisations.
     fn parse_vec(input: I) -> crate::Result<Vec<Self>> {
