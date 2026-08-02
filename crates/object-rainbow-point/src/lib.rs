@@ -1042,7 +1042,7 @@ impl<T, Extra: Clone> CanonicalExtra for ExtraPoint<T, Extra> {
 impl<T: 'static + Send + FullHash, E: 'static + Send + Sync + Clone + ExtraFor<T>>
     ParseFetch<E> for Point<T>
 {
-    fn parse_delayed_opaque<I: PointInput<Extra: Fetch<T = E>>>(
+    fn parse_fetch<I: PointInput<Extra: Fetch<T = E>>>(
         input: I,
     ) -> object_rainbow::Result<Self> {
         Self::parse_delayed_opaque_as_inline(input)

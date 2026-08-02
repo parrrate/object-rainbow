@@ -1,7 +1,7 @@
 use crate::*;
 
 pub trait ParseFetch<E: 'static + Clone>: Sized {
-    fn parse_delayed_opaque<I: PointInput<Extra: Fetch<T = E>>>(input: I) -> Result<Self>;
+    fn parse_fetch<I: PointInput<Extra: Fetch<T = E>>>(input: I) -> Result<Self>;
 }
 
 pub trait ParseDelayedOpaqueInline<E: 'static + Clone>: ParseFetch<E> {
@@ -26,7 +26,7 @@ impl<
 > Parse<I> for DelayedOpaque<F>
 {
     fn parse(input: I) -> crate::Result<Self> {
-        F::parse_delayed_opaque(input).map(Self)
+        F::parse_fetch(input).map(Self)
     }
 }
 
