@@ -598,14 +598,14 @@ impl<T: 'static + FullHash> Point<T> {
     pub fn from_delayed<Extra: 'static + Send + Sync + Clone + ExtraFor<T>>(
         address: Address,
         resolve: Arc<dyn Resolve>,
-        delayed: impl 'static + Fetch<T = Extra>,
+        fetch: impl 'static + Fetch<T = Extra>,
     ) -> Self
     where
         T: Send,
     {
         Self::from_fetch(
             address.hash,
-            FetchExtra::from_inner(ByAddressInner { address, resolve }, delayed).into_dyn_fetch(),
+            FetchExtra::from_inner(ByAddressInner { address, resolve }, fetch).into_dyn_fetch(),
         )
     }
 }
