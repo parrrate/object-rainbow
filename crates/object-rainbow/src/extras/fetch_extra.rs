@@ -4,7 +4,7 @@ pub trait ParseFetch<E: 'static + Clone>: Sized {
     fn parse_fetch<I: PointInput<Extra: Fetch<T = E>>>(input: I) -> Result<Self>;
 }
 
-pub trait ParseDelayedOpaqueInline<E: 'static + Clone>: ParseFetch<E> {
+pub trait ParseFetchInline<E: 'static + Clone>: ParseFetch<E> {
     fn parse_delayed_opaque_inline<I: PointInput<Extra: Fetch<T = E>>>(
         input: &mut I,
     ) -> Result<Self>;
@@ -32,7 +32,7 @@ impl<
 
 impl<
     E: 'static + Clone,
-    F: ParseDelayedOpaqueInline<E>,
+    F: ParseFetchInline<E>,
     X: 'static + Clone + Fetch<T = E>,
     I: PointInput<Extra = X>,
 > ParseInline<I> for DelayedOpaque<F>

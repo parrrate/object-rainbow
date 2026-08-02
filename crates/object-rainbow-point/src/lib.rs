@@ -16,7 +16,7 @@ use object_rainbow::{
     FetchBytes, FullHash, Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, OptionalHash,
     Output, Parse, ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Size, Tagged, Tags, ToOutput, Topological, Traversible,
-    extras::fetch_extra::{ParseFetch, ParseDelayedOpaqueInline},
+    extras::fetch_extra::{ParseFetch, ParseFetchInline},
     object_marker::ObjectMarker,
 };
 
@@ -1050,7 +1050,7 @@ impl<T: 'static + Send + FullHash, E: 'static + Send + Sync + Clone + ExtraFor<T
 }
 
 impl<T: 'static + Send + FullHash, E: 'static + Send + Sync + Clone + ExtraFor<T>>
-    ParseDelayedOpaqueInline<E> for Point<T>
+    ParseFetchInline<E> for Point<T>
 {
     fn parse_delayed_opaque_inline<I: PointInput<Extra: Fetch<T = E>>>(
         input: &mut I,
