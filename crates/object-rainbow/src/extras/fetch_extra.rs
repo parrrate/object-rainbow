@@ -12,14 +12,14 @@ pub trait ParseFetchInline<E: 'static + Clone>: ParseFetch<E> {
     }
 }
 
-pub struct DelayedOpaque<F>(pub F);
+pub struct FetchExtra<F>(pub F);
 
 impl<
     E: 'static + Clone,
     F: ParseFetch<E>,
     X: 'static + Clone + Fetch<T = E>,
     I: PointInput<Extra = X>,
-> Parse<I> for DelayedOpaque<F>
+> Parse<I> for FetchExtra<F>
 {
     fn parse(input: I) -> crate::Result<Self> {
         F::parse_fetch(input).map(Self)
@@ -31,7 +31,7 @@ impl<
     F: ParseFetchInline<E>,
     X: 'static + Clone + Fetch<T = E>,
     I: PointInput<Extra = X>,
-> ParseInline<I> for DelayedOpaque<F>
+> ParseInline<I> for FetchExtra<F>
 {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         F::parse_fetch_inline(input).map(Self)
