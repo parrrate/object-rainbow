@@ -146,13 +146,13 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for ByAddress<T, Extra
     }
 }
 
-struct Delayed<T, D> {
+struct FetchExtra<T, D> {
     inner: ByAddressInner,
     delayed: D,
     _object: PhantomData<fn() -> T>,
 }
 
-impl<T, D> Delayed<T, D> {
+impl<T, D> FetchExtra<T, D> {
     fn from_inner(inner: ByAddressInner, delayed: D) -> Self {
         Self {
             inner,
@@ -162,7 +162,7 @@ impl<T, D> Delayed<T, D> {
     }
 }
 
-impl<T, D> FetchBytes for Delayed<T, D> {
+impl<T, D> FetchBytes for FetchExtra<T, D> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.inner.fetch_bytes()
     }
@@ -172,7 +172,7 @@ impl<T, D> FetchBytes for Delayed<T, D> {
     }
 }
 
-impl<T: FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> Delayed<T, D> {
+impl<T: FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> FetchExtra<T, D> {
     async fn fetch_object(&self) -> object_rainbow::Result<Node<T>> {
         let ((data, resolve), extra) =
             futures_util::future::try_join(self.fetch_bytes(), self.delayed.fetch()).await?;
@@ -181,7 +181,7 @@ impl<T: FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> Delayed<T, D> {
     }
 }
 
-impl<T: Send + FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> Fetch for Delayed<T, D> {
+impl<T: Send + FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> Fetch for FetchExtra<T, D> {
     type T = T;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
@@ -605,7 +605,7 @@ impl<T: 'static + FullHash> Point<T> {
     {
         Self::from_fetch(
             address.hash,
-            Delayed::from_inner(ByAddressInner { address, resolve }, delayed).into_dyn_fetch(),
+            FetchExtra::from_inner(ByAddressInner { address, resolve }, delayed).into_dyn_fetch(),
         )
     }
 }
