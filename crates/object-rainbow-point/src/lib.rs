@@ -148,15 +148,15 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for ByAddress<T, Extra
 
 struct FetchExtra<T, D> {
     inner: ByAddressInner,
-    delayed: D,
+    fetch: D,
     _object: PhantomData<fn() -> T>,
 }
 
 impl<T, D> FetchExtra<T, D> {
-    fn from_inner(inner: ByAddressInner, delayed: D) -> Self {
+    fn from_inner(inner: ByAddressInner, fetch: D) -> Self {
         Self {
             inner,
-            delayed,
+            fetch,
             _object: PhantomData,
         }
     }
@@ -175,7 +175,7 @@ impl<T, D> FetchBytes for FetchExtra<T, D> {
 impl<T: FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> FetchExtra<T, D> {
     async fn fetch_object(&self) -> object_rainbow::Result<Node<T>> {
         let ((data, resolve), extra) =
-            futures_util::future::try_join(self.fetch_bytes(), self.delayed.fetch()).await?;
+            futures_util::future::try_join(self.fetch_bytes(), self.fetch.fetch()).await?;
         let object = extra.parse_checked(self.inner.address.hash, &data, &resolve)?;
         Ok((object, resolve))
     }
