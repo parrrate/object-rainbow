@@ -595,7 +595,7 @@ impl<T: 'static + FullHash> Point<T> {
         Self::from_address_extra(Address::from_hash(self.hash()), resolve, extra)
     }
 
-    pub fn from_delayed<Extra: 'static + Send + Sync + Clone + ExtraFor<T>>(
+    pub fn from_fetch_extra<Extra: 'static + Send + Sync + Clone + ExtraFor<T>>(
         address: Address,
         resolve: Arc<dyn Resolve>,
         fetch: impl 'static + Fetch<T = Extra>,
@@ -1053,7 +1053,7 @@ impl<T: 'static + Send + FullHash, E: 'static + Send + Sync + Clone + ExtraFor<T
     fn parse_fetch_inline<I: PointInput<Extra: Fetch<T = E>>>(
         input: &mut I,
     ) -> object_rainbow::Result<Self> {
-        Ok(Self::from_delayed(
+        Ok(Self::from_fetch_extra(
             input.parse_inline()?,
             input.resolve(),
             input.extra().clone(),
