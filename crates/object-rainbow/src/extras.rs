@@ -2,7 +2,7 @@ use crate::*;
 
 pub mod array;
 pub mod delayed_exposed;
-pub mod delayed_opaque;
+pub mod fetch_extra;
 
 #[derive(Debug, Clone, ParseAsInline, PartialEq)]
 pub struct Extras<Extra>(pub Extra);

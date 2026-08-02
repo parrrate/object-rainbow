@@ -16,7 +16,7 @@ use object_rainbow::{
     FetchBytes, FullHash, Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, OptionalHash,
     Output, Parse, ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Size, Tagged, Tags, ToOutput, Topological, Traversible,
-    extras::delayed_opaque::{ParseDelayedOpaque, ParseDelayedOpaqueInline},
+    extras::fetch_extra::{ParseDelayedOpaque, ParseDelayedOpaqueInline},
     object_marker::ObjectMarker,
 };
 
