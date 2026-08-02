@@ -16,7 +16,7 @@ use object_rainbow::{
     FetchBytes, FullHash, Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, OptionalHash,
     Output, Parse, ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Size, Tagged, Tags, ToOutput, Topological, Traversible,
-    extras::fetch_extra::{ParseDelayedOpaque, ParseDelayedOpaqueInline},
+    extras::fetch_extra::{ParseFetch, ParseDelayedOpaqueInline},
     object_marker::ObjectMarker,
 };
 
@@ -1040,7 +1040,7 @@ impl<T, Extra: Clone> CanonicalExtra for ExtraPoint<T, Extra> {
 }
 
 impl<T: 'static + Send + FullHash, E: 'static + Send + Sync + Clone + ExtraFor<T>>
-    ParseDelayedOpaque<E> for Point<T>
+    ParseFetch<E> for Point<T>
 {
     fn parse_delayed_opaque<I: PointInput<Extra: Fetch<T = E>>>(
         input: I,
