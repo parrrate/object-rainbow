@@ -3,6 +3,12 @@ use crate::*;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, ToOutput, Tagged, Size)]
 pub struct AssertRefless<T>(pub T);
 
+impl<T: ByteOrd> ByteOrd for AssertRefless<T> {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.0.bytes_cmp(&other.0)
+    }
+}
+
 impl<T> ListHashes for AssertRefless<T> {}
 impl<T> Topological for AssertRefless<T> {}
 
