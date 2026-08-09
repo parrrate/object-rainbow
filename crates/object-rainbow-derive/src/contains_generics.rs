@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-use syn::{AngleBracketedGenericArguments, Expr, Ident, Path, Type};
+use syn::{AngleBracketedGenericArguments, Expr, Ident, Path, Type, TypeParamBound};
 
 #[derive(Clone, Copy)]
 pub struct GContext<'a> {
@@ -49,6 +49,13 @@ fn path_contains_generics(cx: GContext, path: &Path) -> bool {
     })
 }
 
+fn bound_contains_generics(cx: GContext, ty: &TypeParamBound) -> bool {
+    match ty {
+        TypeParamBound::Trait(ty) => path_contains_generics(cx, &ty.path),
+        _ => false,
+    }
+}
+
 pub fn type_contains_generics(cx: GContext, ty: &Type) -> bool {
     if cx.always {
         return true;
@@ -69,6 +76,7 @@ pub fn type_contains_generics(cx: GContext, ty: &Type) -> bool {
         Type::Reference(ty) => type_contains_generics(cx, &ty.elem),
         Type::Slice(ty) => type_contains_generics(cx, &ty.elem),
         Type::Tuple(ty) => ty.elems.iter().any(|ty| type_contains_generics(cx, ty)),
+        Type::TraitObject(ty) => ty.bounds.iter().any(|ty| bound_contains_generics(cx, ty)),
         _ => false,
     }
 }
