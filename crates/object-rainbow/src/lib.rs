@@ -720,7 +720,7 @@ pub trait ToOutput {
 
         impl HashOutput {
             fn hash(self) -> Hash {
-                Hash::from_sha256(self.hasher.finalize().into())
+                Hash::from_hasher(self.hasher)
             }
         }
 
@@ -775,7 +775,7 @@ pub trait ListHashes {
     fn topology_hash(&self) -> Hash {
         let mut hasher = Sha256::new();
         self.list_hashes(&mut |hash| hasher.update(hash));
-        Hash::from_sha256(hasher.finalize().into())
+        Hash::from_hasher(hasher)
     }
 
     fn point_count(&self) -> usize {
