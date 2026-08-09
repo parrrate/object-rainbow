@@ -3,6 +3,7 @@ use std::marker::PhantomData;
 use crate::*;
 
 #[derive(ToOutput)]
+#[deprecated]
 pub struct DelayedExposed<E, F, T>(pub E, pub F, pub PhantomData<T>);
 
 impl<E, F: FetchBytes, T> FetchBytes for DelayedExposed<E, F, T> {
