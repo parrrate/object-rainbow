@@ -17,7 +17,6 @@ use object_rainbow::{
     Output, Parse, ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Size, Tagged, Tags, ToOutput, Topological, Traversible,
     extras::fetch_extra::{ParseFetch, ParseFetchInline},
-    local_fetch::LocalFetch,
     object_marker::ObjectMarker,
 };
 
@@ -703,7 +702,7 @@ impl<T> Point<T> {
 
 impl<T: Traversible + Clone> Point<T> {
     pub fn from_object(object: T) -> Self {
-        Self::from_fetch(object.full_hash(), LocalFetch::new(object).into_dyn_fetch())
+        Self::from_fetch(object.full_hash(), object.local_fetch())
     }
 
     fn yolo_mut(&mut self) -> bool {
@@ -714,7 +713,7 @@ impl<T: Traversible + Clone> Point<T> {
     async fn prepare_yolo_fetch(&mut self) -> object_rainbow::Result<()> {
         if !self.yolo_mut() {
             let object = self.fetch.fetch().await?;
-            self.fetch = LocalFetch::new(object).into_dyn_fetch();
+            self.fetch = object.local_fetch();
         }
         Ok(())
     }

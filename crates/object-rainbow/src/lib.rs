@@ -1014,6 +1014,13 @@ pub trait Traversible: 'static + Sized + Send + Sync + FullHash + Topological {
             topology_hash,
         })
     }
+
+    fn local_fetch(self) -> Arc<dyn Fetch<T = Self>>
+    where
+        Self: Clone,
+    {
+        self::local_fetch::LocalFetch::new(self).into_dyn_fetch()
+    }
 }
 
 impl<T: 'static + Send + Sync + FullHash + Topological> Traversible for T {}
