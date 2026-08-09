@@ -15,7 +15,7 @@ use object_rainbow::{
     Address, ByteNode, CanonicalExtra, DefaultHash, Equivalent, ExtraFor, FailFuture, Fetch,
     FetchBytes, FullHash, Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, OptionalHash,
     Output, Parse, ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular,
-    SingularFetch, Size, Tagged, Tags, ToOutput, Topological, Traversible,
+    SingularFetch, Size, Tagged, ToOutput, Topological, Traversible,
     extras::fetch_extra::{ParseFetch, ParseFetchInline},
     object_marker::ObjectMarker,
 };
@@ -493,7 +493,7 @@ impl<U: 'static + Equivalent<T>, T: 'static, Extra> Equivalent<RawPoint<T, Extra
     }
 }
 
-#[derive(ParseAsInline)]
+#[derive(ParseAsInline, Tagged)]
 #[must_use]
 pub struct Point<T> {
     hash: OptionalHash,
@@ -636,10 +636,6 @@ impl<T: 'static + FullHash, I: PointInput<Extra: Send + Sync + ExtraFor<T>>> Par
             input.extra().clone(),
         ))
     }
-}
-
-impl<T: Tagged> Tagged for Point<T> {
-    const TAGS: Tags = T::TAGS;
 }
 
 impl<T> ToOutput for Point<T> {
