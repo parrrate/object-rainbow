@@ -293,6 +293,11 @@ pub trait Fetch: Send + Sync + FetchBytes {
     }
 }
 
+impl<T: Tagged> Tagged for dyn Fetch<T = T> {
+    const TAGS: Tags = T::TAGS;
+    const HASH: Hash = T::HASH;
+}
+
 pub trait PointVisitor {
     fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone));
 }
