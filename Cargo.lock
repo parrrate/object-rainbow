@@ -1734,6 +1734,7 @@ version = "0.0.0-a.0"
 dependencies = [
  "fastcdc",
  "futures-util",
+ "object-rainbow",
  "static_assertions",
 ]
 

@@ -1,4 +1,9 @@
+use object_rainbow::{Hash, SizeExt};
 use static_assertions::const_assert_eq;
+
+pub fn derive_length_from_hash(hash: Hash) -> u32 {
+    derive_length(hash.reinterpret::<(u64, u64, u64, u64)>().0)
+}
 
 pub fn derive_length(source: u64) -> u32 {
     const SIZE: u32 = u64::BITS;
