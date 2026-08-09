@@ -18,3 +18,4 @@ Alisa Feistel maintains this list for herself, please do NOT treat this as an in
   - `Amt`
   - `Trie`
 - hash compression (brute-force)
+- array `FromSized`
