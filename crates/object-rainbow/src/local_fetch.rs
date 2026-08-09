@@ -4,7 +4,7 @@ pub struct LocalFetch<T> {
     object: T,
 }
 
-impl<T: Traversible + Clone> LocalFetch<T> {
+impl<T: Traversible> LocalFetch<T> {
     pub fn new(object: T) -> Self {
         Self { object }
     }
