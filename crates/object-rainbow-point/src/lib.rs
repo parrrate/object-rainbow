@@ -702,7 +702,7 @@ impl<T> Point<T> {
 
 impl<T: Traversible + Clone> Point<T> {
     pub fn from_object(object: T) -> Self {
-        Self::from_fetch(object.full_hash(), LocalFetch { object }.into_dyn_fetch())
+        Self::from_fetch(object.full_hash(), LocalFetch::new(object).into_dyn_fetch())
     }
 
     fn yolo_mut(&mut self) -> bool {
@@ -713,7 +713,7 @@ impl<T: Traversible + Clone> Point<T> {
     async fn prepare_yolo_fetch(&mut self) -> object_rainbow::Result<()> {
         if !self.yolo_mut() {
             let object = self.fetch.fetch().await?;
-            self.fetch = LocalFetch { object }.into_dyn_fetch();
+            self.fetch = LocalFetch::new(object).into_dyn_fetch();
         }
         Ok(())
     }
@@ -841,6 +841,12 @@ impl<T: Traversible> IntoPoint for T {}
 
 struct LocalFetch<T> {
     object: T,
+}
+
+impl<T: Traversible + Clone> LocalFetch<T> {
+    fn new(object: T) -> Self {
+        Self { object }
+    }
 }
 
 impl<T: Traversible + Clone> Fetch for LocalFetch<T> {
