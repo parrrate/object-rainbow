@@ -1,7 +1,6 @@
 use crate::*;
 
 pub mod array;
-pub mod delayed_exposed;
 pub mod fetch_extra;
 
 #[derive(Debug, Clone, ParseAsInline, PartialEq)]
