@@ -59,6 +59,7 @@ mod impls;
 pub mod incr_byte_niche;
 pub mod inline_extra;
 pub mod length_prefixed;
+pub mod local_fetch;
 pub mod map_extra;
 mod monostate;
 pub mod monostate_headers;
