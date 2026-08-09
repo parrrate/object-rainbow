@@ -868,7 +868,7 @@ impl<'a, Extra: Clone> ParseAsExtra<'a, Extra> for &'a [u8] {
     }
 }
 
-#[derive(Debug, ToOutput)]
+#[derive(Debug, ToOutput, Default)]
 pub struct DiffHashes {
     pub tags: Hash,
     pub topology: Hash,
