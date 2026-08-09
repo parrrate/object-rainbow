@@ -53,4 +53,11 @@ impl<T: ReflessObject + Clone> DelayedRefless<T> {
     pub async fn fetch(&self) -> object_rainbow::Result<T> {
         Ok(self.fetch.fetch().await?.0)
     }
+
+    pub fn new(refless: T) -> Self {
+        Self {
+            data: refless.vec(),
+            fetch: AssertRefless(refless).local_fetch(),
+        }
+    }
 }
