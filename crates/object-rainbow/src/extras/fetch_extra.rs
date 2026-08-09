@@ -12,6 +12,7 @@ pub trait ParseFetchInline<E: 'static + Clone>: ParseFetch<E> {
     }
 }
 
+#[derive(Debug)]
 pub struct FetchExtra<F>(pub F);
 
 impl<
