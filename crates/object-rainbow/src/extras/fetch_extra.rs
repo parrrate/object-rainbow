@@ -50,6 +50,7 @@ impl<T> ToOutput for DelayedRefless<T> {
 }
 
 impl<T> ListHashes for DelayedRefless<T> {}
+impl<T> Topological for DelayedRefless<T> {}
 
 impl<T: ReflessObject + Clone> DelayedRefless<T> {
     pub async fn fetch(&self) -> object_rainbow::Result<T> {
