@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{refless::assert_refless::AssertRefless, *};
 
 pub trait ParseFetch<E: 'static + Clone>: Sized {
     fn parse_fetch<I: PointInput<Extra: Fetch<T = E>>>(input: I) -> Result<Self>;
@@ -35,5 +35,22 @@ impl<
 {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         F::parse_fetch_inline(input).map(Self)
+    }
+}
+
+pub struct DelayedRefless<T> {
+    data: Vec<u8>,
+    fetch: Arc<dyn Fetch<T = AssertRefless<T>>>,
+}
+
+impl<T> ToOutput for DelayedRefless<T> {
+    fn to_output(&self, output: &mut impl Output) {
+        self.data.to_output(output);
+    }
+}
+
+impl<T: ReflessObject + Clone> DelayedRefless<T> {
+    pub async fn fetch(&self) -> object_rainbow::Result<T> {
+        Ok(self.fetch.fetch().await?.0)
     }
 }
