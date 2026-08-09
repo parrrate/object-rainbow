@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct AssertRefless<T>(pub T);
 
 impl<T> ListHashes for AssertRefless<T> {}
