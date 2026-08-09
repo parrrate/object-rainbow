@@ -5,6 +5,7 @@ members = [
     "crates/object-rainbow-append-tree",
     "crates/object-rainbow-apply",
     "crates/object-rainbow-array-map",
+    "crates/object-rainbow-cdc",
     "crates/object-rainbow-chain-tree",
     "crates/object-rainbow-derive",
     "crates/object-rainbow-encrypted",

@@ -1698,6 +1698,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "object-rainbow-cdc"
+version = "0.0.0-a.0"
+
+[[package]]
 name = "object-rainbow-chain-tree"
 version = "0.0.0-a.11"
 dependencies = [

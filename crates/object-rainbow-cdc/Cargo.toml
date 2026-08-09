@@ -1,0 +1,11 @@
+[package]
+name = "object-rainbow-cdc"
+version = "0.0.0-a.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "FastCDC for object-rainbow"
+
+[dependencies]
