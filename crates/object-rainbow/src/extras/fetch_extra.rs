@@ -38,6 +38,7 @@ impl<
     }
 }
 
+#[derive(Tagged)]
 pub struct DelayedRefless<T> {
     data: Vec<u8>,
     fetch: Arc<dyn Fetch<T = AssertRefless<T>>>,
