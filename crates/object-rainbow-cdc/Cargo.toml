@@ -9,3 +9,6 @@ authors.workspace = true
 description = "FastCDC for object-rainbow"
 
 [dependencies]
+# fastcdc.workspace = true
+# futures-util.workspace = true
+static_assertions.workspace = true
