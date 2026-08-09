@@ -60,7 +60,7 @@ impl<T: Traversible> FetchBytes for LocalFetch<T> {
     }
 }
 
-impl<T: Traversible + Clone> Singular for LocalFetch<T> {
+impl<T: Traversible> Singular for LocalFetch<T> {
     fn hash(&self) -> Hash {
         self.object.full_hash()
     }
