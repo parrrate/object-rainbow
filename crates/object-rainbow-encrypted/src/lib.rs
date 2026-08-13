@@ -519,9 +519,53 @@ pub async fn encrypt_point<K: Key, T: Traversible>(
             .into_dyn_fetch(),
         );
         return Ok(point);
+    };
+    let encrypted = encrypt(key.clone(), decrypted.fetch().await?).await?;
+    #[cfg(feature = "lazy-leaf")]
+    if encrypted.point_count() == 0 {
+        struct LazyLeaf<K, D> {
+            key: K,
+            decrypted: D,
+        }
+        impl<K: Key, D: SingularFetch<T: Traversible>> LazyLeaf<K, D> {
+            async fn fetch_encrypted(&self) -> object_rainbow::Result<Encrypted<K, D::T>> {
+                let decrypted = self.decrypted.fetch().await?;
+                encrypt(self.key.clone(), decrypted).await
+            }
+        }
+        impl<K: Key, D: SingularFetch<T: Traversible>> FetchBytes for LazyLeaf<K, D> {
+            fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
+                Box::pin(async {
+                    Ok((
+                        self.fetch_encrypted().await?.vec(),
+                        Arc::new(TopoVec::new()) as _,
+                    ))
+                })
+            }
+
+            fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
+                Box::pin(async { Ok(self.fetch_encrypted().await?.vec()) })
+            }
+        }
+        impl<K: Key, D: SingularFetch<T: Traversible>> Fetch for LazyLeaf<K, D> {
+            type T = Encrypted<K, D::T>;
+
+            fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
+                Box::pin(async {
+                    Ok((self.fetch_encrypted().await?, Arc::new(TopoVec::new()) as _))
+                })
+            }
+
+            fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
+                Box::pin(self.fetch_encrypted())
+            }
+        }
+        let point = Point::from_fetch(
+            object_rainbow::FullHash::full_hash(&encrypted),
+            LazyLeaf { key, decrypted }.into_dyn_fetch(),
+        );
+        return Ok(point);
     }
-    let decrypted = decrypted.fetch().await?;
-    let encrypted = encrypt(key, decrypted).await?;
     let point = encrypted.point();
     Ok(point)
 }
