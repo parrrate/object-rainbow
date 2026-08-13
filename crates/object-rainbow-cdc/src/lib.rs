@@ -21,25 +21,29 @@ impl Chunk {
     }
 }
 
-pub fn generate_tail(data: &[u8]) -> Vec<u8> {
+pub fn generate_tail(data: &[u8]) -> object_rainbow::Result<Vec<u8>> {
     let diff = DiffHashes::default().data_hash();
     let mut hasher = Sha256::new();
     hasher.update(diff);
     hasher.update(data);
     let hasher = hasher;
     let target = data.len() >> 16;
-    let target: u32 = target.try_into().unwrap();
+    let target: u32 = target
+        .try_into()
+        .map_err(|_| object_rainbow::Error::UnsupportedLength)?;
     for len in 0..=16 {
         for tail in 0u128..(1 << (len * 8)) {
             let tail = tail.to_be_bytes()[(16 - len)..].to_vec();
             let mut hasher = hasher.clone();
             hasher.update(&tail);
             if derive_length_from_hash(Hash::from_hasher(hasher)) == target {
-                return tail;
+                return Ok(tail);
             }
         }
     }
-    panic!("took too long")
+    Err(object_rainbow::error_operation!(
+        "couldn't find tail in 16 bytes or less"
+    ))
 }
 
 pub fn derive_length_from_hash(hash: Hash) -> u32 {
