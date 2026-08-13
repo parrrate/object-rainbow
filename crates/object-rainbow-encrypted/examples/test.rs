@@ -60,10 +60,13 @@ fn main() -> anyhow::Result<()> {
         )
             .point();
         let key = Test(std::array::from_fn(|i| i as _));
+        println!("before encryption 1");
         let point = encrypt_point(key, point).await?;
         println!("after encryption 1");
         let point = iterate(point, key).await?;
+        println!("after iterate");
         let point = point.fetch().await?.into_inner().point();
+        println!("before encryption 2");
         let point = encrypt_point(key, point).await?;
         println!("after encryption 2");
         let point = point.fetch().await?.into_inner().point();
