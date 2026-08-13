@@ -1735,6 +1735,7 @@ dependencies = [
  "fastcdc",
  "futures-util",
  "object-rainbow",
+ "sha2 0.11.0",
  "static_assertions",
 ]
 
