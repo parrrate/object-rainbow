@@ -1724,6 +1724,7 @@ version = "0.0.0-a.0"
 dependencies = [
  "fastcdc",
  "futures-util",
+ "genawaiter-try-stream",
  "object-rainbow",
  "object-rainbow-point",
  "rand 0.10.2",

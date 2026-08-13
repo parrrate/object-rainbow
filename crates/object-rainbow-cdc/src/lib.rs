@@ -2,6 +2,7 @@ use std::pin::pin;
 
 use fastcdc::v2020::{AsyncStreamCDC, Normalization};
 use futures_util::{AsyncRead, Stream, StreamExt, TryStreamExt};
+use genawaiter_try_stream::try_stream;
 use object_rainbow::{DiffHashes, Fetch, Hash, InlineOutput, Singular, SizeExt, ToOutput};
 use object_rainbow_point::{IntoPoint, Point};
 use sha2::{Digest, Sha256};
@@ -13,25 +14,39 @@ pub struct Chunks {
 }
 
 impl Chunks {
+    pub fn bytes_stream(
+        source: impl Send + AsyncRead,
+    ) -> impl Send + Stream<Item = object_rainbow::Result<Vec<u8>>> {
+        try_stream(async move |co| {
+            let source = pin!(source);
+            let mut stream = AsyncStreamCDC::with_level(
+                source,
+                0x_00_01_00_00,
+                0x_01_00_00_00,
+                0x_ff_ff_ff_ff,
+                Normalization::Level1,
+            );
+            stream
+                .as_stream()
+                .map_ok(|chunk| chunk.data)
+                .try_for_each(|chunk| async {
+                    co.yield_(chunk).await;
+                    Ok(())
+                })
+                .await
+                .map_err(std::io::Error::from)?;
+            Ok(())
+        })
+    }
+
     pub async fn new<F: Future<Output = object_rainbow::Result<Chunk>>>(
         source: impl Send + AsyncRead,
         mut schedule: impl FnMut(Box<dyn Send + FnOnce() -> object_rainbow::Result<Chunk>>) -> F,
     ) -> object_rainbow::Result<Self> {
-        let source = pin!(source);
-        let mut stream = AsyncStreamCDC::with_level(
-            source,
-            0x_00_01_00_00,
-            0x_01_00_00_00,
-            0x_ff_ff_ff_ff,
-            Normalization::Level1,
-        );
-        let chunks = stream
-            .as_stream()
-            .map_ok(|chunk| chunk.data)
+        let chunks = Self::bytes_stream(source)
             .map_ok(|chunk| schedule(Box::new(move || Chunk::new(&chunk))))
             .try_collect::<Vec<_>>()
-            .await
-            .map_err(std::io::Error::from)?;
+            .await?;
         let chunks = futures_util::future::try_join_all(chunks).await?;
         Ok(Self { chunks })
     }
