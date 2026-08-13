@@ -1,7 +1,7 @@
 use std::pin::pin;
 
 use fastcdc::v2020::{AsyncStreamCDC, Normalization};
-use futures_util::{AsyncRead, TryStreamExt};
+use futures_util::{AsyncRead, Stream, StreamExt, TryStreamExt};
 use object_rainbow::{DiffHashes, Fetch, Hash, InlineOutput, Singular, SizeExt, ToOutput};
 use object_rainbow_point::{IntoPoint, Point};
 use sha2::{Digest, Sha256};
@@ -30,6 +30,10 @@ impl Chunks {
             .try_collect()
             .await?;
         Ok(Self { chunks })
+    }
+
+    pub async fn stream(&self) -> impl '_ + Send + Stream<Item = object_rainbow::Result<Vec<u8>>> {
+        futures_util::stream::iter(&self.chunks).then(|chunk| chunk.fetch())
     }
 }
 
