@@ -35,6 +35,14 @@ impl Chunks {
     pub async fn stream(&self) -> impl '_ + Send + Stream<Item = object_rainbow::Result<Vec<u8>>> {
         futures_util::stream::iter(&self.chunks).then(|chunk| chunk.fetch())
     }
+
+    pub fn len(&self) -> object_rainbow::Result<usize> {
+        self.chunks.iter().map(|chunk| chunk.len()).sum()
+    }
+
+    pub fn is_empty(&self) -> object_rainbow::Result<bool> {
+        Ok(self.len()? == 0)
+    }
 }
 
 #[derive(ToOutput, InlineOutput)]
