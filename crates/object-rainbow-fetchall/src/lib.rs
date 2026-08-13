@@ -156,6 +156,7 @@ pub async fn fetchall(object: &impl Traversible) -> object_rainbow::Result<Local
                             callback,
                         } => {
                             assert!(!map.contains(hash));
+                            assert!(topology.iter().all(|hash| map.contains(*hash)));
                             callback
                                 .send(map.insert(hash, tags_hash, mangle_hash, topology, data))
                                 .ok();
