@@ -29,9 +29,10 @@ impl Chunks {
             .as_stream()
             .map_err(object_rainbow::Error::fetch)
             .map_ok(|chunk| chunk.data)
-            .and_then(|chunk| schedule(Box::new(move || Chunk::new(&chunk))))
-            .try_collect()
+            .map_ok(|chunk| schedule(Box::new(move || Chunk::new(&chunk))))
+            .try_collect::<Vec<_>>()
             .await?;
+        let chunks = futures_util::future::try_join_all(chunks).await?;
         Ok(Self { chunks })
     }
 
