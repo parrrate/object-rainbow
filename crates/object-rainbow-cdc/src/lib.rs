@@ -13,7 +13,10 @@ pub struct Chunks {
 }
 
 impl Chunks {
-    pub async fn new(source: impl AsyncRead) -> object_rainbow::Result<Self> {
+    pub async fn new<F: Future<Output = object_rainbow::Result<Chunk>>>(
+        source: impl AsyncRead,
+        mut schedule: impl FnMut(Box<dyn Send + FnOnce() -> object_rainbow::Result<Chunk>>) -> F,
+    ) -> object_rainbow::Result<Self> {
         let source = pin!(source);
         let mut stream = AsyncStreamCDC::with_level(
             source,
@@ -26,7 +29,7 @@ impl Chunks {
             .as_stream()
             .map_err(object_rainbow::Error::fetch)
             .map_ok(|chunk| chunk.data)
-            .and_then(async |chunk| Chunk::new(&chunk))
+            .and_then(|chunk| schedule(Box::new(move || Chunk::new(&chunk))))
             .try_collect()
             .await?;
         Ok(Self { chunks })

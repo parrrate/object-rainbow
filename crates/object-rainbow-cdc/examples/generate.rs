@@ -1,7 +1,18 @@
+use std::time::Instant;
+
+use futures_util::io::Cursor;
 use object_rainbow::ToOutput;
-use object_rainbow_cdc::{Chunk, generate_tail};
+use object_rainbow_cdc::{Chunk, Chunks, generate_tail};
+use rand::random_iter;
 
 fn main() -> object_rainbow::Result<()> {
+    {
+        let data = random_iter().take(1 << 30).collect::<Vec<_>>();
+        let start = Instant::now();
+        let chunks = smol::block_on(Chunks::new(Cursor::new(data), smol::unblock))?;
+        println!("{}", chunks.chunk_len());
+        println!("{}s", start.elapsed().as_secs());
+    }
     {
         let original = b"325074";
         let chunk = Chunk::new(original)?;

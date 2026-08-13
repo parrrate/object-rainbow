@@ -77,6 +77,7 @@ macro_rules_attribute = "0.2.2"
 opendal = "0.56.0"
 proc-macro2 = "1.0.106"
 quote = "1.0.45"
+rand = "0.10.2"
 reqwest = { version = "0.13.4", default-features = false }
 serde = "1.0.228"
 serde_json = "1.0.149"
