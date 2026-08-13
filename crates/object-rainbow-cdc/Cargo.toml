@@ -10,6 +10,7 @@ description = "FastCDC for object-rainbow"
 
 [dependencies]
 object-rainbow.workspace = true
+object-rainbow-point.workspace = true
 
 fastcdc.workspace = true
 futures-util.workspace = true

@@ -1,6 +1,25 @@
-use object_rainbow::{DiffHashes, Hash, SizeExt, ToOutput};
+use object_rainbow::{DiffHashes, Fetch, Hash, Singular, SizeExt, ToOutput};
+use object_rainbow_point::Point;
 use sha2::{Digest, Sha256};
 use static_assertions::const_assert_eq;
+
+pub struct Chunk {
+    len_lower: u16,
+    data: Point<Vec<u8>>,
+}
+
+impl Chunk {
+    pub async fn fetch(&self) -> object_rainbow::Result<Vec<u8>> {
+        let len = u64::from(self.len_lower)
+            + (u64::from(derive_length_from_hash(self.data.hash())) << 16);
+        let len = len
+            .try_into()
+            .map_err(|_| object_rainbow::Error::UnsupportedLength)?;
+        let mut data = self.data.fetch().await?;
+        data.truncate(len);
+        Ok(data)
+    }
+}
 
 pub fn generate_tail(data: &[u8]) -> Vec<u8> {
     let diff = DiffHashes::default().data_hash();
