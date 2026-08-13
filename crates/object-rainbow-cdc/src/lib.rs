@@ -36,7 +36,7 @@ impl Chunks {
         Ok(Self { chunks })
     }
 
-    pub async fn stream(&self) -> impl '_ + Send + Stream<Item = object_rainbow::Result<Vec<u8>>> {
+    pub fn stream(&self) -> impl '_ + Send + Stream<Item = object_rainbow::Result<Vec<u8>>> {
         futures_util::stream::iter(&self.chunks).then(|chunk| chunk.fetch())
     }
 
