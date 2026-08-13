@@ -27,11 +27,11 @@ impl Chunks {
         );
         let chunks = stream
             .as_stream()
-            .map_err(std::io::Error::from)
             .map_ok(|chunk| chunk.data)
             .map_ok(|chunk| schedule(Box::new(move || Chunk::new(&chunk))))
             .try_collect::<Vec<_>>()
-            .await?;
+            .await
+            .map_err(std::io::Error::from)?;
         let chunks = futures_util::future::try_join_all(chunks).await?;
         Ok(Self { chunks })
     }
