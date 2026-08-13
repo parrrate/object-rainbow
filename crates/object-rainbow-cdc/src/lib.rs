@@ -1,5 +1,5 @@
 use object_rainbow::{DiffHashes, Fetch, Hash, Singular, SizeExt, ToOutput};
-use object_rainbow_point::Point;
+use object_rainbow_point::{IntoPoint, Point};
 use sha2::{Digest, Sha256};
 use static_assertions::const_assert_eq;
 
@@ -18,6 +18,13 @@ impl Chunk {
         let mut data = self.data.fetch().await?;
         data.truncate(len);
         Ok(data)
+    }
+
+    pub fn new(data: &[u8]) -> object_rainbow::Result<Self> {
+        let tail = generate_tail(data)?;
+        let len_lower = (data.len() % 65536) as u16;
+        let data = [data, tail.as_slice()].concat().point();
+        Ok(Self { len_lower, data })
     }
 }
 

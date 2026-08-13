@@ -1737,6 +1737,7 @@ dependencies = [
  "object-rainbow",
  "object-rainbow-point",
  "sha2 0.11.0",
+ "smol",
  "static_assertions",
 ]
 
