@@ -17,6 +17,5 @@ Alisa Feistel maintains this list for herself, please do NOT treat this as an in
 - subtries
   - `Amt`
   - `Trie`
-- hash compression (brute-force)
 - array `FromSized`
 - `AsyncSeek` side-fetching for chunks
