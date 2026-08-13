@@ -1,3 +1,7 @@
+use std::pin::pin;
+
+use fastcdc::v2020::{AsyncStreamCDC, Normalization};
+use futures_util::{AsyncRead, TryStreamExt};
 use object_rainbow::{DiffHashes, Fetch, Hash, InlineOutput, Singular, SizeExt, ToOutput};
 use object_rainbow_point::{IntoPoint, Point};
 use sha2::{Digest, Sha256};
@@ -6,6 +10,27 @@ use static_assertions::const_assert_eq;
 #[derive(ToOutput)]
 pub struct Chunks {
     chunks: Vec<Chunk>,
+}
+
+impl Chunks {
+    pub async fn new(source: impl AsyncRead) -> object_rainbow::Result<Self> {
+        let source = pin!(source);
+        let mut stream = AsyncStreamCDC::with_level(
+            source,
+            0x_ff_ff,
+            0x1_00_00_00,
+            0x_ff_ff_ff_ff,
+            Normalization::Level3,
+        );
+        let chunks = stream
+            .as_stream()
+            .map_err(object_rainbow::Error::fetch)
+            .map_ok(|chunk| chunk.data)
+            .and_then(async |chunk| Chunk::new(&chunk))
+            .try_collect()
+            .await?;
+        Ok(Self { chunks })
+    }
 }
 
 #[derive(ToOutput, InlineOutput)]
