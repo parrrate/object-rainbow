@@ -542,20 +542,17 @@ pub async fn encrypt_point<K: Key, T: Traversible>(
                     ))
                 })
             }
-
             fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
                 Box::pin(async { Ok(self.fetch_encrypted().await?.vec()) })
             }
         }
         impl<K: Key, D: SingularFetch<T: Traversible>> Fetch for LazyLeaf<K, D> {
             type T = Encrypted<K, D::T>;
-
             fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
                 Box::pin(async {
                     Ok((self.fetch_encrypted().await?, Arc::new(TopoVec::new()) as _))
                 })
             }
-
             fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
                 Box::pin(self.fetch_encrypted())
             }
