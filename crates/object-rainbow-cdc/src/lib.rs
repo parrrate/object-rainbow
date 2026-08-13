@@ -1,9 +1,9 @@
-use object_rainbow::{DiffHashes, Fetch, Hash, Singular, SizeExt, ToOutput};
+use object_rainbow::{DiffHashes, Fetch, Hash, InlineOutput, Singular, SizeExt, ToOutput};
 use object_rainbow_point::{IntoPoint, Point};
 use sha2::{Digest, Sha256};
 use static_assertions::const_assert_eq;
 
-#[derive(ToOutput)]
+#[derive(ToOutput, InlineOutput)]
 pub struct Chunk {
     len_lower: u16,
     data: Point<Vec<u8>>,
