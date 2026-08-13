@@ -2,7 +2,7 @@ use object_rainbow::{DiffHashes, Hash, SizeExt, ToOutput};
 use sha2::{Digest, Sha256};
 use static_assertions::const_assert_eq;
 
-pub fn generate_tail(data: &[u8]) -> u128 {
+pub fn generate_tail(data: &[u8]) -> Vec<u8> {
     let diff = DiffHashes::default().data_hash();
     let mut hasher = Sha256::new();
     hasher.update(diff);
@@ -10,11 +10,14 @@ pub fn generate_tail(data: &[u8]) -> u128 {
     let hasher = hasher;
     let len: u32 = data.len().try_into().unwrap();
     let target = len >> 16;
-    for tail in 0..u128::MAX {
-        let mut hasher = hasher.clone();
-        hasher.update(tail.to_be_bytes());
-        if derive_length_from_hash(Hash::from_hasher(hasher)) == target {
-            return tail;
+    for len in 0..=16 {
+        for tail in 0u128..(1 << (len * 8)) {
+            let tail = tail.to_be_bytes()[(16 - len)..].to_vec();
+            let mut hasher = hasher.clone();
+            hasher.update(&tail);
+            if derive_length_from_hash(Hash::from_hasher(hasher)) == target {
+                return tail;
+            }
         }
     }
     panic!("took too long")
