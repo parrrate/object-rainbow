@@ -37,12 +37,12 @@ impl Chunks {
         Ok(Self { chunks })
     }
 
-    pub fn stream(&self) -> impl '_ + Send + Stream<Item = object_rainbow::Result<Vec<u8>>> {
+    pub fn as_stream(&self) -> impl '_ + Send + Stream<Item = object_rainbow::Result<Vec<u8>>> {
         futures_util::stream::iter(&self.chunks).then(|chunk| chunk.fetch())
     }
 
     pub fn as_async_read(&self) -> impl '_ + Send + AsyncRead {
-        self.stream().map_err(|e| e.into()).into_async_read()
+        self.as_stream().map_err(|e| e.into()).into_async_read()
     }
 
     pub fn len(&self) -> object_rainbow::Result<usize> {
