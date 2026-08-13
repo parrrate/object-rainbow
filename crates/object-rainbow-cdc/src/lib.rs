@@ -14,7 +14,7 @@ pub struct Chunks {
 
 impl Chunks {
     pub async fn new<F: Future<Output = object_rainbow::Result<Chunk>>>(
-        source: impl AsyncRead,
+        source: impl Send + AsyncRead,
         mut schedule: impl FnMut(Box<dyn Send + FnOnce() -> object_rainbow::Result<Chunk>>) -> F,
     ) -> object_rainbow::Result<Self> {
         let source = pin!(source);
