@@ -71,6 +71,12 @@ pub struct Chunk {
     data: Point<Vec<u8>>,
 }
 
+impl Default for Chunk {
+    fn default() -> Self {
+        Self::new(&[]).unwrap()
+    }
+}
+
 impl Chunk {
     pub async fn data(&self) -> object_rainbow::Result<Vec<u8>> {
         let len = self.len()?;
