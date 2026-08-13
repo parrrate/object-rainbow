@@ -45,11 +45,7 @@ pub struct Chunk {
 
 impl Chunk {
     pub async fn fetch(&self) -> object_rainbow::Result<Vec<u8>> {
-        let len = u64::from(self.len_lower)
-            + (u64::from(derive_length_from_hash(self.data.hash())) << 16);
-        let len = len
-            .try_into()
-            .map_err(|_| object_rainbow::Error::UnsupportedLength)?;
+        let len = self.len()?;
         let mut data = self.data.fetch().await?;
         data.truncate(len);
         Ok(data)
@@ -60,6 +56,19 @@ impl Chunk {
         let len_lower = (data.len() % 65536) as u16;
         let data = [data, tail.as_slice()].concat().point();
         Ok(Self { len_lower, data })
+    }
+
+    pub fn len(&self) -> object_rainbow::Result<usize> {
+        let len = u64::from(self.len_lower)
+            + (u64::from(derive_length_from_hash(self.data.hash())) << 16);
+        let len = len
+            .try_into()
+            .map_err(|_| object_rainbow::Error::UnsupportedLength)?;
+        Ok(len)
+    }
+
+    pub fn is_empty(&self) -> object_rainbow::Result<bool> {
+        Ok(self.len()? == 0)
     }
 }
 
