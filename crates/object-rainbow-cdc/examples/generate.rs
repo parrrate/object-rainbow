@@ -16,13 +16,13 @@ fn main() -> object_rainbow::Result<()> {
     {
         let original = b"325074";
         let chunk = Chunk::new(original)?;
-        let data = smol::block_on(chunk.fetch())?;
+        let data = smol::block_on(chunk.data())?;
         assert_eq!(original.as_slice(), data.as_slice());
     }
     {
         let original = &vec![0u8; 1 << 24];
         let chunk = Chunk::new(original)?;
-        let data = smol::block_on(chunk.fetch())?;
+        let data = smol::block_on(chunk.data())?;
         assert_eq!(original.as_slice(), data.as_slice());
     }
     for n in 0..1024 {

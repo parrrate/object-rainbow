@@ -38,7 +38,7 @@ impl Chunks {
     }
 
     pub fn as_stream(&self) -> impl '_ + Send + Stream<Item = object_rainbow::Result<Vec<u8>>> {
-        futures_util::stream::iter(&self.chunks).then(|chunk| chunk.fetch())
+        futures_util::stream::iter(&self.chunks).then(|chunk| chunk.data())
     }
 
     pub fn as_async_read(&self) -> impl '_ + Send + AsyncRead {
@@ -46,7 +46,7 @@ impl Chunks {
     }
 
     pub fn into_stream(self) -> impl Send + Stream<Item = object_rainbow::Result<Vec<u8>>> {
-        futures_util::stream::iter(self.chunks).then(async |chunk| chunk.fetch().await)
+        futures_util::stream::iter(self.chunks).then(async |chunk| chunk.data().await)
     }
 
     pub fn len(&self) -> object_rainbow::Result<usize> {
@@ -69,7 +69,7 @@ pub struct Chunk {
 }
 
 impl Chunk {
-    pub async fn fetch(&self) -> object_rainbow::Result<Vec<u8>> {
+    pub async fn data(&self) -> object_rainbow::Result<Vec<u8>> {
         let len = self.len()?;
         let mut data = self.data.fetch().await?;
         data.truncate(len);
