@@ -76,6 +76,13 @@ impl Chunk {
         Ok(data)
     }
 
+    pub async fn into_data(mut self) -> object_rainbow::Result<Vec<u8>> {
+        let len = self.len()?;
+        let mut data = self.data.fetch_take().await?;
+        data.truncate(len);
+        Ok(data)
+    }
+
     pub fn new(data: &[u8]) -> object_rainbow::Result<Self> {
         let tail = generate_tail(data)?;
         let len_lower = (data.len() % 65536) as u16;
