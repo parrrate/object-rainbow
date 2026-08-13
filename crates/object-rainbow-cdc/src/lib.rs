@@ -27,8 +27,8 @@ pub fn generate_tail(data: &[u8]) -> Vec<u8> {
     hasher.update(diff);
     hasher.update(data);
     let hasher = hasher;
-    let len: u32 = data.len().try_into().unwrap();
-    let target = len >> 16;
+    let target = data.len() >> 16;
+    let target: u32 = target.try_into().unwrap();
     for len in 0..=16 {
         for tail in 0u128..(1 << (len * 8)) {
             let tail = tail.to_be_bytes()[(16 - len)..].to_vec();
