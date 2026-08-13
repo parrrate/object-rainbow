@@ -28,7 +28,6 @@ impl Chunks {
         let chunks = stream
             .as_stream()
             .map_err(std::io::Error::from)
-            .map_err(object_rainbow::Error::from)
             .map_ok(|chunk| chunk.data)
             .map_ok(|chunk| schedule(Box::new(move || Chunk::new(&chunk))))
             .try_collect::<Vec<_>>()
