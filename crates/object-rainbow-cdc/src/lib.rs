@@ -41,6 +41,10 @@ impl Chunks {
         futures_util::stream::iter(&self.chunks).then(|chunk| chunk.fetch())
     }
 
+    pub fn as_async_read(&self) -> impl '_ + Send + AsyncRead {
+        self.stream().map_err(|e| e.into()).into_async_read()
+    }
+
     pub fn len(&self) -> object_rainbow::Result<usize> {
         self.chunks.iter().map(|chunk| chunk.len()).sum()
     }
