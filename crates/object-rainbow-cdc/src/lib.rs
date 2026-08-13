@@ -43,6 +43,10 @@ impl Chunks {
     pub fn is_empty(&self) -> object_rainbow::Result<bool> {
         Ok(self.len()? == 0)
     }
+
+    pub fn chunk_len(&self) -> usize {
+        self.chunks.len()
+    }
 }
 
 #[derive(ToOutput, InlineOutput)]
