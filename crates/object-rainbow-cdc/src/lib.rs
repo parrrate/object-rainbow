@@ -20,7 +20,7 @@ impl Chunks {
             0x_ff_ff,
             0x1_00_00_00,
             0x_ff_ff_ff_ff,
-            Normalization::Level3,
+            Normalization::Level1,
         );
         let chunks = stream
             .as_stream()
