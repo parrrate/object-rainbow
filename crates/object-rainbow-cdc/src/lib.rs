@@ -3,6 +3,11 @@ use object_rainbow_point::{IntoPoint, Point};
 use sha2::{Digest, Sha256};
 use static_assertions::const_assert_eq;
 
+#[derive(ToOutput)]
+pub struct Chunks {
+    chunks: Vec<Chunk>,
+}
+
 #[derive(ToOutput, InlineOutput)]
 pub struct Chunk {
     len_lower: u16,
