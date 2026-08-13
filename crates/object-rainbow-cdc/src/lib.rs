@@ -46,7 +46,7 @@ impl Chunks {
     }
 
     pub fn into_stream(self) -> impl Send + Stream<Item = object_rainbow::Result<Vec<u8>>> {
-        futures_util::stream::iter(self.chunks).then(async |chunk| chunk.data().await)
+        futures_util::stream::iter(self.chunks).then(|chunk| chunk.into_data())
     }
 
     pub fn len(&self) -> object_rainbow::Result<usize> {
