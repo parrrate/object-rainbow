@@ -37,3 +37,17 @@ impl<F: Send + Sync + Fn() -> Fut, Fut: Send + Future<Output = Result<T>>, T: Tr
         Box::pin(async move { Ok(self.fetch().await?.output()) })
     }
 }
+
+impl<F: Send + Sync + Fn() -> Fut, Fut: Send + Future<Output = Result<T>>, T: Traversible> Fetch
+    for FnFetch<F>
+{
+    type T = T;
+
+    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
+        Box::pin(async move { self.fetch_node().await })
+    }
+
+    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
+        Box::pin(async move { self.fetch().await })
+    }
+}
