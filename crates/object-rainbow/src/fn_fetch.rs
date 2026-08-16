@@ -4,7 +4,9 @@ pub struct FnFetch<F> {
     fetch: F,
 }
 
-impl<F: Fn() -> Fut, Fut: Future<Output = Result<T>>, T: Traversible> FnFetch<F> {
+impl<F: Send + Sync + Fn() -> Fut, Fut: Send + Future<Output = Result<T>>, T: Traversible>
+    FnFetch<F>
+{
     pub fn new(fetch: F) -> Self {
         Self { fetch }
     }
