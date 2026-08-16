@@ -1,7 +1,7 @@
 use crate::*;
 
 pub struct FnFetch<F> {
-    pub fetch: F,
+    fetch: F,
 }
 
 impl<F: Fn() -> Fut, Fut: Future<Output = Result<T>>, T: Traversible> FnFetch<F> {
