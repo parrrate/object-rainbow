@@ -15,7 +15,7 @@ impl<F: Send + Sync + Fn() -> Fut, Fut: Send + Future<Output = Result<T>>, T: Tr
         (self.fetch)().await
     }
 
-    pub async fn fetch_node(&self) -> Result<Node<T>> {
+    async fn fetch_node(&self) -> Result<Node<T>> {
         let object = self.fetch().await?;
         let resolve = object.to_resolve();
         Ok((object, resolve))
