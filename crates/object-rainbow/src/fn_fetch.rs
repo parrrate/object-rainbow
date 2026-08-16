@@ -21,3 +21,19 @@ impl<F: Send + Sync + Fn() -> Fut, Fut: Send + Future<Output = Result<T>>, T: Tr
         Ok((object, resolve))
     }
 }
+
+impl<F: Send + Sync + Fn() -> Fut, Fut: Send + Future<Output = Result<T>>, T: Traversible>
+    FetchBytes for FnFetch<F>
+{
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
+        Box::pin(async move {
+            let (object, resolve) = self.fetch_node().await?;
+            let data = object.output();
+            Ok((data, resolve))
+        })
+    }
+
+    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
+        Box::pin(async move { Ok(self.fetch().await?.output()) })
+    }
+}
