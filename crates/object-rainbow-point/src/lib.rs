@@ -383,7 +383,7 @@ impl<T, Extra: 'static + Clone> RawPoint<T, Extra> {
 
 impl<T: 'static + FullHash, Extra: 'static + Send + Sync + ExtraFor<T>> RawPoint<T, Extra> {
     pub fn into_point(self) -> Point<T> {
-        Point::from_fetch(self.inner.hash, self.into_dyn_fetch())
+        Point::from_singular(self)
     }
 }
 
