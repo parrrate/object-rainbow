@@ -16,7 +16,7 @@ pub struct Chunks {
 impl Chunks {
     pub fn bytes_stream(
         source: impl Send + AsyncRead,
-    ) -> impl Send + Stream<Item = object_rainbow::Result<Vec<u8>>> {
+    ) -> impl Send + Stream<Item = object_rainbow::Result<(u64, Vec<u8>)>> {
         try_stream(async move |co| {
             let source = pin!(source);
             let mut stream = AsyncStreamCDC::with_level(
@@ -28,7 +28,7 @@ impl Chunks {
             );
             stream
                 .as_stream()
-                .map_ok(|chunk| chunk.data)
+                .map_ok(|chunk| (chunk.offset, chunk.data))
                 .try_for_each(|chunk| async {
                     co.yield_(chunk).await;
                     Ok(())
@@ -44,7 +44,7 @@ impl Chunks {
         mut schedule: impl FnMut(Box<dyn Send + FnOnce() -> object_rainbow::Result<Chunk>>) -> F,
     ) -> object_rainbow::Result<Self> {
         let chunks = Self::bytes_stream(source)
-            .map_ok(|chunk| schedule(Box::new(move || Chunk::new(&chunk))))
+            .map_ok(|(_, chunk)| schedule(Box::new(move || Chunk::new(&chunk))))
             .try_collect::<Vec<_>>()
             .await?;
         let chunks = futures_util::future::try_join_all(chunks).await?;
