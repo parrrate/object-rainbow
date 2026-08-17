@@ -451,6 +451,13 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra>
 }
 
 impl<T> Point<T> {
+    pub fn from_alternate_source(object: &T, fetch: Arc<dyn Fetch<T = T>>) -> Self
+    where
+        T: FullHash,
+    {
+        Self::from_fetch(object.full_hash(), fetch)
+    }
+
     pub fn from_fetch(hash: Hash, fetch: Arc<dyn Fetch<T = T>>) -> Self {
         Self {
             hash: hash.into(),

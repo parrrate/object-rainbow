@@ -525,8 +525,8 @@ pub async fn encrypt_point<K: Key, T: Traversible>(
     if encrypted.point_count() == 0 {
         use object_rainbow::fn_fetch::FnFetch;
         let decrypted = Arc::new(decrypted);
-        let point = Point::from_fetch(
-            object_rainbow::FullHash::full_hash(&encrypted),
+        let point = Point::from_alternate_source(
+            &encrypted,
             FnFetch::new(move || {
                 let decrypted = decrypted.clone();
                 let key = key.clone();
