@@ -3,26 +3,24 @@ use std::convert::Infallible;
 use std::{collections::BTreeSet, sync::Arc};
 
 use futures_util::future::try_join;
+#[cfg(feature = "point")]
+use object_rainbow::Fetch;
 use object_rainbow::{
     Enum, InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological,
     extra_option::ExtraOption, map_extra::TryMap, u63::U63,
 };
-#[cfg(feature = "point")]
-use object_rainbow::{Fetch, FetchBytes, Singular};
 #[cfg(feature = "apply")]
 use object_rainbow_apply::Apply;
-#[cfg(feature = "point")]
-use object_rainbow_point::Point;
 
-#[cfg(feature = "point")]
-use crate::IsMap;
 use crate::{AbstractCollection, InlineValue, IsUnit, TailValue, ValueToA, dynamic::InlineDynamic};
+#[cfg(feature = "point")]
+use crate::{IsMap, point::ValuePoint};
 
 #[derive(Enum, Debug, ToOutput, ListHashes, Topological, Parse, ParseInline, PartialEq)]
 #[topology(unchecked)]
 pub enum InlineMap {
     Point(
-        #[cfg(feature = "point")] Point<Arc<Self>>,
+        #[cfg(feature = "point")] ValuePoint,
         #[cfg(not(feature = "point"))] Infallible,
     ),
     I,
@@ -85,7 +83,7 @@ impl InlineMap {
     pub async fn apply(&self, value: Arc<InlineValue>) -> object_rainbow::Result<Arc<InlineValue>> {
         match self {
             #[cfg(feature = "point")]
-            Self::Point(point) => Box::pin(point.fetch().await?.apply(value)).await,
+            Self::Point(point) => Box::pin(point.fetch().await?.as_map()?.apply(value)).await,
             #[cfg(not(feature = "point"))]
             Self::Point(i) => match *i {},
             Self::S2(a, b) => {
@@ -126,11 +124,9 @@ impl AsMap<Arc<InlineMap>> for InlineValue {
             Self::Enum(value) => value.value.as_map(),
             Self::Map(map) => Ok(map.clone()),
             #[cfg(feature = "point")]
-            Self::Point(value) if value.extra.is_map() => Ok(Arc::new(InlineMap::Point(
-                Point::from_singular(FetchInlineMap {
-                    value: value.point.clone(),
-                }),
-            ))),
+            Self::Point(value) if value.extra.is_map() => {
+                Ok(Arc::new(InlineMap::Point(value.clone())))
+            }
             _ => Err(object_rainbow::error_operation!("not a map")),
         }
     }
@@ -152,45 +148,6 @@ impl AsMap<Arc<InlineMap>> for TailValue {
 
 pub trait AsMap<M> {
     fn as_map(&self) -> object_rainbow::Result<M>;
-}
-
-#[cfg(feature = "point")]
-struct FetchInlineMap {
-    value: Point<Arc<TailValue>>,
-}
-
-#[cfg(feature = "point")]
-impl FetchBytes for FetchInlineMap {
-    fn fetch_bytes(&'_ self) -> object_rainbow::FailFuture<'_, object_rainbow::ByteNode> {
-        self.value.fetch_bytes()
-    }
-
-    fn fetch_data(&'_ self) -> object_rainbow::FailFuture<'_, Vec<u8>> {
-        self.value.fetch_data()
-    }
-}
-
-#[cfg(feature = "point")]
-impl Fetch for FetchInlineMap {
-    type T = Arc<InlineMap>;
-
-    fn fetch_full(&'_ self) -> object_rainbow::FailFuture<'_, object_rainbow::Node<Self::T>> {
-        Box::pin(async move {
-            let (value, resolve) = self.value.fetch_full().await?;
-            Ok((value.as_map()?, resolve))
-        })
-    }
-
-    fn fetch(&'_ self) -> object_rainbow::FailFuture<'_, Self::T> {
-        Box::pin(async move { self.value.fetch().await.and_then(|value| value.as_map()) })
-    }
-}
-
-#[cfg(feature = "point")]
-impl Singular for FetchInlineMap {
-    fn hash(&self) -> object_rainbow::Hash {
-        self.value.hash()
-    }
 }
 
 impl From<InlineMap> for InlineValue {
