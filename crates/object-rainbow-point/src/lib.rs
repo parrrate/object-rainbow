@@ -455,7 +455,7 @@ impl<T> Point<T> {
     where
         T: FullHash,
     {
-        Self::from_fetch(object.full_hash(), fetch.into_dyn_fetch())
+        Self::from_fetch(object.full_hash(), fetch)
     }
 
     fn from_trusted_fetch(hash: Hash, fetch: Arc<dyn Fetch<T = T>>) -> Self {
@@ -465,12 +465,12 @@ impl<T> Point<T> {
         }
     }
 
-    pub fn from_fetch(hash: Hash, fetch: Arc<dyn Fetch<T = T>>) -> Self {
-        Self::from_trusted_fetch(hash, fetch)
+    pub fn from_fetch(hash: Hash, fetch: impl 'static + Fetch<T = T>) -> Self {
+        Self::from_trusted_fetch(hash, fetch.into_dyn_fetch())
     }
 
     pub fn from_singular(singular: impl 'static + SingularFetch<T = T>) -> Self {
-        Self::from_fetch(singular.hash(), Arc::new(singular))
+        Self::from_fetch(singular.hash(), singular)
     }
 
     fn map_fetch<U>(

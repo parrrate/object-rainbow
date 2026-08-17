@@ -343,8 +343,7 @@ impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, '_, K, 
                 key: self.key.clone(),
                 decrypted,
                 encrypted,
-            }
-            .into_dyn_fetch(),
+            },
         );
         self.visitor.visit(&point);
     }
@@ -515,8 +514,7 @@ pub async fn encrypt_point<K: Key, T: Traversible>(
                 resolve: resolve.resolve.clone(),
                 address,
                 decrypted,
-            }
-            .into_dyn_fetch(),
+            },
         );
         return Ok(point);
     };
