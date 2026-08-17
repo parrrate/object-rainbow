@@ -507,15 +507,12 @@ pub async fn encrypt_point<K: Key, T: Traversible>(
         && resolve.key.0 == key
     {
         let address = resolve.translate(*address)?;
-        let point = Point::from_fetch(
-            address.hash,
-            RawFetch {
-                key,
-                resolve: resolve.resolve.clone(),
-                address,
-                decrypted,
-            },
-        );
+        let point = Point::from_singular(RawFetch {
+            key,
+            resolve: resolve.resolve.clone(),
+            address,
+            decrypted,
+        });
         return Ok(point);
     };
     let encrypted = encrypt(key.clone(), decrypted.fetch().await?).await?;
