@@ -986,6 +986,16 @@ impl<T, Extra: Clone> CanonicalExtra for ExtraPoint<T, Extra> {
     }
 }
 
+impl<T, E> FetchBytes for ExtraPoint<T, E> {
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
+        self.point.fetch_bytes()
+    }
+
+    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
+        self.point.fetch_data()
+    }
+}
+
 impl<T: 'static + Send + FullHash, E: 'static + Send + Sync + Clone + ExtraFor<T>> ParseFetch<E>
     for Point<T>
 {
