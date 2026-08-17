@@ -534,8 +534,7 @@ pub async fn encrypt_point<K: Key, T: Traversible>(
                     let decrypted = decrypted.fetch().await?;
                     encrypt(key, decrypted).await
                 }
-            })
-            .into_dyn_fetch(),
+            }),
         );
         return Ok(point);
     }
