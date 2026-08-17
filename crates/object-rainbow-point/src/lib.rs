@@ -458,11 +458,15 @@ impl<T> Point<T> {
         Self::from_fetch(object.full_hash(), fetch)
     }
 
-    pub fn from_fetch(hash: Hash, fetch: Arc<dyn Fetch<T = T>>) -> Self {
+    fn from_trusted_fetch(hash: Hash, fetch: Arc<dyn Fetch<T = T>>) -> Self {
         Self {
             hash: hash.into(),
             fetch,
         }
+    }
+
+    pub fn from_fetch(hash: Hash, fetch: Arc<dyn Fetch<T = T>>) -> Self {
+        Self::from_trusted_fetch(hash, fetch)
     }
 
     pub fn from_singular(singular: impl 'static + SingularFetch<T = T>) -> Self {
@@ -588,7 +592,7 @@ impl<T: 'static + FullHash> Point<T> {
         resolve: Arc<dyn Resolve>,
         extra: Extra,
     ) -> Self {
-        Self::from_fetch(
+        Self::from_trusted_fetch(
             address.hash,
             ByAddress::from_inner(ByAddressInner { address, resolve }, extra).into_dyn_fetch(),
         )
@@ -610,7 +614,7 @@ impl<T: 'static + FullHash> Point<T> {
     where
         T: Send,
     {
-        Self::from_fetch(
+        Self::from_trusted_fetch(
             address.hash,
             FetchExtra::from_inner(ByAddressInner { address, resolve }, fetch).into_dyn_fetch(),
         )
@@ -705,7 +709,7 @@ impl<T> Point<T> {
 
 impl<T: Traversible + Clone> Point<T> {
     pub fn from_object(object: T) -> Self {
-        Self::from_fetch(object.full_hash(), object.local_fetch())
+        Self::from_trusted_fetch(object.full_hash(), object.local_fetch())
     }
 
     fn yolo_mut(&mut self) -> bool {
