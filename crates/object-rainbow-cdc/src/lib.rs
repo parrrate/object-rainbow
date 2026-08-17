@@ -39,7 +39,7 @@ impl Chunks {
         })
     }
 
-    pub async fn new<F: Future<Output = object_rainbow::Result<Chunk>>>(
+    pub async fn in_memory<F: Future<Output = object_rainbow::Result<Chunk>>>(
         source: impl Send + AsyncRead,
         mut schedule: impl FnMut(Box<dyn Send + FnOnce() -> object_rainbow::Result<Chunk>>) -> F,
     ) -> object_rainbow::Result<Self> {
