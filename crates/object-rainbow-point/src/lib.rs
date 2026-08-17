@@ -996,6 +996,18 @@ impl<T, E> FetchBytes for ExtraPoint<T, E> {
     }
 }
 
+impl<T: FullHash, E: Send + Sync> Fetch for ExtraPoint<T, E> {
+    type T = T;
+
+    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
+        self.point.fetch_full()
+    }
+
+    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
+        self.point.fetch()
+    }
+}
+
 impl<T: 'static + Send + FullHash, E: 'static + Send + Sync + Clone + ExtraFor<T>> ParseFetch<E>
     for Point<T>
 {
