@@ -35,9 +35,7 @@ impl<F: FetchFn> FnFetch<F> {
     }
 }
 
-impl<F: Send + Sync + Fn() -> Fut, Fut: Send + Future<Output = Result<T>>, T: Traversible>
-    FetchBytes for FnFetch<F>
-{
+impl<F: FetchFn> FetchBytes for FnFetch<F> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         Box::pin(async move {
             let (object, resolve) = self.fetch_node().await?;
