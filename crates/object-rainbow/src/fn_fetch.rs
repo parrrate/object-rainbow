@@ -19,18 +19,16 @@ impl<F: Send + Sync + Fn() -> Fut, Fut: Send + Future<Output = Result<T>>, T: Tr
     }
 }
 
-impl<F: Send + Sync + Fn() -> Fut, Fut: Send + Future<Output = Result<T>>, T: Traversible>
-    FnFetch<F>
-{
+impl<F: FetchFn> FnFetch<F> {
     pub fn new(fetch: F) -> Self {
         Self { fetch }
     }
 
-    pub async fn fetch(&self) -> Result<T> {
-        (self.fetch)().await
+    pub async fn fetch(&self) -> Result<F::T> {
+        self.fetch.fetch().await
     }
 
-    async fn fetch_node(&self) -> Result<Node<T>> {
+    async fn fetch_node(&self) -> Result<Node<F::T>> {
         let object = self.fetch().await?;
         let resolve = object.to_resolve();
         Ok((object, resolve))
