@@ -517,14 +517,16 @@ pub async fn encrypt_point<K: Key, T: Traversible>(
     if encrypted.point_count() == 0 {
         use object_rainbow::fn_fetch::FnFetch;
         let decrypted = Arc::new(decrypted);
+        let topology = encrypted.inner.topology.clone();
         let point = Point::from_alternate_source(
             &encrypted,
             FnFetch::new(move || {
                 let decrypted = decrypted.clone();
                 let key = key.clone();
+                let topology = topology.clone();
                 async move {
                     let decrypted = decrypted.fetch().await?;
-                    encrypt(key, decrypted).await
+                    Ok(Encrypted::from_topology(key, topology, decrypted))
                 }
             }),
         );
