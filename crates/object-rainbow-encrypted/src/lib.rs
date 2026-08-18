@@ -7,7 +7,10 @@ use object_rainbow::{
     Address, ByteNode, Error, ExtraFor, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node,
     Parse, ParseInline, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Tagged, ToOutput, TopoVec, Topological, Traversible, derive_for_wrapped,
-    fn_fetch::FnFetch, length_prefixed::LpVec, map_extra::MappedExtra, tuple_extra::Extra0,
+    fn_fetch::{FetchFn, FnFetch},
+    length_prefixed::LpVec,
+    map_extra::MappedExtra,
+    tuple_extra::Extra0,
 };
 use object_rainbow_point::{ExtractResolve, Extras, Point};
 
@@ -513,17 +516,28 @@ pub async fn encrypt_point<K: Key, T: Traversible>(
         return Ok(point);
     };
     let encrypted = encrypt(key.clone(), decrypted.fetch().await?).await?;
-    let decrypted = Arc::new(decrypted);
     let topology = encrypted.inner.topology.clone();
     let point = Point::from_alternate_source(
         &encrypted,
-        FnFetch::new(move || {
-            let decrypted = decrypted.clone();
-            let key = key.clone();
-            let topology = topology.clone();
-            async move {
-                let decrypted = decrypted.fetch().await?;
-                Ok(Encrypted::from_topology(key, topology, decrypted))
+        FnFetch::new({
+            struct WithTopology<K, F> {
+                key: K,
+                decrypted: F,
+                topology: Arc<LpVec<Arc<dyn Singular>>>,
+            }
+            impl<K: Key, F: 'static + SingularFetch<T: Traversible>> FetchFn for WithTopology<K, F> {
+                type T = Encrypted<K, F::T>;
+                async fn fetch(&self) -> object_rainbow::Result<Self::T> {
+                    let decrypted = self.decrypted.fetch().await?;
+                    let topology = self.topology.clone();
+                    let key = self.key.clone();
+                    Ok(Encrypted::from_topology(key, topology, decrypted))
+                }
+            }
+            WithTopology {
+                key,
+                decrypted,
+                topology,
             }
         }),
     );
