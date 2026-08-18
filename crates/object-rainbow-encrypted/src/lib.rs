@@ -545,14 +545,20 @@ pub async fn encrypt<K: Key, T: Traversible>(
     });
     let topology = futures_util::future::try_join_all(futures).await?;
     let topology = Arc::new(LpVec(topology));
-    let decrypted = Arc::new(decrypted);
-    let inner = Inner {
-        tags: T::HASH,
-        key: Extras(key),
-        topology,
-        decrypted,
-    };
-    Ok(Encrypted { inner })
+    Ok(Encrypted::from_topology(key, topology, decrypted))
+}
+
+impl<K: Key, T: Traversible> Encrypted<K, T> {
+    fn from_topology(key: K, topology: Arc<LpVec<Arc<dyn Singular>>>, decrypted: T) -> Self {
+        let decrypted = Arc::new(decrypted);
+        let inner = Inner {
+            tags: T::HASH,
+            key: Extras(key),
+            topology,
+            decrypted,
+        };
+        Self { inner }
+    }
 }
 
 impl<K: Key, T: Traversible + Clone> Encrypted<K, T> {
