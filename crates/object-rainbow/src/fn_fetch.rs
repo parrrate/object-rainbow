@@ -4,6 +4,11 @@ pub struct FnFetch<F> {
     fetch: F,
 }
 
+pub trait FetchFn: Send + Sync {
+    type T: Traversible;
+    fn fetch(&self) -> impl Send + Future<Output = Result<Self::T>>;
+}
+
 impl<F: Send + Sync + Fn() -> Fut, Fut: Send + Future<Output = Result<T>>, T: Traversible>
     FnFetch<F>
 {
