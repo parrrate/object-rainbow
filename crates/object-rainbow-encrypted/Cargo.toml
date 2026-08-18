@@ -24,7 +24,3 @@ sha2.workspace = true
 smol.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
-
-[features]
-default = ["lazy-leaf"]
-lazy-leaf = []

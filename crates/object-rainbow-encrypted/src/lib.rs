@@ -7,9 +7,9 @@ use object_rainbow::{
     Address, ByteNode, Error, ExtraFor, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node,
     Parse, ParseInline, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Tagged, ToOutput, TopoVec, Topological, Traversible, derive_for_wrapped,
-    length_prefixed::LpVec, map_extra::MappedExtra, tuple_extra::Extra0,
+    fn_fetch::FnFetch, length_prefixed::LpVec, map_extra::MappedExtra, tuple_extra::Extra0,
 };
-use object_rainbow_point::{ExtractResolve, Extras, IntoPoint, Point};
+use object_rainbow_point::{ExtractResolve, Extras, Point};
 
 #[derive_for_wrapped]
 pub trait Key: 'static + Sized + Send + Sync + Clone + PartialEq + Eq {
@@ -513,26 +513,20 @@ pub async fn encrypt_point<K: Key, T: Traversible>(
         return Ok(point);
     };
     let encrypted = encrypt(key.clone(), decrypted.fetch().await?).await?;
-    #[cfg(feature = "lazy-leaf")]
-    if encrypted.point_count() == 0 {
-        use object_rainbow::fn_fetch::FnFetch;
-        let decrypted = Arc::new(decrypted);
-        let topology = encrypted.inner.topology.clone();
-        let point = Point::from_alternate_source(
-            &encrypted,
-            FnFetch::new(move || {
-                let decrypted = decrypted.clone();
-                let key = key.clone();
-                let topology = topology.clone();
-                async move {
-                    let decrypted = decrypted.fetch().await?;
-                    Ok(Encrypted::from_topology(key, topology, decrypted))
-                }
-            }),
-        );
-        return Ok(point);
-    }
-    let point = encrypted.point();
+    let decrypted = Arc::new(decrypted);
+    let topology = encrypted.inner.topology.clone();
+    let point = Point::from_alternate_source(
+        &encrypted,
+        FnFetch::new(move || {
+            let decrypted = decrypted.clone();
+            let key = key.clone();
+            let topology = topology.clone();
+            async move {
+                let decrypted = decrypted.fetch().await?;
+                Ok(Encrypted::from_topology(key, topology, decrypted))
+            }
+        }),
+    );
     Ok(point)
 }
 
