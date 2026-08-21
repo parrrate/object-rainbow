@@ -157,7 +157,7 @@ pub fn derive_length_from_hash(hash: Hash) -> u32 {
     derive_length(hash.reinterpret::<(u64, u64, u64, u64)>().0)
 }
 
-pub fn derive_length(source: u64) -> u32 {
+fn derive_length(source: u64) -> u32 {
     const SIZE: u32 = u64::BITS;
     const HEAD_SIZE: u32 = 4;
     const TAIL_SIZE: u32 = SIZE - HEAD_SIZE;
