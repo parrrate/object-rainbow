@@ -3,7 +3,10 @@ use std::pin::pin;
 use fastcdc::v2020::{AsyncStreamCDC, Normalization};
 use futures_util::{AsyncRead, Stream, StreamExt, TryStreamExt};
 use genawaiter_try_stream::try_stream;
-use object_rainbow::{DiffHashes, Fetch, Hash, InlineOutput, Singular, SizeExt, ToOutput};
+use object_rainbow::{
+    DiffHashes, Fetch, Hash, InlineOutput, Singular, SizeExt, ToOutput,
+    fn_fetch::{FetchFn, FnFetch},
+};
 use object_rainbow_point::{IntoPoint, Point};
 use sha2::{Digest, Sha256};
 use static_assertions::const_assert_eq;
@@ -112,6 +115,30 @@ impl Chunk {
         let len_lower = (data.len() % 65536) as u16;
         let data = [data, tail.as_slice()].concat().point();
         assert_eq!(hash, data.hash());
+        Ok(Self { len_lower, data })
+    }
+
+    pub fn with_alternate_source<F: Send + Future<Output = object_rainbow::Result<Vec<u8>>>>(
+        data: &[u8],
+        fetch: impl 'static + Send + Sync + Fn() -> F,
+    ) -> object_rainbow::Result<Self> {
+        let (tail, hash) = generate_tail(data)?;
+        let len_lower = (data.len() % 65536) as u16;
+        struct WithTail<F> {
+            fetch: F,
+            tail: Vec<u8>,
+        }
+        impl<
+            F: Send + Sync + Fn() -> Fut,
+            Fut: Send + Future<Output = object_rainbow::Result<Vec<u8>>>,
+        > FetchFn for WithTail<F>
+        {
+            type T = Vec<u8>;
+            async fn fetch(&self) -> object_rainbow::Result<Self::T> {
+                Ok([(self.fetch)().await?.as_slice(), self.tail.as_slice()].concat())
+            }
+        }
+        let data = Point::from_fetch(hash, FnFetch::new(WithTail { fetch, tail }));
         Ok(Self { len_lower, data })
     }
 
