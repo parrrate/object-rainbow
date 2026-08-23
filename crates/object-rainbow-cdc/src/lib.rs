@@ -108,9 +108,10 @@ impl Chunk {
     }
 
     pub fn new(data: &[u8]) -> object_rainbow::Result<Self> {
-        let tail = generate_tail(data)?;
+        let (tail, hash) = generate_tail(data)?;
         let len_lower = (data.len() % 65536) as u16;
         let data = [data, tail.as_slice()].concat().point();
+        assert_eq!(hash, data.hash());
         Ok(Self { len_lower, data })
     }
 
@@ -128,7 +129,7 @@ impl Chunk {
     }
 }
 
-pub fn generate_tail(data: &[u8]) -> object_rainbow::Result<Vec<u8>> {
+pub fn generate_tail(data: &[u8]) -> object_rainbow::Result<(Vec<u8>, Hash)> {
     let diff = DiffHashes::default().data_hash();
     let mut hasher = Sha256::new();
     hasher.update(diff);
@@ -145,7 +146,7 @@ pub fn generate_tail(data: &[u8]) -> object_rainbow::Result<Vec<u8>> {
             hasher.update(&tail);
             let hash = Hash::from_hasher(hasher);
             if derive_length_from_hash(hash) == target {
-                return Ok(tail);
+                return Ok((tail, hash));
             }
         }
     }
