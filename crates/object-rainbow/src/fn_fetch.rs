@@ -26,7 +26,10 @@ impl<F: FetchFn<T: Traversible>> FnFetch<F> {
         self.fetch.fetch().await
     }
 
-    async fn fetch_node(&self) -> Result<Node<F::T>> {
+    async fn fetch_node(&self) -> Result<Node<F::T>>
+    where
+        F::T: Traversible,
+    {
         let object = self.fetch().await?;
         let resolve = object.to_resolve();
         Ok((object, resolve))
