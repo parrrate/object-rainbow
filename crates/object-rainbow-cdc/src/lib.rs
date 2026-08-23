@@ -44,31 +44,36 @@ impl Chunks {
         })
     }
 
+    pub async fn from_stream<F: Future<Output = object_rainbow::Result<Chunk>>>(
+        chunks: impl Stream<Item = object_rainbow::Result<F>>,
+    ) -> object_rainbow::Result<Self> {
+        let chunks = chunks.try_collect::<Vec<_>>().await?;
+        let chunks = futures_util::future::try_join_all(chunks).await?;
+        Ok(Self { chunks })
+    }
+
     pub async fn in_memory<F: Future<Output = object_rainbow::Result<Chunk>>>(
         source: impl Send + AsyncRead,
         mut schedule: impl FnMut(Box<dyn Send + FnOnce() -> object_rainbow::Result<Chunk>>) -> F,
     ) -> object_rainbow::Result<Self> {
-        let chunks = Self::bytes_stream(source)
-            .map_ok(|(_, chunk)| schedule(Box::new(move || Chunk::new(&chunk))))
-            .try_collect::<Vec<_>>()
-            .await?;
-        let chunks = futures_util::future::try_join_all(chunks).await?;
-        Ok(Self { chunks })
+        Self::from_stream(
+            Self::bytes_stream(source)
+                .map_ok(|(_, chunk)| schedule(Box::new(move || Chunk::new(&chunk)))),
+        )
+        .await
     }
 
     pub async fn from_seek<F: Future<Output = object_rainbow::Result<Chunk>>>(
         open: impl 'static + Clone + FetchFn<T: Send + AsyncRead + AsyncSeek>,
         mut schedule: impl FnMut(Box<dyn Send + FnOnce() -> object_rainbow::Result<Chunk>>) -> F,
     ) -> object_rainbow::Result<Self> {
-        let chunks = Self::bytes_stream(open.fetch().await?)
-            .map_ok(|(offset, chunk)| {
+        Self::from_stream(
+            Self::bytes_stream(open.fetch().await?).map_ok(|(offset, chunk)| {
                 let open = open.clone();
                 schedule(Box::new(move || Chunk::from_seek(&chunk, offset, open)))
-            })
-            .try_collect::<Vec<_>>()
-            .await?;
-        let chunks = futures_util::future::try_join_all(chunks).await?;
-        Ok(Self { chunks })
+            }),
+        )
+        .await
     }
 
     pub fn as_stream(&self) -> impl '_ + Send + Stream<Item = object_rainbow::Result<Vec<u8>>> {
