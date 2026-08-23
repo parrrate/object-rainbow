@@ -17,8 +17,7 @@ impl Chunks {
     }
 
     pub async fn to_file<P: AsRef<Path>>(&self, path: P) -> object_rainbow::Result<()> {
-        futures_util::io::copy(
-            self.as_async_read(),
+        self.to_writer(
             &mut OpenOptions::new()
                 .write(true)
                 .truncate(true)
@@ -26,7 +25,6 @@ impl Chunks {
                 .open(path)
                 .await?,
         )
-        .await?;
-        Ok(())
+        .await
     }
 }

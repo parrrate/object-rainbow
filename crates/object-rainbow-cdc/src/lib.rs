@@ -2,7 +2,7 @@ use std::{io::SeekFrom, pin::pin};
 
 use fastcdc::v2020::{AsyncStreamCDC, Normalization};
 use futures_util::{
-    AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, Stream, StreamExt, TryStreamExt,
+    AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, AsyncWrite, Stream, StreamExt, TryStreamExt,
 };
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{
@@ -93,6 +93,14 @@ impl Chunks {
 
     pub fn into_async_read(self) -> impl Send + AsyncRead {
         self.into_stream().map_err(|e| e.into()).into_async_read()
+    }
+
+    pub async fn to_writer(
+        &self,
+        writer: &mut (impl ?Sized + Unpin + AsyncWrite),
+    ) -> object_rainbow::Result<()> {
+        futures_util::io::copy(self.as_async_read(), writer).await?;
+        Ok(())
     }
 
     pub fn len(&self) -> object_rainbow::Result<usize> {
