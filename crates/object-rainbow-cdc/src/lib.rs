@@ -143,7 +143,8 @@ pub fn generate_tail(data: &[u8]) -> object_rainbow::Result<Vec<u8>> {
             let tail = tail.to_be_bytes()[(16 - len)..].to_vec();
             let mut hasher = hasher.clone();
             hasher.update(&tail);
-            if derive_length_from_hash(Hash::from_hasher(hasher)) == target {
+            let hash = Hash::from_hasher(hasher);
+            if derive_length_from_hash(hash) == target {
                 return Ok(tail);
             }
         }
