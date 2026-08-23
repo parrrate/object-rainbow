@@ -95,7 +95,7 @@ impl Chunks {
         Ok(self.len()? == 0)
     }
 
-    pub fn chunk_len(&self) -> usize {
+    pub fn chunk_count(&self) -> usize {
         self.chunks.len()
     }
 }

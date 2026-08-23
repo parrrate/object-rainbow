@@ -10,7 +10,7 @@ fn main() -> object_rainbow::Result<()> {
         let data = random_iter().take(1 << 30).collect::<Vec<_>>();
         let start = Instant::now();
         let chunks = smol::block_on(Chunks::in_memory(Cursor::new(data), smol::unblock))?;
-        println!("{}", chunks.chunk_len());
+        println!("{}", chunks.chunk_count());
         println!("{}s", start.elapsed().as_secs());
     }
     {
