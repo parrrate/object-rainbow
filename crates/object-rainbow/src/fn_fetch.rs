@@ -62,7 +62,7 @@ impl<F: FetchFn> Fetch for FnFetch<F> {
 }
 
 pub trait ClosureFetch<Closure>: Send + Sync {
-    type T;
+    type T: Traversible;
 
     fn fetch(&self, closure: &Closure) -> impl Send + Future<Output = Self::T>;
 }
