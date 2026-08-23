@@ -105,3 +105,10 @@ impl<Closure: Send + Sync, F: ClosureFetch<Closure>> FetchFn for (Closure, F) {
         self.1.fetch(&self.0)
     }
 }
+
+pub fn closure_fetch<Closure: Send + Sync, F: ClosureFetch<Closure>>(
+    closure: Closure,
+    f: F,
+) -> impl FetchFn<T = F::T> {
+    (closure, f)
+}
