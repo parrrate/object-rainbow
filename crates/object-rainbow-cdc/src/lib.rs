@@ -55,14 +55,21 @@ impl Chunks {
         Ok(Self { chunks })
     }
 
+    async fn from_chunked_stream<F: Future<Output = object_rainbow::Result<Chunk>>>(
+        source: impl Send + AsyncRead,
+        mut make: impl FnMut(u64, Vec<u8>) -> F,
+    ) -> object_rainbow::Result<Self> {
+        Self::from_stream(Self::bytes_stream(source).map_ok(|(offset, chunk)| make(offset, chunk)))
+            .await
+    }
+
     pub async fn in_memory<F: Future<Output = object_rainbow::Result<Chunk>>>(
         source: impl Send + AsyncRead,
         mut schedule: impl FnMut(Box<dyn Send + FnOnce() -> object_rainbow::Result<Chunk>>) -> F,
     ) -> object_rainbow::Result<Self> {
-        Self::from_stream(
-            Self::bytes_stream(source)
-                .map_ok(|(_, chunk)| schedule(Box::new(move || Chunk::new(&chunk)))),
-        )
+        Self::from_chunked_stream(source, |_, chunk| {
+            schedule(Box::new(move || Chunk::new(&chunk)))
+        })
         .await
     }
 
@@ -70,12 +77,10 @@ impl Chunks {
         open: impl 'static + Clone + FetchFn<T: Send + AsyncRead + AsyncSeek>,
         mut schedule: impl FnMut(Box<dyn Send + FnOnce() -> object_rainbow::Result<Chunk>>) -> F,
     ) -> object_rainbow::Result<Self> {
-        Self::from_stream(
-            Self::bytes_stream(open.fetch().await?).map_ok(|(offset, chunk)| {
-                let open = open.clone();
-                schedule(Box::new(move || Chunk::from_seek(&chunk, offset, open)))
-            }),
-        )
+        Self::from_chunked_stream(open.fetch().await?, |offset, chunk| {
+            let open = open.clone();
+            schedule(Box::new(move || Chunk::from_seek(&chunk, offset, open)))
+        })
         .await
     }
 
