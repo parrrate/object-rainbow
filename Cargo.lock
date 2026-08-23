@@ -1758,6 +1758,8 @@ dependencies = [
 name = "object-rainbow-cdc"
 version = "0.0.0-a.0"
 dependencies = [
+ "async-fs",
+ "blocking",
  "fastcdc",
  "futures-util",
  "genawaiter-try-stream",

@@ -1,3 +1,5 @@
+#[cfg(feature = "fs")]
+use std::path::Path;
 use std::{io::SeekFrom, pin::pin};
 
 use fastcdc::v2020::{AsyncStreamCDC, Normalization};
@@ -72,6 +74,16 @@ impl Chunks {
                 let open = open.clone();
                 schedule(Box::new(move || Chunk::from_seek(&chunk, offset, open)))
             }),
+        )
+        .await
+    }
+
+    #[cfg(feature = "fs")]
+    pub async fn from_file<P: AsRef<Path>>(path: P) -> object_rainbow::Result<Self> {
+        let path = std::sync::Arc::<Path>::from(path.as_ref());
+        Self::from_seek(
+            closure_fetch(path, async |path| Ok(async_fs::File::open(path).await?)),
+            blocking::unblock,
         )
         .await
     }

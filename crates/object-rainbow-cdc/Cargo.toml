@@ -12,11 +12,16 @@ description = "FastCDC for object-rainbow"
 object-rainbow.workspace = true
 object-rainbow-point.workspace = true
 
+async-fs = { workspace = true, optional = true }
+blocking = { workspace = true, optional = true }
 fastcdc.workspace = true
 futures-util.workspace = true
 genawaiter-try-stream.workspace = true
 sha2.workspace = true
 static_assertions.workspace = true
+
+[features]
+fs = ["dep:async-fs", "dep:blocking"]
 
 [dev-dependencies]
 rand.workspace = true
