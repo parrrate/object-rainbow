@@ -7,7 +7,7 @@ use object_rainbow::{
     Address, ByteNode, Error, ExtraFor, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node,
     Parse, ParseInline, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Tagged, ToOutput, TopoVec, Topological, Traversible, derive_for_wrapped,
-    fn_fetch::{FetchFn, FnFetch},
+    fn_fetch::{FnFetch, closure_fetch},
     length_prefixed::LpVec,
     map_extra::MappedExtra,
     tuple_extra::Extra0,
@@ -519,27 +519,15 @@ pub async fn encrypt_point<K: Key, T: Traversible>(
     let topology = encrypted.inner.topology.clone();
     let point = Point::from_alternate_source(
         &encrypted,
-        FnFetch::new({
-            struct WithTopology<K, F> {
-                key: K,
-                decrypted: F,
-                topology: Arc<LpVec<Arc<dyn Singular>>>,
-            }
-            impl<K: Key, F: 'static + SingularFetch<T: Traversible>> FetchFn for WithTopology<K, F> {
-                type T = Encrypted<K, F::T>;
-                async fn fetch(&self) -> object_rainbow::Result<Self::T> {
-                    let decrypted = self.decrypted.fetch().await?;
-                    let topology = self.topology.clone();
-                    let key = self.key.clone();
-                    Ok(Encrypted::from_topology(key, topology, decrypted))
-                }
-            }
-            WithTopology {
-                key,
-                decrypted,
-                topology,
-            }
-        }),
+        FnFetch::new(closure_fetch(
+            (key, decrypted, topology),
+            async |(key, decrypted, topology)| {
+                let decrypted = decrypted.fetch().await?;
+                let topology = topology.clone();
+                let key = key.clone();
+                Ok(Encrypted::from_topology(key, topology, decrypted))
+            },
+        )),
     );
     Ok(point)
 }
