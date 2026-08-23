@@ -47,7 +47,7 @@ impl Chunks {
         })
     }
 
-    pub async fn from_stream<F: Future<Output = object_rainbow::Result<Chunk>>>(
+    async fn from_stream<F: Future<Output = object_rainbow::Result<Chunk>>>(
         chunks: impl Stream<Item = object_rainbow::Result<F>>,
     ) -> object_rainbow::Result<Self> {
         let chunks = chunks.try_collect::<Vec<_>>().await?;
