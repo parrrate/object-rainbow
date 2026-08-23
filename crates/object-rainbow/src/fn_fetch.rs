@@ -72,7 +72,7 @@ impl<
     Closure: 'a,
     F: Send + Sync + Fn(&'a Closure) -> Fut,
     Fut: Send + Future<Output = Result<T>>,
-    T: Traversible,
+    T,
 > ClosureFn<'a, Closure> for F
 {
     type T = T;
