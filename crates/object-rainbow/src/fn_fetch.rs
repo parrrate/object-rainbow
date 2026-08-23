@@ -49,7 +49,7 @@ impl<F: FetchFn> FetchBytes for FnFetch<F> {
     }
 }
 
-impl<F: FetchFn> Fetch for FnFetch<F> {
+impl<F: FetchFn<T: Traversible>> Fetch for FnFetch<F> {
     type T = F::T;
 
     fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
