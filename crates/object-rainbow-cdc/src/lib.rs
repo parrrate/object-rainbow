@@ -5,7 +5,7 @@ use futures_util::{AsyncRead, Stream, StreamExt, TryStreamExt};
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{
     DiffHashes, Fetch, Hash, InlineOutput, Singular, SizeExt, ToOutput,
-    fn_fetch::{FetchFn, FnFetch},
+    fn_fetch::{FetchFn, FnFetch, closure_fetch},
 };
 use object_rainbow_point::{IntoPoint, Point};
 use sha2::{Digest, Sha256};
@@ -122,17 +122,12 @@ impl Chunk {
         fetch: impl 'static + FetchFn<T = Vec<u8>>,
     ) -> object_rainbow::Result<Self> {
         let (len_lower, tail, hash) = generate_tail(data)?;
-        struct WithTail<F> {
-            fetch: F,
-            tail: Vec<u8>,
-        }
-        impl<F: FetchFn<T = Vec<u8>>> FetchFn for WithTail<F> {
-            type T = Vec<u8>;
-            async fn fetch(&self) -> object_rainbow::Result<Self::T> {
-                Ok([self.fetch.fetch().await?.as_slice(), self.tail.as_slice()].concat())
-            }
-        }
-        let data = Point::from_fetch(hash, FnFetch::new(WithTail { fetch, tail }));
+        let data = Point::from_fetch(
+            hash,
+            FnFetch::new(closure_fetch((fetch, tail), async |(fetch, tail)| {
+                Ok([fetch.fetch().await?.as_slice(), tail.as_slice()].concat())
+            })),
+        );
         Ok(Self { len_lower, data })
     }
 
