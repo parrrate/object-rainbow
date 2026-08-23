@@ -36,7 +36,7 @@ impl Default for Hash {
 impl Display for Hash {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for x in self.0 {
-            write!(f, "{x:X}")?;
+            write!(f, "{x:02X}")?;
         }
         Ok(())
     }
