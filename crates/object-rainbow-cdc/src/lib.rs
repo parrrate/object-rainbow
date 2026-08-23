@@ -111,8 +111,7 @@ impl Chunk {
     }
 
     pub fn new(data: &[u8]) -> object_rainbow::Result<Self> {
-        let (tail, hash) = generate_tail(data)?;
-        let len_lower = (data.len() % 65536) as u16;
+        let (len_lower, tail, hash) = generate_tail(data)?;
         let data = [data, tail.as_slice()].concat().point();
         assert_eq!(hash, data.hash());
         Ok(Self { len_lower, data })
@@ -122,8 +121,7 @@ impl Chunk {
         data: &[u8],
         fetch: impl 'static + Send + Sync + Fn() -> F,
     ) -> object_rainbow::Result<Self> {
-        let (tail, hash) = generate_tail(data)?;
-        let len_lower = (data.len() % 65536) as u16;
+        let (len_lower, tail, hash) = generate_tail(data)?;
         struct WithTail<F> {
             fetch: F,
             tail: Vec<u8>,
@@ -156,7 +154,8 @@ impl Chunk {
     }
 }
 
-pub fn generate_tail(data: &[u8]) -> object_rainbow::Result<(Vec<u8>, Hash)> {
+pub fn generate_tail(data: &[u8]) -> object_rainbow::Result<(u16, Vec<u8>, Hash)> {
+    let len_lower = (data.len() % 65536) as u16;
     let diff = DiffHashes::default().data_hash();
     let mut hasher = Sha256::new();
     hasher.update(diff);
@@ -173,7 +172,7 @@ pub fn generate_tail(data: &[u8]) -> object_rainbow::Result<(Vec<u8>, Hash)> {
             hasher.update(&tail);
             let hash = Hash::from_hasher(hasher);
             if derive_length_from_hash(hash) == target {
-                return Ok((tail, hash));
+                return Ok((len_lower, tail, hash));
             }
         }
     }
