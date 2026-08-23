@@ -1,6 +1,6 @@
 use std::{path::Path, sync::Arc};
 
-use async_fs::File;
+use async_fs::{File, OpenOptions};
 use blocking::unblock;
 use object_rainbow::fn_fetch::closure_fetch;
 
@@ -14,5 +14,19 @@ impl Chunks {
             unblock,
         )
         .await
+    }
+
+    pub async fn to_file<P: AsRef<Path>>(&self, path: P) -> object_rainbow::Result<()> {
+        futures_util::io::copy(
+            self.as_async_read(),
+            &mut OpenOptions::new()
+                .write(true)
+                .truncate(true)
+                .create(true)
+                .open(path)
+                .await?,
+        )
+        .await?;
+        Ok(())
     }
 }
