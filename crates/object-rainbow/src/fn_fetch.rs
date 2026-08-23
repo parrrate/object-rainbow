@@ -113,6 +113,6 @@ pub fn closure_fetch<
 >(
     closure: Closure,
     f: F,
-) -> impl FetchFn<T = F::T> {
+) -> (Closure, F) {
     (closure, f)
 }
