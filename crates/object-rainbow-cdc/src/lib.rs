@@ -117,23 +117,19 @@ impl Chunk {
         Ok(Self { len_lower, data })
     }
 
-    pub fn with_alternate_source<F: Send + Future<Output = object_rainbow::Result<Vec<u8>>>>(
+    pub fn with_alternate_source(
         data: &[u8],
-        fetch: impl 'static + Send + Sync + Fn() -> F,
+        fetch: impl 'static + FetchFn<T = Vec<u8>>,
     ) -> object_rainbow::Result<Self> {
         let (len_lower, tail, hash) = generate_tail(data)?;
         struct WithTail<F> {
             fetch: F,
             tail: Vec<u8>,
         }
-        impl<
-            F: Send + Sync + Fn() -> Fut,
-            Fut: Send + Future<Output = object_rainbow::Result<Vec<u8>>>,
-        > FetchFn for WithTail<F>
-        {
+        impl<F: FetchFn<T = Vec<u8>>> FetchFn for WithTail<F> {
             type T = Vec<u8>;
             async fn fetch(&self) -> object_rainbow::Result<Self::T> {
-                Ok([(self.fetch)().await?.as_slice(), self.tail.as_slice()].concat())
+                Ok([self.fetch.fetch().await?.as_slice(), self.tail.as_slice()].concat())
             }
         }
         let data = Point::from_fetch(hash, FnFetch::new(WithTail { fetch, tail }));
