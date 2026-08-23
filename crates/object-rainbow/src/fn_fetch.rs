@@ -9,9 +9,7 @@ pub trait FetchFn: Send + Sync {
     fn fetch(&self) -> impl Send + Future<Output = Result<Self::T>>;
 }
 
-impl<F: Send + Sync + Fn() -> Fut, Fut: Send + Future<Output = Result<T>>, T: Traversible> FetchFn
-    for F
-{
+impl<F: Send + Sync + Fn() -> Fut, Fut: Send + Future<Output = Result<T>>, T> FetchFn for F {
     type T = T;
 
     fn fetch(&self) -> impl Send + Future<Output = Result<Self::T>> {
