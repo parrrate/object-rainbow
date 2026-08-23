@@ -19,7 +19,7 @@ impl<F: Send + Sync + Fn() -> Fut, Fut: Send + Future<Output = Result<T>>, T: Tr
     }
 }
 
-impl<F: FetchFn> FnFetch<F> {
+impl<F: FetchFn<T: Traversible>> FnFetch<F> {
     pub fn new(fetch: F) -> Self {
         Self { fetch }
     }
