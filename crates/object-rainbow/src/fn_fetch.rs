@@ -62,7 +62,7 @@ impl<F: FetchFn<T: Traversible>> Fetch for FnFetch<F> {
 }
 
 pub trait ClosureFn<'a, Closure: 'a>: Send + Sync + Fn(&'a Closure) -> Self::Fut {
-    type T: Traversible;
+    type T;
     type Fut: Send + Future<Output = Result<Self::T>>;
     fn fetch(&'a self, closure: &'a Closure) -> Self::Fut;
 }
