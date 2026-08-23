@@ -60,3 +60,9 @@ impl<F: FetchFn> Fetch for FnFetch<F> {
         Box::pin(async move { self.fetch().await })
     }
 }
+
+pub trait ClosureFetch<Closure>: Send + Sync {
+    type T;
+
+    fn fetch(&self, closure: &Closure) -> impl Send + Future<Output = Self::T>;
+}
