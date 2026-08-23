@@ -106,7 +106,10 @@ impl<Closure: Send + Sync, F: ClosureFetch<Closure>> FetchFn for (Closure, F) {
     }
 }
 
-pub fn closure_fetch<Closure: Send + Sync, F: ClosureFetch<Closure>>(
+pub fn closure_fetch<
+    Closure: Send + Sync,
+    F: ClosureFetch<Closure> + AsyncFn(&Closure) -> Result<F::T>,
+>(
     closure: Closure,
     f: F,
 ) -> impl FetchFn<T = F::T> {
