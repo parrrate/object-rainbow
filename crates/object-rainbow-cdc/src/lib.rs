@@ -1,7 +1,9 @@
-use std::pin::pin;
+use std::{io::SeekFrom, pin::pin};
 
 use fastcdc::v2020::{AsyncStreamCDC, Normalization};
-use futures_util::{AsyncRead, Stream, StreamExt, TryStreamExt};
+use futures_util::{
+    AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, Stream, StreamExt, TryStreamExt,
+};
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{
     DiffHashes, Fetch, Hash, InlineOutput, Singular, SizeExt, ToOutput,
@@ -138,6 +140,24 @@ impl Chunk {
             .try_into()
             .map_err(|_| object_rainbow::Error::UnsupportedLength)?;
         Ok(len)
+    }
+
+    pub fn from_seek(
+        data: &[u8],
+        offset: u64,
+        open: impl 'static + FetchFn<T: Send + AsyncRead + AsyncSeek>,
+    ) -> object_rainbow::Result<Self> {
+        let len = data.len();
+        Self::with_alternate_source(
+            data,
+            closure_fetch((open, offset, len), async move |(open, offset, len)| {
+                let mut file = pin!(open.fetch().await?);
+                file.seek(SeekFrom::Start(*offset)).await?;
+                let mut buf = vec![0; *len];
+                file.read_exact(&mut buf).await?;
+                Ok(buf)
+            }),
+        )
     }
 
     pub fn is_empty(&self) -> object_rainbow::Result<bool> {
