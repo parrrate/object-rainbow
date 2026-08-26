@@ -9,3 +9,14 @@ I fanatically split things into smaller commits when it's easy to do so.
 
 - when it's not easy, make it easy
 - when stuck/in doubt, reset everything, start over
+
+## Abstraction
+
+Here I have a somewhat similar view: try to split as much as possible.
+
+- don't `dyn` for abstraction, only for necessary polymorphism (specifically the `Fetch`es)
+- having only 1 or 0 concretions is not good enough to avoid an abstraction
+- aim for representing common interfaces as same trait even if they represent different things
+  - this notably happened to the way we map `Extra`s
+- custom logic for concretions should mostly be implemented in abstractions and then composed
+  - see how schema thing does so
