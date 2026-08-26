@@ -3,7 +3,7 @@
 I decided to document how I do the dev process, since it's by now become core part of the project
 itself.
 
-## Atomic commits
+## Atomic commits (and other Git things)
 
 I fanatically split things into smaller commits when it's easy to do so.
 
