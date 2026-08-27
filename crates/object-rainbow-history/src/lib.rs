@@ -89,7 +89,8 @@ impl<T: Component + Default + Apply<D>, D: Clone + Traversible> History<T, D> {
 
     pub async fn forward(&mut self, other: Self) -> object_rainbow::Result<()> {
         self.check_forward(&other).await?;
-        self.forward(other).await
+        *self = other;
+        Ok(())
     }
 
     pub async fn tree(&self) -> object_rainbow::Result<T> {
