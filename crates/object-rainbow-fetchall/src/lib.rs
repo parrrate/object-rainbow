@@ -18,7 +18,7 @@ type Dependency = Box<
 >;
 
 enum Request {
-    Depencencies {
+    Dependencies {
         dependencies: BTreeMap<Hash, Dependency>,
         callback: oneshot::Sender<object_rainbow::Result<()>>,
     },
@@ -69,7 +69,7 @@ impl<'r> Context<'r> {
         {
             let (callback, wait) = oneshot::channel();
             self.request
-                .send_async(Request::Depencencies {
+                .send_async(Request::Dependencies {
                     dependencies,
                     callback,
                 })
@@ -121,7 +121,7 @@ pub async fn fetchall(object: &impl Traversible) -> object_rainbow::Result<Local
             inner.spawn(async {
                 while let Ok(request) = recv.recv_async().await {
                     match request {
-                        Request::Depencencies {
+                        Request::Dependencies {
                             dependencies,
                             callback,
                         } => {
