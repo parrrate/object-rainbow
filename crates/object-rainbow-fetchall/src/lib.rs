@@ -48,8 +48,9 @@ impl<'v> PointVisitor for DependencyVisitor<'v> {
             let point = point.clone();
             e.insert(Box::new(move |context| {
                 Box::pin(async move {
-                    assert_eq!(point.fetch().await?.full_hash(), hash);
-                    context.save_object(&point.fetch().await?).await
+                    let object = point.fetch().await?;
+                    assert_eq!(object.full_hash(), hash);
+                    context.save_object(&object).await
                 })
             }));
         }
