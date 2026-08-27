@@ -287,8 +287,10 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
                             .await?
                             .append(&mut *r.fetch_mut().await?)
                             .await?;
+                        *other = Self::Empty;
+                    } else {
+                        *self = std::mem::take(other);
                     }
-                    *self = std::mem::take(other);
                 }
             }
             assert!(other.is_empty());
