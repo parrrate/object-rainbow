@@ -1,2 +1,5 @@
 #[derive(Debug, thiserror::Error)]
-pub enum LayeredError {}
+pub enum LayeredError<O> {
+    #[error(transparent)]
+    Outer(O),
+}
