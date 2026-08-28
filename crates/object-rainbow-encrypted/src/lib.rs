@@ -14,6 +14,8 @@ use object_rainbow::{
 };
 use object_rainbow_point::{ExtractResolve, Extras, Point};
 
+pub mod tuple_key;
+
 #[derive_for_wrapped]
 pub trait Key: 'static + Sized + Send + Sync + Clone + PartialEq + Eq {
     type Error: 'static + Send + Sync + std::error::Error;
