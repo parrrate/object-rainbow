@@ -82,7 +82,7 @@ impl LocalMap {
             return Err(referenced_by);
         }
         let mut map = self.map.clone();
-        if let Some(Entry { inner, .. }) = self.map.remove(&hash) {
+        if let Some(Entry { inner, .. }) = map.remove(&hash) {
             for referenced in &inner.topology {
                 map.get_mut(referenced)
                     .expect("unknown")
