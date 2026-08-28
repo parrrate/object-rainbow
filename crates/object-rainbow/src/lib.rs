@@ -316,9 +316,9 @@ impl<'a> ReflessData<'a> {
             && let Some(front) = prefix_r.last_mut()
         {
             if n < front.len() {
-                n = 0;
                 prefix_l.push(Vec::from(&front[..n]));
                 front.drain(..n);
+                n = 0;
             } else {
                 n -= front.len();
                 prefix_l.push(prefix_r.pop().expect("last element is known to exist"));
