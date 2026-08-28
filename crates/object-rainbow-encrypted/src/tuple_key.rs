@@ -8,6 +8,7 @@ pub enum LayeredError<O, I> {
     Inner(I),
 }
 
+/// Inner "key" here is expected to be more of a "data filter" like compression.
 impl<O: Key, I: Key> Key for (O, I) {
     type Error = LayeredError<O::Error, I::Error>;
 
