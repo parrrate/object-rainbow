@@ -17,7 +17,7 @@ use static_assertions::const_assert_eq;
 #[cfg(feature = "fs")]
 mod fs;
 
-#[derive(ToOutput)]
+#[derive(ToOutput, Tagged)]
 pub struct Chunks {
     chunks: Vec<Chunk>,
 }
