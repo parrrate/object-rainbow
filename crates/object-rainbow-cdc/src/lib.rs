@@ -6,7 +6,7 @@ use futures_util::{
 };
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{
-    DiffHashes, Fetch, Hash, InlineOutput, ListHashes, Singular, SizeExt, Tagged, ToOutput,
+    DiffHashes, Fetch, Hash, InlineOutput, ListHashes, Parse, Singular, SizeExt, Tagged, ToOutput,
     Topological,
     fn_fetch::{FetchFn, FnFetch, closure_fetch},
 };
@@ -122,7 +122,7 @@ impl Chunks {
     }
 }
 
-#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological)]
+#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse)]
 pub struct Chunk {
     len_lower: u16,
     data: Point<Vec<u8>>,
