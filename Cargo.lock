@@ -1810,6 +1810,7 @@ dependencies = [
  "object-rainbow-point",
  "sha2",
  "smol",
+ "thiserror",
  "tracing",
  "tracing-subscriber",
 ]
