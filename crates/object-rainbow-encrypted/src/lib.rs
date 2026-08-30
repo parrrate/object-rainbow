@@ -250,6 +250,11 @@ impl<
             &input.parse_all()?,
             &(Arc::new(header.resolve.clone()) as _),
         )?;
+        if decrypted.point_count() != header.resolve.addresses.len() {
+            return Err(object_rainbow::error_consistency!(
+                "too many addresses in the header",
+            ));
+        }
         header.with(decrypted)
     }
 }
