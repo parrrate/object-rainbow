@@ -26,3 +26,7 @@ fs = ["dep:async-fs", "dep:blocking"]
 [dev-dependencies]
 rand.workspace = true
 smol.workspace = true
+
+[[example]]
+name = "file"
+required-features = ["fs"]
