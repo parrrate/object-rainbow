@@ -214,7 +214,11 @@ pub fn generate_tail(data: &[u8]) -> object_rainbow::Result<(u16, Vec<u8>, Hash)
         .try_into()
         .map_err(|_| object_rainbow::Error::UnsupportedLength)?;
     for len in 0..=16 {
-        for tail in 0u128..(1 << (len * 8)) {
+        for tail in 0u128..=(if len < 16 {
+            (1 << (len * 8)) - 1
+        } else {
+            u128::MAX
+        }) {
             let tail = tail.to_be_bytes()[(16 - len)..].to_vec();
             let mut hasher = hasher.clone();
             hasher.update(&tail);
