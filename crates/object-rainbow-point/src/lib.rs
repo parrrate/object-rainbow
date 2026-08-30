@@ -451,6 +451,13 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra>
 }
 
 impl<T> Point<T> {
+    pub async fn echo(fetch: impl 'static + Fetch<T = T>) -> object_rainbow::Result<Self>
+    where
+        T: FullHash,
+    {
+        Ok(Self::from_alternate_source(&fetch.fetch().await?, fetch))
+    }
+
     pub fn from_alternate_source(object: &T, fetch: impl 'static + Fetch<T = T>) -> Self
     where
         T: FullHash,
