@@ -42,3 +42,7 @@ ulid = ["dep:ulid"]
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+
+[[example]]
+name = "derive"
+required-features = ["hex"]
