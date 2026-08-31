@@ -64,7 +64,7 @@ where
                     ProviderEvent::Published { .. } => {}
                 }
             }
-            Err(object_rainbow::Error::Unimplemented)
+            Ok(())
         })
         .await
 }
