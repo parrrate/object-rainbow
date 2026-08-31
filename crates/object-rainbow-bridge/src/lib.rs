@@ -27,7 +27,10 @@ pub enum Provide {
 pub fn consume<E1: Send, E2: Send>(
     send: impl Send + Sink<Consume, Error = E1>,
     recv: impl Send + Stream<Item = Result<Provide, E2>>,
-) -> impl Stream<Item = object_rainbow::Result<(Arc<dyn Singular>, Vec<u8>)>> {
+) -> impl Stream<Item = object_rainbow::Result<(Arc<dyn Singular>, Vec<u8>)>>
+where
+    object_rainbow::Error: From<E1>,
+{
     try_stream(async move |co| {
         let _ = pin!(send);
         let _ = pin!(recv);
