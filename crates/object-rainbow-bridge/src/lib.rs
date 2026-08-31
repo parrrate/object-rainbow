@@ -43,6 +43,7 @@ where
     let _ = pin!(recv);
     let _ = pin!(publish);
     let executor = Executor::new();
+    let mut _retain = BTreeMap::<Hash, (u128, Arc<dyn Singular>)>::new();
     executor
         .run(async move { Err(object_rainbow::Error::Unimplemented) })
         .await
