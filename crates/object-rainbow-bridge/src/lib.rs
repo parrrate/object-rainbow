@@ -35,8 +35,10 @@ enum ProviderEvent {
     Published((Arc<dyn Singular>, Vec<u8>)),
 }
 
+type Retained = (u128, Arc<dyn Singular + 'static>);
+
 #[derive(Default)]
-struct Retain(BTreeMap<Hash, (u128, Arc<dyn Singular>)>);
+struct Retain(BTreeMap<Hash, Retained>);
 
 impl Retain {
     fn retain(&mut self, point: Arc<dyn Singular>) -> Hash {
@@ -50,7 +52,7 @@ impl Retain {
         hash
     }
 
-    fn get_mut(&mut self, hash: Hash) -> object_rainbow::Result<&mut (u128, Arc<dyn Singular>)> {
+    fn get_mut(&mut self, hash: Hash) -> object_rainbow::Result<&mut Retained> {
         self.0
             .get_mut(&hash)
             .ok_or_else(|| object_rainbow::error_consistency!("unknown hash"))
