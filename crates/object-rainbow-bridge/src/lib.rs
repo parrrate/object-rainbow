@@ -6,7 +6,7 @@ use std::{
 
 use async_executor::{Executor, Task};
 use futures_channel::oneshot;
-use futures_util::{Sink, SinkExt, Stream, StreamExt, TryStreamExt, future::Shared};
+use futures_util::{FutureExt, Sink, SinkExt, Stream, StreamExt, TryStreamExt, future::Shared};
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{Address, FetchBytes, Hash, Resolve, Singular};
 use object_rainbow_point::RawPointInner;
@@ -213,7 +213,10 @@ where
                             let resolve = if let Some(resolve) = parent.resolve.as_ref().cloned() {
                                 resolve
                             } else {
-                                return Err(object_rainbow::Error::Unimplemented);
+                                let (send, recv) = oneshot::channel();
+                                parent.waiting.push(send);
+                                let recv = recv.shared();
+                                Arc::new(DelayedResolve { recv })
                             };
                             retain.retain(Arc::new(RawPointInner::from_address(child, resolve)));
                         }
@@ -239,12 +242,25 @@ struct DelayedResolve {
 }
 
 impl DelayedResolve {
-    #[expect(dead_code)]
     async fn recv_resolve(&self) -> object_rainbow::Result<Arc<dyn Resolve>> {
         self.recv
             .clone()
             .await
             .map_err(|_| object_rainbow::Error::Unimplemented)
+    }
+}
+
+impl Resolve for DelayedResolve {
+    fn resolve<'a>(
+        &'a self,
+        address: Address,
+        this: &'a Arc<dyn Resolve>,
+    ) -> object_rainbow::FailFuture<'a, object_rainbow::ByteNode> {
+        Box::pin(async move { self.recv_resolve().await?.resolve(address, this).await })
+    }
+
+    fn resolve_data(&'_ self, address: Address) -> object_rainbow::FailFuture<'_, Vec<u8>> {
+        Box::pin(async move { self.recv_resolve().await?.resolve_data(address).await })
     }
 }
 
