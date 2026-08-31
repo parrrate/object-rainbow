@@ -4,6 +4,7 @@ use std::{
     sync::Arc,
 };
 
+use async_executor::Executor;
 use futures_channel::oneshot;
 use futures_util::{Sink, SinkExt, Stream, StreamExt, TryStreamExt};
 use genawaiter_try_stream::try_stream;
@@ -41,7 +42,10 @@ where
     let _ = pin!(send);
     let _ = pin!(recv);
     let _ = pin!(publish);
-    Err(object_rainbow::Error::Unimplemented)
+    let executor = Executor::new();
+    executor
+        .run(async move { Err(object_rainbow::Error::Unimplemented) })
+        .await
 }
 
 enum ConsumerEvent {
