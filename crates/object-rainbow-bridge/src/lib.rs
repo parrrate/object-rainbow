@@ -61,7 +61,6 @@ impl Retain {
         Ok(())
     }
 
-    #[expect(dead_code)]
     fn dec(&mut self, hash: Hash) -> object_rainbow::Result<()> {
         let count = &mut self.get_mut(hash)?.0;
         *count -= 1;
@@ -96,6 +95,9 @@ where
                 match event {
                     ProviderEvent::Consumed(Consume::Inc(hash)) => {
                         retain.inc(hash)?;
+                    }
+                    ProviderEvent::Consumed(Consume::Dec(hash)) => {
+                        retain.dec(hash)?;
                     }
                     ProviderEvent::Consumed { .. } => {
                         return Err(object_rainbow::Error::Unimplemented);
