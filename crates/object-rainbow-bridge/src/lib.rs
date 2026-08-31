@@ -40,7 +40,7 @@ where
 {
     let _ = pin!(send);
     let _ = pin!(recv);
-    let _ = publish;
+    let _ = pin!(publish);
     Err(object_rainbow::Error::Unimplemented)
 }
 
