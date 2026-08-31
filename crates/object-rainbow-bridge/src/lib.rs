@@ -1,6 +1,6 @@
 use std::{pin::pin, sync::Arc};
 
-use futures_util::{Sink, Stream, TryStreamExt};
+use futures_util::{Sink, Stream, StreamExt, TryStreamExt};
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{Address, FetchBytes, Hash, Singular};
 
@@ -38,7 +38,7 @@ where
 {
     try_stream(async move |co| {
         let (_, respond) = flume::bounded(0);
-        let respond = respond.into_stream();
+        let respond = respond.into_stream().map(Ok);
         let _ = pin!(send);
         let recv = recv
             .map_err(object_rainbow::Error::from)
