@@ -45,6 +45,8 @@ struct Retained {
     fetching: Option<Fetching>,
     #[expect(dead_code)]
     resolve: Option<Arc<dyn Resolve>>,
+    #[expect(dead_code)]
+    ordered: bool,
 }
 
 #[derive(Default)]
@@ -59,6 +61,7 @@ impl Retain {
                 point,
                 fetching: None,
                 resolve: None,
+                ordered: false,
             }),
             btree_map::Entry::Occupied(occupied_entry) => occupied_entry,
         }
