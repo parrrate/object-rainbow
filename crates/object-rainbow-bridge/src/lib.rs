@@ -2,7 +2,7 @@ use std::{pin::pin, sync::Arc};
 
 use futures_util::{Sink, Stream, TryStreamExt};
 use genawaiter_try_stream::try_stream;
-use object_rainbow::{Address, Hash, Singular};
+use object_rainbow::{Address, FetchBytes, Hash, Singular};
 
 /// Commands coming from a consumer.
 pub enum Consume {
@@ -46,11 +46,36 @@ where
         while let Some(provided) = recv.try_next().await? {
             match provided {
                 ConsumerEvent::Provided(Provide::Deliver { .. }) => {}
-                ConsumerEvent::Provided(Provide::Publish { .. }) => {
-                    return Err(object_rainbow::Error::Unimplemented);
+                ConsumerEvent::Provided(Provide::Publish { hash, reason }) => {
+                    co.yield_((Arc::new(PublishedFetch { hash }) as _, reason))
+                        .await;
                 }
             }
         }
         Err(object_rainbow::Error::Unimplemented)
     })
+}
+
+struct PublishedFetch {
+    hash: Hash,
+}
+
+impl FetchBytes for PublishedFetch {
+    fn fetch_bytes(&'_ self) -> object_rainbow::FailFuture<'_, object_rainbow::ByteNode> {
+        Box::pin(core::future::ready(Err(
+            object_rainbow::Error::Unimplemented,
+        )))
+    }
+
+    fn fetch_data(&'_ self) -> object_rainbow::FailFuture<'_, Vec<u8>> {
+        Box::pin(core::future::ready(Err(
+            object_rainbow::Error::Unimplemented,
+        )))
+    }
+}
+
+impl Singular for PublishedFetch {
+    fn hash(&self) -> Hash {
+        self.hash
+    }
 }
