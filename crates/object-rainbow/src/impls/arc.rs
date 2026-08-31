@@ -103,3 +103,9 @@ impl<T: ?Sized + FetchBytes> FetchBytes for Arc<T> {
         Arc::try_unwrap(self).ok()?.try_unwrap_resolve()
     }
 }
+
+impl<T: ?Sized + Singular> Singular for Arc<T> {
+    fn hash(&self) -> Hash {
+        (**self).hash()
+    }
+}
