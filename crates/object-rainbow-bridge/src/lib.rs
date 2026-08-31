@@ -111,7 +111,6 @@ impl PublishedFetch {
         Ok(data)
     }
 
-    #[expect(unused)]
     async fn make_resolve(&self) -> object_rainbow::Result<Arc<dyn Resolve>> {
         let (send, recv) = oneshot::channel();
         self.request
@@ -125,9 +124,11 @@ impl PublishedFetch {
 
 impl FetchBytes for PublishedFetch {
     fn fetch_bytes(&'_ self) -> object_rainbow::FailFuture<'_, object_rainbow::ByteNode> {
-        Box::pin(core::future::ready(Err(
-            object_rainbow::Error::Unimplemented,
-        )))
+        Box::pin(async move {
+            let data = self.fetch_raw().await?;
+            let resolve = self.make_resolve().await?;
+            Ok((data, resolve))
+        })
     }
 
     fn fetch_data(&'_ self) -> object_rainbow::FailFuture<'_, Vec<u8>> {
