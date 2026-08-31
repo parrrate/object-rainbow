@@ -33,6 +33,8 @@ pub enum Provide {
 enum ProviderEvent {
     Consumed(Consume),
     Published((Arc<dyn Singular>, Vec<u8>)),
+    #[expect(dead_code)]
+    Finish(Hash),
 }
 
 type Fetching = Task<Result<(Vec<u8>, Arc<dyn Resolve>), object_rainbow::Error>>;
@@ -95,7 +97,6 @@ impl Retained {
 struct Retain(BTreeMap<Hash, Retained>);
 
 impl Retain {
-    #[expect(dead_code)]
     async fn finish_fetch(&mut self, hash: Hash) -> object_rainbow::Result<Option<Vec<u8>>> {
         self.get_mut(hash)?.finish_fetch().await
     }
@@ -176,6 +177,9 @@ where
                     ProviderEvent::Published((point, reason)) => {
                         let hash = retain.retain(point);
                         send.send(Provide::Publish { hash, reason }).await?;
+                    }
+                    ProviderEvent::Finish(hash) => {
+                        retain.finish_fetch(hash).await?;
                     }
                 }
             }
