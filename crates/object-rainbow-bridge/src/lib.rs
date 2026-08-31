@@ -19,7 +19,7 @@ pub enum Consume {
 /// Responses coming from a provider.
 pub enum Provide {
     /// Fulfil an [`Consume::Order`].
-    Deliver(Vec<u8>),
+    Deliver(Hash, Vec<u8>),
     /// Push a reference towards the client and increase server-side refcount by 1.
     Publish { hash: Hash, reason: Vec<u8> },
 }
