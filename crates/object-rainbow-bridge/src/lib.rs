@@ -229,6 +229,7 @@ where
                     }
                 }
             }
+            send.close().await?;
             Ok(())
         })
         .await
