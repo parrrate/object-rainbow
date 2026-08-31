@@ -52,10 +52,16 @@ where
             .map_ok(ConsumerEvent::Provided);
         let recv = futures_util::stream::select(recv, respond);
         let mut recv = pin!(recv);
-        let mut fetches = BTreeMap::new();
+        let mut fetches = BTreeMap::<_, Vec<oneshot::Sender<Vec<u8>>>>::new();
         while let Some(provided) = recv.try_next().await? {
             match provided {
-                ConsumerEvent::Provided(Provide::Deliver { .. }) => {}
+                ConsumerEvent::Provided(Provide::Deliver(hash, data)) => {
+                    if let Some(callbacks) = fetches.remove(&hash) {
+                        for callback in callbacks {
+                            callback.send(data.clone()).ok();
+                        }
+                    }
+                }
                 ConsumerEvent::Provided(Provide::Publish { hash, reason }) => {
                     let request = request.clone();
                     co.yield_((Arc::new(PublishedFetch { hash, request }) as _, reason))
