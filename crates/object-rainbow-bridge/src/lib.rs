@@ -68,11 +68,11 @@ impl Retained {
     fn start_fetch(
         &mut self,
         executor: &Executor,
-        send: &flume::Sender<ProviderEvent>,
+        request: &flume::Sender<ProviderEvent>,
     ) -> object_rainbow::Result<()> {
         if self.fetching.is_none() {
             let point = self.point.clone();
-            let send = send.downgrade();
+            let send = request.downgrade();
             self.fetching = Some(executor.spawn(async move {
                 let node = point.fetch_bytes().await?;
                 if let Some(send) = send.upgrade() {
