@@ -66,7 +66,6 @@ where
 
 struct PublishedFetch {
     hash: Hash,
-    #[expect(unused)]
     request: flume::Sender<ConsumerEvent>,
 }
 
@@ -78,9 +77,15 @@ impl FetchBytes for PublishedFetch {
     }
 
     fn fetch_data(&'_ self) -> object_rainbow::FailFuture<'_, Vec<u8>> {
-        Box::pin(core::future::ready(Err(
-            object_rainbow::Error::Unimplemented,
-        )))
+        Box::pin(async move {
+            let (send, recv) = oneshot::channel();
+            self.request
+                .send_async(ConsumerEvent::Fetch(self.hash, send))
+                .await
+                .map_err(|_| object_rainbow::Error::Interrupted)?;
+            let data = recv.await.map_err(|_| object_rainbow::Error::Interrupted)?;
+            Ok(data)
+        })
     }
 }
 
