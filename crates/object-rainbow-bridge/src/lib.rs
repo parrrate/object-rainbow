@@ -33,7 +33,6 @@ pub enum Provide {
 enum ProviderEvent {
     Consumed(Consume),
     Published((Arc<dyn Singular>, Vec<u8>)),
-    #[expect(dead_code)]
     Finish(Hash),
 }
 
@@ -66,28 +65,49 @@ impl Retained {
         })
     }
 
-    fn start_fetch(&mut self, executor: &Executor) -> object_rainbow::Result<()> {
+    fn start_fetch(
+        &mut self,
+        executor: &Executor,
+        send: &flume::Sender<ProviderEvent>,
+    ) -> object_rainbow::Result<()> {
         if self.fetching.is_none() {
             let point = self.point.clone();
-            self.fetching = Some(executor.spawn(async move { point.fetch_bytes().await }));
+            let send = send.downgrade();
+            self.fetching = Some(executor.spawn(async move {
+                let node = point.fetch_bytes().await?;
+                if let Some(send) = send.upgrade() {
+                    send.send_async(ProviderEvent::Finish(point.hash()))
+                        .await
+                        .ok();
+                }
+                Ok(node)
+            }));
             Ok(())
         } else {
             Err(object_rainbow::error_consistency!("already fetching"))
         }
     }
 
-    fn ensure_fetch(&mut self, executor: &Executor) -> object_rainbow::Result<()> {
+    fn ensure_fetch(
+        &mut self,
+        executor: &Executor,
+        send: &flume::Sender<ProviderEvent>,
+    ) -> object_rainbow::Result<()> {
         if self.fetching.is_none() {
-            self.start_fetch(executor)?;
+            self.start_fetch(executor, send)?;
         }
         Ok(())
     }
 
     #[expect(dead_code)]
-    fn order(&mut self, executor: &Executor) -> object_rainbow::Result<()> {
+    fn order(
+        &mut self,
+        executor: &Executor,
+        send: &flume::Sender<ProviderEvent>,
+    ) -> object_rainbow::Result<()> {
         if !self.ordered {
             self.ordered = true;
-            self.ensure_fetch(executor)?;
+            self.ensure_fetch(executor, send)?;
         }
         Ok(())
     }
