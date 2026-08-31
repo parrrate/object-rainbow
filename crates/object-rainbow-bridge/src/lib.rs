@@ -35,11 +35,13 @@ enum ProviderEvent {
     Published((Arc<dyn Singular>, Vec<u8>)),
 }
 
-struct Retained(
-    u128,
-    #[expect(dead_code)] Arc<dyn Singular + 'static>,
-    #[expect(dead_code)] Shared<oneshot::Receiver<Arc<dyn Resolve>>>,
-);
+struct Retained {
+    count: u128,
+    #[expect(dead_code)]
+    point: Arc<dyn Singular + 'static>,
+    #[expect(dead_code)]
+    recv: Shared<oneshot::Receiver<Arc<dyn Resolve>>>,
+}
 
 #[derive(Default)]
 struct Retain(BTreeMap<Hash, Retained>);
@@ -51,12 +53,16 @@ impl Retain {
             btree_map::Entry::Vacant(vacant_entry) => {
                 let (_, recv) = oneshot::channel();
                 let recv = recv.shared();
-                vacant_entry.insert_entry(Retained(0, point, recv))
+                vacant_entry.insert_entry(Retained {
+                    count: 0,
+                    point,
+                    recv,
+                })
             }
             btree_map::Entry::Occupied(occupied_entry) => occupied_entry,
         }
         .into_mut()
-        .0 += 1;
+        .count += 1;
         hash
     }
 
@@ -67,12 +73,12 @@ impl Retain {
     }
 
     fn inc(&mut self, hash: Hash) -> object_rainbow::Result<()> {
-        self.get_mut(hash)?.0 += 1;
+        self.get_mut(hash)?.count += 1;
         Ok(())
     }
 
     fn dec(&mut self, hash: Hash) -> object_rainbow::Result<()> {
-        let count = &mut self.get_mut(hash)?.0;
+        let count = &mut self.get_mut(hash)?.count;
         *count -= 1;
         if *count == 0 {
             self.0.remove(&hash);
