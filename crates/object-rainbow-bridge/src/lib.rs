@@ -38,11 +38,12 @@ where
 {
     try_stream(async move |co| {
         let (_, respond) = flume::bounded(0);
+        let respond = respond.into_stream();
         let _ = pin!(send);
         let recv = recv
             .map_err(object_rainbow::Error::from)
             .map_ok(ConsumerEvent::Provided);
-        let recv = futures_util::stream::select(recv, respond.into_stream());
+        let recv = futures_util::stream::select(recv, respond);
         let mut recv = pin!(recv);
         let _ = co;
         while let Some(provided) = recv.try_next().await? {
