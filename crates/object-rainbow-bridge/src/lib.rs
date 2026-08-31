@@ -144,13 +144,23 @@ struct PublishedResolve {
 }
 
 impl PublishedResolve {
-    #[expect(dead_code)]
     async fn inc_child(&self, address: Address) -> object_rainbow::Result<()> {
         self.request
             .send_async(ConsumerEvent::IncChild(self.hash, address))
             .await
             .map_err(|_| object_rainbow::Error::Interrupted)?;
         Ok(())
+    }
+
+    #[expect(dead_code)]
+    async fn child(&self, address: Address) -> object_rainbow::Result<PublishedFetch> {
+        self.inc_child(address).await?;
+        Ok(PublishedFetch {
+            resolve: Arc::new(PublishedResolve {
+                hash: address.hash,
+                request: self.request.clone(),
+            }),
+        })
     }
 }
 
