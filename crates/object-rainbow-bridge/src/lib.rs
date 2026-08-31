@@ -279,6 +279,7 @@ enum ConsumerEvent {
     FetchData(Hash, oneshot::Sender<Vec<u8>>),
     Drop(Hash),
     IncChild(Hash, Address),
+    Over,
 }
 
 pub fn consume<E1: Send>(
@@ -292,7 +293,11 @@ where
         let (request, respond) = flume::unbounded();
         let respond = respond.into_stream().map(Ok);
         let mut send = pin!(send);
-        let recv = recv.map_ok(ConsumerEvent::Provided);
+        let recv = recv
+            .map_ok(ConsumerEvent::Provided)
+            .chain(futures_util::stream::once(core::future::ready(Ok(
+                ConsumerEvent::Over,
+            ))));
         let recv = futures_util::stream::select(recv, respond);
         let mut recv = pin!(recv);
         let mut fetches = BTreeMap::<_, Vec<oneshot::Sender<Vec<u8>>>>::new();
@@ -331,6 +336,9 @@ where
                 }
                 ConsumerEvent::IncChild(parent, child) => {
                     send.send(Consume::IncChild { parent, child }).await?;
+                }
+                ConsumerEvent::Over => {
+                    break;
                 }
             }
         }
