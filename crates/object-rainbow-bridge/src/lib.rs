@@ -37,10 +37,12 @@ where
     object_rainbow::Error: From<E2>,
 {
     try_stream(async move |co| {
+        let (_, respond) = flume::bounded(0);
         let _ = pin!(send);
         let recv = recv
             .map_err(object_rainbow::Error::from)
             .map_ok(ConsumerEvent::Provided);
+        let recv = futures_util::stream::select(recv, respond.into_stream());
         let mut recv = pin!(recv);
         let _ = co;
         while let Some(provided) = recv.try_next().await? {

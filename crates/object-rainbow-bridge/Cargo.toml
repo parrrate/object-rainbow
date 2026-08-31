@@ -11,5 +11,6 @@ description = "sending objects over network"
 [dependencies]
 object-rainbow.workspace = true
 
+flume.workspace = true
 futures-util = { workspace = true, features = ["sink"] }
 genawaiter-try-stream.workspace = true
