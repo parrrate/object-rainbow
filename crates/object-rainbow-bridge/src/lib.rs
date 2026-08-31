@@ -38,6 +38,19 @@ enum ProviderEvent {
 #[derive(Default)]
 struct Retain(BTreeMap<Hash, (u128, Arc<dyn Singular>)>);
 
+impl Retain {
+    fn retain(&mut self, point: Arc<dyn Singular>) -> Hash {
+        let hash = point.hash();
+        match self.0.entry(hash) {
+            btree_map::Entry::Vacant(vacant_entry) => vacant_entry.insert_entry((0, point)),
+            btree_map::Entry::Occupied(occupied_entry) => occupied_entry,
+        }
+        .into_mut()
+        .0 += 1;
+        hash
+    }
+}
+
 pub async fn provide<E1: Send, E2: Send>(
     send: impl Send + Sink<Provide, Error = E1>,
     recv: impl Send + Stream<Item = Result<Consume, E2>>,
@@ -64,15 +77,7 @@ where
                         return Err(object_rainbow::Error::Unimplemented);
                     }
                     ProviderEvent::Published((point, reason)) => {
-                        let hash = point.hash();
-                        match retain.0.entry(hash) {
-                            btree_map::Entry::Vacant(vacant_entry) => {
-                                vacant_entry.insert_entry((0, point))
-                            }
-                            btree_map::Entry::Occupied(occupied_entry) => occupied_entry,
-                        }
-                        .into_mut()
-                        .0 += 1;
+                        let hash = retain.retain(point);
                         send.send(Provide::Publish { hash, reason }).await?;
                     }
                 }
