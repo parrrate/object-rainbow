@@ -35,22 +35,16 @@ enum ProviderEvent {
     Published((Arc<dyn Singular>, Vec<u8>)),
 }
 
-#[derive(Default)]
-enum ResolveState {
-    #[default]
-    None,
-    #[expect(dead_code)]
-    Processing(Task<object_rainbow::Result<Arc<dyn Resolve>>>),
-    #[expect(dead_code)]
-    Done(object_rainbow::Result<Arc<dyn Resolve>>),
-}
+type Fetching = Task<Result<(Vec<u8>, Arc<dyn Resolve + 'static>), object_rainbow::Error>>;
 
 struct Retained {
     count: u128,
     #[expect(dead_code)]
     point: Arc<dyn Singular + 'static>,
     #[expect(dead_code)]
-    resolve: ResolveState,
+    fetching: Option<Fetching>,
+    #[expect(dead_code)]
+    resolve: Option<Arc<dyn Resolve>>,
 }
 
 #[derive(Default)]
@@ -63,7 +57,8 @@ impl Retain {
             btree_map::Entry::Vacant(vacant_entry) => vacant_entry.insert_entry(Retained {
                 count: 0,
                 point,
-                resolve: Default::default(),
+                fetching: None,
+                resolve: None,
             }),
             btree_map::Entry::Occupied(occupied_entry) => occupied_entry,
         }
