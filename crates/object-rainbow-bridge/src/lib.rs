@@ -50,11 +50,16 @@ impl Retain {
         hash
     }
 
-    #[expect(dead_code)]
     fn get_mut(&mut self, hash: Hash) -> object_rainbow::Result<&mut (u128, Arc<dyn Singular>)> {
         self.0
             .get_mut(&hash)
             .ok_or_else(|| object_rainbow::error_consistency!("unknown hash"))
+    }
+
+    #[expect(dead_code)]
+    fn inc(&mut self, hash: Hash) -> object_rainbow::Result<()> {
+        self.get_mut(hash)?.0 += 1;
+        Ok(())
     }
 }
 
