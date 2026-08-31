@@ -1,7 +1,7 @@
 use std::{pin::pin, sync::Arc};
 
 use futures_channel::oneshot;
-use futures_util::{Sink, Stream, StreamExt, TryStreamExt};
+use futures_util::{Sink, SinkExt, Stream, StreamExt, TryStreamExt};
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{Address, FetchBytes, Hash, Singular};
 
@@ -29,7 +29,6 @@ enum ConsumerEvent {
     Provided(Provide),
     #[expect(unused)]
     FetchData(Hash, oneshot::Sender<Vec<u8>>),
-    #[expect(unused)]
     Drop(Hash),
 }
 
@@ -44,7 +43,7 @@ where
     try_stream(async move |co| {
         let (request, respond) = flume::unbounded();
         let respond = respond.into_stream().map(Ok);
-        let _ = pin!(send);
+        let mut send = pin!(send);
         let recv = recv
             .map_err(object_rainbow::Error::from)
             .map_ok(ConsumerEvent::Provided);
@@ -62,8 +61,8 @@ where
                 ConsumerEvent::FetchData { .. } => {
                     return Err(object_rainbow::Error::Unimplemented);
                 }
-                ConsumerEvent::Drop { .. } => {
-                    return Err(object_rainbow::Error::Unimplemented);
+                ConsumerEvent::Drop(hash) => {
+                    send.send(Consume::Dec(hash)).await?;
                 }
             }
         }
