@@ -274,7 +274,7 @@ enum ConsumerEvent {
 pub fn consume<E1: Send, E2: Send>(
     send: impl Send + Sink<Consume, Error = E1>,
     recv: impl Send + Stream<Item = Result<Provide, E2>>,
-) -> impl Send + Stream<Item = object_rainbow::Result<(Arc<dyn Singular>, Vec<u8>)>>
+) -> impl Unpin + Send + Stream<Item = object_rainbow::Result<(Arc<dyn Singular>, Vec<u8>)>>
 where
     object_rainbow::Error: From<E1>,
     object_rainbow::Error: From<E2>,
