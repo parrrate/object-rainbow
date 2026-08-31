@@ -40,7 +40,7 @@ type Fetching = Task<Result<(Vec<u8>, Arc<dyn Resolve + 'static>), object_rainbo
 struct Retained {
     count: u128,
     #[expect(dead_code)]
-    point: Arc<dyn Singular + 'static>,
+    point: Arc<dyn Singular>,
     fetching: Option<Fetching>,
     resolve: Option<Arc<dyn Resolve>>,
     ordered: bool,
