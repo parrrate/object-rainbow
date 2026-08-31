@@ -1758,6 +1758,7 @@ dependencies = [
 name = "object-rainbow-bridge"
 version = "0.0.0-a.0"
 dependencies = [
+ "async-executor",
  "flume",
  "futures-channel",
  "futures-util",

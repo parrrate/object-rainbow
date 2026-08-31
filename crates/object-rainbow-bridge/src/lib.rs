@@ -32,6 +32,7 @@ pub enum Provide {
 pub fn provide<E1: Send, E2: Send>(
     send: impl Send + Sink<Consume, Error = E1>,
     recv: impl Send + Stream<Item = Result<Provide, E2>>,
+    publish: impl Send + Stream<Item = object_rainbow::Result<(impl Singular, Vec<u8>)>>,
 ) -> object_rainbow::Result<()>
 where
     object_rainbow::Error: From<E1>,
@@ -39,6 +40,7 @@ where
 {
     let _ = pin!(send);
     let _ = pin!(recv);
+    let _ = publish;
     Err(object_rainbow::Error::Unimplemented)
 }
 
