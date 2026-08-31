@@ -60,7 +60,7 @@ where
                 ConsumerEvent::Fetch { .. } => return Err(object_rainbow::Error::Unimplemented),
             }
         }
-        Err(object_rainbow::Error::Unimplemented)
+        Ok(())
     })
 }
 
