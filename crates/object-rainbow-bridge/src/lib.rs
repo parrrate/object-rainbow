@@ -103,8 +103,7 @@ struct PublishedFetch {
 impl PublishedFetch {
     async fn fetch_raw(&self) -> object_rainbow::Result<Vec<u8>> {
         let (send, recv) = oneshot::channel();
-        self.request
-            .send_async(ConsumerEvent::FetchData(self.hash, send))
+            .send_async(ConsumerEvent::FetchData(self.hash(), send))
             .await
             .map_err(|_| object_rainbow::Error::Interrupted)?;
         let data = recv.await.map_err(|_| object_rainbow::Error::Interrupted)?;
