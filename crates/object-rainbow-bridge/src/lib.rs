@@ -49,6 +49,7 @@ where
     let recv = recv
         .map_err(object_rainbow::Error::from)
         .map_ok(ProviderEvent::Consumed);
+    let publish = publish.map_ok(ProviderEvent::Published);
     let _ = pin!(recv);
     let _ = pin!(publish);
     let executor = Executor::new();
