@@ -100,7 +100,7 @@ where
     let executor = Executor::new();
     let mut retain = Retain::default();
     executor
-        .run(async move {
+        .run(async {
             while let Some(event) = recv.try_next().await? {
                 match event {
                     ProviderEvent::Consumed(Consume::Inc(hash)) => {
