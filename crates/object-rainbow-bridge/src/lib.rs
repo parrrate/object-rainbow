@@ -32,7 +32,6 @@ pub enum Provide {
 
 enum ProviderEvent {
     Consumed(#[expect(dead_code)] Consume),
-    #[expect(dead_code)]
     Published((Arc<dyn Singular>, Vec<u8>)),
 }
 
@@ -45,7 +44,7 @@ where
     object_rainbow::Error: From<E1>,
     object_rainbow::Error: From<E2>,
 {
-    let _ = pin!(send);
+    let mut send = pin!(send);
     let recv = recv
         .map_err(object_rainbow::Error::from)
         .map_ok(ProviderEvent::Consumed);
@@ -61,7 +60,10 @@ where
                     ProviderEvent::Consumed { .. } => {
                         return Err(object_rainbow::Error::Unimplemented);
                     }
-                    ProviderEvent::Published { .. } => {}
+                    ProviderEvent::Published((point, reason)) => {
+                        let hash = point.hash();
+                        send.send(Provide::Publish { hash, reason }).await?;
+                    }
                 }
             }
             Ok(())
