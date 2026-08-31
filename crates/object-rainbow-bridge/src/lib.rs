@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{pin::pin, sync::Arc};
 
 use futures_util::{Sink, Stream};
 use genawaiter_try_stream::try_stream;
@@ -29,7 +29,7 @@ pub fn consume<E1: Send, E2: Send>(
     recv: impl Send + Stream<Item = Result<Provide, E2>>,
 ) -> impl Stream<Item = object_rainbow::Result<(Arc<dyn Singular>, Vec<u8>)>> {
     try_stream(async move |co| {
-        let _ = send;
+        let _ = pin!(send);
         let _ = recv;
         let _ = co;
         Err(object_rainbow::Error::Unimplemented)
