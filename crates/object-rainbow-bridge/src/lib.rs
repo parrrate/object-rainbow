@@ -30,6 +30,9 @@ pub enum Provide {
     Publish { hash: Hash, reason: Vec<u8> },
 }
 
+#[expect(dead_code)]
+enum ProviderEvent {}
+
 pub async fn provide<E1: Send, E2: Send>(
     send: impl Send + Sink<Consume, Error = E1>,
     recv: impl Send + Stream<Item = Result<Provide, E2>>,
