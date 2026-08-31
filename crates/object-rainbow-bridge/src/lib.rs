@@ -14,7 +14,7 @@ use object_rainbow::{Address, FetchBytes, Hash, Resolve, Singular};
 pub enum Consume {
     /// Request [`Provide::Deliver`]y. Requires refcount of at least 1.
     Order(Hash),
-    /// Increase server-side refcount by 1.
+    /// Increase server-side refcount by 1. Requires refcount of at least 1.
     Inc(Hash),
     /// Decrease server-side refcount by 1. Requires refcount of at least 1.
     Dec(Hash),
