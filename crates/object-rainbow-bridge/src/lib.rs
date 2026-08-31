@@ -33,7 +33,7 @@ enum ConsumerEvent {
     Provided(Provide),
     FetchData(Hash, oneshot::Sender<Vec<u8>>),
     Drop(Hash),
-    #[expect(unused)]
+    #[expect(dead_code)]
     IncChild(Hash, Address),
 }
 
