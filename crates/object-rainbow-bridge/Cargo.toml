@@ -9,3 +9,4 @@ authors.workspace = true
 description = "sending objects over network"
 
 [dependencies]
+object-rainbow.workspace = true
