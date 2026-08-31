@@ -6,7 +6,7 @@ use std::{
 
 use async_executor::Executor;
 use futures_channel::oneshot;
-use futures_util::{Sink, SinkExt, Stream, StreamExt, TryStreamExt};
+use futures_util::{FutureExt, Sink, SinkExt, Stream, StreamExt, TryStreamExt, future::Shared};
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{Address, FetchBytes, Hash, Resolve, Singular};
 
@@ -35,7 +35,11 @@ enum ProviderEvent {
     Published((Arc<dyn Singular>, Vec<u8>)),
 }
 
-type Retained = (u128, Arc<dyn Singular + 'static>);
+type Retained = (
+    u128,
+    Arc<dyn Singular + 'static>,
+    Shared<oneshot::Receiver<Arc<dyn Resolve>>>,
+);
 
 #[derive(Default)]
 struct Retain(BTreeMap<Hash, Retained>);
@@ -44,7 +48,11 @@ impl Retain {
     fn retain(&mut self, point: Arc<dyn Singular>) -> Hash {
         let hash = point.hash();
         match self.0.entry(hash) {
-            btree_map::Entry::Vacant(vacant_entry) => vacant_entry.insert_entry((0, point)),
+            btree_map::Entry::Vacant(vacant_entry) => {
+                let (_, recv) = oneshot::channel();
+                let recv = recv.shared();
+                vacant_entry.insert_entry((0, point, recv))
+            }
             btree_map::Entry::Occupied(occupied_entry) => occupied_entry,
         }
         .into_mut()
