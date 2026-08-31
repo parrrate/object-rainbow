@@ -2,6 +2,7 @@ use object_rainbow::{Address, Hash};
 
 /// Commands coming from a consumer.
 pub enum Consume {
+    Fetch(Hash),
     Inc(Hash),
     Dec(Hash),
     IncChild { parent: Hash, child: Address },
