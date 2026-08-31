@@ -32,7 +32,6 @@ pub enum Provide {
 enum ConsumerEvent {
     Provided(Provide),
     FetchData(Hash, oneshot::Sender<Vec<u8>>),
-    #[expect(unused)]
     MakeResolve(Hash, oneshot::Sender<Arc<dyn Resolve>>),
     Drop(Hash),
 }
@@ -110,6 +109,17 @@ impl PublishedFetch {
             .map_err(|_| object_rainbow::Error::Interrupted)?;
         let data = recv.await.map_err(|_| object_rainbow::Error::Interrupted)?;
         Ok(data)
+    }
+
+    #[expect(unused)]
+    async fn make_resolve(&self) -> object_rainbow::Result<Arc<dyn Resolve>> {
+        let (send, recv) = oneshot::channel();
+        self.request
+            .send_async(ConsumerEvent::MakeResolve(self.hash, send))
+            .await
+            .map_err(|_| object_rainbow::Error::Interrupted)?;
+        let resolve = recv.await.map_err(|_| object_rainbow::Error::Interrupted)?;
+        Ok(resolve)
     }
 }
 
