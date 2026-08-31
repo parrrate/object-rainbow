@@ -101,3 +101,9 @@ impl Singular for PublishedFetch {
         self.hash
     }
 }
+
+impl Drop for PublishedFetch {
+    fn drop(&mut self) {
+        self.request.try_send(ConsumerEvent::Drop(self.hash)).ok();
+    }
+}
