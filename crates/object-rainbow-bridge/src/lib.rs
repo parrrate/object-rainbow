@@ -234,6 +234,9 @@ where
         .await
 }
 
+#[expect(dead_code)]
+struct DelayedResolve {}
+
 enum ConsumerEvent {
     Provided(Provide),
     FetchData(Hash, oneshot::Sender<Vec<u8>>),
