@@ -64,7 +64,6 @@ impl Retained {
         })
     }
 
-    #[expect(dead_code)]
     fn start_fetch(&mut self, executor: &Executor) -> object_rainbow::Result<()> {
         if self.fetching.is_none() {
             let point = self.point.clone();
@@ -73,6 +72,14 @@ impl Retained {
         } else {
             Err(object_rainbow::error_consistency!("already fetching"))
         }
+    }
+
+    #[expect(dead_code)]
+    fn ensure_fetch(&mut self, executor: &Executor) -> object_rainbow::Result<()> {
+        if self.fetching.is_none() {
+            self.start_fetch(executor)?;
+        }
+        Ok(())
     }
 }
 
