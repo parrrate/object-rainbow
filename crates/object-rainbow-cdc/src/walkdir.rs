@@ -61,17 +61,17 @@ impl Chunks {
 
     pub async fn write_dir(
         dir: impl AsRef<Path>,
-        map: AmtMap<Zt<String>, Point<Self>>,
+        map: AmtMap<Zt<String>, Option<Point<Self>>>,
     ) -> object_rainbow::Result<()> {
         map.stream()
             .try_for_each_concurrent(None, async |(path, chunks)| {
                 let path = dir.as_ref().join(&*path);
-                async_fs::create_dir_all(
-                    path.parent()
-                        .ok_or_else(|| object_rainbow::error_consistency!("no dir parent"))?,
-                )
-                .await?;
-                chunks.fetch().await?.to_file(path).await
+                if let Some(chunks) = chunks {
+                    chunks.fetch().await?.to_file(path).await?;
+                } else {
+                    async_fs::create_dir_all(path).await?;
+                }
+                Ok(())
             })
             .await?;
         Ok(())
