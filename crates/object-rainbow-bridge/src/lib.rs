@@ -7,7 +7,7 @@ use std::{
 use futures_channel::oneshot;
 use futures_util::{Sink, SinkExt, Stream, StreamExt, TryStreamExt};
 use genawaiter_try_stream::try_stream;
-use object_rainbow::{Address, FetchBytes, Hash, Singular};
+use object_rainbow::{Address, FetchBytes, Hash, Resolve, Singular};
 
 /// Commands coming from a consumer.
 pub enum Consume {
@@ -32,6 +32,8 @@ pub enum Provide {
 enum ConsumerEvent {
     Provided(Provide),
     FetchData(Hash, oneshot::Sender<Vec<u8>>),
+    #[expect(unused)]
+    MakeResolve(Hash, oneshot::Sender<Arc<dyn Resolve>>),
     Drop(Hash),
 }
 
@@ -77,6 +79,9 @@ where
                     }
                     .into_mut()
                     .push(callback);
+                    return Err(object_rainbow::Error::Unimplemented);
+                }
+                ConsumerEvent::MakeResolve { .. } => {
                     return Err(object_rainbow::Error::Unimplemented);
                 }
                 ConsumerEvent::Drop(hash) => {
