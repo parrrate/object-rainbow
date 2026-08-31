@@ -210,12 +210,12 @@ where
                             retain.inc(child.hash)?;
                         } else {
                             let parent = retain.get_mut(parent)?;
-                            if let Some(resolve) = parent.resolve.as_ref().cloned() {
-                                retain
-                                    .retain(Arc::new(RawPointInner::from_address(child, resolve)));
+                            let resolve = if let Some(resolve) = parent.resolve.as_ref().cloned() {
+                                resolve
                             } else {
                                 return Err(object_rainbow::Error::Unimplemented);
-                            }
+                            };
+                            retain.retain(Arc::new(RawPointInner::from_address(child, resolve)));
                         }
                     }
                     ProviderEvent::Published((point, reason)) => {
