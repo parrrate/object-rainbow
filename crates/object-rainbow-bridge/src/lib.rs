@@ -35,7 +35,9 @@ enum ProviderEvent {
     Published((Arc<dyn Singular>, Vec<u8>)),
 }
 
+#[derive(Default)]
 enum ResolveState {
+    #[default]
     None,
     #[expect(dead_code)]
     Processing(Task<object_rainbow::Result<Arc<dyn Resolve>>>),
@@ -61,7 +63,7 @@ impl Retain {
             btree_map::Entry::Vacant(vacant_entry) => vacant_entry.insert_entry(Retained {
                 count: 0,
                 point,
-                resolve: ResolveState::None,
+                resolve: Default::default(),
             }),
             btree_map::Entry::Occupied(occupied_entry) => occupied_entry,
         }
