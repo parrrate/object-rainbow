@@ -38,7 +38,7 @@ where
     object_rainbow::Error: From<E2>,
 {
     let _ = pin!(send);
-    let _ = recv;
+    let _ = pin!(recv);
     Err(object_rainbow::Error::Unimplemented)
 }
 
