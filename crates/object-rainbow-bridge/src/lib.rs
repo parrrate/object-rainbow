@@ -152,7 +152,6 @@ impl PublishedResolve {
         Ok(())
     }
 
-    #[expect(dead_code)]
     async fn child(&self, address: Address) -> object_rainbow::Result<PublishedFetch> {
         self.inc_child(address).await?;
         Ok(PublishedFetch {
@@ -170,10 +169,7 @@ impl Resolve for PublishedResolve {
         address: Address,
         _: &'a Arc<dyn Resolve>,
     ) -> object_rainbow::FailFuture<'a, object_rainbow::ByteNode> {
-        let _ = address;
-        Box::pin(core::future::ready(Err(
-            object_rainbow::Error::Unimplemented,
-        )))
+        Box::pin(async move { self.child(address).await?.fetch_bytes().await })
     }
 
     fn resolve_data(&'_ self, address: Address) -> object_rainbow::FailFuture<'_, Vec<u8>> {
