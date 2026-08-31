@@ -32,8 +32,6 @@ pub enum Provide {
 enum ConsumerEvent {
     Provided(Provide),
     FetchData(Hash, oneshot::Sender<Vec<u8>>),
-    #[expect(unused)]
-    MakeResolve(Hash, oneshot::Sender<Arc<dyn Resolve>>),
     Drop(Hash),
 }
 
@@ -84,13 +82,6 @@ where
                     }
                     .into_mut()
                     .push(callback);
-                }
-                ConsumerEvent::MakeResolve(hash, callback) => {
-                    send.send(Consume::Inc(hash)).await?;
-                    let request = request.clone();
-                    callback
-                        .send(Arc::new(PublishedResolve { hash, request }))
-                        .ok();
                 }
                 ConsumerEvent::Drop(hash) => {
                     send.send(Consume::Dec(hash)).await?;
