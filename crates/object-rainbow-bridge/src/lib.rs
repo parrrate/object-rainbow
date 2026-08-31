@@ -234,9 +234,18 @@ where
         .await
 }
 
-#[expect(dead_code)]
 struct DelayedResolve {
     recv: Shared<oneshot::Receiver<Arc<dyn Resolve>>>,
+}
+
+impl DelayedResolve {
+    #[expect(dead_code)]
+    async fn recv_resolve(&self) -> object_rainbow::Result<Arc<dyn Resolve>> {
+        self.recv
+            .clone()
+            .await
+            .map_err(|_| object_rainbow::Error::Unimplemented)
+    }
 }
 
 enum ConsumerEvent {
