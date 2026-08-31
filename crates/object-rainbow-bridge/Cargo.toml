@@ -10,6 +10,7 @@ description = "sending objects over network"
 
 [dependencies]
 object-rainbow.workspace = true
+object-rainbow-point.workspace = true
 
 async-executor.workspace = true
 flume.workspace = true

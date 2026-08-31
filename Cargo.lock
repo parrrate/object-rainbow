@@ -1764,6 +1764,7 @@ dependencies = [
  "futures-util",
  "genawaiter-try-stream",
  "object-rainbow",
+ "object-rainbow-point",
 ]
 
 [[package]]

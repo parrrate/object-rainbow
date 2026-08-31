@@ -9,6 +9,7 @@ use futures_channel::oneshot;
 use futures_util::{Sink, SinkExt, Stream, StreamExt, TryStreamExt};
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{Address, FetchBytes, Hash, Resolve, Singular};
+use object_rainbow_point::RawPointInner;
 
 /// Commands coming from a consumer.
 pub enum Consume {
@@ -208,7 +209,13 @@ where
                             let _ = parent;
                             retain.inc(child.hash)?;
                         } else {
-                            return Err(object_rainbow::Error::Unimplemented);
+                            let parent = retain.get_mut(parent)?;
+                            if let Some(resolve) = parent.resolve.as_ref().cloned() {
+                                retain
+                                    .retain(Arc::new(RawPointInner::from_address(child, resolve)));
+                            } else {
+                                return Err(object_rainbow::Error::Unimplemented);
+                            }
                         }
                     }
                     ProviderEvent::Published((point, reason)) => {
