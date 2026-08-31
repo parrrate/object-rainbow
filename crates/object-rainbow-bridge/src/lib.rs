@@ -32,6 +32,8 @@ pub enum Provide {
 
 enum ProviderEvent {
     Consumed(#[expect(dead_code)] Consume),
+    #[expect(dead_code)]
+    Published(Arc<dyn Singular>),
 }
 
 pub async fn provide<E1: Send, E2: Send>(
