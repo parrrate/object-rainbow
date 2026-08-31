@@ -92,10 +92,10 @@ impl Retained {
     fn ensure_fetch(
         &mut self,
         executor: &Executor,
-        send: &flume::Sender<ProviderEvent>,
+        request: &flume::Sender<ProviderEvent>,
     ) -> object_rainbow::Result<()> {
         if self.fetching.is_none() {
-            self.start_fetch(executor, send)?;
+            self.start_fetch(executor, request)?;
         }
         Ok(())
     }
