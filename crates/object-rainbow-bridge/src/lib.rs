@@ -35,7 +35,7 @@ enum ProviderEvent {
     Published((Arc<dyn Singular>, Vec<u8>)),
 }
 
-type Fetching = Task<Result<(Vec<u8>, Arc<dyn Resolve + 'static>), object_rainbow::Error>>;
+type Fetching = Task<Result<(Vec<u8>, Arc<dyn Resolve>), object_rainbow::Error>>;
 
 struct Retained {
     count: u128,
