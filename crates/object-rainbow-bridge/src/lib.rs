@@ -4,9 +4,9 @@ use std::{
     sync::Arc,
 };
 
-use async_executor::Executor;
+use async_executor::{Executor, Task};
 use futures_channel::oneshot;
-use futures_util::{FutureExt, Sink, SinkExt, Stream, StreamExt, TryStreamExt, future::Shared};
+use futures_util::{Sink, SinkExt, Stream, StreamExt, TryStreamExt};
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{Address, FetchBytes, Hash, Resolve, Singular};
 
@@ -35,12 +35,20 @@ enum ProviderEvent {
     Published((Arc<dyn Singular>, Vec<u8>)),
 }
 
+enum ResolveState {
+    None,
+    #[expect(dead_code)]
+    Processing(Task<object_rainbow::Result<Arc<dyn Resolve>>>),
+    #[expect(dead_code)]
+    Done(object_rainbow::Result<Arc<dyn Resolve>>),
+}
+
 struct Retained {
     count: u128,
     #[expect(dead_code)]
     point: Arc<dyn Singular + 'static>,
     #[expect(dead_code)]
-    recv: Shared<oneshot::Receiver<Arc<dyn Resolve>>>,
+    resolve: ResolveState,
 }
 
 #[derive(Default)]
@@ -50,15 +58,11 @@ impl Retain {
     fn retain(&mut self, point: Arc<dyn Singular>) -> Hash {
         let hash = point.hash();
         match self.0.entry(hash) {
-            btree_map::Entry::Vacant(vacant_entry) => {
-                let (_, recv) = oneshot::channel();
-                let recv = recv.shared();
-                vacant_entry.insert_entry(Retained {
-                    count: 0,
-                    point,
-                    recv,
-                })
-            }
+            btree_map::Entry::Vacant(vacant_entry) => vacant_entry.insert_entry(Retained {
+                count: 0,
+                point,
+                resolve: ResolveState::None,
+            }),
             btree_map::Entry::Occupied(occupied_entry) => occupied_entry,
         }
         .into_mut()
