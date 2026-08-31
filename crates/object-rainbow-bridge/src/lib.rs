@@ -173,10 +173,7 @@ impl Resolve for PublishedResolve {
     }
 
     fn resolve_data(&'_ self, address: Address) -> object_rainbow::FailFuture<'_, Vec<u8>> {
-        let _ = address;
-        Box::pin(core::future::ready(Err(
-            object_rainbow::Error::Unimplemented,
-        )))
+        Box::pin(async move { self.child(address).await?.fetch_data().await })
     }
 }
 
