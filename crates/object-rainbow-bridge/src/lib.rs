@@ -34,7 +34,7 @@ where
 {
     try_stream(async move |co| {
         let _ = pin!(send);
-        let mut recv = pin!(recv);
+        let mut recv = pin!(recv.map_err(object_rainbow::Error::from));
         let _ = co;
         while let Some(provided) = recv.try_next().await? {
             match provided {
