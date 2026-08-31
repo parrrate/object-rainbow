@@ -16,6 +16,8 @@ use static_assertions::const_assert_eq;
 
 #[cfg(feature = "fs")]
 mod fs;
+#[cfg(feature = "walkdir")]
+mod walkdir;
 
 #[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
 pub struct Chunks {

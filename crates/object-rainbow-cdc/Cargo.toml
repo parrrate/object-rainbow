@@ -10,9 +10,11 @@ description = "FastCDC for object-rainbow"
 
 [dependencies]
 object-rainbow.workspace = true
+object-rainbow-amt = { workspace = true, optional = true }
 object-rainbow-point.workspace = true
 
 async-fs = { workspace = true, optional = true }
+async-walkdir = { workspace = true, optional = true }
 blocking = { workspace = true, optional = true }
 fastcdc.workspace = true
 futures-util.workspace = true
@@ -22,6 +24,7 @@ static_assertions.workspace = true
 
 [features]
 fs = ["dep:async-fs", "dep:blocking"]
+walkdir = ["fs", "dep:async-walkdir", "dep:object-rainbow-amt"]
 
 [dev-dependencies]
 rand.workspace = true
