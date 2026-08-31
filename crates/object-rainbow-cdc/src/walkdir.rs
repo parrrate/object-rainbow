@@ -17,14 +17,13 @@ impl Chunks {
             .map_err(std::io::Error::from)
             .map_err(object_rainbow::Error::from)
             .try_filter_map(|entry| async move {
+                let path = entry
+                    .path()
+                    .strip_prefix(dir)
+                    .map_err(object_rainbow::Error::operation)?
+                    .to_path_buf();
                 Ok(if entry.file_type().await?.is_file() {
-                    Some(
-                        entry
-                            .path()
-                            .strip_prefix(dir)
-                            .map_err(object_rainbow::Error::operation)?
-                            .to_path_buf(),
-                    )
+                    Some(path)
                 } else {
                     None
                 })
