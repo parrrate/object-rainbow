@@ -1755,6 +1755,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "object-rainbow-bridge"
+version = "0.0.0-a.0"
+
+[[package]]
 name = "object-rainbow-cdc"
 version = "0.0.0-a.0"
 dependencies = [
