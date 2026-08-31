@@ -47,7 +47,6 @@ struct Retained {
 }
 
 impl Retained {
-    #[expect(dead_code)]
     async fn finish_fetch(&mut self) -> object_rainbow::Result<Option<Vec<u8>>> {
         let (data, resolve) = self
             .fetching
@@ -68,6 +67,11 @@ impl Retained {
 struct Retain(BTreeMap<Hash, Retained>);
 
 impl Retain {
+    #[expect(dead_code)]
+    async fn finish_fetch(&mut self, hash: Hash) -> object_rainbow::Result<Option<Vec<u8>>> {
+        self.get_mut(hash)?.finish_fetch().await
+    }
+
     fn retain(&mut self, point: Arc<dyn Singular>) -> Hash {
         let hash = point.hash();
         match self.0.entry(hash) {
