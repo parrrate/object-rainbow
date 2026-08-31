@@ -237,6 +237,9 @@ where
                         over = true;
                     }
                 }
+                if retain.0.is_empty() && over {
+                    break;
+                }
             }
             send.close().await?;
             Ok(())
