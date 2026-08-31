@@ -168,10 +168,9 @@ impl Resolve for PublishedResolve {
     fn resolve<'a>(
         &'a self,
         address: Address,
-        this: &'a Arc<dyn Resolve>,
+        _: &'a Arc<dyn Resolve>,
     ) -> object_rainbow::FailFuture<'a, object_rainbow::ByteNode> {
         let _ = address;
-        let _ = this;
         Box::pin(core::future::ready(Err(
             object_rainbow::Error::Unimplemented,
         )))
