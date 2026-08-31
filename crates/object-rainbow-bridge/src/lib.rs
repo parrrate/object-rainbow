@@ -80,8 +80,12 @@ where
                     .into_mut()
                     .push(callback);
                 }
-                ConsumerEvent::MakeResolve { .. } => {
-                    return Err(object_rainbow::Error::Unimplemented);
+                ConsumerEvent::MakeResolve(hash, callback) => {
+                    send.send(Consume::Inc(hash)).await?;
+                    let request = request.clone();
+                    callback
+                        .send(Arc::new(PublishedResolve { hash, request }))
+                        .ok();
                 }
                 ConsumerEvent::Drop(hash) => {
                     send.send(Consume::Dec(hash)).await?;
@@ -130,5 +134,33 @@ impl Singular for PublishedFetch {
 impl Drop for PublishedFetch {
     fn drop(&mut self) {
         self.request.try_send(ConsumerEvent::Drop(self.hash)).ok();
+    }
+}
+
+struct PublishedResolve {
+    #[expect(unused)]
+    hash: Hash,
+    #[expect(unused)]
+    request: flume::Sender<ConsumerEvent>,
+}
+
+impl Resolve for PublishedResolve {
+    fn resolve<'a>(
+        &'a self,
+        address: Address,
+        this: &'a Arc<dyn Resolve>,
+    ) -> object_rainbow::FailFuture<'a, object_rainbow::ByteNode> {
+        let _ = address;
+        let _ = this;
+        Box::pin(core::future::ready(Err(
+            object_rainbow::Error::Unimplemented,
+        )))
+    }
+
+    fn resolve_data(&'_ self, address: Address) -> object_rainbow::FailFuture<'_, Vec<u8>> {
+        let _ = address;
+        Box::pin(core::future::ready(Err(
+            object_rainbow::Error::Unimplemented,
+        )))
     }
 }
