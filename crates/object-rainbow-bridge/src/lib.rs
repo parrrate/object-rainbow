@@ -53,8 +53,8 @@ where
         let recv = futures_util::stream::select(recv, respond);
         let mut recv = pin!(recv);
         let mut fetches = BTreeMap::<_, Vec<oneshot::Sender<Vec<u8>>>>::new();
-        while let Some(provided) = recv.try_next().await? {
-            match provided {
+        while let Some(event) = recv.try_next().await? {
+            match event {
                 ConsumerEvent::Provided(Provide::Deliver(hash, data)) => {
                     if let Some(callbacks) = fetches.remove(&hash) {
                         for callback in callbacks {
