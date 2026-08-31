@@ -51,11 +51,21 @@ where
         .map_ok(ProviderEvent::Consumed);
     let publish = publish.map_ok(ProviderEvent::Published);
     let recv = futures_util::stream::select(recv, publish);
-    let _ = pin!(recv);
+    let mut recv = pin!(recv);
     let executor = Executor::new();
     let mut _retain = BTreeMap::<Hash, (u128, Arc<dyn Singular>)>::new();
     executor
-        .run(async move { Err(object_rainbow::Error::Unimplemented) })
+        .run(async move {
+            while let Some(event) = recv.try_next().await? {
+                match event {
+                    ProviderEvent::Consumed { .. } => {
+                        return Err(object_rainbow::Error::Unimplemented);
+                    }
+                    ProviderEvent::Published { .. } => {}
+                }
+            }
+            Err(object_rainbow::Error::Unimplemented)
+        })
         .await
 }
 
