@@ -22,7 +22,8 @@ impl Chunks {
                     .strip_prefix(dir)
                     .map_err(object_rainbow::Error::operation)?
                     .to_path_buf();
-                Ok(if entry.file_type().await?.is_file() {
+                let file_type = entry.file_type().await?;
+                Ok(if file_type.is_file() {
                     Some(path)
                 } else {
                     None
