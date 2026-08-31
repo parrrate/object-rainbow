@@ -50,8 +50,8 @@ where
         .map_err(object_rainbow::Error::from)
         .map_ok(ProviderEvent::Consumed);
     let publish = publish.map_ok(ProviderEvent::Published);
+    let recv = futures_util::stream::select(recv, publish);
     let _ = pin!(recv);
-    let _ = pin!(publish);
     let executor = Executor::new();
     let mut _retain = BTreeMap::<Hash, (u128, Arc<dyn Singular>)>::new();
     executor
