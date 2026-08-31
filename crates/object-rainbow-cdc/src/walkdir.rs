@@ -11,7 +11,7 @@ use crate::Chunks;
 impl Chunks {
     pub async fn read_dir(
         dir: impl AsRef<Path>,
-    ) -> object_rainbow::Result<AmtMap<Zt<String>, Point<Self>>> {
+    ) -> object_rainbow::Result<AmtMap<Zt<String>, Option<Point<Self>>>> {
         let dir = dir.as_ref();
         let map = WalkDir::new(dir)
             .map_err(std::io::Error::from)
@@ -24,22 +24,27 @@ impl Chunks {
                     .to_path_buf();
                 let file_type = entry.file_type().await?;
                 Ok(if file_type.is_file() {
-                    Some(path)
+                    Some((path, true))
+                } else if file_type.is_dir() {
+                    Some((path, false))
                 } else {
                     None
                 })
             })
-            .map_ok(|path| {
+            .map_ok(|(path, file)| {
                 futures_util::stream::once(
                     async move {
-                        let chunks = Chunks::from_file(dir.join(&*path)).await?;
                         Ok::<_, object_rainbow::Error>((
                             Zt::new(
                                 path.to_str()
                                     .ok_or_else(|| object_rainbow::error_consistency!("not UTF-8"))?
                                     .to_owned(),
                             )?,
-                            chunks.point(),
+                            if file {
+                                Some(Chunks::from_file(dir.join(&*path)).await?.point())
+                            } else {
+                                None
+                            },
                         ))
                     }
                     .boxed(),
