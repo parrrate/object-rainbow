@@ -21,7 +21,11 @@ pub enum Consume {
     /// Decrease server-side refcount by 1. Requires refcount of at least 1.
     Dec(Hash),
     /// Increase child's refcount by 1. Requires parent refcount of at least 1.
-    IncChild { parent: Hash, child: Address },
+    IncChild {
+        parent: Hash,
+        child_index: u64,
+        child_hash: Hash,
+    },
 }
 
 /// Responses coming from a provider.
@@ -208,10 +212,14 @@ where
                     ProviderEvent::Consumed(Consume::Dec(hash)) => {
                         retain.dec(hash)?;
                     }
-                    ProviderEvent::Consumed(Consume::IncChild { parent, child }) => {
-                        if retain.0.contains_key(&child.hash) {
+                    ProviderEvent::Consumed(Consume::IncChild {
+                        parent,
+                        child_index,
+                        child_hash,
+                    }) => {
+                        if retain.0.contains_key(&child_hash) {
                             let _ = parent;
-                            retain.inc(child.hash)?;
+                            retain.inc(child_hash)?;
                         } else {
                             let parent = retain.get_mut(parent)?;
                             let resolve = if let Some(resolve) = parent.resolve.as_ref().cloned() {
@@ -222,7 +230,15 @@ where
                                 let recv = recv.shared();
                                 Arc::new(DelayedResolve { recv })
                             };
-                            retain.retain(Arc::new(RawPointInner::from_address(child, resolve)));
+                            retain.retain(Arc::new(RawPointInner::from_address(
+                                Address {
+                                    index: child_index
+                                        .try_into()
+                                        .map_err(|_| object_rainbow::Error::UnsupportedLength)?,
+                                    hash: child_hash,
+                                },
+                                resolve,
+                            )));
                         }
                     }
                     ProviderEvent::Published((point, reason)) => {
@@ -336,7 +352,15 @@ where
                     send.send(Consume::Dec(hash)).await?;
                 }
                 ConsumerEvent::IncChild(parent, child) => {
-                    send.send(Consume::IncChild { parent, child }).await?;
+                    send.send(Consume::IncChild {
+                        parent,
+                        child_index: child
+                            .index
+                            .try_into()
+                            .map_err(|_| object_rainbow::Error::UnsupportedLength)?,
+                        child_hash: child.hash,
+                    })
+                    .await?;
                 }
                 ConsumerEvent::Over => {
                     break;
