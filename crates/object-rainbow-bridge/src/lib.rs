@@ -9,12 +9,12 @@ use futures_channel::oneshot;
 use futures_util::{FutureExt, Sink, SinkExt, Stream, StreamExt, TryStreamExt, future::Shared};
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{
-    Address, Enum, FetchBytes, Hash, ListHashes, Resolve, Singular, Tagged, ToOutput,
+    Address, Enum, FetchBytes, Hash, ListHashes, Resolve, Singular, Tagged, ToOutput, Topological,
 };
 use object_rainbow_point::RawPointInner;
 
 /// Commands coming from a consumer.
-#[derive(Debug, Enum, ToOutput, Tagged, ListHashes)]
+#[derive(Debug, Enum, ToOutput, Tagged, ListHashes, Topological)]
 pub enum Consume {
     /// Request [`Provide::Deliver`]y. Requires refcount of at least 1.
     Order(Hash),
