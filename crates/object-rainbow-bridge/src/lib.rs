@@ -35,6 +35,9 @@ enum ProviderEvent {
     Published((Arc<dyn Singular>, Vec<u8>)),
 }
 
+#[derive(Default)]
+struct Retain(BTreeMap<Hash, (u128, Arc<dyn Singular>)>);
+
 pub async fn provide<E1: Send, E2: Send>(
     send: impl Send + Sink<Provide, Error = E1>,
     recv: impl Send + Stream<Item = Result<Consume, E2>>,
@@ -52,7 +55,7 @@ where
     let recv = futures_util::stream::select(recv, publish);
     let mut recv = pin!(recv);
     let executor = Executor::new();
-    let mut retain = BTreeMap::<Hash, (u128, Arc<dyn Singular>)>::new();
+    let mut retain = Retain::default();
     executor
         .run(async move {
             while let Some(event) = recv.try_next().await? {
@@ -62,7 +65,7 @@ where
                     }
                     ProviderEvent::Published((point, reason)) => {
                         let hash = point.hash();
-                        match retain.entry(hash) {
+                        match retain.0.entry(hash) {
                             btree_map::Entry::Vacant(vacant_entry) => {
                                 vacant_entry.insert_entry((0, point))
                             }
