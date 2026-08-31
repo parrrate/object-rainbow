@@ -3,6 +3,7 @@ use object_rainbow::Hash;
 /// Commands coming from a consumer.
 pub enum Consume {
     Inc(Hash),
+    Dec(Hash),
 }
 
 /// Responses coming from a provider.
