@@ -5,6 +5,7 @@ pub enum Consume {
     Order(Hash),
     /// Increase server-side refcount by 1.
     Inc(Hash),
+    /// Decrease server-side refcount by 1.
     Dec(Hash),
     IncChild { parent: Hash, child: Address },
 }
