@@ -37,7 +37,7 @@ where
     object_rainbow::Error: From<E2>,
 {
     try_stream(async move |co| {
-        let (_, respond) = flume::bounded(0);
+        let (request, respond) = flume::bounded(0);
         let respond = respond.into_stream().map(Ok);
         let _ = pin!(send);
         let recv = recv
@@ -50,7 +50,8 @@ where
             match provided {
                 ConsumerEvent::Provided(Provide::Deliver { .. }) => {}
                 ConsumerEvent::Provided(Provide::Publish { hash, reason }) => {
-                    co.yield_((Arc::new(PublishedFetch { hash }) as _, reason))
+                    let request = request.clone();
+                    co.yield_((Arc::new(PublishedFetch { hash, request }) as _, reason))
                         .await;
                 }
             }
@@ -61,6 +62,8 @@ where
 
 struct PublishedFetch {
     hash: Hash,
+    #[expect(unused)]
+    request: flume::Sender<ConsumerEvent>,
 }
 
 impl FetchBytes for PublishedFetch {
