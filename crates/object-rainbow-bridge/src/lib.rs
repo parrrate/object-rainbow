@@ -1,5 +1,6 @@
 use std::{pin::pin, sync::Arc};
 
+use futures_channel::oneshot;
 use futures_util::{Sink, Stream, StreamExt, TryStreamExt};
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{Address, FetchBytes, Hash, Singular};
@@ -26,6 +27,8 @@ pub enum Provide {
 
 enum ConsumerEvent {
     Provided(Provide),
+    #[expect(unused)]
+    Fetch(Hash, oneshot::Sender<Vec<u8>>),
 }
 
 pub fn consume<E1: Send, E2: Send>(
@@ -54,6 +57,7 @@ where
                     co.yield_((Arc::new(PublishedFetch { hash, request }) as _, reason))
                         .await;
                 }
+                ConsumerEvent::Fetch { .. } => return Err(object_rainbow::Error::Unimplemented),
             }
         }
         Err(object_rainbow::Error::Unimplemented)

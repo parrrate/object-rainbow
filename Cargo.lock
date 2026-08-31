@@ -1759,6 +1759,7 @@ name = "object-rainbow-bridge"
 version = "0.0.0-a.0"
 dependencies = [
  "flume",
+ "futures-channel",
  "futures-util",
  "genawaiter-try-stream",
  "object-rainbow",
