@@ -125,9 +125,9 @@ impl Retain {
         &mut self,
         hash: Hash,
         executor: &Executor,
-        send: &flume::Sender<ProviderEvent>,
+        request: &flume::Sender<ProviderEvent>,
     ) -> object_rainbow::Result<()> {
-        self.get_mut(hash)?.order(executor, send)
+        self.get_mut(hash)?.order(executor, request)
     }
 
     fn retain(&mut self, point: Arc<dyn Singular>) -> Hash {
