@@ -143,6 +143,17 @@ struct PublishedResolve {
     request: flume::Sender<ConsumerEvent>,
 }
 
+impl PublishedResolve {
+    #[expect(dead_code)]
+    async fn inc_child(&self, address: Address) -> object_rainbow::Result<()> {
+        self.request
+            .send_async(ConsumerEvent::IncChild(self.hash, address))
+            .await
+            .map_err(|_| object_rainbow::Error::Interrupted)?;
+        Ok(())
+    }
+}
+
 impl Resolve for PublishedResolve {
     fn resolve<'a>(
         &'a self,
