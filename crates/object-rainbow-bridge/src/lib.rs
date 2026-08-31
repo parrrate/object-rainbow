@@ -268,21 +268,18 @@ enum ConsumerEvent {
     IncChild(Hash, Address),
 }
 
-pub fn consume<E1: Send, E2: Send>(
+pub fn consume<E1: Send>(
     send: impl Send + Sink<Consume, Error = E1>,
-    recv: impl Send + Stream<Item = Result<Provide, E2>>,
+    recv: impl Send + Stream<Item = object_rainbow::Result<Provide>>,
 ) -> impl Unpin + Send + Stream<Item = object_rainbow::Result<(Arc<dyn Singular>, Vec<u8>)>>
 where
     object_rainbow::Error: From<E1>,
-    object_rainbow::Error: From<E2>,
 {
     try_stream(async move |co| {
         let (request, respond) = flume::unbounded();
         let respond = respond.into_stream().map(Ok);
         let mut send = pin!(send);
-        let recv = recv
-            .map_err(object_rainbow::Error::from)
-            .map_ok(ConsumerEvent::Provided);
+        let recv = recv.map_ok(ConsumerEvent::Provided);
         let recv = futures_util::stream::select(recv, respond);
         let mut recv = pin!(recv);
         let mut fetches = BTreeMap::<_, Vec<oneshot::Sender<Vec<u8>>>>::new();
