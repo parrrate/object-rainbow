@@ -43,6 +43,7 @@ struct Retained {
     fetching: Option<Fetching>,
     resolve: Option<Arc<dyn Resolve>>,
     ordered: bool,
+    waiting: Vec<oneshot::Sender<Arc<dyn Resolve>>>,
 }
 
 impl Retained {
@@ -52,6 +53,9 @@ impl Retained {
             .take()
             .ok_or_else(|| object_rainbow::error_consistency!("not currently fetching"))?
             .await?;
+        for waiting in std::mem::take(&mut self.waiting) {
+            waiting.send(resolve.clone()).ok();
+        }
         self.resolve = Some(resolve);
         Ok(if std::mem::take(&mut self.ordered) {
             Some(data)
@@ -90,6 +94,7 @@ impl Retain {
                 fetching: None,
                 resolve: None,
                 ordered: false,
+                waiting: Default::default(),
             }),
             btree_map::Entry::Occupied(occupied_entry) => occupied_entry,
         }
