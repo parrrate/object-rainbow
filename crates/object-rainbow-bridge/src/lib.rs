@@ -30,9 +30,8 @@ pub enum Provide {
     Publish { hash: Hash, reason: Vec<u8> },
 }
 
-#[expect(dead_code)]
 enum ProviderEvent {
-    Consumed(Consume),
+    Consumed(#[expect(dead_code)] Consume),
 }
 
 pub async fn provide<E1: Send, E2: Send>(
@@ -45,7 +44,9 @@ where
     object_rainbow::Error: From<E2>,
 {
     let _ = pin!(send);
-    let recv = recv.map_err(object_rainbow::Error::from);
+    let recv = recv
+        .map_err(object_rainbow::Error::from)
+        .map_ok(ProviderEvent::Consumed);
     let _ = pin!(recv);
     let _ = pin!(publish);
     let executor = Executor::new();
