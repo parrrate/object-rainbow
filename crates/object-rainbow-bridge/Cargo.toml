@@ -17,3 +17,6 @@ flume.workspace = true
 futures-channel.workspace = true
 futures-util = { workspace = true, features = ["sink"] }
 genawaiter-try-stream.workspace = true
+
+[dev-dependencies]
+smol.workspace = true
