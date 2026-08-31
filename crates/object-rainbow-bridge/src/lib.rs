@@ -31,7 +31,7 @@ pub enum Provide {
 }
 
 enum ProviderEvent {
-    Consumed(#[expect(dead_code)] Consume),
+    Consumed(Consume),
     Published((Arc<dyn Singular>, Vec<u8>)),
 }
 
@@ -56,7 +56,6 @@ impl Retain {
             .ok_or_else(|| object_rainbow::error_consistency!("unknown hash"))
     }
 
-    #[expect(dead_code)]
     fn inc(&mut self, hash: Hash) -> object_rainbow::Result<()> {
         self.get_mut(hash)?.0 += 1;
         Ok(())
@@ -95,6 +94,9 @@ where
         .run(async move {
             while let Some(event) = recv.try_next().await? {
                 match event {
+                    ProviderEvent::Consumed(Consume::Inc(hash)) => {
+                        retain.inc(hash)?;
+                    }
                     ProviderEvent::Consumed { .. } => {
                         return Err(object_rainbow::Error::Unimplemented);
                     }
