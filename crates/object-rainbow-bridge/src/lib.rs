@@ -72,10 +72,10 @@ impl Retained {
     ) -> object_rainbow::Result<()> {
         if self.fetching.is_none() {
             let point = self.point.clone();
-            let send = request.downgrade();
+            let request = request.downgrade();
             self.fetching = Some(executor.spawn(async move {
                 let node = point.fetch_bytes().await?;
-                if let Some(send) = send.upgrade() {
+                if let Some(send) = request.upgrade() {
                     send.send_async(ProviderEvent::Finish(point.hash()))
                         .await
                         .ok();
