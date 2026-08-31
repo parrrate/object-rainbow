@@ -29,6 +29,8 @@ enum ConsumerEvent {
     Provided(Provide),
     #[expect(unused)]
     FetchData(Hash, oneshot::Sender<Vec<u8>>),
+    #[expect(unused)]
+    Drop(Hash),
 }
 
 pub fn consume<E1: Send, E2: Send>(
@@ -58,6 +60,9 @@ where
                         .await;
                 }
                 ConsumerEvent::FetchData { .. } => {
+                    return Err(object_rainbow::Error::Unimplemented);
+                }
+                ConsumerEvent::Drop { .. } => {
                     return Err(object_rainbow::Error::Unimplemented);
                 }
             }
