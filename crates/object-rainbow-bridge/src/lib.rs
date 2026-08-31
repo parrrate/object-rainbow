@@ -49,7 +49,6 @@ where
             .map_ok(ConsumerEvent::Provided);
         let recv = futures_util::stream::select(recv, respond);
         let mut recv = pin!(recv);
-        let _ = co;
         while let Some(provided) = recv.try_next().await? {
             match provided {
                 ConsumerEvent::Provided(Provide::Deliver { .. }) => {}
