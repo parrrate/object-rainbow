@@ -40,6 +40,7 @@ where
     object_rainbow::Error: From<E2>,
 {
     let _ = pin!(send);
+    let recv = recv.map_err(object_rainbow::Error::from);
     let _ = pin!(recv);
     let _ = pin!(publish);
     let executor = Executor::new();
