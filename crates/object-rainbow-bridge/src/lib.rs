@@ -246,7 +246,7 @@ impl DelayedResolve {
         self.recv
             .clone()
             .await
-            .map_err(|_| object_rainbow::Error::Unimplemented)
+            .map_err(|_| object_rainbow::Error::Interrupted)
     }
 }
 
