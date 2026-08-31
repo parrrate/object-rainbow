@@ -37,7 +37,7 @@ where
     object_rainbow::Error: From<E1>,
     object_rainbow::Error: From<E2>,
 {
-    let _ = send;
+    let _ = pin!(send);
     let _ = recv;
     Err(object_rainbow::Error::Unimplemented)
 }
