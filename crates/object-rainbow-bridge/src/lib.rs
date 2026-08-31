@@ -199,7 +199,9 @@ where
                         send.send(Provide::Publish { hash, reason }).await?;
                     }
                     ProviderEvent::Finish(hash) => {
-                        retain.finish_fetch(hash).await?;
+                        if let Some(data) = retain.finish_fetch(hash).await? {
+                            send.send(Provide::Deliver(hash, data)).await?;
+                        }
                     }
                 }
             }
