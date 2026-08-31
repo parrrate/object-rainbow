@@ -1,6 +1,6 @@
 use std::{pin::pin, sync::Arc};
 
-use futures_util::{Sink, Stream};
+use futures_util::{Sink, Stream, TryStreamExt};
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{Address, Hash, Singular};
 
@@ -34,8 +34,14 @@ where
 {
     try_stream(async move |co| {
         let _ = pin!(send);
-        let _ = pin!(recv);
+        let mut recv = pin!(recv);
         let _ = co;
+        while let Some(provided) = recv.try_next().await? {
+            match provided {
+                Provide::Deliver { .. } => {}
+                Provide::Publish { .. } => return Err(object_rainbow::Error::Unimplemented),
+            }
+        }
         Err(object_rainbow::Error::Unimplemented)
     })
 }
