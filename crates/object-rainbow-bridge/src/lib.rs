@@ -35,10 +35,10 @@ enum ProviderEvent {
     Published((Arc<dyn Singular>, Vec<u8>)),
 }
 
-type Retained = (
+struct Retained(
     u128,
-    Arc<dyn Singular + 'static>,
-    Shared<oneshot::Receiver<Arc<dyn Resolve>>>,
+    #[expect(dead_code)] Arc<dyn Singular + 'static>,
+    #[expect(dead_code)] Shared<oneshot::Receiver<Arc<dyn Resolve>>>,
 );
 
 #[derive(Default)]
@@ -51,7 +51,7 @@ impl Retain {
             btree_map::Entry::Vacant(vacant_entry) => {
                 let (_, recv) = oneshot::channel();
                 let recv = recv.shared();
-                vacant_entry.insert_entry((0, point, recv))
+                vacant_entry.insert_entry(Retained(0, point, recv))
             }
             btree_map::Entry::Occupied(occupied_entry) => occupied_entry,
         }
