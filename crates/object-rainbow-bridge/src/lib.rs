@@ -17,5 +17,5 @@ pub enum Provide {
     /// Fulfil an [`Consume::Order`].
     Deliver(Vec<u8>),
     /// Push a reference towards the client and increase server-side refcount by 1.
-    Publish(Hash),
+    Publish { hash: Hash, reason: Vec<u8> },
 }
