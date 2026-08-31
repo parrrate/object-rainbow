@@ -8,7 +8,7 @@ pub enum Consume {
     Inc(Hash),
     /// Decrease server-side refcount by 1. Requires refcount of at least 1.
     Dec(Hash),
-    /// Increase child's refcount by 1.
+    /// Increase child's refcount by 1. Requires parent refcount of at least 1.
     IncChild { parent: Hash, child: Address },
 }
 
