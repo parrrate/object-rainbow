@@ -1758,6 +1758,8 @@ dependencies = [
 name = "object-rainbow-bridge"
 version = "0.0.0-a.0"
 dependencies = [
+ "futures-util",
+ "genawaiter-try-stream",
  "object-rainbow",
 ]
 

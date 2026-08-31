@@ -1,4 +1,8 @@
-use object_rainbow::{Address, Hash};
+use std::sync::Arc;
+
+use futures_util::{Sink, Stream};
+use genawaiter_try_stream::try_stream;
+use object_rainbow::{Address, Hash, Singular};
 
 /// Commands coming from a consumer.
 pub enum Consume {
@@ -18,4 +22,16 @@ pub enum Provide {
     Deliver(Vec<u8>),
     /// Push a reference towards the client and increase server-side refcount by 1.
     Publish { hash: Hash, reason: Vec<u8> },
+}
+
+pub fn consume<E1, E2>(
+    send: impl Sink<Consume, Error = E1>,
+    recv: impl Stream<Item = Result<Provide, E2>>,
+) -> impl Stream<Item = object_rainbow::Result<(Arc<dyn Singular>, Vec<u8>)>> {
+    try_stream(async move |co| {
+        let _ = send;
+        let _ = recv;
+        let _ = co;
+        Err(object_rainbow::Error::Unimplemented)
+    })
 }
