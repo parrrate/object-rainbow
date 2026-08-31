@@ -6,7 +6,7 @@ use std::{
 
 use async_executor::{Executor, Task};
 use futures_channel::oneshot;
-use futures_util::{Sink, SinkExt, Stream, StreamExt, TryStreamExt};
+use futures_util::{Sink, SinkExt, Stream, StreamExt, TryStreamExt, future::Shared};
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{Address, FetchBytes, Hash, Resolve, Singular};
 use object_rainbow_point::RawPointInner;
@@ -235,7 +235,9 @@ where
 }
 
 #[expect(dead_code)]
-struct DelayedResolve {}
+struct DelayedResolve {
+    recv: Shared<oneshot::Receiver<Arc<dyn Resolve>>>,
+}
 
 enum ConsumerEvent {
     Provided(Provide),
