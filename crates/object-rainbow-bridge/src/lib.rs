@@ -33,6 +33,8 @@ enum ConsumerEvent {
     Provided(Provide),
     FetchData(Hash, oneshot::Sender<Vec<u8>>),
     Drop(Hash),
+    #[expect(unused)]
+    IncChild(Hash, Address),
 }
 
 pub fn consume<E1: Send, E2: Send>(
@@ -85,6 +87,9 @@ where
                 }
                 ConsumerEvent::Drop(hash) => {
                     send.send(Consume::Dec(hash)).await?;
+                }
+                ConsumerEvent::IncChild { .. } => {
+                    return Err(object_rainbow::Error::Unimplemented);
                 }
             }
         }
