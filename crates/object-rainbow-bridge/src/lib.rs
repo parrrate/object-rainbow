@@ -32,6 +32,7 @@ pub enum Provide {
 enum ConsumerEvent {
     Provided(Provide),
     FetchData(Hash, oneshot::Sender<Vec<u8>>),
+    #[expect(unused)]
     MakeResolve(Hash, oneshot::Sender<Arc<dyn Resolve>>),
     Drop(Hash),
 }
@@ -65,8 +66,13 @@ where
                 }
                 ConsumerEvent::Provided(Provide::Publish { hash, reason }) => {
                     let request = request.clone();
-                    co.yield_((Arc::new(PublishedFetch { hash, request }) as _, reason))
-                        .await;
+                    co.yield_((
+                        Arc::new(PublishedFetch {
+                            resolve: Arc::new(PublishedResolve { hash, request }),
+                        }) as _,
+                        reason,
+                    ))
+                    .await;
                 }
                 ConsumerEvent::FetchData(hash, callback) => {
                     match fetches.entry(hash) {
@@ -96,13 +102,14 @@ where
 }
 
 struct PublishedFetch {
-    hash: Hash,
-    request: flume::Sender<ConsumerEvent>,
+    resolve: Arc<PublishedResolve>,
 }
 
 impl PublishedFetch {
     async fn fetch_raw(&self) -> object_rainbow::Result<Vec<u8>> {
         let (send, recv) = oneshot::channel();
+        self.resolve
+            .request
             .send_async(ConsumerEvent::FetchData(self.hash(), send))
             .await
             .map_err(|_| object_rainbow::Error::Interrupted)?;
@@ -111,13 +118,7 @@ impl PublishedFetch {
     }
 
     async fn make_resolve(&self) -> object_rainbow::Result<Arc<dyn Resolve>> {
-        let (send, recv) = oneshot::channel();
-        self.request
-            .send_async(ConsumerEvent::MakeResolve(self.hash, send))
-            .await
-            .map_err(|_| object_rainbow::Error::Interrupted)?;
-        let resolve = recv.await.map_err(|_| object_rainbow::Error::Interrupted)?;
-        Ok(resolve)
+        Ok(self.resolve.clone())
     }
 }
 
@@ -137,13 +138,7 @@ impl FetchBytes for PublishedFetch {
 
 impl Singular for PublishedFetch {
     fn hash(&self) -> Hash {
-        self.hash
-    }
-}
-
-impl Drop for PublishedFetch {
-    fn drop(&mut self) {
-        self.request.try_send(ConsumerEvent::Drop(self.hash)).ok();
+        self.resolve.hash
     }
 }
 
