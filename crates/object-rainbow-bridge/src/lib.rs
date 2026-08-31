@@ -12,6 +12,7 @@ use object_rainbow::{Address, FetchBytes, Hash, Resolve, Singular};
 use object_rainbow_point::RawPointInner;
 
 /// Commands coming from a consumer.
+#[derive(Debug)]
 pub enum Consume {
     /// Request [`Provide::Deliver`]y. Requires refcount of at least 1.
     Order(Hash),
