@@ -3,6 +3,7 @@ use object_rainbow::{Address, Hash};
 /// Commands coming from a consumer.
 pub enum Consume {
     Order(Hash),
+    /// Increase server-side refcount by 1.
     Inc(Hash),
     Dec(Hash),
     IncChild { parent: Hash, child: Address },
