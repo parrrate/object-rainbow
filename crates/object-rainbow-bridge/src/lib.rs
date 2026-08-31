@@ -203,8 +203,13 @@ where
                     ProviderEvent::Consumed(Consume::Dec(hash)) => {
                         retain.dec(hash)?;
                     }
-                    ProviderEvent::Consumed { .. } => {
-                        return Err(object_rainbow::Error::Unimplemented);
+                    ProviderEvent::Consumed(Consume::IncChild { parent, child }) => {
+                        if retain.0.contains_key(&child.hash) {
+                            let _ = parent;
+                            retain.inc(child.hash)?;
+                        } else {
+                            return Err(object_rainbow::Error::Unimplemented);
+                        }
                     }
                     ProviderEvent::Published((point, reason)) => {
                         let hash = retain.retain(point);
