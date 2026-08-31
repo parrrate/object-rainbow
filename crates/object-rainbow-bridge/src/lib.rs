@@ -103,11 +103,11 @@ impl Retained {
     fn order(
         &mut self,
         executor: &Executor,
-        send: &flume::Sender<ProviderEvent>,
+        request: &flume::Sender<ProviderEvent>,
     ) -> object_rainbow::Result<()> {
         if !self.ordered {
             self.ordered = true;
-            self.ensure_fetch(executor, send)?;
+            self.ensure_fetch(executor, request)?;
         }
         Ok(())
     }
