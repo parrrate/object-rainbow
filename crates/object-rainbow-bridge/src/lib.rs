@@ -32,7 +32,7 @@ pub enum Consume {
 }
 
 /// Responses coming from a provider.
-#[derive(Debug, Enum, ToOutput, Tagged)]
+#[derive(Debug, Enum, ToOutput, Tagged, ListHashes)]
 pub enum Provide {
     /// Fulfil an [`Consume::Order`].
     Deliver(Hash, Vec<u8>),
