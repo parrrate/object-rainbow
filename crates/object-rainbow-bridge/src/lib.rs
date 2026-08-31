@@ -39,7 +39,6 @@ type Fetching = Task<Result<(Vec<u8>, Arc<dyn Resolve>), object_rainbow::Error>>
 
 struct Retained {
     count: u128,
-    #[expect(dead_code)]
     point: Arc<dyn Singular>,
     fetching: Option<Fetching>,
     resolve: Option<Arc<dyn Resolve>>,
@@ -60,6 +59,17 @@ impl Retained {
         } else {
             None
         })
+    }
+
+    #[expect(dead_code)]
+    fn start_fetch(&mut self, executor: &Executor) -> object_rainbow::Result<()> {
+        if self.fetching.is_none() {
+            let point = self.point.clone();
+            self.fetching = Some(executor.spawn(async move { point.fetch_bytes().await }));
+            Ok(())
+        } else {
+            Err(object_rainbow::error_consistency!("already fetching"))
+        }
     }
 }
 
