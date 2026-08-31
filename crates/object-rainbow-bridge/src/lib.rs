@@ -41,12 +41,27 @@ struct Retained {
     count: u128,
     #[expect(dead_code)]
     point: Arc<dyn Singular + 'static>,
-    #[expect(dead_code)]
     fetching: Option<Fetching>,
-    #[expect(dead_code)]
     resolve: Option<Arc<dyn Resolve>>,
-    #[expect(dead_code)]
     ordered: bool,
+}
+
+impl Retained {
+    #[expect(dead_code)]
+    async fn finish_fetch(&mut self) -> object_rainbow::Result<Option<Vec<u8>>> {
+        let (data, resolve) = self
+            .fetching
+            .take()
+            .ok_or_else(|| object_rainbow::error_consistency!("not currently fetching"))?
+            .await?;
+        self.resolve = Some(resolve);
+        Ok(if self.ordered {
+            self.ordered = false;
+            Some(data)
+        } else {
+            None
+        })
+    }
 }
 
 #[derive(Default)]
