@@ -170,21 +170,18 @@ impl Retain {
     }
 }
 
-pub async fn provide<E1: Send, E2: Send>(
+pub async fn provide<E1: Send>(
     send: impl Send + Sink<Provide, Error = E1>,
-    recv: impl Send + Stream<Item = Result<Consume, E2>>,
+    recv: impl Send + Stream<Item = object_rainbow::Result<Consume>>,
     publish: impl Send + Stream<Item = object_rainbow::Result<(Arc<dyn Singular>, Vec<u8>)>>,
 ) -> object_rainbow::Result<()>
 where
     object_rainbow::Error: From<E1>,
-    object_rainbow::Error: From<E2>,
 {
     let (request, respond) = flume::unbounded();
     let respond = respond.into_stream().map(Ok);
     let mut send = pin!(send);
-    let recv = recv
-        .map_err(object_rainbow::Error::from)
-        .map_ok(ProviderEvent::Consumed);
+    let recv = recv.map_ok(ProviderEvent::Consumed);
     let publish = publish.map_ok(ProviderEvent::Published);
     let recv = futures_util::stream::select(recv, publish);
     let recv = futures_util::stream::select(recv, respond);
