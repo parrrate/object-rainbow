@@ -52,7 +52,7 @@ where
     let recv = futures_util::stream::select(recv, publish);
     let mut recv = pin!(recv);
     let executor = Executor::new();
-    let mut _retain = BTreeMap::<Hash, (u128, Arc<dyn Singular>)>::new();
+    let mut retain = BTreeMap::<Hash, (u128, Arc<dyn Singular>)>::new();
     executor
         .run(async move {
             while let Some(event) = recv.try_next().await? {
@@ -62,6 +62,14 @@ where
                     }
                     ProviderEvent::Published((point, reason)) => {
                         let hash = point.hash();
+                        match retain.entry(hash) {
+                            btree_map::Entry::Vacant(vacant_entry) => {
+                                vacant_entry.insert_entry((0, point))
+                            }
+                            btree_map::Entry::Occupied(occupied_entry) => occupied_entry,
+                        }
+                        .into_mut()
+                        .0 += 1;
                         send.send(Provide::Publish { hash, reason }).await?;
                     }
                 }
