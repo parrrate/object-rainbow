@@ -40,7 +40,7 @@ where
     object_rainbow::Error: From<E2>,
 {
     try_stream(async move |co| {
-        let (request, respond) = flume::bounded(0);
+        let (request, respond) = flume::unbounded();
         let respond = respond.into_stream().map(Ok);
         let _ = pin!(send);
         let recv = recv
