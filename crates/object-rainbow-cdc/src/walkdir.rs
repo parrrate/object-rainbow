@@ -2,7 +2,7 @@ use std::path::Path;
 
 use async_walkdir::WalkDir;
 use futures_util::{FutureExt, StreamExt, TryStreamExt};
-use object_rainbow::zero_terminated::Zt;
+use object_rainbow::{Fetch, zero_terminated::Zt};
 use object_rainbow_amt::AmtMap;
 use object_rainbow_point::{IntoPoint, Point};
 
@@ -52,5 +52,23 @@ impl Chunks {
             .into_iter()
             .collect();
         Ok(map)
+    }
+
+    pub async fn write_dir(
+        dir: impl AsRef<Path>,
+        map: AmtMap<Zt<String>, Point<Self>>,
+    ) -> object_rainbow::Result<()> {
+        map.stream()
+            .try_for_each_concurrent(None, async |(path, chunks)| {
+                let path = dir.as_ref().join(&*path);
+                async_fs::create_dir_all(
+                    path.parent()
+                        .ok_or_else(|| object_rainbow::error_consistency!("no dir parent"))?,
+                )
+                .await?;
+                chunks.fetch().await?.to_file(path).await
+            })
+            .await?;
+        Ok(())
     }
 }
