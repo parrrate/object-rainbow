@@ -1,4 +1,8 @@
-use std::{pin::pin, sync::Arc};
+use std::{
+    collections::{BTreeMap, btree_map},
+    pin::pin,
+    sync::Arc,
+};
 
 use futures_channel::oneshot;
 use futures_util::{Sink, SinkExt, Stream, StreamExt, TryStreamExt};
@@ -27,7 +31,6 @@ pub enum Provide {
 
 enum ConsumerEvent {
     Provided(Provide),
-    #[expect(unused)]
     FetchData(Hash, oneshot::Sender<Vec<u8>>),
     Drop(Hash),
 }
@@ -49,6 +52,7 @@ where
             .map_ok(ConsumerEvent::Provided);
         let recv = futures_util::stream::select(recv, respond);
         let mut recv = pin!(recv);
+        let mut fetches = BTreeMap::new();
         while let Some(provided) = recv.try_next().await? {
             match provided {
                 ConsumerEvent::Provided(Provide::Deliver { .. }) => {}
@@ -57,7 +61,16 @@ where
                     co.yield_((Arc::new(PublishedFetch { hash, request }) as _, reason))
                         .await;
                 }
-                ConsumerEvent::FetchData { .. } => {
+                ConsumerEvent::FetchData(hash, callback) => {
+                    match fetches.entry(hash) {
+                        btree_map::Entry::Vacant(vacant_entry) => {
+                            send.send(Consume::Order(hash)).await?;
+                            vacant_entry.insert_entry(Vec::new())
+                        }
+                        btree_map::Entry::Occupied(occupied_entry) => occupied_entry,
+                    }
+                    .into_mut()
+                    .push(callback);
                     return Err(object_rainbow::Error::Unimplemented);
                 }
                 ConsumerEvent::Drop(hash) => {
