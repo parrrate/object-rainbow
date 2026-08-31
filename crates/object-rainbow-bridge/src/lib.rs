@@ -99,7 +99,6 @@ impl Retained {
         Ok(())
     }
 
-    #[expect(dead_code)]
     fn order(
         &mut self,
         executor: &Executor,
@@ -119,6 +118,16 @@ struct Retain(BTreeMap<Hash, Retained>);
 impl Retain {
     async fn finish_fetch(&mut self, hash: Hash) -> object_rainbow::Result<Option<Vec<u8>>> {
         self.get_mut(hash)?.finish_fetch().await
+    }
+
+    #[expect(dead_code)]
+    fn order(
+        &mut self,
+        hash: Hash,
+        executor: &Executor,
+        send: &flume::Sender<ProviderEvent>,
+    ) -> object_rainbow::Result<()> {
+        self.get_mut(hash)?.order(executor, send)
     }
 
     fn retain(&mut self, point: Arc<dyn Singular>) -> Hash {
