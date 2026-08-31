@@ -30,6 +30,7 @@ pub fn consume<E1: Send, E2: Send>(
 ) -> impl Stream<Item = object_rainbow::Result<(Arc<dyn Singular>, Vec<u8>)>>
 where
     object_rainbow::Error: From<E1>,
+    object_rainbow::Error: From<E2>,
 {
     try_stream(async move |co| {
         let _ = pin!(send);
