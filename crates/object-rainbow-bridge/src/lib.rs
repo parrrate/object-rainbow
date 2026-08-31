@@ -7,7 +7,10 @@ pub enum Consume {
     Inc(Hash),
     /// Decrease server-side refcount by 1.
     Dec(Hash),
-    IncChild { parent: Hash, child: Address },
+    IncChild {
+        parent: Hash,
+        child: Address,
+    },
 }
 
 /// Responses coming from a provider.
