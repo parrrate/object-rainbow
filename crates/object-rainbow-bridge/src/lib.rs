@@ -120,7 +120,6 @@ impl Retain {
         self.get_mut(hash)?.finish_fetch().await
     }
 
-    #[expect(dead_code)]
     fn order(
         &mut self,
         hash: Hash,
@@ -178,7 +177,7 @@ where
     object_rainbow::Error: From<E1>,
     object_rainbow::Error: From<E2>,
 {
-    let (_, respond) = flume::unbounded();
+    let (request, respond) = flume::unbounded();
     let respond = respond.into_stream().map(Ok);
     let mut send = pin!(send);
     let recv = recv
@@ -194,6 +193,9 @@ where
         .run(async {
             while let Some(event) = recv.try_next().await? {
                 match event {
+                    ProviderEvent::Consumed(Consume::Order(hash)) => {
+                        retain.order(hash, &executor, &request)?;
+                    }
                     ProviderEvent::Consumed(Consume::Inc(hash)) => {
                         retain.inc(hash)?;
                     }
