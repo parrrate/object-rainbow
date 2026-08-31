@@ -74,10 +74,18 @@ impl Retained {
         }
     }
 
-    #[expect(dead_code)]
     fn ensure_fetch(&mut self, executor: &Executor) -> object_rainbow::Result<()> {
         if self.fetching.is_none() {
             self.start_fetch(executor)?;
+        }
+        Ok(())
+    }
+
+    #[expect(dead_code)]
+    fn order(&mut self, executor: &Executor) -> object_rainbow::Result<()> {
+        if !self.ordered {
+            self.ordered = true;
+            self.ensure_fetch(executor)?;
         }
         Ok(())
     }
