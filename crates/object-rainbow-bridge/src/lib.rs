@@ -271,7 +271,7 @@ enum ConsumerEvent {
 pub fn consume<E1: Send>(
     send: impl Send + Sink<Consume, Error = E1>,
     recv: impl Send + Stream<Item = object_rainbow::Result<Provide>>,
-) -> impl Unpin + Send + Stream<Item = object_rainbow::Result<(Arc<dyn Singular>, Vec<u8>)>>
+) -> impl Unpin + Send + Stream<Item = object_rainbow::Result<(impl Singular, Vec<u8>)>>
 where
     object_rainbow::Error: From<E1>,
 {
@@ -295,9 +295,9 @@ where
                 ConsumerEvent::Provided(Provide::Publish { hash, reason }) => {
                     let request = request.clone();
                     co.yield_((
-                        Arc::new(PublishedFetch {
+                        PublishedFetch {
                             resolve: Arc::new(PublishedResolve { hash, request }),
-                        }) as _,
+                        },
                         reason,
                     ))
                     .await;
