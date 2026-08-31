@@ -24,6 +24,10 @@ pub enum Provide {
     Publish { hash: Hash, reason: Vec<u8> },
 }
 
+enum ConsumerEvent {
+    Provided(Provide),
+}
+
 pub fn consume<E1: Send, E2: Send>(
     send: impl Send + Sink<Consume, Error = E1>,
     recv: impl Send + Stream<Item = Result<Provide, E2>>,
@@ -34,12 +38,17 @@ where
 {
     try_stream(async move |co| {
         let _ = pin!(send);
-        let mut recv = pin!(recv.map_err(object_rainbow::Error::from));
+        let mut recv = pin!(
+            recv.map_err(object_rainbow::Error::from)
+                .map_ok(ConsumerEvent::Provided),
+        );
         let _ = co;
         while let Some(provided) = recv.try_next().await? {
             match provided {
-                Provide::Deliver { .. } => {}
-                Provide::Publish { .. } => return Err(object_rainbow::Error::Unimplemented),
+                ConsumerEvent::Provided(Provide::Deliver { .. }) => {}
+                ConsumerEvent::Provided(Provide::Publish { .. }) => {
+                    return Err(object_rainbow::Error::Unimplemented);
+                }
             }
         }
         Err(object_rainbow::Error::Unimplemented)
