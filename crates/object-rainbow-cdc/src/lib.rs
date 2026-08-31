@@ -122,7 +122,9 @@ impl Chunks {
     }
 }
 
-#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Size)]
+#[derive(
+    ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Size, Clone,
+)]
 pub struct Chunk {
     len_lower: u16,
     data: Point<Vec<u8>>,
