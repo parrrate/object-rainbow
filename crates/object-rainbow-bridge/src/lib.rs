@@ -79,7 +79,6 @@ where
                     }
                     .into_mut()
                     .push(callback);
-                    return Err(object_rainbow::Error::Unimplemented);
                 }
                 ConsumerEvent::MakeResolve { .. } => {
                     return Err(object_rainbow::Error::Unimplemented);
