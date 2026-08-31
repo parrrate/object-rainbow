@@ -28,7 +28,7 @@ pub enum Provide {
 enum ConsumerEvent {
     Provided(Provide),
     #[expect(unused)]
-    Fetch(Hash, oneshot::Sender<Vec<u8>>),
+    FetchData(Hash, oneshot::Sender<Vec<u8>>),
 }
 
 pub fn consume<E1: Send, E2: Send>(
@@ -57,7 +57,9 @@ where
                     co.yield_((Arc::new(PublishedFetch { hash, request }) as _, reason))
                         .await;
                 }
-                ConsumerEvent::Fetch { .. } => return Err(object_rainbow::Error::Unimplemented),
+                ConsumerEvent::FetchData { .. } => {
+                    return Err(object_rainbow::Error::Unimplemented);
+                }
             }
         }
         Ok(())
@@ -80,7 +82,7 @@ impl FetchBytes for PublishedFetch {
         Box::pin(async move {
             let (send, recv) = oneshot::channel();
             self.request
-                .send_async(ConsumerEvent::Fetch(self.hash, send))
+                .send_async(ConsumerEvent::FetchData(self.hash, send))
                 .await
                 .map_err(|_| object_rainbow::Error::Interrupted)?;
             let data = recv.await.map_err(|_| object_rainbow::Error::Interrupted)?;
