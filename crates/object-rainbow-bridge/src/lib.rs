@@ -322,6 +322,7 @@ where
                 }
             }
         }
+        send.close().await?;
         Ok(())
     })
 }
