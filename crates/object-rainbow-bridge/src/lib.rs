@@ -75,8 +75,9 @@ impl Retained {
             let request = request.downgrade();
             self.fetching = Some(executor.spawn(async move {
                 let node = point.fetch_bytes().await?;
-                if let Some(send) = request.upgrade() {
-                    send.send_async(ProviderEvent::Finish(point.hash()))
+                if let Some(request) = request.upgrade() {
+                    request
+                        .send_async(ProviderEvent::Finish(point.hash()))
                         .await
                         .ok();
                 }
