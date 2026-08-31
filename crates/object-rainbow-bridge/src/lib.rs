@@ -30,7 +30,7 @@ pub fn consume<E1: Send, E2: Send>(
 ) -> impl Stream<Item = object_rainbow::Result<(Arc<dyn Singular>, Vec<u8>)>> {
     try_stream(async move |co| {
         let _ = pin!(send);
-        let _ = recv;
+        let _ = pin!(recv);
         let _ = co;
         Err(object_rainbow::Error::Unimplemented)
     })
