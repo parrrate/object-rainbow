@@ -36,8 +36,8 @@ enum ProviderEvent {
 }
 
 pub async fn provide<E1: Send, E2: Send>(
-    send: impl Send + Sink<Consume, Error = E1>,
-    recv: impl Send + Stream<Item = Result<Provide, E2>>,
+    send: impl Send + Sink<Provide, Error = E1>,
+    recv: impl Send + Stream<Item = Result<Consume, E2>>,
     publish: impl Send + Stream<Item = object_rainbow::Result<(Arc<dyn Singular>, Vec<u8>)>>,
 ) -> object_rainbow::Result<()>
 where
