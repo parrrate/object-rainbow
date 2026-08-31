@@ -29,6 +29,19 @@ pub enum Provide {
     Publish { hash: Hash, reason: Vec<u8> },
 }
 
+pub fn provide<E1: Send, E2: Send>(
+    send: impl Send + Sink<Consume, Error = E1>,
+    recv: impl Send + Stream<Item = Result<Provide, E2>>,
+) -> object_rainbow::Result<()>
+where
+    object_rainbow::Error: From<E1>,
+    object_rainbow::Error: From<E2>,
+{
+    let _ = send;
+    let _ = recv;
+    Err(object_rainbow::Error::Unimplemented)
+}
+
 enum ConsumerEvent {
     Provided(Provide),
     FetchData(Hash, oneshot::Sender<Vec<u8>>),
