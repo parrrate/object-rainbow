@@ -31,7 +31,9 @@ pub enum Provide {
 }
 
 #[expect(dead_code)]
-enum ProviderEvent {}
+enum ProviderEvent {
+    Consumed(Consume),
+}
 
 pub async fn provide<E1: Send, E2: Send>(
     send: impl Send + Sink<Consume, Error = E1>,
