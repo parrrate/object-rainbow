@@ -35,6 +35,7 @@ enum ProviderEvent {
     Consumed(Consume),
     Published((Arc<dyn Singular>, Vec<u8>)),
     Finish(Hash),
+    Over,
 }
 
 type Fetching = Task<Result<(Vec<u8>, Arc<dyn Resolve>), object_rainbow::Error>>;
@@ -182,12 +183,17 @@ where
     let respond = respond.into_stream().map(Ok);
     let mut send = pin!(send);
     let recv = recv.map_ok(ProviderEvent::Consumed);
-    let publish = publish.map_ok(ProviderEvent::Published);
+    let publish = publish
+        .map_ok(ProviderEvent::Published)
+        .chain(futures_util::stream::once(core::future::ready(Ok(
+            ProviderEvent::Over,
+        ))));
     let recv = futures_util::stream::select(recv, publish);
     let recv = futures_util::stream::select(recv, respond);
     let mut recv = pin!(recv);
     let executor = Executor::new();
     let mut retain = Retain::default();
+    let mut over = false;
     executor
         .run(async {
             while let Some(event) = recv.try_next().await? {
@@ -226,6 +232,9 @@ where
                         if let Some(data) = retain.finish_fetch(hash).await? {
                             send.send(Provide::Deliver(hash, data)).await?;
                         }
+                    }
+                    ProviderEvent::Over => {
+                        over = true;
                     }
                 }
             }
