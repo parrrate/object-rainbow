@@ -2,6 +2,7 @@ use object_rainbow::{Address, Hash};
 
 /// Commands coming from a consumer.
 pub enum Consume {
+    /// Request [`Provide::Deliver`]y.
     Order(Hash),
     /// Increase server-side refcount by 1.
     Inc(Hash),
