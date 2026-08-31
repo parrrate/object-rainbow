@@ -138,9 +138,7 @@ impl Drop for PublishedFetch {
 }
 
 struct PublishedResolve {
-    #[expect(unused)]
     hash: Hash,
-    #[expect(unused)]
     request: flume::Sender<ConsumerEvent>,
 }
 
@@ -162,5 +160,11 @@ impl Resolve for PublishedResolve {
         Box::pin(core::future::ready(Err(
             object_rainbow::Error::Unimplemented,
         )))
+    }
+}
+
+impl Drop for PublishedResolve {
+    fn drop(&mut self) {
+        self.request.try_send(ConsumerEvent::Drop(self.hash)).ok();
     }
 }
