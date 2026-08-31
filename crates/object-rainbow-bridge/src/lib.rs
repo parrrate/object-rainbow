@@ -53,8 +53,7 @@ impl Retained {
             .ok_or_else(|| object_rainbow::error_consistency!("not currently fetching"))?
             .await?;
         self.resolve = Some(resolve);
-        Ok(if self.ordered {
-            self.ordered = false;
+        Ok(if std::mem::take(&mut self.ordered) {
             Some(data)
         } else {
             None
