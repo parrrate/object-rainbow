@@ -24,7 +24,7 @@ pub enum Provide {
     Publish { hash: Hash, reason: Vec<u8> },
 }
 
-pub fn consume<E1: Send, E2>(
+pub fn consume<E1: Send, E2: Send>(
     send: impl Send + Sink<Consume, Error = E1>,
     recv: impl Send + Stream<Item = Result<Provide, E2>>,
 ) -> impl Stream<Item = object_rainbow::Result<(Arc<dyn Singular>, Vec<u8>)>> {
