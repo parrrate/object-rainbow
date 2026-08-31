@@ -61,6 +61,16 @@ impl Retain {
         self.get_mut(hash)?.0 += 1;
         Ok(())
     }
+
+    #[expect(dead_code)]
+    fn dec(&mut self, hash: Hash) -> object_rainbow::Result<()> {
+        let count = &mut self.get_mut(hash)?.0;
+        *count -= 1;
+        if *count == 0 {
+            self.0.remove(&hash);
+        }
+        Ok(())
+    }
 }
 
 pub async fn provide<E1: Send, E2: Send>(
