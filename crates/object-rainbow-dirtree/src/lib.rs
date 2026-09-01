@@ -3,11 +3,11 @@ use std::sync::Arc;
 use object_rainbow::{Enum, InlineOutput, ToOutput, assert_impl};
 use object_rainbow_amt::AmtMap;
 
-#[derive(Debug, Enum, ToOutput)]
+#[derive(Debug, Enum, ToOutput, InlineOutput)]
 #[output(unchecked)]
 #[output(bound = "Segment: InlineOutput")]
-#[output(bound = "File: ToOutput")]
-#[output(bound = "Directory: ToOutput")]
+#[output(auto = "File")]
+#[output(auto = "Directory")]
 pub enum DirEntry<Segment, File, Directory = ()> {
     File(File),
     Directory {

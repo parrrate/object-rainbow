@@ -114,23 +114,31 @@ struct ContainerOutputArgs {
     unchecked: bool,
     #[darling(default)]
     bound: Option<LitStr>,
+    #[darling(default)]
+    auto: Option<Type>,
 }
 
-fn parse_output_bounds(attrs: &[Attribute]) -> syn::Result<(bool, Vec<WherePredicate>)> {
+fn parse_output_bounds(attrs: &[Attribute]) -> syn::Result<(bool, Vec<WherePredicate>, Vec<Type>)> {
     let mut u = false;
     let mut wheres = Vec::new();
+    let mut a = Vec::new();
     for attr in attrs {
         if attr_str(attr).as_deref() == Some("output") {
-            let ContainerOutputArgs { unchecked, bound } = attr.parse_args()?;
+            let ContainerOutputArgs {
+                unchecked,
+                bound,
+                auto,
+            } = attr.parse_args()?;
             if unchecked {
                 u = true;
             }
             if let Some(bound) = bound {
                 wheres.push(bound.parse()?);
             }
+            a.extend(auto);
         }
     }
-    Ok((u, wheres))
+    Ok((u, wheres, a))
 }
 
 fn bounds_to_output(
@@ -138,7 +146,7 @@ fn bounds_to_output(
     data: &Data,
     attrs: &[Attribute],
 ) -> syn::Result<Generics> {
-    let (u, wheres) = parse_output_bounds(attrs)?;
+    let (u, wheres, auto) = parse_output_bounds(attrs)?;
     let g = &bounds_g(&generics);
     match data {
         Data::Struct(data) => {
@@ -196,6 +204,14 @@ fn bounds_to_output(
     }
     for bound in wheres {
         generics.make_where_clause().predicates.push(bound);
+    }
+    for auto in auto {
+        generics
+            .make_where_clause()
+            .predicates
+            .push(parse_quote_spanned! { auto.span() =>
+                #auto: ::object_rainbow::ToOutput
+            });
     }
     Ok(generics)
 }
@@ -324,7 +340,7 @@ fn bounds_inline_output(
     data: &Data,
     attrs: &[Attribute],
 ) -> syn::Result<Generics> {
-    let (u, wheres) = parse_output_bounds(attrs)?;
+    let (u, wheres, auto) = parse_output_bounds(attrs)?;
     match data {
         Data::Struct(data) => {
             'field: for f in data.fields.iter() {
@@ -364,6 +380,14 @@ fn bounds_inline_output(
     }
     for bound in wheres {
         generics.make_where_clause().predicates.push(bound);
+    }
+    for auto in auto {
+        generics
+            .make_where_clause()
+            .predicates
+            .push(parse_quote_spanned! { auto.span() =>
+                #auto: ::object_rainbow::InlineOutput
+            });
     }
     Ok(generics)
 }
