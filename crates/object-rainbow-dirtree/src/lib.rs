@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use object_rainbow::{Enum, InlineOutput, ListHashes, ToOutput, assert_impl};
+use object_rainbow::{Enum, InlineOutput, ListHashes, Tagged, ToOutput, assert_impl};
 use object_rainbow_amt::AmtMap;
 
-#[derive(Debug, Enum, ToOutput, InlineOutput, ListHashes)]
+#[derive(Debug, Enum, ToOutput, InlineOutput, ListHashes, Tagged)]
 #[output(bound = "Segment: InlineOutput")]
 #[hashes(bound = "Segment: ListHashes")]
 pub enum DirEntry<Segment, File, Directory = ()> {
@@ -11,6 +11,7 @@ pub enum DirEntry<Segment, File, Directory = ()> {
     Directory {
         #[output(unchecked)]
         #[hashes(unchecked)]
+        #[tags(skip)]
         children: AmtMap<Segment, Arc<Self>>,
         directory: Directory,
     },
