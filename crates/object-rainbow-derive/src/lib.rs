@@ -1001,25 +1001,11 @@ pub fn derive_tagged(input: TokenStream) -> TokenStream {
     TokenStream::from(output)
 }
 
+#[derive(Debug, FromMeta)]
+#[darling(derive_syn_parse)]
 struct FieldTagArgs {
+    #[darling(default)]
     skip: bool,
-}
-
-impl Parse for FieldTagArgs {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let mut skip = false;
-        while !input.is_empty() {
-            let ident = input.parse::<Ident>()?;
-            if ident.to_string().as_str() != "skip" {
-                return Err(Error::new(ident.span(), "expected: skip"));
-            }
-            skip = true;
-            if !input.is_empty() {
-                input.parse::<Comma>()?;
-            }
-        }
-        Ok(Self { skip })
-    }
 }
 
 fn bounds_tagged(
