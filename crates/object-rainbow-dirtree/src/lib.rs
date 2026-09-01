@@ -11,7 +11,7 @@ pub enum DirEntry<Segment, File, Directory = ()> {
     Directory {
         #[output(unchecked)]
         #[hashes(unchecked)]
-        #[tags(skip)]
+        #[tags(replace = "Segment")]
         children: AmtMap<Segment, Arc<Self>>,
         directory: Directory,
     },
