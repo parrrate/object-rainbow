@@ -4,13 +4,11 @@ use object_rainbow::{Enum, InlineOutput, ToOutput, assert_impl};
 use object_rainbow_amt::AmtMap;
 
 #[derive(Debug, Enum, ToOutput, InlineOutput)]
-#[output(unchecked)]
 #[output(bound = "Segment: InlineOutput")]
-#[output(auto = "File")]
-#[output(auto = "Directory")]
 pub enum DirEntry<Segment, File, Directory = ()> {
     File(File),
     Directory {
+        #[output(unchecked)]
         children: AmtMap<Segment, Arc<Self>>,
         directory: Directory,
     },

@@ -118,6 +118,13 @@ struct ContainerOutputArgs {
     auto: Option<Type>,
 }
 
+#[derive(Debug, FromMeta)]
+#[darling(derive_syn_parse)]
+struct FieldOutputArgs {
+    #[darling(default)]
+    unchecked: bool,
+}
+
 fn parse_output_bounds(attrs: &[Attribute]) -> syn::Result<(bool, Vec<WherePredicate>, Vec<Type>)> {
     let mut u = false;
     let mut wheres = Vec::new();
@@ -159,6 +166,14 @@ fn bounds_to_output(
                 } else {
                     quote!(::object_rainbow::InlineOutput)
                 };
+                for attr in &f.attrs {
+                    if attr_str(attr).as_deref() == Some("output") {
+                        let FieldOutputArgs { unchecked, .. } = attr.parse_args()?;
+                        if unchecked {
+                            continue 'field;
+                        }
+                    }
+                }
                 if u {
                     continue 'field;
                 }
@@ -182,6 +197,14 @@ fn bounds_to_output(
                     } else {
                         quote!(::object_rainbow::InlineOutput)
                     };
+                    for attr in &f.attrs {
+                        if attr_str(attr).as_deref() == Some("output") {
+                            let FieldOutputArgs { unchecked, .. } = attr.parse_args()?;
+                            if unchecked {
+                                continue 'field;
+                            }
+                        }
+                    }
                     if u {
                         continue 'field;
                     }
@@ -345,6 +368,14 @@ fn bounds_inline_output(
         Data::Struct(data) => {
             'field: for f in data.fields.iter() {
                 let ty = &f.ty;
+                for attr in &f.attrs {
+                    if attr_str(attr).as_deref() == Some("output") {
+                        let FieldOutputArgs { unchecked, .. } = attr.parse_args()?;
+                        if unchecked {
+                            continue 'field;
+                        }
+                    }
+                }
                 if u {
                     continue 'field;
                 }
@@ -360,6 +391,14 @@ fn bounds_inline_output(
             for v in data.variants.iter() {
                 'field: for f in v.fields.iter() {
                     let ty = &f.ty;
+                    for attr in &f.attrs {
+                        if attr_str(attr).as_deref() == Some("output") {
+                            let FieldOutputArgs { unchecked, .. } = attr.parse_args()?;
+                            if unchecked {
+                                continue 'field;
+                            }
+                        }
+                    }
                     if u {
                         continue 'field;
                     }
