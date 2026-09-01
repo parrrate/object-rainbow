@@ -391,17 +391,13 @@ impl PublishedFetch {
         let data = recv.await.map_err(|_| object_rainbow::Error::Interrupted)?;
         Ok(data)
     }
-
-    async fn make_resolve(&self) -> object_rainbow::Result<Arc<dyn Resolve>> {
-        Ok(self.resolve.clone())
-    }
 }
 
 impl FetchBytes for PublishedFetch {
     fn fetch_bytes(&'_ self) -> object_rainbow::FailFuture<'_, object_rainbow::ByteNode> {
         Box::pin(async move {
             let data = self.fetch_raw().await?;
-            let resolve = self.make_resolve().await?;
+            let resolve = self.resolve.clone() as _;
             Ok((data, resolve))
         })
     }
