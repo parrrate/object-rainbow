@@ -85,11 +85,11 @@ fn parse_untagged(attrs: &[Attribute]) -> syn::Result<Option<SpannedValue<bool>>
 ///     {}
 /// );
 /// ```
-#[proc_macro_derive(ToOutput, attributes(rainbow))]
+#[proc_macro_derive(ToOutput, attributes(rainbow, output))]
 pub fn derive_to_output(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
-    let generics = match bounds_to_output(input.generics, &input.data) {
+    let generics = match bounds_to_output(input.generics, &input.data, &input.attrs) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
@@ -107,12 +107,43 @@ pub fn derive_to_output(input: TokenStream) -> TokenStream {
     TokenStream::from(output)
 }
 
-fn bounds_to_output(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+#[derive(Debug, FromMeta)]
+#[darling(derive_syn_parse)]
+struct ContainerOutputArgs {
+    #[darling(default)]
+    unchecked: bool,
+    #[darling(default)]
+    bound: Option<LitStr>,
+}
+
+fn parse_output_bounds(attrs: &[Attribute]) -> syn::Result<(bool, Vec<WherePredicate>)> {
+    let mut u = false;
+    let mut wheres = Vec::new();
+    for attr in attrs {
+        if attr_str(attr).as_deref() == Some("output") {
+            let ContainerOutputArgs { unchecked, bound } = attr.parse_args()?;
+            if unchecked {
+                u = true;
+            }
+            if let Some(bound) = bound {
+                wheres.push(bound.parse()?);
+            }
+        }
+    }
+    Ok((u, wheres))
+}
+
+fn bounds_to_output(
+    mut generics: Generics,
+    data: &Data,
+    attrs: &[Attribute],
+) -> syn::Result<Generics> {
+    let (u, wheres) = parse_output_bounds(attrs)?;
     let g = &bounds_g(&generics);
     match data {
         Data::Struct(data) => {
             let last_at = data.fields.len().saturating_sub(1);
-            for (i, f) in data.fields.iter().enumerate() {
+            'field: for (i, f) in data.fields.iter().enumerate() {
                 let last = i == last_at;
                 let ty = &f.ty;
                 let tr = if last {
@@ -120,6 +151,9 @@ fn bounds_to_output(mut generics: Generics, data: &Data) -> syn::Result<Generics
                 } else {
                     quote!(::object_rainbow::InlineOutput)
                 };
+                if u {
+                    continue 'field;
+                }
                 if !last || type_contains_generics(GContext { g, always: false }, ty) {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
@@ -132,7 +166,7 @@ fn bounds_to_output(mut generics: Generics, data: &Data) -> syn::Result<Generics
         Data::Enum(data) => {
             for v in data.variants.iter() {
                 let last_at = v.fields.len().saturating_sub(1);
-                for (i, f) in v.fields.iter().enumerate() {
+                'field: for (i, f) in v.fields.iter().enumerate() {
                     let last = i == last_at;
                     let ty = &f.ty;
                     let tr = if last {
@@ -140,6 +174,9 @@ fn bounds_to_output(mut generics: Generics, data: &Data) -> syn::Result<Generics
                     } else {
                         quote!(::object_rainbow::InlineOutput)
                     };
+                    if u {
+                        continue 'field;
+                    }
                     if !last || type_contains_generics(GContext { g, always: false }, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
@@ -156,6 +193,9 @@ fn bounds_to_output(mut generics: Generics, data: &Data) -> syn::Result<Generics
                 "`union`s are not supported",
             ));
         }
+    }
+    for bound in wheres {
+        generics.make_where_clause().predicates.push(bound);
     }
     Ok(generics)
 }
@@ -266,7 +306,7 @@ fn gen_to_output(data: &Data, attrs: &[Attribute]) -> proc_macro2::TokenStream {
 pub fn derive_inline_output(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
-    let generics = match bounds_inline_output(input.generics, &input.data) {
+    let generics = match bounds_inline_output(input.generics, &input.data, &input.attrs) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
@@ -279,11 +319,19 @@ pub fn derive_inline_output(input: TokenStream) -> TokenStream {
     TokenStream::from(output)
 }
 
-fn bounds_inline_output(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+fn bounds_inline_output(
+    mut generics: Generics,
+    data: &Data,
+    attrs: &[Attribute],
+) -> syn::Result<Generics> {
+    let (u, wheres) = parse_output_bounds(attrs)?;
     match data {
         Data::Struct(data) => {
-            for f in data.fields.iter() {
+            'field: for f in data.fields.iter() {
                 let ty = &f.ty;
+                if u {
+                    continue 'field;
+                }
                 generics
                     .make_where_clause()
                     .predicates
@@ -294,8 +342,11 @@ fn bounds_inline_output(mut generics: Generics, data: &Data) -> syn::Result<Gene
         }
         Data::Enum(data) => {
             for v in data.variants.iter() {
-                for f in v.fields.iter() {
+                'field: for f in v.fields.iter() {
                     let ty = &f.ty;
+                    if u {
+                        continue 'field;
+                    }
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
                             #ty: ::object_rainbow::InlineOutput
@@ -310,6 +361,9 @@ fn bounds_inline_output(mut generics: Generics, data: &Data) -> syn::Result<Gene
                 "`union`s are not supported",
             ));
         }
+    }
+    for bound in wheres {
+        generics.make_where_clause().predicates.push(bound);
     }
     Ok(generics)
 }
