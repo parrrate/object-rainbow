@@ -1006,6 +1006,7 @@ pub fn derive_tagged(input: TokenStream) -> TokenStream {
 struct FieldTagArgs {
     #[darling(default)]
     skip: bool,
+    replace: Option<Type>,
 }
 
 fn bounds_tagged(
@@ -1018,15 +1019,29 @@ fn bounds_tagged(
         Data::Struct(data) => {
             for f in data.fields.iter() {
                 let mut skip = false;
+                let mut replace = Vec::new();
                 for attr in &f.attrs {
                     if attr_str(attr).as_deref() == Some("tags") {
                         match attr.parse_args::<FieldTagArgs>() {
-                            Ok(args) => skip |= args.skip,
-                            Err(e) => errors.push(e),
+                            Ok(args) => {
+                                skip |= args.skip;
+                                replace.extend(args.replace);
+                            }
+                            Err(e) => {
+                                errors.push(e);
+                            }
                         }
                     }
                 }
-                if !skip {
+                if !replace.is_empty() {
+                    for replace in replace {
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { replace.span() =>
+                                #replace: ::object_rainbow::Tagged
+                            },
+                        );
+                    }
+                } else if !skip {
                     let ty = &f.ty;
                     if type_contains_generics(GContext { g, always: false }, ty) {
                         generics.make_where_clause().predicates.push(
@@ -1042,15 +1057,29 @@ fn bounds_tagged(
             for v in data.variants.iter() {
                 for f in v.fields.iter() {
                     let mut skip = false;
+                    let mut replace = Vec::new();
                     for attr in &f.attrs {
                         if attr_str(attr).as_deref() == Some("tags") {
                             match attr.parse_args::<FieldTagArgs>() {
-                                Ok(args) => skip |= args.skip,
-                                Err(e) => errors.push(e),
+                                Ok(args) => {
+                                    skip |= args.skip;
+                                    replace.extend(args.replace);
+                                }
+                                Err(e) => {
+                                    errors.push(e);
+                                }
                             }
                         }
                     }
-                    if !skip {
+                    if !replace.is_empty() {
+                        for replace in replace {
+                            generics.make_where_clause().predicates.push(
+                                parse_quote_spanned! { replace.span() =>
+                                    #replace: ::object_rainbow::Tagged
+                                },
+                            );
+                        }
+                    } else if !skip {
                         let ty = &f.ty;
                         if type_contains_generics(GContext { g, always: false }, ty) {
                             generics.make_where_clause().predicates.push(
