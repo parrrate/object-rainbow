@@ -450,13 +450,13 @@ fn bounds_inline_output(
 ///     {}
 /// );
 /// ```
-#[proc_macro_derive(ListHashes, attributes(topology, rainbow))]
+#[proc_macro_derive(ListHashes, attributes(topology, rainbow, hashes))]
 pub fn derive_list_hashes(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
     let generics = input.generics.clone();
     let (_, ty_generics, _) = generics.split_for_impl();
-    let generics = match bounds_list_hashes(input.generics, &input.data) {
+    let generics = match bounds_list_hashes(input.generics, &input.data, &input.attrs) {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
@@ -474,12 +474,52 @@ pub fn derive_list_hashes(input: TokenStream) -> TokenStream {
     TokenStream::from(output)
 }
 
-fn bounds_list_hashes(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+#[derive(Debug, FromMeta)]
+#[darling(derive_syn_parse)]
+struct ContainerHashesArgs {
+    #[darling(default)]
+    bound: Option<LitStr>,
+}
+
+#[derive(Debug, FromMeta)]
+#[darling(derive_syn_parse)]
+struct FieldHashesArgs {
+    #[darling(default)]
+    unchecked: bool,
+}
+
+fn parse_hashes_bounds(attrs: &[Attribute]) -> syn::Result<Vec<WherePredicate>> {
+    let mut wheres = Vec::new();
+    for attr in attrs {
+        if attr_str(attr).as_deref() == Some("hashes") {
+            let ContainerHashesArgs { bound } = attr.parse_args()?;
+            if let Some(bound) = bound {
+                wheres.push(bound.parse()?);
+            }
+        }
+    }
+    Ok(wheres)
+}
+
+fn bounds_list_hashes(
+    mut generics: Generics,
+    data: &Data,
+    attrs: &[Attribute],
+) -> syn::Result<Generics> {
+    let wheres = parse_hashes_bounds(attrs)?;
     let g = &bounds_g(&generics);
     match data {
         Data::Struct(data) => {
-            for f in data.fields.iter() {
+            'field: for f in data.fields.iter() {
                 let ty = &f.ty;
+                for attr in &f.attrs {
+                    if attr_str(attr).as_deref() == Some("output") {
+                        let FieldHashesArgs { unchecked, .. } = attr.parse_args()?;
+                        if unchecked {
+                            continue 'field;
+                        }
+                    }
+                }
                 if type_contains_generics(GContext { g, always: false }, ty) {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
@@ -491,8 +531,16 @@ fn bounds_list_hashes(mut generics: Generics, data: &Data) -> syn::Result<Generi
         }
         Data::Enum(data) => {
             for v in data.variants.iter() {
-                for f in v.fields.iter() {
+                'field: for f in v.fields.iter() {
                     let ty = &f.ty;
+                    for attr in &f.attrs {
+                        if attr_str(attr).as_deref() == Some("output") {
+                            let FieldHashesArgs { unchecked, .. } = attr.parse_args()?;
+                            if unchecked {
+                                continue 'field;
+                            }
+                        }
+                    }
                     if type_contains_generics(GContext { g, always: false }, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
@@ -509,6 +557,9 @@ fn bounds_list_hashes(mut generics: Generics, data: &Data) -> syn::Result<Generi
                 "`union`s are not supported",
             ));
         }
+    }
+    for bound in wheres {
+        generics.make_where_clause().predicates.push(bound);
     }
     Ok(generics)
 }
