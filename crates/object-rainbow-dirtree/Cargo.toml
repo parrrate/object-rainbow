@@ -1,0 +1,13 @@
+[package]
+name = "object-rainbow-dirtree"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "virtual directory tree"
+
+[dependencies]
+object-rainbow.workspace = true
+object-rainbow-amt.workspace = true

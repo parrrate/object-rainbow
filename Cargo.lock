@@ -1825,6 +1825,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "object-rainbow-dirtree"
+version = "0.1.0"
+dependencies = [
+ "object-rainbow",
+ "object-rainbow-amt",
+]
+
+[[package]]
 name = "object-rainbow-encrypted"
 version = "0.0.0-a.21"
 dependencies = [

@@ -9,6 +9,7 @@ members = [
     "crates/object-rainbow-cdc",
     "crates/object-rainbow-chain-tree",
     "crates/object-rainbow-derive",
+    "crates/object-rainbow-dirtree",
     "crates/object-rainbow-encrypted",
     "crates/object-rainbow-encrypted-store",
     "crates/object-rainbow-fetchall",
