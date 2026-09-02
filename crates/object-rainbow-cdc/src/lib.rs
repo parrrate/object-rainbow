@@ -14,6 +14,8 @@ use object_rainbow_point::{IntoPoint, Point};
 use sha2::{Digest, Sha256};
 use static_assertions::const_assert_eq;
 
+#[cfg(feature = "amt")]
+pub mod amt;
 #[cfg(feature = "fs")]
 mod fs;
 #[cfg(feature = "walkdir")]

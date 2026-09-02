@@ -3,15 +3,12 @@ use std::path::Path;
 use async_walkdir::WalkDir;
 use futures_util::{FutureExt, StreamExt, TryStreamExt};
 use object_rainbow::{Fetch, zero_terminated::Zt};
-use object_rainbow_amt::AmtMap;
-use object_rainbow_point::{IntoPoint, Point};
+use object_rainbow_point::IntoPoint;
 
-use crate::Chunks;
+use crate::{Chunks, amt::FileMap};
 
 impl Chunks {
-    pub async fn read_dir(
-        dir: impl AsRef<Path>,
-    ) -> object_rainbow::Result<AmtMap<Zt<String>, Option<Point<Self>>>> {
+    pub async fn read_dir(dir: impl AsRef<Path>) -> object_rainbow::Result<FileMap> {
         let dir = dir.as_ref();
         let map = WalkDir::new(dir)
             .map_err(std::io::Error::from)
@@ -59,10 +56,7 @@ impl Chunks {
         Ok(map)
     }
 
-    pub async fn write_dir(
-        dir: impl AsRef<Path>,
-        map: AmtMap<Zt<String>, Option<Point<Self>>>,
-    ) -> object_rainbow::Result<()> {
+    pub async fn write_dir(dir: impl AsRef<Path>, map: FileMap) -> object_rainbow::Result<()> {
         let dir = dir.as_ref();
         if async_fs::metadata(dir).await.map(|_| false).or_else(|e| {
             if e.kind() == std::io::ErrorKind::NotFound {
