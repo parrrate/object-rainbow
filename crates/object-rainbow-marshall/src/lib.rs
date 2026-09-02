@@ -369,6 +369,7 @@ impl<T> Deref for Marshalled<T> {
     Tagged,
     ListHashes,
     Topological,
+    Parse,
 )]
 pub struct MarshalledDiffs<T>(pub T);
 
