@@ -61,3 +61,14 @@ assert_impl!(
     {
     }
 );
+
+assert_impl!(
+    impl<Segment, File, Directory, E> Inline<E> for DirEntry<Segment, File, Directory>
+    where
+        Segment: Inline<E>,
+        File: Inline<E>,
+        Directory: Inline<E>,
+        E: 'static + Send + Sync + Clone,
+    {
+    }
+);
