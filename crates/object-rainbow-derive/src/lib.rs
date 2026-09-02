@@ -1125,13 +1125,18 @@ fn fields_tags(fields: &syn::Fields) -> Vec<proc_macro2::TokenStream> {
         .iter()
         .filter_map(|f| {
             let mut skip = false;
+            let mut replace = None;
             for attr in &f.attrs {
                 if attr_str(attr).as_deref() == Some("tags") {
-                    skip |= attr.parse_args::<FieldTagArgs>().ok()?.skip;
+                    let args = attr.parse_args::<FieldTagArgs>().ok()?;
+                    skip |= args.skip;
+                    replace = replace.or(args.replace);
                 }
             }
             let ty = &f.ty;
-            if !skip {
+            if let Some(replace) = replace {
+                Some(quote! { <#replace as ::object_rainbow::Tagged>::TAGS })
+            } else if !skip {
                 Some(quote! { <#ty as ::object_rainbow::Tagged>::TAGS })
             } else {
                 None
