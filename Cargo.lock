@@ -1826,7 +1826,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-dirtree"
-version = "0.1.0"
+version = "0.0.0-a.0"
 dependencies = [
  "object-rainbow",
  "object-rainbow-amt",
