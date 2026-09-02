@@ -1,7 +1,7 @@
 use std::{path::Path, sync::Arc};
 
 use futures_util::{StreamExt, TryStreamExt};
-use object_rainbow::zero_terminated::Zt;
+use object_rainbow::{Fetch, zero_terminated::Zt};
 use object_rainbow_dirtree::DirEntry;
 use object_rainbow_point::{IntoPoint, Point};
 
@@ -42,7 +42,6 @@ impl Chunks {
                     })
                     .boxed()
                 })
-                .boxed()
                 .try_flatten_unordered(None)
                 .try_collect::<Vec<_>>()
                 .await?
@@ -55,5 +54,36 @@ impl Chunks {
         } else {
             Err(object_rainbow::Error::Unimplemented)
         }
+    }
+
+    pub async fn write_tree(path: impl AsRef<Path>, tree: FileTree) -> object_rainbow::Result<()> {
+        match tree {
+            DirEntry::File(chunks) => {
+                chunks.fetch().await?.to_file(path).await?;
+            }
+            DirEntry::Directory {
+                children,
+                directory: (),
+            } => {
+                let path = path.as_ref();
+                if async_fs::metadata(path).await.map(|_| false).or_else(|e| {
+                    if e.kind() == std::io::ErrorKind::NotFound {
+                        Ok(true)
+                    } else {
+                        Err(e)
+                    }
+                })? {
+                    async_fs::create_dir(path).await?;
+                }
+                children
+                    .stream()
+                    .try_for_each_concurrent(None, |(segment, tree)| {
+                        let path = path.join(&*segment);
+                        Self::write_tree(path, Arc::unwrap_or_clone(tree))
+                    })
+                    .await?;
+            }
+        }
+        Ok(())
     }
 }
