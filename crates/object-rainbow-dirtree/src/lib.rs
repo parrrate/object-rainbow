@@ -18,7 +18,7 @@ pub enum DirEntry<Segment, File, Directory = ()> {
 }
 
 assert_impl!(
-    impl<Segment, File, Directory> ToOutput for DirEntry<Segment, File, Directory>
+    impl<Segment, File, Directory> InlineOutput for DirEntry<Segment, File, Directory>
     where
         Segment: InlineOutput,
         File: InlineOutput,
