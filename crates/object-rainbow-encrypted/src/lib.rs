@@ -1,5 +1,21 @@
 //! See [`Encrypted`], [`encrypt`] and [`encrypt_point`].
-
+//!
+//! Political/historical note regarding this whole object encryption thing: originally
+//! [`object_rainbow`] (or, rather, its predecessor) was meant for fully open plaintext, but at some
+//! point encryption was added in as proof-of-concept mechanism. The goal since the beginning was to
+//! make encryption an "outside" capability: have core tools powerful enough to allow for such. In
+//! process of making the original Python implementation, I effectively had to invent quite a lot of
+//! things including custom dynamic tracing, since the trickiness of the whole resolution
+//! choreography was quite excessive to track. One of the first things we got to facilitate
+//! encryption was fairly implicit in Python: downcasting [`object_rainbow::Fetch`]es (`Origin`s),
+//! which is now the same thing that powers object stores. Then we had to introduce [`Address`] to
+//! have resolution translation be less messy (before that, it used to be [`Hash`]-only). In this
+//! actual project, main changes were in ways to forward keys. The now-removed first solution was
+//! with dynamically typed extensions, which got replaced with so called "`Extra`"", the system
+//! now resonsible for a lot of advanced functionality we have. Probably the only
+//! encryption-specific concession which we just had to make (I did try doing it differently,
+//! didn't work) was mangle hash. It is a bit of a tax on the project as a whole, so we are looking
+//! for some potentially more local alternatives.
 use std::{
     ops::{Deref, DerefMut},
     sync::Arc,
