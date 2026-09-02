@@ -7,7 +7,7 @@ use object_rainbow::{
 use object_rainbow_amt::AmtMap;
 
 #[derive(
-    Debug, Enum, ToOutput, InlineOutput, ListHashes, Tagged, Topological, Parse, ParseInline,
+    Debug, Enum, ToOutput, InlineOutput, ListHashes, Tagged, Topological, Parse, ParseInline, Clone,
 )]
 #[output(bound = "Segment: InlineOutput")]
 #[hashes(bound = "Segment: ListHashes")]
