@@ -109,6 +109,10 @@ impl Chunks {
     pub fn chunk_count(&self) -> usize {
         self.chunks.len()
     }
+
+    pub fn chunks(&self) -> &[Chunk] {
+        &self.chunks
+    }
 }
 
 #[derive(
