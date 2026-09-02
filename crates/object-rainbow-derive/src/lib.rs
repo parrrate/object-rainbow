@@ -1131,7 +1131,11 @@ fn fields_tags(fields: &syn::Fields) -> Vec<proc_macro2::TokenStream> {
                 }
             }
             let ty = &f.ty;
-            (!skip).then_some(quote! { <#ty as ::object_rainbow::Tagged>::TAGS })
+            if !skip {
+                Some(quote! { <#ty as ::object_rainbow::Tagged>::TAGS })
+            } else {
+                None
+            }
         })
         .collect()
 }
