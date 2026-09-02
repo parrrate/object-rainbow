@@ -36,6 +36,10 @@ impl<Segment, File, Directory> DirEntry<Segment, File, Directory> {
     pub fn is_file(&self) -> bool {
         matches!(self, Self::File { .. })
     }
+
+    pub fn is_dir(&self) -> bool {
+        matches!(self, Self::Directory { .. })
+    }
 }
 
 assert_impl!(
