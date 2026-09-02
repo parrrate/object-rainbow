@@ -36,3 +36,13 @@ assert_impl!(
     {
     }
 );
+
+assert_impl!(
+    impl<Segment, File, Directory> Tagged for DirEntry<Segment, File, Directory>
+    where
+        Segment: Tagged,
+        File: Tagged,
+        Directory: Tagged,
+    {
+    }
+);
