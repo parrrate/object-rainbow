@@ -299,7 +299,8 @@ struct Chunking {
 
 impl Chunking {
     fn push_one(&mut self, data: &[u8]) {
-        self.fingerprint = (self.fingerprint << 1) + GEAR_MATRIX[data[self.at] as usize];
+        self.fingerprint =
+            (self.fingerprint << 1).wrapping_add(GEAR_MATRIX[data[self.at] as usize]);
     }
 
     fn cut(&mut self) -> Option<usize> {
