@@ -37,8 +37,8 @@ impl Chunks {
             let mut stream = AsyncStreamCDC::with_level(
                 source,
                 0x_00_01_00_00,
+                0x_00_40_00_00,
                 0x_01_00_00_00,
-                0x_ff_ff_ff_ff,
                 Normalization::Level1,
             );
             stream
