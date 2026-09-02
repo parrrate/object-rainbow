@@ -1,11 +1,17 @@
 use std::sync::Arc;
 
-use object_rainbow::{Enum, InlineOutput, ListHashes, Tagged, ToOutput, assert_impl};
+use object_rainbow::{
+    Enum, InlineOutput, ListHashes, Tagged, ToOutput, Topological, Traversible, assert_impl,
+};
 use object_rainbow_amt::AmtMap;
 
-#[derive(Debug, Enum, ToOutput, InlineOutput, ListHashes, Tagged)]
+#[derive(Debug, Enum, ToOutput, InlineOutput, ListHashes, Tagged, Topological)]
 #[output(bound = "Segment: InlineOutput")]
 #[hashes(bound = "Segment: ListHashes")]
+#[topology(unchecked)]
+#[topology(bound = "Segment: InlineOutput + Traversible")]
+#[topology(bound = "File: InlineOutput + Traversible")]
+#[topology(bound = "Directory: InlineOutput + Traversible")]
 pub enum DirEntry<Segment, File, Directory = ()> {
     File(File),
     Directory {
