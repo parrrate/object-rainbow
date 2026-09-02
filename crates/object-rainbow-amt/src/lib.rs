@@ -955,6 +955,18 @@ impl<K: Component, V: Component> AmtMap<K, V> {
     pub fn stream(&self) -> impl Stream<Item = object_rainbow::Result<(K, V)>> {
         try_stream(async |co| self.0.stream(&co).await)
     }
+
+    pub async fn collect<T: FromIterator<(K, V)>>(&self) -> object_rainbow::Result<T> {
+        Ok(self
+            .clone()
+            .map(|x| x)
+            .await?
+            .stream()
+            .try_collect::<Vec<_>>()
+            .await?
+            .into_iter()
+            .collect())
+    }
 }
 
 impl<K: 'static, V: 'static, U: 'static + Equivalent<V>> Equivalent<AmtMap<K, V>> for AmtMap<K, U> {
