@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use futures_util::TryStreamExt;
-use object_rainbow::{Fetch, zero_terminated::Zt};
+use object_rainbow::zero_terminated::Zt;
 use object_rainbow_amt::AmtMap;
 use object_rainbow_point::Point;
 

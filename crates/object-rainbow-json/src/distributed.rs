@@ -2,7 +2,7 @@ use std::{collections::BTreeMap, num::NonZero};
 
 use futures_util::future::try_join_all;
 use object_rainbow::{
-    Enum, Fetch, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Tagged, ToOutput,
+    Enum, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Tagged, ToOutput,
     Topological, length_prefixed::LpString, numeric::Le,
 };
 use object_rainbow_point::{IntoPoint, Point};

@@ -2,7 +2,7 @@ use chacha20poly1305::{
     ChaCha20Poly1305,
     aead::{Aead, generic_array::GenericArray},
 };
-use object_rainbow::{Fetch, Object};
+use object_rainbow::Object;
 use object_rainbow_encrypted::{Key, encrypt_point};
 use object_rainbow_fetchall::fetchall;
 use object_rainbow_point::{IntoPoint, Point};

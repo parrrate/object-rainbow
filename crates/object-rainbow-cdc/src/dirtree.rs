@@ -1,7 +1,7 @@
 use std::{path::Path, sync::Arc};
 
 use futures_util::{StreamExt, TryStreamExt};
-use object_rainbow::{Fetch, zero_terminated::Zt};
+use object_rainbow::zero_terminated::Zt;
 use object_rainbow_dirtree::DirEntry;
 use object_rainbow_point::{IntoPoint, Point};
 

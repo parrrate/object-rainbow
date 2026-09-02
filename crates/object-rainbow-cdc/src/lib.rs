@@ -6,7 +6,7 @@ use futures_util::{
 };
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{
-    DiffHashes, Fetch, Hash, InlineOutput, ListHashes, Parse, ParseInline, Singular, Size, SizeExt,
+    DiffHashes, Hash, InlineOutput, ListHashes, Parse, ParseInline, Singular, Size, SizeExt,
     Tagged, ToOutput, Topological,
     fn_fetch::{FetchFn, FnFetch, closure_fetch},
 };

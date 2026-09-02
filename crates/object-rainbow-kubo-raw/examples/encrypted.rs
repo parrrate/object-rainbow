@@ -1,6 +1,5 @@
 use std::convert::Infallible;
 
-use object_rainbow::Fetch;
 use object_rainbow_encrypted::{Key, encrypt_point};
 use object_rainbow_kubo_raw::LocalIpfsStore;
 use object_rainbow_point::IntoPoint;

@@ -1,4 +1,3 @@
-use object_rainbow::Fetch;
 use object_rainbow_kubo_raw::LocalIpfsStore;
 use object_rainbow_point::IntoPoint;
 use object_rainbow_store::RainbowStore;

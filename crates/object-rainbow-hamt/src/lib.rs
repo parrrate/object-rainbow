@@ -2,7 +2,7 @@ use std::{ops::DerefMut, pin::Pin};
 
 use futures_util::TryStreamExt;
 use object_rainbow::{
-    Component, Enum, Fetch, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse,
+    Component, Enum, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse,
     ParseInline, PointInput, PointVisitor, Singular, Size, SizeExt, Tagged, Tags, ToOutput,
     Topological, Traversible, assert_impl,
     nested_mut::{Borrower, LendTo, NestedMut},

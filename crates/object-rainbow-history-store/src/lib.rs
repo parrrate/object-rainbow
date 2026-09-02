@@ -1,6 +1,6 @@
 use std::{marker::PhantomData, sync::Arc};
 
-use object_rainbow::{Fetch, Inline, Object};
+use object_rainbow::{Inline, Object};
 use object_rainbow_apply::Apply;
 use object_rainbow_history::History;
 use object_rainbow_store::{RainbowStoreMut, StoreMut};
