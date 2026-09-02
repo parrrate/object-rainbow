@@ -10,8 +10,12 @@ description = "serialized format for object-rainbow"
 
 [dependencies]
 object-rainbow.workspace = true
+object-rainbow-apply = { workspace = true, optional = true }
 object-rainbow-fetchall.workspace = true
 object-rainbow-local-map.workspace = true
+
+[features]
+apply = ["dep:object-rainbow-apply"]
 
 [dev-dependencies]
 object-rainbow-point.workspace = true

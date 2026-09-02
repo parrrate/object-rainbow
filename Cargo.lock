@@ -1955,6 +1955,7 @@ version = "0.0.0-a.12"
 dependencies = [
  "anyhow",
  "object-rainbow",
+ "object-rainbow-apply",
  "object-rainbow-fetchall",
  "object-rainbow-local-map",
  "object-rainbow-point",
