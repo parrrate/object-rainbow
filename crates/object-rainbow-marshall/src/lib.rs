@@ -19,7 +19,7 @@ use object_rainbow::{
     Topological, Traversible,
 };
 #[cfg(feature = "apply")]
-use object_rainbow::{InlineOutput, ParseInline, Size};
+use object_rainbow::{InlineOutput, MaybeHasNiche, ParseInline, Size};
 #[cfg(feature = "apply")]
 use object_rainbow_apply::Apply;
 use object_rainbow_fetchall::fetchall;
@@ -372,6 +372,7 @@ impl<T> Deref for Marshalled<T> {
     Parse,
     ParseInline,
     Size,
+    MaybeHasNiche,
 )]
 pub struct MarshalledDiffs<T>(pub T);
 
