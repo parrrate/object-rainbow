@@ -23,7 +23,7 @@ sha2.workspace = true
 static_assertions.workspace = true
 
 [features]
-amt = ["dep:object-rainbow-amt"]
+amt = ["fs", "dep:object-rainbow-amt"]
 fs = ["dep:async-fs", "dep:blocking"]
 walkdir = ["amt", "fs", "dep:async-walkdir"]
 
