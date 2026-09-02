@@ -1,3 +1,5 @@
+//! See [`Encrypted`], [`encrypt`] and [`encrypt_point`].
+
 use std::{
     ops::{Deref, DerefMut},
     sync::Arc,
