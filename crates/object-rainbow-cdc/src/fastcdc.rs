@@ -372,7 +372,10 @@ impl<R: Unpin + AsyncBufRead> Stream for ChunkStream<R> {
             } {
                 let offset = this.offset;
                 this.offset += at as u64;
-                let tail = this.data[at..].to_vec();
+                let mut tail = this.data[at..].to_vec();
+                if !tail.is_empty() {
+                    tail.reserve(1 << 24);
+                }
                 let mut data = std::mem::replace(&mut this.data, tail);
                 data.truncate(at);
                 break Poll::Ready(Some(Ok((offset, data))));
