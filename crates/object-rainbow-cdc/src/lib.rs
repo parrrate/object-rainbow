@@ -5,8 +5,8 @@ use futures_util::{
     io::BufReader,
 };
 use object_rainbow::{
-    DiffHashes, Hash, InlineOutput, ListHashes, Parse, ParseInline, Singular, Size, SizeExt,
-    Tagged, ToOutput, Topological,
+    FullHash, Hash, InlineOutput, ListHashes, Parse, ParseInline, Singular, Size, SizeExt, Tagged,
+    ToOutput, Topological,
     fn_fetch::{FetchFn, FnFetch, closure_fetch},
 };
 use object_rainbow_point::{IntoPoint, Point};
@@ -195,11 +195,7 @@ impl Chunk {
 
 pub fn generate_tail(data: &[u8]) -> object_rainbow::Result<(u16, Vec<u8>, Hash)> {
     let len_lower = (data.len() % 65536) as u16;
-    let diff = DiffHashes::default().data_hash();
-    let mut hasher = Sha256::new();
-    hasher.update(diff);
-    hasher.update(data);
-    let hasher = hasher;
+    let hasher: Sha256 = data.with_hash().output();
     let target = data.len() >> 16;
     let target: u32 = target
         .try_into()
