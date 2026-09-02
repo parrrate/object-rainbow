@@ -17,9 +17,7 @@ object-rainbow-point.workspace = true
 async-fs = { workspace = true, optional = true }
 async-walkdir = { workspace = true, optional = true }
 blocking = { workspace = true, optional = true }
-fastcdc.workspace = true
-futures-util.workspace = true
-genawaiter-try-stream.workspace = true
+futures-util = { workspace = true, features = ["io", "std"] }
 sha2.workspace = true
 static_assertions.workspace = true
 

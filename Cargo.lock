@@ -766,15 +766,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fastcdc"
-version = "5.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0431c3132902a1bed6fe77dcfa5d03844e083f263b81288246a2d43dd7d4b2ad"
-dependencies = [
- "futures",
-]
-
-[[package]]
 name = "fastrand"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1786,9 +1777,7 @@ dependencies = [
  "async-fs",
  "async-walkdir",
  "blocking",
- "fastcdc",
  "futures-util",
- "genawaiter-try-stream",
  "object-rainbow",
  "object-rainbow-amt",
  "object-rainbow-dirtree",

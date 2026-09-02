@@ -1,10 +1,9 @@
 use std::{io::SeekFrom, pin::pin};
 
-use fastcdc::v2020::{AsyncStreamCDC, Normalization};
 use futures_util::{
     AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, AsyncWrite, Stream, StreamExt, TryStreamExt,
+    io::BufReader,
 };
-use genawaiter_try_stream::try_stream;
 use object_rainbow::{
     DiffHashes, Hash, InlineOutput, ListHashes, Parse, ParseInline, Singular, Size, SizeExt,
     Tagged, ToOutput, Topological,
@@ -14,10 +13,13 @@ use object_rainbow_point::{IntoPoint, Point};
 use sha2::{Digest, Sha256};
 use static_assertions::const_assert_eq;
 
+use self::fastcdc::ChunkStream;
+
 #[cfg(feature = "amt")]
 pub mod amt;
 #[cfg(feature = "dirtree")]
 pub mod dirtree;
+pub mod fastcdc;
 #[cfg(feature = "fs")]
 mod fs;
 #[cfg(feature = "walkdir")]
@@ -32,26 +34,7 @@ impl Chunks {
     pub fn bytes_stream(
         source: impl Send + AsyncRead,
     ) -> impl Send + Stream<Item = object_rainbow::Result<(u64, Vec<u8>)>> {
-        try_stream(async move |co| {
-            let source = pin!(source);
-            let mut stream = AsyncStreamCDC::with_level(
-                source,
-                0x_00_01_00_00,
-                0x_00_40_00_00,
-                0x_01_00_00_00,
-                Normalization::Level1,
-            );
-            stream
-                .as_stream()
-                .map_ok(|chunk| (chunk.offset, chunk.data))
-                .try_for_each(|chunk| async {
-                    co.yield_(chunk).await;
-                    Ok(())
-                })
-                .await
-                .map_err(std::io::Error::from)?;
-            Ok(())
-        })
+        ChunkStream::new(Box::pin(BufReader::new(source))).map_err(From::from)
     }
 
     async fn from_stream<F: Future<Output = object_rainbow::Result<Chunk>>>(
