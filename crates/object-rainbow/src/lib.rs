@@ -700,32 +700,19 @@ impl<'d, Extra: 'static + Clone> PointInput for Input<'d, Extra> {
     }
 }
 
+impl Output for Sha256 {
+    fn write(&mut self, data: &[u8]) {
+        self.update(data);
+    }
+}
+
 /// Values of this type can be uniquely represented as a `Vec<u8>`.
 pub trait ToOutput {
     fn to_output(&self, output: &mut impl Output);
 
     #[must_use]
     fn data_hash(&self) -> Hash {
-        #[derive(Default)]
-        struct HashOutput {
-            hasher: Sha256,
-        }
-
-        impl Output for HashOutput {
-            fn write(&mut self, data: &[u8]) {
-                self.hasher.update(data);
-            }
-        }
-
-        impl HashOutput {
-            fn hash(self) -> Hash {
-                Hash::from_hasher(self.hasher)
-            }
-        }
-
-        let mut output = HashOutput::default();
-        self.to_output(&mut output);
-        output.hash()
+        Hash::from_hasher(self.output())
     }
 
     fn mangle_hash(&self) -> Hash {
