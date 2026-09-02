@@ -1791,6 +1791,7 @@ dependencies = [
  "genawaiter-try-stream",
  "object-rainbow",
  "object-rainbow-amt",
+ "object-rainbow-dirtree",
  "object-rainbow-point",
  "rand 0.10.2",
  "sha2",

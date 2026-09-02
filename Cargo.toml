@@ -46,6 +46,7 @@ object-rainbow-append-tree = { version = "0.0.0-a.15", path = "crates/object-rai
 object-rainbow-apply = { version = "0.0.0-a.1", path = "crates/object-rainbow-apply" }
 object-rainbow-array-map = { version = "0.0.0-a.13", path = "crates/object-rainbow-array-map" }
 object-rainbow-chain-tree = { version = "0.0.0-a.11", path = "crates/object-rainbow-chain-tree" }
+object-rainbow-dirtree = { version = "0.0.0-a.0", path = "crates/object-rainbow-dirtree" }
 object-rainbow-encrypted = { version = "0.0.0-a.21", path = "crates/object-rainbow-encrypted" }
 object-rainbow-fetchall = { version = "0.0.0-a.10", path = "crates/object-rainbow-fetchall" }
 object-rainbow-hamt = { version = "0.0.0-a.13", path = "crates/object-rainbow-hamt" }

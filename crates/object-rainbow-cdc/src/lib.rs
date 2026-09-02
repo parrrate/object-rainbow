@@ -16,6 +16,8 @@ use static_assertions::const_assert_eq;
 
 #[cfg(feature = "amt")]
 pub mod amt;
+#[cfg(feature = "dirtree")]
+pub mod dirtree;
 #[cfg(feature = "fs")]
 mod fs;
 #[cfg(feature = "walkdir")]
