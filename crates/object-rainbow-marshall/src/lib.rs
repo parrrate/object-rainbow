@@ -18,6 +18,8 @@ use object_rainbow::{
     Parse, ParseInput, ParseSliceExtra, PointInput, Resolve, Singular, Tagged, ToOutput,
     Topological, Traversible,
 };
+#[cfg(feature = "apply")]
+use object_rainbow_apply::Apply;
 use object_rainbow_fetchall::fetchall;
 use object_rainbow_local_map::LocalMap;
 
@@ -354,3 +356,12 @@ impl<T> Deref for Marshalled<T> {
 
 #[cfg(feature = "apply")]
 pub struct MarshalledDiffs<T>(pub T);
+
+#[cfg(feature = "apply")]
+impl<Diff: Send, T: Apply<Diff>> Apply<Marshalled<Diff>> for MarshalledDiffs<T> {
+    type Output = T::Output;
+
+    async fn apply(&mut self, diff: Marshalled<Diff>) -> object_rainbow::Result<Self::Output> {
+        self.0.apply(diff.object).await
+    }
+}
