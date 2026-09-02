@@ -27,10 +27,8 @@ use std::{
 
 use futures_util::{AsyncBufRead, Stream};
 
-const SYMBOL_COUNT: usize = 256;
-
 /// this was generated using C code translated into Rust, then compared to the Go version
-const GEAR_MATRIX: [u64; SYMBOL_COUNT] = [
+const GEAR_MATRIX: [u64; 256] = [
     0x3b5d3c7d207e37dc,
     0x784d68ba91123086,
     0xcd52880f882e7298,
