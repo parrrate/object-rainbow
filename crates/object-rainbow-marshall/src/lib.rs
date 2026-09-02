@@ -355,6 +355,7 @@ impl<T> Deref for Marshalled<T> {
 }
 
 #[cfg(feature = "apply")]
+#[derive(Debug)]
 pub struct MarshalledDiffs<T>(pub T);
 
 #[cfg(feature = "apply")]
