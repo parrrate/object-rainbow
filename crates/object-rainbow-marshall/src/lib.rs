@@ -13,6 +13,8 @@ use std::{
     sync::Arc,
 };
 
+#[cfg(feature = "apply")]
+use object_rainbow::InlineOutput;
 use object_rainbow::{
     Address, ByteNode, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node, Object, Output,
     Parse, ParseInput, ParseSliceExtra, PointInput, Resolve, Singular, Tagged, ToOutput,
@@ -355,7 +357,19 @@ impl<T> Deref for Marshalled<T> {
 }
 
 #[cfg(feature = "apply")]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, ToOutput, Tagged, ListHashes, Topological)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Default,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+)]
 pub struct MarshalledDiffs<T>(pub T);
 
 #[cfg(feature = "apply")]
