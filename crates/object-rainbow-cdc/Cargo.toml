@@ -25,7 +25,7 @@ static_assertions.workspace = true
 
 [features]
 amt = ["fs", "dep:object-rainbow-amt"]
-dirtree = ["dep:object-rainbow-dirtree"]
+dirtree = ["fs", "dep:object-rainbow-dirtree"]
 fs = ["dep:async-fs", "dep:blocking"]
 walkdir = ["amt", "fs", "dep:async-walkdir"]
 
