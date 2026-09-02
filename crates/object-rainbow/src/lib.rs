@@ -709,13 +709,11 @@ pub trait ToOutput {
         #[derive(Default)]
         struct HashOutput {
             hasher: Sha256,
-            at: usize,
         }
 
         impl Output for HashOutput {
             fn write(&mut self, data: &[u8]) {
                 self.hasher.update(data);
-                self.at += data.len();
             }
         }
 
