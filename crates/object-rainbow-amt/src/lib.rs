@@ -3,7 +3,7 @@ use std::ops::DerefMut;
 use futures_util::{Stream, TryStreamExt, future::try_join};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    Component, Enum, Equivalent, EquivalentFor, Fetch, Inline, InlineOutput, ListHashes, Parse,
+    Component, Enum, Equivalent, EquivalentFor, Inline, InlineOutput, ListHashes, Parse,
     ParseInline, PointInput, Singular, Tagged, ToOutput, Topological, Traversible, assert_impl,
     length_prefixed::LpBytes,
     map_extra::MappedExtra,

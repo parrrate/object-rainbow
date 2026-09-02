@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use dashmap::DashMap;
-use object_rainbow::{Fetch, Hash, ToOutput, WithHash};
+use object_rainbow::{Hash, ToOutput, WithHash};
 use object_rainbow_point::{IntoPoint, Point};
 use object_rainbow_store::ExternalStore;
 

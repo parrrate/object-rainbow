@@ -712,6 +712,10 @@ impl<T> Point<T> {
     pub fn try_unwrap(self) -> Option<T> {
         self.fetch.try_unwrap()
     }
+
+    pub fn fetch(&self) -> FailFuture<'_, T> {
+        self.fetch.fetch()
+    }
 }
 
 impl<T: Traversible + Clone> Point<T> {

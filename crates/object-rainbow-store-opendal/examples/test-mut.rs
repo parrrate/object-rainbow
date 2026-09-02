@@ -1,4 +1,4 @@
-use object_rainbow::{Fetch, FullHash};
+use object_rainbow::FullHash;
 use object_rainbow_point::IntoPoint;
 use object_rainbow_store::StoreMut;
 use object_rainbow_store_opendal::OpendalStore;

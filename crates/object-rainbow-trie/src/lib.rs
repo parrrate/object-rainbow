@@ -10,7 +10,7 @@ use std::{
 use futures_util::{Stream, TryStream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    Equivalent, Fetch, Inline, InlineOutput, ListHashes, Parse, ParseInline, ParseSliceRefless,
+    Equivalent, Inline, InlineOutput, ListHashes, Parse, ParseInline, ParseSliceRefless,
     ReflessObject, Tagged, ToOutput, Topological, Traversible, assert_impl,
     object_marker::ObjectMarker,
 };

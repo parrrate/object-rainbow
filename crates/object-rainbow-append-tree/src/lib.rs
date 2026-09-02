@@ -1,9 +1,9 @@
 use std::{fmt::Debug, future::ready, marker::PhantomData};
 
 use object_rainbow::{
-    Component, Enum, ExtraFor, Fetch, FullHash, Inline, InlineOutput, ListHashes, Object, Output,
-    Parse, ParseAsInline, ParseInline, ParseInput, PointInput, Tagged, ToOutput, Topological,
-    Traversible, assert_impl,
+    Component, Enum, ExtraFor, FullHash, Inline, InlineOutput, ListHashes, Object, Output, Parse,
+    ParseAsInline, ParseInline, ParseInput, PointInput, Tagged, ToOutput, Topological, Traversible,
+    assert_impl,
 };
 use object_rainbow_point::{IntoPoint, Point};
 use typenum::{U256, Unsigned};

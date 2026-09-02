@@ -3,8 +3,8 @@ use std::fmt::Debug;
 use futures_util::Stream;
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{
-    Fetch, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline, Size,
-    Tagged, ToOutput, Topological, Traversible, assert_impl,
+    Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline, Size, Tagged,
+    ToOutput, Topological, Traversible, assert_impl,
 };
 use object_rainbow_append_tree::AppendTree;
 use object_rainbow_point::{IntoPoint, Point};

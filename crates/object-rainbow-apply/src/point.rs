@@ -1,5 +1,5 @@
 use object_rainbow::{
-    Fetch, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
+    InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
     Topological, Traversible,
 };
 use object_rainbow_point::Point;

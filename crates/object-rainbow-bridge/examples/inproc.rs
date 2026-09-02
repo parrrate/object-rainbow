@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use futures_util::{SinkExt, StreamExt, TryStreamExt, future::try_join};
-use object_rainbow::Fetch;
 use object_rainbow_bridge::{consume, provide};
 use object_rainbow_point::{IntoPoint, Point, RawPointInner};
 
