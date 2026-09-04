@@ -8,7 +8,8 @@
 //! - I want more project-specific control/tuning, over user-controlled customisation
 //!
 //! - this implementation feels faster/benchmarks better (the `generate` example on my machine went
-//!   from 1.4s to 1.25s for the initial 1GiB thing) (???)
+//!   from 1.4s to 1.25s for the initial 1GiB thing) (???) my guess was that this comes from
+//!   buffering overhead but I haven't buffered it well enough yet
 //!
 //! `fastcdc` crate was not used as reference implementation
 //!
