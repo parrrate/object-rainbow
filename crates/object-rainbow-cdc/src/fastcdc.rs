@@ -365,6 +365,7 @@ impl<R: Unpin + AsyncBufRead> Stream for ChunkStream<R> {
                     assert_eq!(this.chunking.at, 0);
                     break Poll::Ready(None);
                 }
+                this.chunking.at = this.data.len();
                 this.chunking.cut()
             } else {
                 let buf_len = buf.len();
