@@ -28,7 +28,7 @@ use std::{
 use futures_util::{AsyncBufRead, Stream};
 
 /// this was generated using C code translated into Rust, then compared to the Go version
-const GEAR_MATRIX: [u64; 256] = [
+const GEAR_MATRIX_L0: [u64; 256] = [
     0x3b5d3c7d207e37dc,
     0x784d68ba91123086,
     0xcd52880f882e7298,
@@ -287,6 +287,20 @@ const GEAR_MATRIX: [u64; 256] = [
     0xaabd2b2a451504e1,
 ];
 
+/// the way we use this thing is slightly different from what Go code did, see usage
+const GEAR_MATRIX_L1: [u64; 256] = const {
+    let mut shifted = [0u64; 256];
+    let mut i = 0;
+    while i < 256 {
+        shifted[i] = GEAR_MATRIX_L0[i] << 1;
+        i += 1;
+    }
+    shifted
+};
+
+const MASK_1: u64 = 0x0000d93777537000;
+const MASK_2: u64 = 0x0000d91767537000;
+
 const MIN: usize = 1 << 16;
 const AVG: usize = 1 << 22;
 const MAX: usize = 1 << 32;
@@ -300,7 +314,7 @@ struct Chunking {
 impl Chunking {
     fn push_one(&mut self, data: &[u8]) {
         self.fingerprint =
-            (self.fingerprint << 1).wrapping_add(GEAR_MATRIX[data[self.at] as usize]);
+            (self.fingerprint << 1).wrapping_add(GEAR_MATRIX_L0[data[self.at] as usize]);
     }
 
     fn cut(&mut self) -> Option<usize> {
@@ -308,23 +322,44 @@ impl Chunking {
         Some(std::mem::take(&mut self.at))
     }
 
+    #[inline(always)]
+    fn push_many<const MASK: u64>(&mut self, until: usize, data: &[u8]) -> Option<usize> {
+        {
+            for _ in 0..(until.saturating_sub(self.at) / 2) {
+                let fingerprint1 =
+                    (self.fingerprint << 2).wrapping_add(GEAR_MATRIX_L1[data[self.at] as usize]);
+                let fingerprint2 =
+                    fingerprint1.wrapping_add(GEAR_MATRIX_L0[data[self.at + 1] as usize]);
+                if fingerprint1 & const { MASK << 1 } == 0 {
+                    return self.cut();
+                }
+                if fingerprint2 & MASK == 0 {
+                    self.at += 1;
+                    return self.cut();
+                }
+                self.fingerprint = fingerprint2;
+                self.at += 2;
+            }
+            while self.at < until {
+                self.push_one(data);
+                if self.fingerprint & MASK == 0 {
+                    return self.cut();
+                }
+                self.at += 1;
+            }
+        }
+        None
+    }
+
     fn push(&mut self, data: &[u8]) -> Option<usize> {
         self.at = self.at.max(MIN.min(data.len()));
         let until = AVG.min(data.len());
-        while self.at < until {
-            self.push_one(data);
-            if self.fingerprint & 0x0000d93777537000 == 0 {
-                return self.cut();
-            }
-            self.at += 1;
+        if let Some(at) = self.push_many::<MASK_1>(until, data) {
+            return Some(at);
         }
         let until = MAX.min(data.len());
-        while self.at < until {
-            self.push_one(data);
-            if self.fingerprint & 0x0000d91767537000 == 0 {
-                return self.cut();
-            }
-            self.at += 1;
+        if let Some(at) = self.push_many::<MASK_2>(until, data) {
+            return Some(at);
         }
         if self.at < data.len() {
             return self.cut();
