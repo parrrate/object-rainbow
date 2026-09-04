@@ -341,7 +341,7 @@ pub(crate) struct ChunkStream<R> {
 }
 
 impl<R: Unpin + AsyncBufRead> ChunkStream<R> {
-    pub(crate) fn new(read: R) -> Self {
+    pub fn new(read: R) -> Self {
         Self {
             read,
             offset: Default::default(),
@@ -359,17 +359,16 @@ impl<R: Unpin + AsyncBufRead> Stream for ChunkStream<R> {
         loop {
             let buf = ready!(Pin::new(&mut this.read).poll_fill_buf(cx))?;
             this.data.extend_from_slice(buf);
-            if let Some(at) = if buf.is_empty() {
+            let buf_len = buf.len();
+            Pin::new(&mut this.read).consume(buf_len);
+            if let Some(at) = if this.chunking.at == this.data.len() && buf_len == 0 {
                 if this.data.is_empty() {
                     assert_eq!(this.chunking.fingerprint, 0);
                     assert_eq!(this.chunking.at, 0);
                     break Poll::Ready(None);
                 }
-                this.chunking.at = this.data.len();
                 this.chunking.cut()
             } else {
-                let buf_len = buf.len();
-                Pin::new(&mut this.read).consume(buf_len);
                 this.chunking.push(&this.data)
             } {
                 let offset = this.offset;
