@@ -18,6 +18,7 @@ async-fs = { workspace = true, optional = true }
 async-walkdir = { workspace = true, optional = true }
 blocking = { workspace = true, optional = true }
 futures-util = { workspace = true, features = ["io", "std"] }
+pin-project.workspace = true
 sha2.workspace = true
 static_assertions.workspace = true
 

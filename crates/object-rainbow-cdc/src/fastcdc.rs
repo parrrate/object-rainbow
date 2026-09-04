@@ -27,6 +27,7 @@ use std::{
 };
 
 use futures_util::{AsyncBufRead, Stream};
+use pin_project::pin_project;
 
 /// this was generated using C code translated into Rust, then compared to the Go version
 const GEAR_MATRIX_L0: [u64; 256] = [
@@ -374,14 +375,16 @@ impl Chunking {
     }
 }
 
+#[pin_project]
 pub struct ChunkStream<R> {
+    #[pin]
     read: R,
     offset: u64,
     chunking: Chunking,
     data: Vec<u8>,
 }
 
-impl<R: Unpin + AsyncBufRead> ChunkStream<R> {
+impl<R: AsyncBufRead> ChunkStream<R> {
     pub fn new(read: R) -> Self {
         Self {
             read,
@@ -392,13 +395,13 @@ impl<R: Unpin + AsyncBufRead> ChunkStream<R> {
     }
 }
 
-impl<R: Unpin + AsyncBufRead> Stream for ChunkStream<R> {
+impl<R: AsyncBufRead> Stream for ChunkStream<R> {
     type Item = std::io::Result<(u64, Vec<u8>)>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        let this = self.get_mut();
+        let mut this = self.project();
         loop {
-            let buf = ready!(Pin::new(&mut this.read).poll_fill_buf(cx))?;
+            let buf = ready!(this.read.as_mut().poll_fill_buf(cx))?;
             this.data.extend_from_slice(buf);
             let buf_len = buf.len();
             Pin::new(&mut this.read).consume(buf_len);
@@ -410,15 +413,15 @@ impl<R: Unpin + AsyncBufRead> Stream for ChunkStream<R> {
                 }
                 this.chunking.cut()
             } else {
-                this.chunking.push(&this.data)
+                this.chunking.push(this.data)
             } {
-                let offset = this.offset;
-                this.offset += at as u64;
+                let offset = *this.offset;
+                *this.offset += at as u64;
                 let mut tail = this.data[at..].to_vec();
                 if !tail.is_empty() {
                     tail.reserve(1 << 24);
                 }
-                let mut data = std::mem::replace(&mut this.data, tail);
+                let mut data = std::mem::replace(this.data, tail);
                 data.truncate(at);
                 break Poll::Ready(Some(Ok((offset, data))));
             }
