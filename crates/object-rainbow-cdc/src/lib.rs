@@ -34,7 +34,7 @@ impl Chunks {
     pub fn bytes_stream(
         source: impl Send + AsyncRead,
     ) -> impl Send + Stream<Item = object_rainbow::Result<(u64, Vec<u8>)>> {
-        ChunkStream::new(Box::pin(BufReader::new(source))).map_err(From::from)
+        ChunkStream::new(Box::pin(BufReader::with_capacity(1 << 16, source))).map_err(From::from)
     }
 
     async fn from_stream<F: Future<Output = object_rainbow::Result<Chunk>>>(

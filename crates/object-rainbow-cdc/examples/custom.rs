@@ -13,7 +13,7 @@ fn main() -> std::io::Result<()> {
         let data = rng.random_iter().take(1 << 30).collect::<Vec<_>>();
         for _ in 0..10 {
             let start = Instant::now();
-            let chunks = ChunkStream::new(BufReader::new(Cursor::new(&data)))
+            let chunks = ChunkStream::new(BufReader::with_capacity(1 << 16, Cursor::new(&data)))
                 .map_ok(|_| {})
                 .try_collect::<Vec<_>>()
                 .await?;
