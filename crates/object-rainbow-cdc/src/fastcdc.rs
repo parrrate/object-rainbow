@@ -333,7 +333,7 @@ impl Chunking {
     }
 }
 
-pub(crate) struct ChunkStream<R> {
+pub struct ChunkStream<R> {
     read: R,
     offset: u64,
     chunking: Chunking,
