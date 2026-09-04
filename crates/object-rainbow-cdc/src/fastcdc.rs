@@ -327,18 +327,23 @@ impl Chunking {
     fn push_many<const MASK: u64>(&mut self, until: usize, data: &[u8]) -> Option<usize> {
         {
             for _ in 0..(until.saturating_sub(self.at) / 2) {
-                let fingerprint1 =
-                    (self.fingerprint << 2).wrapping_add(GEAR_MATRIX_L1[data[self.at] as usize]);
-                let fingerprint2 =
-                    fingerprint1.wrapping_add(GEAR_MATRIX_L0[data[self.at + 1] as usize]);
-                if fingerprint1 & const { MASK << 1 } == 0 {
+                let mut fingerprint = self.fingerprint << 2;
+                let offset = [
+                    GEAR_MATRIX_L1[data[self.at] as usize],
+                    GEAR_MATRIX_L0[data[self.at + 1] as usize],
+                ];
+                let fingerprint = offset.map(|offset| {
+                    fingerprint += offset;
+                    fingerprint
+                });
+                if fingerprint[0] & const { MASK << 1 } == 0 {
                     return self.cut();
                 }
-                if fingerprint2 & MASK == 0 {
+                if fingerprint[1] & MASK == 0 {
                     self.at += 1;
                     return self.cut();
                 }
-                self.fingerprint = fingerprint2;
+                self.fingerprint = fingerprint[1];
                 self.at += 2;
             }
             while self.at < until {
