@@ -333,7 +333,7 @@ impl Chunking {
                     GEAR_MATRIX_L0[data[self.at + 1] as usize],
                 ];
                 let fingerprint = offset.map(|offset| {
-                    fingerprint += offset;
+                    fingerprint = fingerprint.wrapping_add(offset);
                     fingerprint
                 });
                 if fingerprint[0] & const { MASK << 1 } == 0 {
