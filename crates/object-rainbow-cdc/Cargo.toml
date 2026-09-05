@@ -10,12 +10,10 @@ description = "FastCDC for object-rainbow"
 
 [dependencies]
 object-rainbow.workspace = true
-object-rainbow-amt = { workspace = true, optional = true }
 object-rainbow-dirtree = { workspace = true, optional = true }
 object-rainbow-point.workspace = true
 
 async-fs = { workspace = true, optional = true }
-async-walkdir = { workspace = true, optional = true }
 blocking = { workspace = true, optional = true }
 futures-util = { workspace = true, features = ["io", "std"] }
 pin-project.workspace = true
@@ -23,10 +21,8 @@ sha2.workspace = true
 static_assertions.workspace = true
 
 [features]
-amt = ["fs", "dep:object-rainbow-amt"]
 dirtree = ["fs", "dep:object-rainbow-dirtree"]
 fs = ["dep:async-fs", "dep:blocking"]
-walkdir = ["amt", "fs", "dep:async-walkdir"]
 
 [dev-dependencies]
 rand.workspace = true

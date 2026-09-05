@@ -153,17 +153,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b75356056920673b02621b35afd0f7dda9306d03c79a30f5c56c44cf256e3de"
 
 [[package]]
-name = "async-walkdir"
-version = "2.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37672978ae0febce7516ae0a85b53e6185159a9a28787391eb63fc44ec36037d"
-dependencies = [
- "async-fs",
- "futures-lite",
- "thiserror",
-]
-
-[[package]]
 name = "atomic-waker"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1775,11 +1764,9 @@ name = "object-rainbow-cdc"
 version = "0.0.0-a.1"
 dependencies = [
  "async-fs",
- "async-walkdir",
  "blocking",
  "futures-util",
  "object-rainbow",
- "object-rainbow-amt",
  "object-rainbow-dirtree",
  "object-rainbow-point",
  "pin-project",

@@ -61,7 +61,6 @@ object-rainbow-trie = { version = "0.0.0-a.20", path = "crates/object-rainbow-tr
 anyhow = "1.0.102"
 async-executor = "1.14.0"
 async-fs = "2.2.0"
-async-walkdir = "2.1.0"
 bitvec = { version = "1.0.1", default-features = false }
 blocking = "1.7.0"
 bytes = "1.11.1"
