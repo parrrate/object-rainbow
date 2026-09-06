@@ -1723,7 +1723,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-apply"
-version = "0.0.0-a.2"
+version = "0.0.0-a.3"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1761,7 +1761,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-cdc"
-version = "0.0.0-a.2"
+version = "0.0.0-a.3"
 dependencies = [
  "async-fs",
  "blocking",
@@ -1939,7 +1939,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-marshall"
-version = "0.0.0-a.13"
+version = "0.0.0-a.14"
 dependencies = [
  "anyhow",
  "object-rainbow",
@@ -1968,7 +1968,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-schema"
-version = "0.0.0-a.2"
+version = "0.0.0-a.3"
 dependencies = [
  "futures-util",
  "object-rainbow",
