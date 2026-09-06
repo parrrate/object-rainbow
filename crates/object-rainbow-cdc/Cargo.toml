@@ -24,6 +24,10 @@ static_assertions.workspace = true
 dirtree = ["fs", "dep:object-rainbow-dirtree"]
 fs = ["dep:async-fs", "dep:blocking"]
 
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
 [dev-dependencies]
 rand.workspace = true
 smol.workspace = true
