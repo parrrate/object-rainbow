@@ -19,7 +19,7 @@ use futures_util::{AsyncBufRead, Stream};
 use pin_project::pin_project;
 
 /// this was generated using C code translated into Rust, then compared to the Go version
-const GEAR_MATRIX_L0: [u64; 256] = [
+const GEAR_L0: [u64; 256] = [
     0x3b5d3c7d207e37dc,
     0x784d68ba91123086,
     0xcd52880f882e7298,
@@ -279,11 +279,11 @@ const GEAR_MATRIX_L0: [u64; 256] = [
 ];
 
 /// the way we use this thing is slightly different from what Go code did, see usage
-const GEAR_MATRIX_L1: [u64; 256] = const {
+const GEAR_L1: [u64; 256] = const {
     let mut shifted = [0u64; 256];
     let mut i = 0;
     while i < 256 {
-        shifted[i] = GEAR_MATRIX_L0[i] << 1;
+        shifted[i] = GEAR_L0[i] << 1;
         i += 1;
     }
     shifted
@@ -304,8 +304,7 @@ struct Chunking {
 
 impl Chunking {
     fn push_one(&mut self, data: &[u8]) {
-        self.fingerprint =
-            (self.fingerprint << 1).wrapping_add(GEAR_MATRIX_L0[data[self.at] as usize]);
+        self.fingerprint = (self.fingerprint << 1).wrapping_add(GEAR_L0[data[self.at] as usize]);
     }
 
     fn cut(&mut self) -> Option<usize> {
@@ -319,8 +318,8 @@ impl Chunking {
             for _ in 0..(until.saturating_sub(self.at) / 2) {
                 let mut fingerprint = self.fingerprint << 2;
                 let offset = [
-                    GEAR_MATRIX_L1[data[self.at] as usize],
-                    GEAR_MATRIX_L0[data[self.at + 1] as usize],
+                    GEAR_L1[data[self.at] as usize],
+                    GEAR_L0[data[self.at + 1] as usize],
                 ];
                 let fingerprint = offset.map(|offset| {
                     fingerprint = fingerprint.wrapping_add(offset);
