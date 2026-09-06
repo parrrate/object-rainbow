@@ -17,6 +17,10 @@ object-rainbow-local-map.workspace = true
 [features]
 apply = ["dep:object-rainbow-apply"]
 
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
 [dev-dependencies]
 object-rainbow-point.workspace = true
 
