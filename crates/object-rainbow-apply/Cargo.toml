@@ -25,6 +25,10 @@ point = ["dep:object-rainbow-point"]
 trie = ["dep:object-rainbow-trie"]
 unique-diffs = ["hamt"]
 
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
 [dev-dependencies]
 macro_rules_attribute.workspace = true
 smol.workspace = true
