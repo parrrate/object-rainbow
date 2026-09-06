@@ -1,17 +1,6 @@
-//! why this is a thing:
+//! FastCDC implementation made specifically for [`AsyncBufRead`].
 //!
-//! - I don't entirely agree with parts of how `fastcdc` (up to 5.0.0) is maintained/structured
-//!
-//! - `fastcdc` uses `debug_assert!` instead of `assert!` for config but then proceeds to panic on
-//!   some config errors anyway, I want `assert!` always
-//!
-//! - I want more project-specific control/tuning, over user-controlled customisation
-//!
-//! - this implementation feels faster/benchmarks better (the `generate` example on my machine went
-//!   from 1.4s to 1.25s for the initial 1GiB thing) (???) my guess was that this comes from
-//!   buffering overhead but I haven't buffered it well enough yet
-//!
-//! `fastcdc` crate was not used as reference implementation
+//! `fastcdc` crate was not used as a reference implementation
 //!
 //! mostly based on:
 //! <https://github.com/buildbuddy-io/fastcdc2020/blob/2f01aaf2dde317b9875eea63b0c1f3bade2355dd/fastcdc/fastcdc.go>
