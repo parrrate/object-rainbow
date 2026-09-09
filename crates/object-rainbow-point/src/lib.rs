@@ -784,8 +784,9 @@ impl<T: FullHash> Fetch for Point<T> {
     }
 
     fn get_mut(&mut self) -> Option<&mut Self::T> {
+        let object = Arc::get_mut(&mut self.fetch)?.get_mut()?;
         self.hash.clear();
-        Arc::get_mut(&mut self.fetch)?.get_mut()
+        Some(object)
     }
 
     fn get_mut_finalize(&mut self) {
