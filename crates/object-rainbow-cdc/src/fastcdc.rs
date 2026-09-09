@@ -294,7 +294,7 @@ const MASK_2: u64 = 0x0000d91767537000;
 
 const MIN: usize = 1 << 16;
 const AVG: usize = 1 << 22;
-const MAX: usize = 1 << 32;
+const MAX: usize = u32::MAX as usize;
 
 #[derive(Default)]
 struct Chunking {
