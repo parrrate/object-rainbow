@@ -2634,11 +2634,19 @@ pub fn derive_for_wrapped(args: TokenStream, input: TokenStream) -> TokenStream 
 struct PodArgs {
     #[darling(default)]
     no_default: SpannedValue<bool>,
+    #[darling(default)]
+    no_niche: SpannedValue<bool>,
 }
 
 #[proc_macro_attribute]
 pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
-    let (PodArgs { no_default }, args_error) = match syn::parse(args) {
+    let (
+        PodArgs {
+            no_default,
+            no_niche,
+        },
+        args_error,
+    ) = match syn::parse(args) {
         Ok(args) => (args, Default::default()),
         Err(e) => (Default::default(), e.into_compile_error()),
     };
@@ -2657,6 +2665,13 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
     } else {
         quote! {
             ::core::default::Default,
+        }
+    };
+    let derive_niche = if no_niche.into_inner() {
+        quote! {}
+    } else {
+        quote! {
+            ::object_rainbow::MaybeHasNiche,
         }
     };
     let thing = quote! {
@@ -2680,7 +2695,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
             ::object_rainbow::Parse,
             ::object_rainbow::ParseInline,
             ::object_rainbow::Size,
-            ::object_rainbow::MaybeHasNiche,
+            #derive_niche
         )]
         #thing
     };
