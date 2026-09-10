@@ -2,6 +2,10 @@ use rand::{TryRng, rngs::SysRng};
 
 use crate::{PrivateFragment, SecretFragment};
 
+pub trait Generate: Default {
+    fn generate() -> object_rainbow::Result<Self>;
+}
+
 impl SecretFragment {
     pub fn regenerate(&mut self) -> object_rainbow::Result<()> {
         SysRng
