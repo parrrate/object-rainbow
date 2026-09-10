@@ -16,3 +16,6 @@ pub struct PublicFragment(Hash);
 
 #[derive(Debug, ToOutput, InlineOutput)]
 pub struct PublicPair([PublicFragment; 2]);
+
+#[derive(Debug, ToOutput)]
+pub struct PublicKey([PublicPair; LENGTH]);
