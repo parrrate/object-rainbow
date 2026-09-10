@@ -125,23 +125,7 @@ pub trait AbstractCollection {
     fn items(&self) -> Vec<Arc<InlineValue>>;
 }
 
-#[derive(
-    Debug,
-    Enum,
-    ToOutput,
-    Parse,
-    ParseInline,
-    MaybeHasNiche,
-    ListHashes,
-    Topological,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Default,
-)]
+#[pod(no_copy, no_tagged, no_size, no_inline_output)]
 #[enumtag("char")]
 #[niche(tag)]
 #[parse(unchecked)]
