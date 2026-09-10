@@ -13,6 +13,7 @@ use crate::*;
     Parse,
     ParseInline,
     Size,
+    MaybeHasNiche,
 )]
 pub struct Local<T>(pub T);
 
