@@ -2645,6 +2645,8 @@ struct PodArgs {
     #[darling(default)]
     no_output: SpannedValue<bool>,
     #[darling(default)]
+    no_tagged: SpannedValue<bool>,
+    #[darling(default)]
     no_parse: SpannedValue<bool>,
     #[darling(default)]
     no_inline: SpannedValue<bool>,
@@ -2662,6 +2664,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
             no_size,
             no_niche,
             no_output,
+            no_tagged,
             no_parse,
             no_inline,
             no_inline_output,
@@ -2702,6 +2705,13 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
     } else {
         quote! {
             ::core::default::Default,
+        }
+    };
+    let derive_tagged = if no_tagged.into_inner() {
+        quote! {}
+    } else {
+        quote! {
+            ::object_rainbow::Tagged,
         }
     };
     let derive_size = if no_size.into_inner() {
@@ -2765,7 +2775,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
             ::core::hash::Hash,
             #derive_to_output
             #derive_inline_output
-            ::object_rainbow::Tagged,
+            #derive_tagged
             ::object_rainbow::ListHashes,
             ::object_rainbow::Topological,
             #derive_parse
