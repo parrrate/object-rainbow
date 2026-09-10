@@ -1,7 +1,17 @@
 use crate::*;
 
 #[derive(
-    Debug, Clone, Copy, Default, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse,
+    Debug,
+    Clone,
+    Copy,
+    Default,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
 )]
 pub struct Local<T>(pub T);
 
