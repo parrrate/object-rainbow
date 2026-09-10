@@ -8,6 +8,12 @@ const LENGTH: usize = HASH_SIZE * 8;
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy, PartialEq, Eq)]
 pub struct FragmentSequence<T>([T; LENGTH]);
 
+impl<T: Default> Default for FragmentSequence<T> {
+    fn default() -> Self {
+        Self(std::array::from_fn(|_| T::default()))
+    }
+}
+
 impl<T> FragmentSequence<T> {
     fn map<U>(self, f: impl FnMut(T) -> U) -> FragmentSequence<U> {
         FragmentSequence(self.0.map(f))
