@@ -17,24 +17,7 @@ use ulid::Ulid;
 #[pod]
 struct ChannelId(Ulid);
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Size,
-    MaybeHasNiche,
-)]
+#[pod]
 struct MessageId(Ulid);
 
 #[derive(
