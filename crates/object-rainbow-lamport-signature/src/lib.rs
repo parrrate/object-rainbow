@@ -21,7 +21,7 @@ pub struct PublicFragment(Hash);
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy, PartialEq, Eq)]
 pub struct PublicPair([PublicFragment; 2]);
 
-#[derive(Debug, ToOutput, Clone, Copy, PartialEq)]
+#[derive(Debug, ToOutput, Clone, Copy, PartialEq, Eq)]
 pub struct PublicKey([PublicPair; LENGTH]);
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
