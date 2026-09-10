@@ -70,7 +70,7 @@ pub struct PublicPair([PublicFragment; 2]);
 #[pod]
 pub struct PublicKey(FragmentSequence<PublicPair>);
 
-#[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
+#[pod]
 pub struct SignatureFragment(SecretFragment);
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
