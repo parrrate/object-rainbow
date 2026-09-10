@@ -10,6 +10,12 @@ impl<T> Deref for Local<T> {
     }
 }
 
+impl<T> DerefMut for Local<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 impl<T: Traversible + Clone> Fetch for Local<T> {
     type T = T;
 
