@@ -8,7 +8,7 @@ use bitvec::array::BitArray;
 use object_rainbow::{
     ByteOrd, Equivalent, EquivalentFor, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse,
     ParseAsInline, ParseInline, ParseInput, PointInput, RainbowIterator, Size, Tagged, ToOutput,
-    Topological, assert_impl,
+    Topological, assert_impl, pod,
 };
 
 type Bits = BitArray<[u8; 32]>;
@@ -66,7 +66,8 @@ assert_impl!(
     }
 );
 
-#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, ParseAsInline, Clone)]
+#[pod(no_copy, no_default, no_parse)]
+#[derive(ParseAsInline)]
 pub struct KeyedArrayMap<T>(pub ArrayMap<T>);
 
 impl<T: ParseInline<I::WithExtra<(u8, I::Extra)>>, I: PointInput> ParseInline<I>
