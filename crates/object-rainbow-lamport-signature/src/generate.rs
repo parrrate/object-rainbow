@@ -18,20 +18,10 @@ impl Generate for SecretFragment {
             .map_err(std::io::Error::from)?;
         Ok(())
     }
-
-    fn generate() -> object_rainbow::Result<Self> {
-        let mut fragment = Self::default();
-        fragment.regenerate()?;
-        Ok(fragment)
-    }
 }
 
 impl Generate for PrivateFragment {
     fn regenerate(&mut self) -> object_rainbow::Result<()> {
         self.0.regenerate()
-    }
-
-    fn generate() -> object_rainbow::Result<Self> {
-        Ok(Self(SecretFragment::generate()?))
     }
 }
