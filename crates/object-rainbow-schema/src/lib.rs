@@ -140,12 +140,14 @@ pub trait AbstractCollection {
     PartialOrd,
     Ord,
     Hash,
+    Default,
 )]
 #[enumtag("char")]
 #[niche(tag)]
 #[parse(unchecked)]
 pub enum InlineSchema {
     Never,
+    #[default]
     Unit,
     Option(Arc<Self>),
     Point(
