@@ -6,8 +6,7 @@ use core::future::ready;
 
 use futures_util::future::try_join;
 use object_rainbow::{
-    InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
-    Topological, derive_for_wrapped,
+    derive_for_wrapped,
     map_extra::{SmExtra, StaticMap},
     pod,
     tuple_extra::ToTuple2,
@@ -67,23 +66,7 @@ impl<M: Send + StaticMap<D, Mapped: Send>, D: Send> Apply<D> for SmExtra<M> {
     }
 }
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Default,
-)]
+#[pod]
 pub struct Sequential<First, Second> {
     first: First,
     second: Second,
