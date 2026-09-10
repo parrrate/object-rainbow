@@ -4,6 +4,9 @@ use bitvec::array::BitArray;
 use futures_util::future::try_join;
 use object_rainbow::{Fetch, FetchBytes, HASH_SIZE, Hash, Singular, SingularFetch, ToOutput, pod};
 
+#[cfg(feature = "generate")]
+mod generate;
+
 const LENGTH: usize = HASH_SIZE * 8;
 
 #[pod(no_default)]

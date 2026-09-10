@@ -12,6 +12,10 @@ object-rainbow.workspace = true
 
 bitvec.workspace = true
 futures-util.workspace = true
+rand = { workspace = true, optional = true }
+
+[features]
+generate = ["dep:rand"]
 
 [package.metadata.tagit]
 skip = true
