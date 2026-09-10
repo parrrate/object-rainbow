@@ -51,3 +51,9 @@ impl<T: ?Sized> Ord for ObjectMarker<T> {
         self.object.cmp(&other.object)
     }
 }
+
+impl<T: ?Sized> core::hash::Hash for ObjectMarker<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.object.hash(state);
+    }
+}
