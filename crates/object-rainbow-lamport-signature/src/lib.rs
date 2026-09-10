@@ -25,3 +25,9 @@ impl PrivateFragment {
         PublicFragment(self.data_hash())
     }
 }
+
+impl PrivatePair {
+    pub fn public(self) -> PublicPair {
+        PublicPair(self.0.map(PrivateFragment::public))
+    }
+}
