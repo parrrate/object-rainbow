@@ -4,7 +4,10 @@ use object_rainbow::{HASH_SIZE, Hash, InlineOutput, ToOutput};
 const LENGTH: usize = HASH_SIZE * 8;
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
-pub struct PrivateFragment([u8; HASH_SIZE]);
+pub struct SecretFragment([u8; HASH_SIZE]);
+
+#[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
+pub struct PrivateFragment(SecretFragment);
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
 pub struct PrivatePair([PrivateFragment; 2]);
@@ -22,7 +25,7 @@ pub struct PublicPair([PublicFragment; 2]);
 pub struct PublicKey([PublicPair; LENGTH]);
 
 #[derive(Debug, ToOutput, InlineOutput)]
-pub struct SignatureFragment([u8; HASH_SIZE]);
+pub struct SignatureFragment(SecretFragment);
 
 #[derive(Debug, ToOutput)]
 pub struct Signature([SignatureFragment; LENGTH]);
