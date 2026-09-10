@@ -101,6 +101,18 @@ impl<T> PartialEq for ChainTree<T> {
 
 impl<T> Eq for ChainTree<T> {}
 
+impl<T> PartialOrd for ChainTree<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<T> Ord for ChainTree<T> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.cmp(&other.0)
+    }
+}
+
 impl<T> Clone for ChainTree<T> {
     fn clone(&self) -> Self {
         Self(self.0.clone())
