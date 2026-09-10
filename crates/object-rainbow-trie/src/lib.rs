@@ -10,9 +10,8 @@ use std::{
 use futures_util::{Stream, TryStream, TryStreamExt};
 use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
-    Equivalent, Inline, InlineOutput, ListHashes, Parse, ParseInline, ParseSliceRefless,
-    ReflessObject, Tagged, ToOutput, Topological, Traversible, assert_impl,
-    object_marker::ObjectMarker, pod,
+    Equivalent, Inline, InlineOutput, ParseSliceRefless, ReflessObject, ToOutput, Traversible,
+    assert_impl, object_marker::ObjectMarker, pod,
 };
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
@@ -599,7 +598,7 @@ where
     }
 }
 
-#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline)]
+#[pod(no_clone, no_default, no_size, no_niche)]
 pub struct TrieSet<T> {
     map: TrieMap<T, ()>,
 }
