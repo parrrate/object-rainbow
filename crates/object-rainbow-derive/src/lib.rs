@@ -2625,16 +2625,18 @@ pub fn derive_for_wrapped(args: TokenStream, input: TokenStream) -> TokenStream 
     output.into()
 }
 
+#[derive(Debug, FromMeta, Default)]
+#[darling(derive_syn_parse)]
+struct PodArgs {
+    #[darling(default)]
+    no_default: SpannedValue<bool>,
+}
+
 #[proc_macro_attribute]
 pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
-    let args_error = if !args.is_empty() {
-        syn::Error::new_spanned(
-            proc_macro2::TokenStream::from(args),
-            "#[pod] doesn't accept arguments",
-        )
-        .into_compile_error()
-    } else {
-        quote! {}
+    let (PodArgs { no_default }, args_error) = match syn::parse(args) {
+        Ok(args) => (args, Default::default()),
+        Err(e) => (Default::default(), e.into_compile_error()),
     };
     let thing = proc_macro2::TokenStream::from(input);
     let derive_enum = match syn::parse2::<Item>(thing.clone()) {
@@ -2646,6 +2648,13 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
         Err(e) => Err(e),
     }
     .unwrap_or_else(|e| e.into_compile_error());
+    let derive_default = if no_default.into_inner() {
+        quote! {}
+    } else {
+        quote! {
+            ::core::default::Default,
+        }
+    };
     let thing = quote! {
         #args_error
         #[derive(
@@ -2656,7 +2665,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
             ::core::cmp::Eq,
             ::core::cmp::PartialOrd,
             ::core::cmp::Ord,
-            ::core::default::Default,
+            #derive_default
             ::core::fmt::Debug,
             ::core::hash::Hash,
             ::object_rainbow::ToOutput,
