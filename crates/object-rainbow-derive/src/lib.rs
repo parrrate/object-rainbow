@@ -2160,7 +2160,11 @@ pub fn derive_enum(input: TokenStream) -> TokenStream {
 
             use ::object_rainbow::enumkind::EnumKind;
 
-            #[derive(Clone, Copy, ::object_rainbow::ParseAsInline)]
+            #[derive(
+                ::core::clone::Clone,
+                ::core::marker::Copy,
+                ::object_rainbow::ParseAsInline,
+            )]
             pub enum __Kind {
                 #variants
             }
