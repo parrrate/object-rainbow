@@ -21,7 +21,7 @@ pub struct PublicPair([PublicFragment; 2]);
 pub struct PublicKey([PublicPair; LENGTH]);
 
 impl PrivateFragment {
-    pub fn public(&self) -> PublicFragment {
+    pub fn public(self) -> PublicFragment {
         PublicFragment(self.data_hash())
     }
 }
