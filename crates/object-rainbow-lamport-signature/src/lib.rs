@@ -1,4 +1,4 @@
-use object_rainbow::{HASH_SIZE, InlineOutput, ToOutput};
+use object_rainbow::{HASH_SIZE, Hash, InlineOutput, ToOutput};
 
 const LENGTH: usize = HASH_SIZE * 8;
 
@@ -10,3 +10,6 @@ pub struct PrivatePair([PrivateFragment; 2]);
 
 #[derive(Debug, ToOutput)]
 pub struct PrivateKey([PrivatePair; LENGTH]);
+
+#[derive(Debug, ToOutput)]
+pub struct PublicFragment(Hash);
