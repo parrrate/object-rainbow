@@ -1,11 +1,15 @@
 use std::ops::Index;
 
 use bitvec::array::BitArray;
-use object_rainbow::{HASH_SIZE, Hash, InlineOutput, ListHashes, Tagged, ToOutput, pod};
+use object_rainbow::{
+    HASH_SIZE, Hash, InlineOutput, ListHashes, Tagged, ToOutput, Topological, pod,
+};
 
 const LENGTH: usize = HASH_SIZE * 8;
 
-#[derive(Debug, ToOutput, InlineOutput, Tagged, ListHashes, Clone, Copy, PartialEq, Eq)]
+#[derive(
+    Debug, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Clone, Copy, PartialEq, Eq,
+)]
 pub struct FragmentSequence<T>([T; LENGTH]);
 
 impl<T: Default> Default for FragmentSequence<T> {
