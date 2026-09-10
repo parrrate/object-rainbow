@@ -23,7 +23,7 @@ pub struct EnumSchema<T> {
 impl<T> Clone for EnumSchema<T> {
     fn clone(&self) -> Self {
         Self {
-            kind: self.kind.clone(),
+            kind: self.kind,
             variants: self.variants.clone(),
         }
     }
@@ -95,7 +95,7 @@ impl<
 {
     fn parse(mut input: I) -> object_rainbow::Result<Self> {
         let EnumSchema { kind, variants } = input.extra().clone();
-        let kind: NumericValue = input.parse_inline_extra(kind.clone())?;
+        let kind: NumericValue = input.parse_inline_extra(kind)?;
         let schema = variants
             .get(kind.index().ok_or(object_rainbow::Error::OutOfBounds)?)
             .ok_or(object_rainbow::Error::OutOfBounds)?
@@ -117,7 +117,7 @@ impl<
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let EnumSchema { kind, variants } = input.extra().clone();
-        let kind: NumericValue = input.parse_inline_extra(kind.clone())?;
+        let kind: NumericValue = input.parse_inline_extra(kind)?;
         let schema = variants
             .get(kind.index().ok_or(object_rainbow::Error::OutOfBounds)?)
             .ok_or(object_rainbow::Error::OutOfBounds)?

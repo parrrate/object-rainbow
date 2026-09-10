@@ -14,6 +14,7 @@ use crate::*;
     ListHashes,
     Topological,
     Clone,
+    Copy,
     PartialEq,
     Eq,
     PartialOrd,
@@ -57,7 +58,7 @@ impl Tagged for NumericSchema {}
 
 impl AbstractSchema for NumericSchema {
     fn niche(&self) -> SchemaNiche {
-        match self.clone() {
+        match std::convert::identity(*self) {
             Self::U8 | Self::I8 => SchemaNiche::ZeroNoNiche(1),
             Self::U16 | Self::I16 => SchemaNiche::ZeroNoNiche(2),
             Self::U32 | Self::I32 => SchemaNiche::ZeroNoNiche(4),
@@ -79,7 +80,7 @@ impl AbstractSchema for NumericSchema {
 
 impl DefaultSchema<NumericValue> for NumericSchema {
     fn default_value(&self) -> Option<NumericValue> {
-        Some(match self.clone() {
+        Some(match std::convert::identity(*self) {
             Self::U8 => NumericValue::U8(Default::default()),
             Self::I8 => NumericValue::I8(Default::default()),
             Self::U16 => NumericValue::U16(Default::default()),
@@ -112,7 +113,7 @@ impl DefaultIsMin for NumericSchema {
 
 impl SizeSchema for NumericSchema {
     fn size(&self) -> Option<u64> {
-        match self.clone() {
+        match std::convert::identity(*self) {
             Self::U8 | Self::I8 | Self::NzU8 => Some(1),
             Self::U16 | Self::I16 | Self::NzU16 => Some(2),
             Self::U32 | Self::I32 | Self::NzU32 | Self::F32 => Some(4),
@@ -161,7 +162,7 @@ impl Tagged for NumericValue {}
 
 impl<I: PointInput<Extra = NumericSchema>> ParseInline<I> for NumericValue {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        Ok(match input.extra().clone() {
+        Ok(match std::convert::identity(*input.extra()) {
             NumericSchema::U8 => Self::U8(input.parse_inline()?),
             NumericSchema::I8 => Self::I8(input.parse_inline()?),
             NumericSchema::U16 => Self::U16(input.parse_inline()?),

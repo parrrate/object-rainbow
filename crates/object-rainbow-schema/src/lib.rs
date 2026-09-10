@@ -617,9 +617,7 @@ impl<
                 input.parse_inline_extra(b.clone())?,
             ),
             InlineSchema::Array(schema) => Self::Array(input.parse_inline_extra(schema.clone())?),
-            InlineSchema::Numeric(schema) => {
-                Self::Numeric(input.parse_inline_extra(schema.clone())?)
-            }
+            InlineSchema::Numeric(schema) => Self::Numeric(input.parse_inline_extra(*schema)?),
             InlineSchema::Enum(schema) => Self::Enum(input.parse_inline_extra(schema.clone())?),
             #[cfg(feature = "_collections")]
             InlineSchema::Collection(schema) => {
