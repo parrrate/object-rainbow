@@ -1,29 +1,8 @@
-use object_rainbow::{
-    InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
-    Topological,
-};
+use object_rainbow::pod;
 
 use crate::Apply;
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Default,
-)]
+#[pod]
 pub struct FilterDiffs<T>(pub T);
 
 impl<T: Apply<D>, D: Send> Apply<(bool, D)> for FilterDiffs<T> {
