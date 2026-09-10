@@ -11,6 +11,7 @@ use crate::*;
     Tagged,
     PartialEq,
     Eq,
+    PartialOrd,
 )]
 pub struct EnumSchema<T> {
     pub kind: NumericSchema,
