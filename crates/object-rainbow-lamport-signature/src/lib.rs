@@ -21,7 +21,7 @@ pub struct PublicPair([PublicFragment; 2]);
 pub struct PublicKey([PublicPair; LENGTH]);
 
 #[derive(Debug, ToOutput, InlineOutput)]
-pub struct SignatureFragment(Hash);
+pub struct SignatureFragment([u8; HASH_SIZE]);
 
 #[derive(Debug, ToOutput)]
 pub struct Signature([SignatureFragment; LENGTH]);
