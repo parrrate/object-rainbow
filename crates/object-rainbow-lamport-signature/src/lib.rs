@@ -1,3 +1,4 @@
+use bitvec::array::BitArray;
 use object_rainbow::{HASH_SIZE, Hash, InlineOutput, ToOutput};
 
 const LENGTH: usize = HASH_SIZE * 8;
@@ -28,7 +29,7 @@ pub struct Signature([SignatureFragment; LENGTH]);
 
 pub struct MessageFragment(pub bool);
 
-pub struct Message(pub [u8; HASH_SIZE]);
+pub struct Message(pub BitArray<[u8; HASH_SIZE]>);
 
 impl PrivateFragment {
     pub fn public(self) -> PublicFragment {

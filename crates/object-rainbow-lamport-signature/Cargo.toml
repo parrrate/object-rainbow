@@ -10,5 +10,7 @@ authors.workspace = true
 [dependencies]
 object-rainbow.workspace = true
 
+bitvec.workspace = true
+
 [package.metadata.tagit]
 skip = true

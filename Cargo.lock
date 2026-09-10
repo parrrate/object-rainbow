@@ -1933,6 +1933,7 @@ dependencies = [
 name = "object-rainbow-lamport-signature"
 version = "0.0.0-a.0"
 dependencies = [
+ "bitvec",
  "object-rainbow",
 ]
 
