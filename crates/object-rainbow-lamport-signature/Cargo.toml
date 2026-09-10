@@ -8,6 +8,7 @@ repository.workspace = true
 authors.workspace = true
 
 [dependencies]
+object-rainbow.workspace = true
 
 [package.metadata.tagit]
 skip = true

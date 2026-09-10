@@ -1932,6 +1932,9 @@ dependencies = [
 [[package]]
 name = "object-rainbow-lamport-signature"
 version = "0.0.0-a.0"
+dependencies = [
+ "object-rainbow",
+]
 
 [[package]]
 name = "object-rainbow-local-map"
