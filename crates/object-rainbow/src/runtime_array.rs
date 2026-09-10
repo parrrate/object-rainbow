@@ -1,8 +1,7 @@
 use crate::*;
 
-#[derive(
-    Debug, ToOutput, InlineOutput, ListHashes, Topological, PartialEq, ParseAsInline, Clone,
-)]
+#[pod(no_copy, no_inline_output, no_parse, no_size, no_niche)]
+#[derive(ParseAsInline)]
 pub struct RuntimeArray<T>(pub Vec<T>);
 
 impl<T> Deref for RuntimeArray<T> {
