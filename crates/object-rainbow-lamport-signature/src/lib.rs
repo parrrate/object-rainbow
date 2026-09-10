@@ -58,7 +58,7 @@ pub struct PrivateFragment(SecretFragment);
 #[pod]
 pub struct PrivatePair([PrivateFragment; 2]);
 
-#[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
+#[pod]
 pub struct PrivateKey(FragmentSequence<PrivatePair>);
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy, PartialEq, Eq)]
