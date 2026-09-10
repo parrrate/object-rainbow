@@ -2,26 +2,13 @@ use object_rainbow::{
     FullHash, Inline, InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological,
     assert_impl,
     map_extra::{Return, ToHash},
+    pod,
 };
 use object_rainbow_hamt::HamtSet;
 
 use crate::{Apply, Parallel, Sequential, skip::FilterDiffs};
 
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    PartialEq,
-    Eq,
-    Default,
-)]
+#[pod]
 pub struct Inserted;
 
 impl Apply<bool> for Inserted {
