@@ -18,6 +18,7 @@ members = [
     "crates/object-rainbow-history-store",
     "crates/object-rainbow-json",
     "crates/object-rainbow-kubo-raw",
+    "crates/object-rainbow-lamport-signature",
     "crates/object-rainbow-local-map",
     "crates/object-rainbow-marshall",
     "crates/object-rainbow-parse-prefix",
