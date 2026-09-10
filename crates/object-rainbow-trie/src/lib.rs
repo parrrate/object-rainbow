@@ -504,7 +504,7 @@ where
     }
 }
 
-#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline)]
+#[pod(no_clone, no_default, no_size, no_niche)]
 pub struct TrieMap<K, V> {
     key: ObjectMarker<K>,
     trie: Trie<V>,
