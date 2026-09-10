@@ -2714,24 +2714,12 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
             ::object_rainbow::Tagged,
         }
     };
-    let derive_size = if no_size.into_inner() {
-        quote! {}
-    } else {
-        quote! {
-            ::object_rainbow::Size,
-        }
-    };
-    let derive_niche = if no_niche.into_inner() {
-        quote! {}
-    } else {
-        quote! {
-            ::object_rainbow::MaybeHasNiche,
-        }
-    };
     let yes_output = !no_output.into_inner();
     let yes_parse = !no_parse.into_inner();
     let yes_inline = !no_inline.into_inner();
     let yes_inline_output = !no_inline_output.into_inner();
+    let yes_size = !no_size.into_inner();
+    let yes_niche = !no_niche.into_inner();
     let derive_to_output = if yes_output {
         quote! {
             ::object_rainbow::ToOutput,
@@ -2756,6 +2744,20 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
     let derive_parse_inline = if yes_parse && yes_inline {
         quote! {
             ::object_rainbow::ParseInline,
+        }
+    } else {
+        quote! {}
+    };
+    let derive_size = if yes_size && yes_output {
+        quote! {
+            ::object_rainbow::Size,
+        }
+    } else {
+        quote! {}
+    };
+    let derive_niche = if yes_niche && yes_output {
+        quote! {
+            ::object_rainbow::MaybeHasNiche,
         }
     } else {
         quote! {}
