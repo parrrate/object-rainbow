@@ -28,6 +28,8 @@ pub struct Signature([Hash; LENGTH]);
 
 pub struct MessageFragment(pub bool);
 
+pub struct Message(pub [u8; HASH_SIZE]);
+
 impl PrivateFragment {
     pub fn public(self) -> PublicFragment {
         PublicFragment(self.data_hash())
