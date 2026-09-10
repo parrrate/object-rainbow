@@ -2635,6 +2635,8 @@ struct PodArgs {
     #[darling(default)]
     no_default: SpannedValue<bool>,
     #[darling(default)]
+    no_size: SpannedValue<bool>,
+    #[darling(default)]
     no_niche: SpannedValue<bool>,
     #[darling(default)]
     no_output: SpannedValue<bool>,
@@ -2649,6 +2651,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
     let (
         PodArgs {
             no_default,
+            no_size,
             no_niche,
             no_output,
             no_parse,
@@ -2674,6 +2677,13 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
     } else {
         quote! {
             ::core::default::Default,
+        }
+    };
+    let derive_size = if no_size.into_inner() {
+        quote! {}
+    } else {
+        quote! {
+            ::object_rainbow::Size,
         }
     };
     let derive_niche = if no_niche.into_inner() {
@@ -2734,7 +2744,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
             ::object_rainbow::Topological,
             #derive_parse
             #derive_parse_inline
-            ::object_rainbow::Size,
+            #derive_size
             #derive_niche
         )]
         #thing
