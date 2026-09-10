@@ -31,3 +31,9 @@ impl<T: ?Sized + Tagged> Tagged for ObjectMarker<T> {
     const TAGS: Tags = T::TAGS;
     const HASH: Hash = T::HASH;
 }
+
+impl<T: ?Sized> PartialEq for ObjectMarker<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.object == other.object
+    }
+}
