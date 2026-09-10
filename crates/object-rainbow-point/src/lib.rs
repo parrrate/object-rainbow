@@ -31,6 +31,12 @@ struct ByAddressInner {
     resolve: Arc<dyn Resolve>,
 }
 
+impl ByAddressInner {
+    fn into_resolve(self) -> Arc<dyn Resolve> {
+        self.resolve
+    }
+}
+
 impl FetchBytes for ByAddressInner {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.resolve.resolve(self.address, &self.resolve)
@@ -99,12 +105,9 @@ impl<T, Extra> FetchBytes for ByAddress<T, Extra> {
     }
 
     fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
-        Arc::try_unwrap(self).ok().map(
-            |Self {
-                 inner: ByAddressInner { resolve, .. },
-                 ..
-             }| resolve,
-        )
+        Arc::try_unwrap(self)
+            .ok()
+            .map(|Self { inner, .. }| inner.into_resolve())
     }
 }
 
