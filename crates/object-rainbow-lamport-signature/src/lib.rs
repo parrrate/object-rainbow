@@ -20,7 +20,7 @@ pub struct PublicPair([PublicFragment; 2]);
 #[derive(Debug, ToOutput)]
 pub struct PublicKey([PublicPair; LENGTH]);
 
-#[derive(Debug, ToOutput)]
+#[derive(Debug, ToOutput, InlineOutput)]
 pub struct SignatureFragment(Hash);
 
 impl PrivateFragment {
