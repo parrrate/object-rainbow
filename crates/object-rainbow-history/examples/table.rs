@@ -138,20 +138,7 @@ struct MessageByUser {
     message: MessageId,
 }
 
-#[derive(
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Default,
-)]
+#[pod]
 struct MessageToChannel;
 
 #[pod]
