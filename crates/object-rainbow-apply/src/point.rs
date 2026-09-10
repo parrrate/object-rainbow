@@ -1,7 +1,4 @@
-use object_rainbow::{
-    InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
-    Topological, Traversible,
-};
+use object_rainbow::{Traversible, pod};
 use object_rainbow_point::Point;
 
 use crate::Apply;
@@ -14,25 +11,7 @@ impl<T: Clone + Traversible + Apply<D>, D: Send> Apply<D> for Point<T> {
     }
 }
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Default,
-)]
+#[pod]
 pub struct Points<T>(pub T);
 
 impl<T: Apply<D>, D: Send + Traversible> Apply<Point<D>> for Points<T> {
