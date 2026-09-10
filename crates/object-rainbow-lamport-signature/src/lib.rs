@@ -45,6 +45,10 @@ impl PrivatePair {
     pub fn public(self) -> PublicPair {
         PublicPair(self.0.map(PrivateFragment::public))
     }
+
+    pub fn sign(self, data: MessageFragment) -> SignatureFragment {
+        self.0[data.0 as usize].sign()
+    }
 }
 
 impl PrivateKey {
