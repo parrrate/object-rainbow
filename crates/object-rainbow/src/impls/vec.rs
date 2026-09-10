@@ -42,6 +42,10 @@ impl<T: ByteOrd + InlineOutput> ByteOrd for Vec<T> {
 impl<T> PlainCollection for Vec<T> {}
 impl<T> VecLike for Vec<T> {}
 
+impl<T> MaybeHasNiche for Vec<T> {
+    type MnArray = NoNiche<NicheForUnsized>;
+}
+
 impl<T: InlineOutput> ToOutput for VecDeque<T> {
     fn to_output(&self, output: &mut impl Output) {
         let (l, r) = self.as_slices();
