@@ -23,8 +23,8 @@ impl Generate for SecretFragment {
     }
 }
 
-impl PrivateFragment {
-    pub fn generate() -> object_rainbow::Result<Self> {
+impl Generate for PrivateFragment {
+    fn generate() -> object_rainbow::Result<Self> {
         Ok(Self(SecretFragment::generate()?))
     }
 }
