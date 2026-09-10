@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::*;
 
 #[derive(ToOutput, InlineOutput, ListHashes, Topological, Parse, ParseInline)]
@@ -55,5 +57,13 @@ impl<T: ?Sized> Ord for ObjectMarker<T> {
 impl<T: ?Sized> core::hash::Hash for ObjectMarker<T> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.object.hash(state);
+    }
+}
+
+impl<T: ?Sized> Debug for ObjectMarker<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ObjectMarker")
+            .field("object", &self.object)
+            .finish()
     }
 }
