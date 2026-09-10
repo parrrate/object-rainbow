@@ -68,3 +68,9 @@ impl<T: Traversible> Singular for Local<T> {
         self.0.full_hash()
     }
 }
+
+impl<T> From<T> for Local<T> {
+    fn from(object: T) -> Self {
+        Self(object)
+    }
+}
