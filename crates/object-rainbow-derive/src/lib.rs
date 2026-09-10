@@ -2633,6 +2633,8 @@ pub fn derive_for_wrapped(args: TokenStream, input: TokenStream) -> TokenStream 
 #[darling(derive_syn_parse)]
 struct PodArgs {
     #[darling(default)]
+    no_clone: SpannedValue<bool>,
+    #[darling(default)]
     no_copy: SpannedValue<bool>,
     #[darling(default)]
     no_default: SpannedValue<bool>,
@@ -2652,6 +2654,7 @@ struct PodArgs {
 pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
     let (
         PodArgs {
+            no_clone,
             no_copy,
             no_default,
             no_size,
@@ -2675,12 +2678,21 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
         Err(e) => Err(e),
     }
     .unwrap_or_else(|e| e.into_compile_error());
-    let derive_copy = if no_copy.into_inner() {
-        quote! {}
+    let yes_clone = !no_clone.into_inner();
+    let yes_copy = !no_copy.into_inner();
+    let derive_clone = if yes_clone {
+        quote! {
+            ::core::clone::Clone,
+        }
     } else {
+        quote! {}
+    };
+    let derive_copy = if yes_clone && yes_copy {
         quote! {
             ::core::marker::Copy,
         }
+    } else {
+        quote! {}
     };
     let derive_default = if no_default.into_inner() {
         quote! {}
@@ -2738,7 +2750,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
         #args_error
         #[derive(
             #derive_enum
-            ::core::clone::Clone,
+            #derive_clone
             #derive_copy
             ::core::cmp::PartialEq,
             ::core::cmp::Eq,
