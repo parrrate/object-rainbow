@@ -2,12 +2,6 @@ use crate::*;
 
 pub struct Local<T>(pub T);
 
-impl<T: Traversible> Local<T> {
-    pub fn new(object: T) -> Self {
-        Self(object)
-    }
-}
-
 impl<T: Traversible + Clone> Fetch for Local<T> {
     type T = T;
 

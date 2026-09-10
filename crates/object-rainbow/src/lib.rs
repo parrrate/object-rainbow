@@ -1010,7 +1010,7 @@ pub trait Traversible: 'static + Sized + Send + Sync + FullHash + Topological {
     where
         Self: Clone,
     {
-        self::local_fetch::Local::new(self).into_dyn_fetch()
+        self::local_fetch::Local(self).into_dyn_fetch()
     }
 }
 
