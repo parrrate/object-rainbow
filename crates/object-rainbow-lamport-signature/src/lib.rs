@@ -70,6 +70,10 @@ impl PrivateKey {
     pub fn sign(self, data: Message) -> Signature {
         Signature(std::array::from_fn(|n| self.0[n].sign(data.fragment(n))))
     }
+
+    pub fn sign_hash(self, hash: Hash) -> Signature {
+        self.sign(hash.into())
+    }
 }
 
 impl SignatureFragment {
