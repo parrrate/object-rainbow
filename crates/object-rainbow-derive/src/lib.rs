@@ -7,7 +7,7 @@ use proc_macro::TokenStream;
 use quote::{ToTokens, quote, quote_spanned};
 use syn::{
     Attribute, Data, DeriveInput, Error, Expr, FnArg, GenericParam, Generics, Ident, ImplItem,
-    ItemTrait, LitStr, TraitItem, Type, WherePredicate, parse::Parse, parse_macro_input,
+    Item, ItemTrait, LitStr, TraitItem, Type, WherePredicate, parse::Parse, parse_macro_input,
     parse_quote, parse_quote_spanned, spanned::Spanned, token::Comma,
 };
 
@@ -2623,4 +2623,53 @@ pub fn derive_for_wrapped(args: TokenStream, input: TokenStream) -> TokenStream 
         #(#derived)*
     };
     output.into()
+}
+
+#[proc_macro_attribute]
+pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
+    let args_error = if !args.is_empty() {
+        syn::Error::new_spanned(
+            proc_macro2::TokenStream::from(args),
+            "#[pod] doesn't accept arguments",
+        )
+        .into_compile_error()
+    } else {
+        quote! {}
+    };
+    let thing = proc_macro2::TokenStream::from(input);
+    let derive_enum = match syn::parse2::<Item>(thing.clone()) {
+        Ok(Item::Struct(_)) => Ok(quote! {}),
+        Ok(Item::Enum(_)) => Ok(quote! {
+            ::object_rainbow::Enum,
+        }),
+        Ok(_) => Err(syn::Error::new(thing.span(), "not `struct` or `enum`")),
+        Err(e) => Err(e),
+    }
+    .unwrap_or_else(|e| e.into_compile_error());
+    let thing = quote! {
+        #args_error
+        #[derive(
+            #derive_enum
+            ::core::clone::Clone,
+            ::core::marker::Copy,
+            ::core::cmp::PartialEq,
+            ::core::cmp::Eq,
+            ::core::cmp::PartialOrd,
+            ::core::cmp::Ord,
+            ::core::default::Default,
+            ::core::fmt::Debug,
+            ::core::hash::Hash,
+            ::object_rainbow::ToOutput,
+            ::object_rainbow::InlineOutput,
+            ::object_rainbow::Tagged,
+            ::object_rainbow::ListHashes,
+            ::object_rainbow::Topological,
+            ::object_rainbow::Parse,
+            ::object_rainbow::ParseInline,
+            ::object_rainbow::Size,
+            ::object_rainbow::MaybeHasNiche,
+        )]
+        #thing
+    };
+    thing.into()
 }
