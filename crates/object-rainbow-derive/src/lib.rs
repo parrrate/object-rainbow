@@ -2636,6 +2636,8 @@ struct PodArgs {
     no_default: SpannedValue<bool>,
     #[darling(default)]
     no_niche: SpannedValue<bool>,
+    #[darling(default)]
+    no_output: SpannedValue<bool>,
 }
 
 #[proc_macro_attribute]
@@ -2644,6 +2646,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
         PodArgs {
             no_default,
             no_niche,
+            no_output,
         },
         args_error,
     ) = match syn::parse(args) {
@@ -2674,6 +2677,21 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
             ::object_rainbow::MaybeHasNiche,
         }
     };
+    let yes_output = !no_output.into_inner();
+    let derive_to_output = if yes_output {
+        quote! {
+            ::object_rainbow::ToOutput,
+        }
+    } else {
+        quote! {}
+    };
+    let derive_inline_output = if yes_output {
+        quote! {
+            ::object_rainbow::InlineOutput,
+        }
+    } else {
+        quote! {}
+    };
     let thing = quote! {
         #args_error
         #[derive(
@@ -2687,8 +2705,8 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
             #derive_default
             ::core::fmt::Debug,
             ::core::hash::Hash,
-            ::object_rainbow::ToOutput,
-            ::object_rainbow::InlineOutput,
+            #derive_to_output
+            #derive_inline_output
             ::object_rainbow::Tagged,
             ::object_rainbow::ListHashes,
             ::object_rainbow::Topological,
