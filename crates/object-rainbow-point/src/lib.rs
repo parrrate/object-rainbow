@@ -26,18 +26,18 @@ mod point_deserialize;
 mod point_serialize;
 
 #[derive(Clone)]
-struct ByAddressInner {
+struct AddressedBytes {
     address: Address,
     resolve: Arc<dyn Resolve>,
 }
 
-impl ByAddressInner {
+impl AddressedBytes {
     fn into_resolve(self) -> Arc<dyn Resolve> {
         self.resolve
     }
 }
 
-impl FetchBytes for ByAddressInner {
+impl FetchBytes for AddressedBytes {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.resolve.resolve(self.address, &self.resolve)
     }
@@ -61,20 +61,20 @@ impl FetchBytes for ByAddressInner {
     }
 }
 
-impl Singular for ByAddressInner {
+impl Singular for AddressedBytes {
     fn hash(&self) -> Hash {
         self.address.hash
     }
 }
 
 struct ByAddress<T, Extra> {
-    inner: ByAddressInner,
+    inner: AddressedBytes,
     extra: Extra,
     _object: PhantomData<fn() -> T>,
 }
 
 impl<T, Extra> ByAddress<T, Extra> {
-    fn from_inner(inner: ByAddressInner, extra: Extra) -> Self {
+    fn from_inner(inner: AddressedBytes, extra: Extra) -> Self {
         Self {
             inner,
             extra,
@@ -139,13 +139,13 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for ByAddress<T, Extra
 }
 
 struct FetchExtra<T, D> {
-    inner: ByAddressInner,
+    inner: AddressedBytes,
     fetch: D,
     _object: PhantomData<fn() -> T>,
 }
 
 impl<T, D> FetchExtra<T, D> {
-    fn from_inner(inner: ByAddressInner, fetch: D) -> Self {
+    fn from_inner(inner: AddressedBytes, fetch: D) -> Self {
         Self {
             inner,
             fetch,
@@ -204,8 +204,8 @@ impl<T: ?Sized + FetchBytes> InnerCast for T {}
 
 pub trait ExtractResolve: FetchBytes {
     fn extract_resolve<R: Any>(&self) -> Option<(&Address, &R)> {
-        let ByAddressInner { address, resolve } =
-            self.as_inner()?.downcast_ref::<ByAddressInner>()?;
+        let AddressedBytes { address, resolve } =
+            self.as_inner()?.downcast_ref::<AddressedBytes>()?;
         let resolve = resolve.as_ref().any_ref().downcast_ref::<R>()?;
         Some((address, resolve))
     }
@@ -227,7 +227,7 @@ impl RawPointInner {
     pub fn from_address(address: Address, resolve: Arc<dyn Resolve>) -> Self {
         Self {
             hash: address.hash,
-            fetch: Arc::new(ByAddressInner { address, resolve }),
+            fetch: Arc::new(AddressedBytes { address, resolve }),
         }
     }
 
@@ -578,7 +578,7 @@ impl<T: 'static + FullHash> Point<T> {
     ) -> Self {
         Self::from_trusted_fetch(
             address.hash,
-            ByAddress::from_inner(ByAddressInner { address, resolve }, extra).into_dyn_fetch(),
+            ByAddress::from_inner(AddressedBytes { address, resolve }, extra).into_dyn_fetch(),
         )
     }
 
@@ -600,7 +600,7 @@ impl<T: 'static + FullHash> Point<T> {
     {
         Self::from_trusted_fetch(
             address.hash,
-            FetchExtra::from_inner(ByAddressInner { address, resolve }, fetch).into_dyn_fetch(),
+            FetchExtra::from_inner(AddressedBytes { address, resolve }, fetch).into_dyn_fetch(),
         )
     }
 }
