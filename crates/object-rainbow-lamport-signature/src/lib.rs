@@ -89,3 +89,9 @@ impl Message {
         MessageFragment(self.0[n])
     }
 }
+
+impl From<Hash> for Message {
+    fn from(hash: Hash) -> Self {
+        Self(BitArray::new(hash.into()))
+    }
+}
