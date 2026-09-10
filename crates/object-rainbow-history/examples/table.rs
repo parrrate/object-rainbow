@@ -2,10 +2,7 @@ use std::collections::BTreeSet;
 
 use futures_util::TryStreamExt;
 use macro_rules_attribute::apply;
-use object_rainbow::{
-    InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological, map_extra::Return,
-    pod,
-};
+use object_rainbow::{map_extra::Return, pod};
 use object_rainbow_apply::{
     FromIter, Parallel, Sequential,
     remap::{MapToSet, MappedToSet},
@@ -36,22 +33,7 @@ struct MessageByChannel {
     user: UserId,
 }
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-)]
+#[pod]
 struct MessageByUser {
     user: UserId,
     channel: ChannelId,
