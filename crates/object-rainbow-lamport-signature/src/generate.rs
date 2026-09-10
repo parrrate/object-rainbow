@@ -3,6 +3,10 @@ use rand::{TryRng, rngs::SysRng};
 use crate::{PrivateFragment, SecretFragment};
 
 pub trait Generate: Default {
+    fn regenerate(&mut self) -> object_rainbow::Result<()> {
+        *self = Self::generate()?;
+        Ok(())
+    }
     fn generate() -> object_rainbow::Result<Self>;
 }
 
