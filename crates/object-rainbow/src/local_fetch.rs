@@ -2,6 +2,14 @@ use crate::*;
 
 pub struct Local<T>(pub T);
 
+impl<T> Deref for Local<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 impl<T: Traversible + Clone> Fetch for Local<T> {
     type T = T;
 
