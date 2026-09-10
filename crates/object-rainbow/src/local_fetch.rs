@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(Debug, Clone, Copy, Default, ToOutput, Tagged, ListHashes, Topological)]
+#[derive(Debug, Clone, Copy, Default, ToOutput, Tagged, ListHashes, Topological, Parse)]
 pub struct Local<T>(pub T);
 
 impl<T> Deref for Local<T> {
