@@ -1,12 +1,10 @@
 use crate::*;
 
-pub struct Local<T> {
-    object: T,
-}
+pub struct Local<T>(T);
 
 impl<T: Traversible> Local<T> {
     pub fn new(object: T) -> Self {
-        Self { object }
+        Self(object)
     }
 }
 
@@ -14,50 +12,50 @@ impl<T: Traversible + Clone> Fetch for Local<T> {
     type T = T;
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        Box::pin(ready(Ok(self.object.clone())))
+        Box::pin(ready(Ok(self.0.clone())))
     }
 
     fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
-        Ok(Some((self.object.clone(), self.object.to_resolve())))
+        Ok(Some((self.0.clone(), self.0.to_resolve())))
     }
 
     fn fetch_local(&self) -> Option<Self::T> {
-        Some(self.object.clone())
+        Some(self.0.clone())
     }
 
     fn get(&self) -> Option<&Self::T> {
-        Some(&self.object)
+        Some(&self.0)
     }
 
     fn get_mut(&mut self) -> Option<&mut Self::T> {
-        Some(&mut self.object)
+        Some(&mut self.0)
     }
 
     fn try_unwrap(self: Arc<Self>) -> Option<Self::T> {
-        Arc::try_unwrap(self).ok().map(|Self { object }| object)
+        Arc::try_unwrap(self).ok().map(|Self(object)| object)
     }
 }
 
 impl<T: Traversible> FetchBytes for Local<T> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        Box::pin(ready(Ok((self.object.output(), self.object.to_resolve()))))
+        Box::pin(ready(Ok((self.0.output(), self.0.to_resolve()))))
     }
 
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        Box::pin(ready(Ok(self.object.output())))
+        Box::pin(ready(Ok(self.0.output())))
     }
 
     fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
-        Ok(Some((self.object.output(), self.object.to_resolve())))
+        Ok(Some((self.0.output(), self.0.to_resolve())))
     }
 
     fn fetch_data_local(&self) -> Option<Vec<u8>> {
-        Some(self.object.output())
+        Some(self.0.output())
     }
 }
 
 impl<T: Traversible> Singular for Local<T> {
     fn hash(&self) -> Hash {
-        self.object.full_hash()
+        self.0.full_hash()
     }
 }
