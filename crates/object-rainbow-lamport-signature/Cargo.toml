@@ -17,5 +17,8 @@ rand = { workspace = true, optional = true }
 [features]
 generate = ["dep:rand"]
 
+[dev-dependencies]
+smol.workspace = true
+
 [package.metadata.tagit]
 skip = true

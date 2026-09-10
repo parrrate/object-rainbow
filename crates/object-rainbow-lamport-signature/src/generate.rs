@@ -55,3 +55,24 @@ impl Generate for PrivateKey {
             .try_for_each(|pair| pair.regenerate(rng))
     }
 }
+
+#[test]
+fn generate() -> object_rainbow::Result<()> {
+    use object_rainbow::{Fetch, local_fetch::Local};
+
+    use crate::Signed;
+
+    smol::block_on(async {
+        let private = PrivateKey::generate()?;
+        let message = Signed::<_, Local<_>, _>::sign(
+            private,
+            Local(private.public()),
+            Local("test".to_string()),
+        )
+        .await?
+        .fetch()
+        .await?;
+        assert_eq!(message, "test");
+        Ok(())
+    })
+}

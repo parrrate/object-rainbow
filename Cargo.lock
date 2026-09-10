@@ -1937,6 +1937,7 @@ dependencies = [
  "futures-util",
  "object-rainbow",
  "rand 0.10.2",
+ "smol",
 ]
 
 [[package]]
