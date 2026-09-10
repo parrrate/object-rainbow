@@ -1,6 +1,6 @@
 use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
-    Topological, derive_for_wrapped,
+    Topological, derive_for_wrapped, pod,
 };
 
 use crate::Apply;
@@ -73,25 +73,7 @@ impl<K: Send, V: Send, M: MapToSet<K, V>> Apply<(Option<(V, K)>, (Option<V>, K))
     }
 }
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Default,
-)]
+#[pod]
 pub struct ToSet;
 
 impl<K: Send, V: Send> MapToSet<K, V> for ToSet {
