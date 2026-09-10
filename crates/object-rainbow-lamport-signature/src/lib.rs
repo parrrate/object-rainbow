@@ -73,7 +73,7 @@ pub struct PublicKey(FragmentSequence<PublicPair>);
 #[pod]
 pub struct SignatureFragment(SecretFragment);
 
-#[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
+#[pod]
 pub struct Signature(FragmentSequence<SignatureFragment>);
 
 #[derive(Clone, Copy)]
