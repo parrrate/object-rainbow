@@ -1,22 +1,6 @@
 use crate::*;
 
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    ToOutput,
-    InlineOutput,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    Default,
-)]
+#[pod(no_niche)]
 pub struct NicheCut;
 
 impl ByteOrd for NicheCut {
