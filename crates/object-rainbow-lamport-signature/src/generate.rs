@@ -26,6 +26,10 @@ impl Generate for SecretFragment {
 }
 
 impl Generate for PrivateFragment {
+    fn regenerate(&mut self) -> object_rainbow::Result<()> {
+        self.0.regenerate()
+    }
+
     fn generate() -> object_rainbow::Result<Self> {
         Ok(Self(SecretFragment::generate()?))
     }
