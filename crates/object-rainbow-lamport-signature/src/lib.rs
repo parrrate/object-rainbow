@@ -1,9 +1,26 @@
+use std::ops::Index;
+
 use bitvec::array::BitArray;
 use object_rainbow::{HASH_SIZE, Hash, InlineOutput, ToOutput, pod};
 
 const LENGTH: usize = HASH_SIZE * 8;
 
-pub type FragmentSequence<T> = [T; LENGTH];
+#[derive(Debug, ToOutput, InlineOutput, Clone, Copy, PartialEq, Eq)]
+pub struct FragmentSequence<T>([T; LENGTH]);
+
+impl<T> FragmentSequence<T> {
+    fn map<U>(self, f: impl FnMut(T) -> U) -> FragmentSequence<U> {
+        FragmentSequence(self.0.map(f))
+    }
+}
+
+impl<T> Index<usize> for FragmentSequence<T> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        self.0.index(index)
+    }
+}
 
 #[pod]
 pub struct SecretFragment([u8; HASH_SIZE]);
@@ -70,7 +87,9 @@ impl PrivateKey {
     }
 
     pub fn sign(self, message: Message) -> Signature {
-        Signature(std::array::from_fn(|n| self.0[n].sign(message.fragment(n))))
+        Signature(FragmentSequence(std::array::from_fn(|n| {
+            self.0[n].sign(message.fragment(n))
+        })))
     }
 
     pub fn sign_hash(self, hash: Hash) -> Signature {
