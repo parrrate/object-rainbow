@@ -1,7 +1,16 @@
 use crate::*;
 
 #[derive(
-    Debug, ToOutput, InlineOutput, Parse, ParseInline, ListHashes, Topological, Tagged, PartialEq,
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Parse,
+    ParseInline,
+    ListHashes,
+    Topological,
+    Tagged,
+    PartialEq,
+    Eq,
 )]
 pub struct EnumSchema<T> {
     pub kind: NumericSchema,

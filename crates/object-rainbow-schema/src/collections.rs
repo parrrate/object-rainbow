@@ -26,6 +26,7 @@ pub type ItemSchema = Arc<InlineSchema>;
     Topological,
     Clone,
     PartialEq,
+    Eq,
     MaybeHasNiche,
 )]
 #[enumtag("char")]

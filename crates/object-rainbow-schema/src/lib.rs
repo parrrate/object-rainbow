@@ -135,6 +135,7 @@ pub trait AbstractCollection {
     Topological,
     Clone,
     PartialEq,
+    Eq,
 )]
 #[enumtag("char")]
 #[niche(tag)]
@@ -176,6 +177,7 @@ impl Tagged for InlineSchema {}
     Topological,
     Clone,
     PartialEq,
+    Eq,
 )]
 #[enumtag("char")]
 #[niche(tag)]
