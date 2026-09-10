@@ -15,7 +15,7 @@ pub struct PrivatePair([PrivateFragment; 2]);
 #[derive(Debug, ToOutput, Clone, Copy)]
 pub struct PrivateKey([PrivatePair; LENGTH]);
 
-#[derive(Debug, ToOutput, InlineOutput, Clone)]
+#[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
 pub struct PublicFragment(Hash);
 
 #[derive(Debug, ToOutput, InlineOutput)]
