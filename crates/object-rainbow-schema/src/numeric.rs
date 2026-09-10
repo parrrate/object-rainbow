@@ -17,6 +17,7 @@ use crate::*;
     PartialEq,
     Eq,
     PartialOrd,
+    Ord,
 )]
 #[enumtag("char")]
 #[niche(tag)]

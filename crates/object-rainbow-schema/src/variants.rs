@@ -12,6 +12,7 @@ use crate::*;
     PartialEq,
     Eq,
     PartialOrd,
+    Ord,
 )]
 pub struct EnumSchema<T> {
     pub kind: NumericSchema,

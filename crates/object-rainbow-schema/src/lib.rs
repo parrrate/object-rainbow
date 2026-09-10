@@ -137,6 +137,7 @@ pub trait AbstractCollection {
     PartialEq,
     Eq,
     PartialOrd,
+    Ord,
 )]
 #[enumtag("char")]
 #[niche(tag)]
@@ -180,6 +181,7 @@ impl Tagged for InlineSchema {}
     PartialEq,
     Eq,
     PartialOrd,
+    Ord,
 )]
 #[enumtag("char")]
 #[niche(tag)]
