@@ -2,7 +2,7 @@ use object_rainbow::{HASH_SIZE, Hash, InlineOutput, ToOutput};
 
 const LENGTH: usize = HASH_SIZE * 8;
 
-#[derive(Debug, ToOutput, InlineOutput)]
+#[derive(Debug, ToOutput, InlineOutput, Clone)]
 pub struct PrivateFragment([u8; HASH_SIZE]);
 
 #[derive(Debug, ToOutput, InlineOutput)]
