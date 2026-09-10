@@ -1,5 +1,6 @@
 use crate::*;
 
+#[derive(Clone)]
 pub struct Local<T>(pub T);
 
 impl<T> Deref for Local<T> {
