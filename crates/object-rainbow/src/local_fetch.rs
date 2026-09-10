@@ -12,6 +12,7 @@ use crate::*;
     Topological,
     Parse,
     ParseInline,
+    Size,
 )]
 pub struct Local<T>(pub T);
 
