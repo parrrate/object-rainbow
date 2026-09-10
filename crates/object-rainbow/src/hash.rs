@@ -85,6 +85,12 @@ impl Hash {
     }
 }
 
+impl From<Hash> for [u8; HASH_SIZE] {
+    fn from(hash: Hash) -> Self {
+        hash.into_bytes()
+    }
+}
+
 impl Deref for Hash {
     type Target = [u8; HASH_SIZE];
 
