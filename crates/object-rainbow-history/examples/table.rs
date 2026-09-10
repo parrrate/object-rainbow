@@ -14,24 +14,7 @@ use object_rainbow_trie::{TrieMap, TrieSet};
 use smol_macros::main;
 use ulid::Ulid;
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Size,
-    MaybeHasNiche,
-)]
+#[pod]
 struct ChannelId(Ulid);
 
 #[derive(
