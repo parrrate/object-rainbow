@@ -37,3 +37,5 @@ impl<T: ?Sized> PartialEq for ObjectMarker<T> {
         self.object == other.object
     }
 }
+
+impl<T: ?Sized> Eq for ObjectMarker<T> {}
