@@ -29,22 +29,7 @@ struct Message {
     user: UserId,
 }
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-)]
+#[pod]
 struct MessageByChannel {
     channel: ChannelId,
     message: MessageId,
