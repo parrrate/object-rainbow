@@ -184,11 +184,13 @@ impl Tagged for InlineSchema {}
     PartialOrd,
     Ord,
     Hash,
+    Default,
 )]
 #[enumtag("char")]
 #[niche(tag)]
 #[parse(unchecked)]
 pub enum TailSchema {
+    #[default]
     Cut,
     Option(Arc<Self>),
     Sequence(Arc<InlineSchema>),
