@@ -100,7 +100,7 @@ impl From<Hash> for Message {
     }
 }
 
-#[derive(ToOutput, InlineOutput)]
+#[derive(Debug, ToOutput, InlineOutput)]
 pub struct Signed<P, S, M> {
     public: P,
     signature: S,
