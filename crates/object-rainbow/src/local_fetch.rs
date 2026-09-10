@@ -13,10 +13,6 @@ impl<T: Traversible> LocalFetch<T> {
 impl<T: Traversible + Clone> Fetch for LocalFetch<T> {
     type T = T;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        Box::pin(ready(Ok((self.object.clone(), self.object.to_resolve()))))
-    }
-
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(ready(Ok(self.object.clone())))
     }

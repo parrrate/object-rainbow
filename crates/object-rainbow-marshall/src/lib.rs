@@ -314,10 +314,6 @@ impl<T: ToOutput> FetchBytes for Marshalled<T> {
 impl<T: Send + Sync + Clone + ToOutput> Fetch for Marshalled<T> {
     type T = T;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        Box::pin(async move { Ok((self.object.clone(), self.root.marshalled.to_resolve())) })
-    }
-
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async move { Ok(self.object.clone()) })
     }

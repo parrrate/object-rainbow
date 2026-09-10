@@ -192,16 +192,6 @@ impl<K, D> FetchBytes for RawFetch<K, D> {
 impl<K: Key, D: Fetch<T: Topological + Tagged>> Fetch for RawFetch<K, D> {
     type T = Encrypted<K, D::T>;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        Box::pin(async move {
-            let (encrypted, resolve) = self.resolve.resolve(self.address, &self.resolve).await?;
-            let (header, _) = side_parse(&self.key, &encrypted, &resolve)?;
-            let decrypted = self.decrypted.fetch().await?;
-            let inner = header.with(decrypted)?;
-            Ok((Encrypted { inner }, resolve))
-        })
-    }
-
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async move {
             let (encrypted, resolve) = self.resolve.resolve(self.address, &self.resolve).await?;
@@ -315,16 +305,6 @@ impl<K, D> FetchBytes for InnerFetch<K, D> {
 
 impl<K: Key, D: Fetch<T: Topological + Tagged>> Fetch for InnerFetch<K, D> {
     type T = Encrypted<K, D::T>;
-
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        Box::pin(async move {
-            let (encrypted, resolve) = self.encrypted.fetch_bytes().await?;
-            let (header, _) = side_parse(&self.key, &encrypted, &resolve)?;
-            let decrypted = self.decrypted.fetch().await?;
-            let inner = header.with(decrypted)?;
-            Ok((Encrypted { inner }, resolve))
-        })
-    }
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async move {

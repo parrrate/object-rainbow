@@ -117,16 +117,6 @@ impl<T, Extra: Send + Sync> Singular for ByAddress<T, Extra> {
 impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for ByAddress<T, Extra> {
     type T = T;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        Box::pin(async {
-            let (data, resolve) = self.fetch_bytes().await?;
-            let object = self
-                .extra
-                .parse_checked(self.inner.address.hash, &data, &resolve)?;
-            Ok((object, resolve))
-        })
-    }
-
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
@@ -183,10 +173,6 @@ impl<T: FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> FetchExtra<T, D> {
 
 impl<T: Send + FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> Fetch for FetchExtra<T, D> {
     type T = T;
-
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        Box::pin(self.fetch_object())
-    }
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
@@ -419,17 +405,6 @@ impl<T, Extra> FetchBytes for RawPoint<T, Extra> {
 
 impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra> {
     type T = T;
-
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        Box::pin(async {
-            let (data, resolve) = self.inner.fetch.fetch_bytes().await?;
-            let object = self
-                .extra
-                .0
-                .parse_checked(self.inner.hash, &data, &resolve)?;
-            Ok((object, resolve))
-        })
-    }
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
@@ -763,10 +738,6 @@ impl<T: Traversible + Clone> Point<T> {
 impl<T: FullHash> Fetch for Point<T> {
     type T = T;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        self.fetch.fetch_full()
-    }
-
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         self.fetch.fetch()
     }
@@ -900,10 +871,6 @@ impl<T, U, F: Fn(T) -> U> Map1<T> for F {
 impl<T, F: Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
     type T = F::U;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        Box::pin(self.fetch.fetch_full().map_ok(|(x, r)| ((self.map)(x), r)))
-    }
-
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(self.fetch.fetch().map_ok(&self.map))
     }
@@ -1010,10 +977,6 @@ impl<T, E> FetchBytes for ExtraPoint<T, E> {
 
 impl<T: FullHash, E: Send + Sync> Fetch for ExtraPoint<T, E> {
     type T = T;
-
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        self.point.fetch_full()
-    }
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         self.point.fetch()
