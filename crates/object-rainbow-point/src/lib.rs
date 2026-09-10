@@ -67,13 +67,13 @@ impl Singular for AddressedBytes {
     }
 }
 
-struct ByAddress<T, Extra> {
+struct Addressed<T, Extra> {
     inner: AddressedBytes,
     extra: Extra,
     _object: PhantomData<fn() -> T>,
 }
 
-impl<T, Extra> ByAddress<T, Extra> {
+impl<T, Extra> Addressed<T, Extra> {
     fn from_inner(inner: AddressedBytes, extra: Extra) -> Self {
         Self {
             inner,
@@ -83,7 +83,7 @@ impl<T, Extra> ByAddress<T, Extra> {
     }
 }
 
-impl<T, Extra> FetchBytes for ByAddress<T, Extra> {
+impl<T, Extra> FetchBytes for Addressed<T, Extra> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.inner.fetch_bytes()
     }
@@ -111,13 +111,13 @@ impl<T, Extra> FetchBytes for ByAddress<T, Extra> {
     }
 }
 
-impl<T, Extra: Send + Sync> Singular for ByAddress<T, Extra> {
+impl<T, Extra: Send + Sync> Singular for Addressed<T, Extra> {
     fn hash(&self) -> Hash {
         self.inner.hash()
     }
 }
 
-impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for ByAddress<T, Extra> {
+impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for Addressed<T, Extra> {
     type T = T;
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
@@ -578,7 +578,7 @@ impl<T: 'static + FullHash> Point<T> {
     ) -> Self {
         Self::from_trusted_fetch(
             address.hash,
-            ByAddress::from_inner(AddressedBytes { address, resolve }, extra).into_dyn_fetch(),
+            Addressed::from_inner(AddressedBytes { address, resolve }, extra).into_dyn_fetch(),
         )
     }
 
