@@ -1,7 +1,4 @@
-use object_rainbow::{
-    InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
-    Topological, derive_for_wrapped, pod,
-};
+use object_rainbow::{derive_for_wrapped, pod};
 
 use crate::Apply;
 
@@ -12,25 +9,7 @@ pub trait MapToSet<K: Send, V: Send>: Send + Sync {
     -> impl Send + Future<Output = object_rainbow::Result<Self::T>>;
 }
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Default,
-)]
+#[pod]
 pub struct MappedToSet<M>(M);
 
 impl<K: Send + Clone, V: Send, M: MapToSet<K, V>> Apply<(Option<V>, (Option<V>, K))>
