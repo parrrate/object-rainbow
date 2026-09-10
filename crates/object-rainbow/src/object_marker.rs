@@ -39,3 +39,15 @@ impl<T: ?Sized> PartialEq for ObjectMarker<T> {
 }
 
 impl<T: ?Sized> Eq for ObjectMarker<T> {}
+
+impl<T: ?Sized> PartialOrd for ObjectMarker<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<T: ?Sized> Ord for ObjectMarker<T> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.object.cmp(&other.object)
+    }
+}
