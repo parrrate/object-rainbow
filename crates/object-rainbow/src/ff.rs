@@ -2,19 +2,8 @@ use typenum::{U1, U254};
 
 use crate::{decr_byte_niche::DecrByteNiche, *};
 
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    ListHashes,
-    Topological,
-    ParseAsInline,
-    Default,
-)]
+#[pod(no_output, no_parse, no_size, no_niche)]
+#[derive(ParseAsInline)]
 pub struct Ff;
 
 impl ToOutput for Ff {
