@@ -9,7 +9,7 @@ pub struct SecretFragment([u8; HASH_SIZE]);
 #[pod]
 pub struct PrivateFragment(SecretFragment);
 
-#[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
+#[pod]
 pub struct PrivatePair([PrivateFragment; 2]);
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
