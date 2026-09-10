@@ -1,7 +1,7 @@
 use object_rainbow::HASH_SIZE;
 use rand::{TryRng, rngs::SysRng};
 
-use crate::SecretFragment;
+use crate::{PrivateFragment, SecretFragment};
 
 impl SecretFragment {
     pub fn generate() -> object_rainbow::Result<Self> {
@@ -10,5 +10,11 @@ impl SecretFragment {
             .try_fill_bytes(&mut bytes)
             .map_err(std::io::Error::from)?;
         Ok(Self(bytes))
+    }
+}
+
+impl PrivateFragment {
+    pub fn generate() -> object_rainbow::Result<Self> {
+        Ok(Self(SecretFragment::generate()?))
     }
 }
