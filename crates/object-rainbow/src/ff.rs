@@ -2,7 +2,7 @@ use typenum::{U1, U254};
 
 use crate::{decr_byte_niche::DecrByteNiche, *};
 
-#[pod(no_output, no_parse, no_size, no_niche)]
+#[pod(no_output, no_parse)]
 #[derive(ParseAsInline)]
 pub struct Ff;
 
