@@ -1,16 +1,16 @@
 use crate::*;
 
-pub struct LocalFetch<T> {
+pub struct Local<T> {
     object: T,
 }
 
-impl<T: Traversible> LocalFetch<T> {
+impl<T: Traversible> Local<T> {
     pub fn new(object: T) -> Self {
         Self { object }
     }
 }
 
-impl<T: Traversible + Clone> Fetch for LocalFetch<T> {
+impl<T: Traversible + Clone> Fetch for Local<T> {
     type T = T;
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
@@ -38,7 +38,7 @@ impl<T: Traversible + Clone> Fetch for LocalFetch<T> {
     }
 }
 
-impl<T: Traversible> FetchBytes for LocalFetch<T> {
+impl<T: Traversible> FetchBytes for Local<T> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         Box::pin(ready(Ok((self.object.output(), self.object.to_resolve()))))
     }
@@ -56,7 +56,7 @@ impl<T: Traversible> FetchBytes for LocalFetch<T> {
     }
 }
 
-impl<T: Traversible> Singular for LocalFetch<T> {
+impl<T: Traversible> Singular for Local<T> {
     fn hash(&self) -> Hash {
         self.object.full_hash()
     }
