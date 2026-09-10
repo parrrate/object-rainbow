@@ -9,6 +9,7 @@ use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
     Topological, derive_for_wrapped,
     map_extra::{SmExtra, StaticMap},
+    pod,
     tuple_extra::ToTuple2,
 };
 
@@ -110,25 +111,7 @@ impl<Diff: Send, First: Apply<Diff>, Second: Apply<First::Output>> Apply<Diff>
 
 pub type Parallel<A, B> = Sequential<ToTuple2, (A, B)>;
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Default,
-)]
+#[pod]
 pub struct FromIter<T>(pub T);
 
 impl<T: Apply<D>, D: Send, I: Send + IntoIterator<Item = D, IntoIter: Send>> Apply<I>
