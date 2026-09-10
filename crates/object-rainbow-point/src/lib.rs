@@ -1004,3 +1004,9 @@ impl<T: 'static + Send + FullHash, E: 'static + Send + Sync + Clone + ExtraFor<T
         ))
     }
 }
+
+impl<T: IntoPoint + Clone> From<T> for Point<T> {
+    fn from(object: T) -> Self {
+        object.point()
+    }
+}
