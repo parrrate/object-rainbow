@@ -31,3 +31,9 @@ impl PrivatePair {
         PublicPair(self.0.map(PrivateFragment::public))
     }
 }
+
+impl PrivateKey {
+    pub fn public(self) -> PublicKey {
+        PublicKey(self.0.map(PrivatePair::public))
+    }
+}
