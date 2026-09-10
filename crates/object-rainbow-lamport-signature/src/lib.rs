@@ -152,3 +152,9 @@ impl<P: Fetch<T = PublicKey>, S: Fetch<T = Signature>, M: Singular> FetchBytes f
         Box::pin(async move { self.message().await?.fetch_data().await })
     }
 }
+
+impl<P: Fetch<T = PublicKey>, S: Fetch<T = Signature>, M: Singular> Singular for Signed<P, S, M> {
+    fn hash(&self) -> Hash {
+        self.message.hash()
+    }
+}
