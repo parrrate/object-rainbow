@@ -174,7 +174,17 @@ impl ListHashes for LpString {}
 impl Topological for LpString {}
 
 #[derive(
-    Debug, ListHashes, Topological, Tagged, ParseAsInline, Clone, PartialEq, Eq, PartialOrd, Ord,
+    Debug,
+    ListHashes,
+    Topological,
+    Tagged,
+    ParseAsInline,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
 )]
 pub struct LpVec<T>(pub Vec<T>);
 
