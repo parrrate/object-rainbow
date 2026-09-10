@@ -20,24 +20,7 @@ struct ChannelId(Ulid);
 #[pod]
 struct MessageId(Ulid);
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Size,
-    MaybeHasNiche,
-)]
+#[pod]
 struct UserId(Ulid);
 
 #[derive(
