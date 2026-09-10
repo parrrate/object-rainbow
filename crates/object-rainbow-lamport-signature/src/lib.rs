@@ -66,9 +66,7 @@ impl PrivateKey {
     }
 
     pub fn sign(self, data: Message) -> Signature {
-        Signature(std::array::from_fn(|n| {
-            self.0[n].sign(MessageFragment(data.0[n]))
-        }))
+        Signature(std::array::from_fn(|n| self.0[n].sign(data.fragment(n))))
     }
 }
 
@@ -80,6 +78,12 @@ impl SignatureFragment {
 
 impl Signature {
     pub fn validate(self, public: PublicKey, data: Message) -> bool {
-        (0..=255).all(|n| self.0[n].validate(public.0[n], MessageFragment(data.0[n])))
+        (0..=255).all(|n| self.0[n].validate(public.0[n], data.fragment(n)))
+    }
+}
+
+impl Message {
+    pub fn fragment(&self, n: usize) -> MessageFragment {
+        MessageFragment(self.0[n])
     }
 }
