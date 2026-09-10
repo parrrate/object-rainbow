@@ -12,7 +12,7 @@ use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::{
     Equivalent, Inline, InlineOutput, ListHashes, Parse, ParseInline, ParseSliceRefless,
     ReflessObject, Tagged, ToOutput, Topological, Traversible, assert_impl,
-    object_marker::ObjectMarker,
+    object_marker::ObjectMarker, pod,
 };
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
@@ -22,18 +22,7 @@ mod serde;
 
 type TriePoint<Tr> = Point<(Tr, Vec<u8>)>;
 
-#[derive(
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Clone,
-    PartialEq,
-    Eq,
-)]
+#[pod(no_copy, no_default, no_size, no_niche)]
 #[topology(recursive, inline)]
 pub struct Trie<T> {
     value: Option<T>,
