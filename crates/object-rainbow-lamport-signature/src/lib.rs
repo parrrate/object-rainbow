@@ -34,9 +34,15 @@ pub struct MessageFragment(pub bool);
 
 pub struct Message(pub BitArray<[u8; HASH_SIZE]>);
 
-impl PrivateFragment {
+impl SecretFragment {
     pub fn public(self) -> PublicFragment {
         PublicFragment(self.data_hash())
+    }
+}
+
+impl PrivateFragment {
+    pub fn public(self) -> PublicFragment {
+        self.0.public()
     }
 
     pub fn sign(self) -> SignatureFragment {
@@ -68,7 +74,7 @@ impl PrivateKey {
 
 impl SignatureFragment {
     pub fn validate(self, public: PublicPair, data: MessageFragment) -> bool {
-        self.data_hash() == public.0[data.0 as usize].0
+        self.0.public() == public.0[data.0 as usize]
     }
 }
 
