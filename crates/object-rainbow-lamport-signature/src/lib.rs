@@ -3,7 +3,7 @@ use object_rainbow::{HASH_SIZE, Hash, InlineOutput, ToOutput, pod};
 
 const LENGTH: usize = HASH_SIZE * 8;
 
-#[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
+#[pod]
 pub struct SecretFragment([u8; HASH_SIZE]);
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
