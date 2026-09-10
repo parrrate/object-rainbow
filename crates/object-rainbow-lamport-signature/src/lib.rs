@@ -58,4 +58,10 @@ impl PrivateKey {
     pub fn public(self) -> PublicKey {
         PublicKey(self.0.map(PrivatePair::public))
     }
+
+    pub fn sign(self, data: Message) -> Signature {
+        Signature(std::array::from_fn(|n| {
+            self.0[n].sign(MessageFragment(data.0[n]))
+        }))
+    }
 }
