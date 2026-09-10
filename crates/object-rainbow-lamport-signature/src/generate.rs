@@ -1,6 +1,6 @@
 use rand::{TryRng, rngs::SysRng};
 
-use crate::{PrivateFragment, PrivatePair, SecretFragment};
+use crate::{PrivateFragment, PrivateKey, PrivatePair, SecretFragment};
 
 pub trait Generate: Default {
     fn regenerate(&mut self) -> object_rainbow::Result<()>;
@@ -31,5 +31,11 @@ impl Generate for PrivatePair {
         self.0
             .iter_mut()
             .try_for_each(|fragment| fragment.regenerate())
+    }
+}
+
+impl Generate for PrivateKey {
+    fn regenerate(&mut self) -> object_rainbow::Result<()> {
+        self.0.0.iter_mut().try_for_each(|pair| pair.regenerate())
     }
 }
