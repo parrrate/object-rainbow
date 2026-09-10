@@ -33,6 +33,7 @@ pub struct Signature([SignatureFragment; LENGTH]);
 #[derive(Clone, Copy)]
 pub struct MessageFragment(pub bool);
 
+#[derive(Clone)]
 pub struct Message(pub BitArray<[u8; HASH_SIZE]>);
 
 impl SecretFragment {
