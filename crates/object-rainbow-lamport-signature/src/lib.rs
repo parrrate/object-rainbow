@@ -102,6 +102,10 @@ impl PrivateKey {
     pub fn sign_hash(self, hash: Hash) -> Signature {
         self.sign(hash.into())
     }
+
+    pub fn sign_singular(self, singular: &(impl ?Sized + Singular)) -> Signature {
+        self.sign_hash(singular.hash())
+    }
 }
 
 impl SignatureFragment {
@@ -143,7 +147,7 @@ impl<P: Fetch<T = PublicKey>, S: Fetch<T = Signature>, M: Singular> Signed<P, S,
         if public.fetch().await? != private.public() {
             return Err(object_rainbow::error_operation!("public key mismatch"));
         }
-        let signature = private.sign_hash(message.hash()).into();
+        let signature = private.sign_singular(&message).into();
         Ok(Self {
             public,
             signature,
