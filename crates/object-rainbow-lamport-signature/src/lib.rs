@@ -66,8 +66,14 @@ impl PrivateKey {
     }
 }
 
+impl SignatureFragment {
+    pub fn validate(self, public: PublicPair, data: MessageFragment) -> bool {
+        self.data_hash() == public.0[data.0 as usize].0
+    }
+}
+
 impl Signature {
     pub fn validate(self, public: PublicKey, data: Message) -> bool {
-        (0..=255).all(|n| self.0[n].data_hash() == public.0[n].0[data.0[n] as usize].0)
+        (0..=255).all(|n| self.0[n].validate(public.0[n], MessageFragment(data.0[n])))
     }
 }
