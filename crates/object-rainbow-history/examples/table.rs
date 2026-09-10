@@ -4,7 +4,7 @@ use futures_util::TryStreamExt;
 use macro_rules_attribute::apply;
 use object_rainbow::{
     InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Size, Tagged, ToOutput,
-    Topological, map_extra::Return,
+    Topological, map_extra::Return, pod,
 };
 use object_rainbow_apply::{
     FromIter, Parallel, Sequential,
@@ -154,20 +154,7 @@ struct MessageByUser {
 )]
 struct MessageToChannel;
 
-#[derive(
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Default,
-)]
+#[pod]
 struct MessageToUser;
 
 impl MapToSet<MessageId, Message> for MessageToChannel {
