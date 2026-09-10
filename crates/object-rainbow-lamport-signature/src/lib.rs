@@ -23,6 +23,9 @@ pub struct PublicKey([PublicPair; LENGTH]);
 #[derive(Debug, ToOutput, InlineOutput)]
 pub struct SignatureFragment(Hash);
 
+#[derive(Debug, ToOutput)]
+pub struct Signature([Hash; LENGTH]);
+
 impl PrivateFragment {
     pub fn public(self) -> PublicFragment {
         PublicFragment(self.data_hash())
