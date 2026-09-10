@@ -14,7 +14,17 @@ use object_rainbow::{
 type Bits = BitArray<[u8; 32]>;
 
 #[derive(
-    Debug, Tagged, ListHashes, Topological, ParseAsInline, Clone, PartialEq, Eq, PartialOrd, Ord,
+    Debug,
+    Tagged,
+    ListHashes,
+    Topological,
+    ParseAsInline,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
 )]
 pub struct ArrayMap<T> {
     bits: Bits,
