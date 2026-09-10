@@ -5,7 +5,7 @@ const LENGTH: usize = HASH_SIZE * 8;
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
 pub struct PrivateFragment([u8; HASH_SIZE]);
 
-#[derive(Debug, ToOutput, InlineOutput)]
+#[derive(Debug, ToOutput, InlineOutput, Clone)]
 pub struct PrivatePair([PrivateFragment; 2]);
 
 #[derive(Debug, ToOutput)]
