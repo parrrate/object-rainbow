@@ -3,6 +3,8 @@ use object_rainbow::{HASH_SIZE, Hash, InlineOutput, ToOutput, pod};
 
 const LENGTH: usize = HASH_SIZE * 8;
 
+pub type FragmentSequence<T> = [T; LENGTH];
+
 #[pod]
 pub struct SecretFragment([u8; HASH_SIZE]);
 
@@ -13,7 +15,7 @@ pub struct PrivateFragment(SecretFragment);
 pub struct PrivatePair([PrivateFragment; 2]);
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
-pub struct PrivateKey([PrivatePair; LENGTH]);
+pub struct PrivateKey(FragmentSequence<PrivatePair>);
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy, PartialEq, Eq)]
 pub struct PublicFragment(Hash);
@@ -22,13 +24,13 @@ pub struct PublicFragment(Hash);
 pub struct PublicPair([PublicFragment; 2]);
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy, PartialEq, Eq)]
-pub struct PublicKey([PublicPair; LENGTH]);
+pub struct PublicKey(FragmentSequence<PublicPair>);
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
 pub struct SignatureFragment(SecretFragment);
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
-pub struct Signature([SignatureFragment; LENGTH]);
+pub struct Signature(FragmentSequence<SignatureFragment>);
 
 #[derive(Clone, Copy)]
 pub struct MessageFragment(pub bool);
