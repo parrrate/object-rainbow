@@ -1162,7 +1162,7 @@ impl ToOutput for dyn Singular {
 
 impl InlineOutput for dyn Singular {}
 
-impl ListHashes for Arc<dyn Singular> {
+impl ListHashes for dyn Singular {
     fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
         f(self.hash());
     }
