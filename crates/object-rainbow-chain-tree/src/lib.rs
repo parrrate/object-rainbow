@@ -119,6 +119,12 @@ impl<T> Clone for ChainTree<T> {
     }
 }
 
+impl<T> std::hash::Hash for ChainTree<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.hash(state);
+    }
+}
+
 impl<T> ChainTree<T> {
     pub const EMPTY: Self = Self(None);
 
