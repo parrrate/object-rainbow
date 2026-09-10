@@ -1,6 +1,4 @@
-use object_rainbow::{
-    InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological, pod,
-};
+use object_rainbow::pod;
 
 use crate::Apply;
 
@@ -35,19 +33,7 @@ impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, ExposedState, Output = O>
 
 /// This is separate from [`NoOverwrites`] both because of potential implementation conflicts and
 /// because of some semantical differences.
-#[derive(
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Clone,
-    PartialEq,
-    Eq,
-    Default,
-)]
+#[pod]
 pub struct NoCollisions<T>(T);
 
 impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, ConcealedState, Output = O>, O: Send>
