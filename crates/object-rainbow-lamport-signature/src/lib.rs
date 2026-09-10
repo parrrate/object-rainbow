@@ -2,8 +2,8 @@ use std::ops::Index;
 
 use bitvec::array::BitArray;
 use object_rainbow::{
-    HASH_SIZE, Hash, InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological,
-    pod,
+    HASH_SIZE, Hash, InlineOutput, ListHashes, Parse, ParseInline, Size, Tagged, ToOutput,
+    Topological, pod,
 };
 
 const LENGTH: usize = HASH_SIZE * 8;
@@ -17,6 +17,7 @@ const LENGTH: usize = HASH_SIZE * 8;
     Topological,
     Parse,
     ParseInline,
+    Size,
     Clone,
     Copy,
     PartialEq,
