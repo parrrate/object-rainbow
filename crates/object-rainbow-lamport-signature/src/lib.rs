@@ -25,6 +25,7 @@ const LENGTH: usize = HASH_SIZE * 8;
     Eq,
     PartialOrd,
     Ord,
+    Hash,
 )]
 pub struct FragmentSequence<T>([T; LENGTH]);
 
