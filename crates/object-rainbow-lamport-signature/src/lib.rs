@@ -136,9 +136,17 @@ pub struct Signed<P, S, M> {
 }
 
 impl<P: Fetch<T = PublicKey>, S: Fetch<T = Signature>, M: Singular> Signed<P, S, M> {
-    pub async fn message(&self) -> object_rainbow::Result<&M> {
+    pub async fn verify(&self) -> object_rainbow::Result<()> {
         let (public, signature) = try_join(self.public.fetch(), self.signature.fetch()).await?;
-        signature.verify(public, self.message.hash().into());
+        if signature.verify(public, self.message.hash().into()) {
+            Ok(())
+        } else {
+            Err(object_rainbow::error_consistency!("invalid signature"))
+        }
+    }
+
+    pub async fn message(&self) -> object_rainbow::Result<&M> {
+        self.verify().await?;
         Ok(&self.message)
     }
 }
