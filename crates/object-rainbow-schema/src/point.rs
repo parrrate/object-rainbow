@@ -26,6 +26,7 @@ use crate::{
     Eq,
     PartialOrd,
     Ord,
+    Hash,
 )]
 pub struct PointSchema {
     pub schema: Arc<TailSchema>,
