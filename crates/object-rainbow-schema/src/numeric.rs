@@ -4,23 +4,7 @@ use object_rainbow::u63::U63;
 
 use crate::*;
 
-#[derive(
-    Debug,
-    Enum,
-    ToOutput,
-    Parse,
-    ParseInline,
-    MaybeHasNiche,
-    ListHashes,
-    Topological,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-)]
+#[pod(no_default, no_size)]
 #[enumtag("char")]
 #[niche(tag)]
 pub enum NumericSchema {
@@ -52,9 +36,6 @@ pub enum NumericSchema {
     OpaqueBool,
     LpU63,
 }
-
-impl InlineOutput for NumericSchema {}
-impl Tagged for NumericSchema {}
 
 impl AbstractSchema for NumericSchema {
     fn niche(&self) -> SchemaNiche {
