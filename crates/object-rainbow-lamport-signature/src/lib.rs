@@ -1,5 +1,5 @@
 use bitvec::array::BitArray;
-use object_rainbow::{HASH_SIZE, Hash, InlineOutput, ListHashes, Tagged, ToOutput};
+use object_rainbow::{HASH_SIZE, Hash, InlineOutput, ToOutput, pod};
 
 const LENGTH: usize = HASH_SIZE * 8;
 
@@ -100,7 +100,7 @@ impl From<Hash> for Message {
     }
 }
 
-#[derive(Debug, ToOutput, InlineOutput, Tagged, ListHashes)]
+#[pod]
 pub struct Signed<P, S, M> {
     public: P,
     signature: S,
