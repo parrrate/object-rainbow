@@ -65,3 +65,9 @@ impl PrivateKey {
         }))
     }
 }
+
+impl Signature {
+    pub fn validate(self, key: PublicKey, data: Message) -> bool {
+        (0..=255).all(|n| self.0[n].data_hash() == key.0[n].0[data.0[n] as usize].0)
+    }
+}
