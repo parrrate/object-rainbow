@@ -61,7 +61,7 @@ pub struct PrivatePair([PrivateFragment; 2]);
 #[pod]
 pub struct PrivateKey(FragmentSequence<PrivatePair>);
 
-#[derive(Debug, ToOutput, InlineOutput, Clone, Copy, PartialEq, Eq)]
+#[pod]
 pub struct PublicFragment(Hash);
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy, PartialEq, Eq)]
