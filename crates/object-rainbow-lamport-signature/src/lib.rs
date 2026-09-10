@@ -105,14 +105,14 @@ impl PrivateKey {
 }
 
 impl SignatureFragment {
-    pub fn validate(self, public: PublicPair, message: MessageFragment) -> bool {
+    pub fn verify(self, public: PublicPair, message: MessageFragment) -> bool {
         self.0.public() == public.0[message.0 as usize]
     }
 }
 
 impl Signature {
-    pub fn validate(self, public: PublicKey, message: Message) -> bool {
-        (0..=255).all(|n| self.0[n].validate(public.0[n], message.fragment(n)))
+    pub fn verify(self, public: PublicKey, message: Message) -> bool {
+        (0..=255).all(|n| self.0[n].verify(public.0[n], message.fragment(n)))
     }
 }
 
@@ -138,7 +138,7 @@ pub struct Signed<P, S, M> {
 impl<P: Fetch<T = PublicKey>, S: Fetch<T = Signature>, M: Singular> Signed<P, S, M> {
     pub async fn message(&self) -> object_rainbow::Result<&M> {
         let (public, signature) = try_join(self.public.fetch(), self.signature.fetch()).await?;
-        signature.validate(public, self.message.hash().into());
+        signature.verify(public, self.message.hash().into());
         Ok(&self.message)
     }
 }
