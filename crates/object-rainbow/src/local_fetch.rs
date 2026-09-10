@@ -1,6 +1,6 @@
 use crate::*;
 
-pub struct Local<T>(T);
+pub struct Local<T>(pub T);
 
 impl<T: Traversible> Local<T> {
     pub fn new(object: T) -> Self {
