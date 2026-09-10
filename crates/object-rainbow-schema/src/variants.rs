@@ -1,20 +1,6 @@
 use crate::*;
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Parse,
-    ParseInline,
-    ListHashes,
-    Topological,
-    Tagged,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-)]
+#[pod(no_clone, no_default, no_size)]
 pub struct EnumSchema<T> {
     pub kind: NumericSchema,
     pub variants: Arc<LpVec<Arc<T>>>,
