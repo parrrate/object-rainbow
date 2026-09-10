@@ -67,7 +67,7 @@ pub struct PublicFragment(Hash);
 #[pod]
 pub struct PublicPair([PublicFragment; 2]);
 
-#[derive(Debug, ToOutput, InlineOutput, Clone, Copy, PartialEq, Eq)]
+#[pod]
 pub struct PublicKey(FragmentSequence<PublicPair>);
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
