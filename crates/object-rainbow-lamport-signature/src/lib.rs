@@ -2,7 +2,7 @@ use std::ops::Index;
 
 use bitvec::array::BitArray;
 use futures_util::future::try_join;
-use object_rainbow::{Fetch, HASH_SIZE, Hash, Singular, ToOutput, pod};
+use object_rainbow::{Fetch, FetchBytes, HASH_SIZE, Hash, Singular, ToOutput, pod};
 
 const LENGTH: usize = HASH_SIZE * 8;
 
@@ -140,5 +140,15 @@ impl<P: Fetch<T = PublicKey>, S: Fetch<T = Signature>, M: Singular> Signed<P, S,
         let (public, signature) = try_join(self.public.fetch(), self.signature.fetch()).await?;
         signature.verify(public, self.message.hash().into());
         Ok(&self.message)
+    }
+}
+
+impl<P: Fetch<T = PublicKey>, S: Fetch<T = Signature>, M: Singular> FetchBytes for Signed<P, S, M> {
+    fn fetch_bytes(&'_ self) -> object_rainbow::FailFuture<'_, object_rainbow::ByteNode> {
+        Box::pin(async move { self.message().await?.fetch_bytes().await })
+    }
+
+    fn fetch_data(&'_ self) -> object_rainbow::FailFuture<'_, Vec<u8>> {
+        Box::pin(async move { self.message().await?.fetch_data().await })
     }
 }
