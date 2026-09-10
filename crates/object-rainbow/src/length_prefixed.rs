@@ -66,7 +66,8 @@ fn prefixed() -> crate::Result<()> {
 }
 
 /// Length-prefixed [`Vec<u8>`]
-#[derive(Debug, Clone, ParseAsInline, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[pod(no_copy, no_output, no_parse, no_size)]
+#[derive(ParseAsInline)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LpBytes(pub Vec<u8>);
 
@@ -105,10 +106,6 @@ impl<I: ParseInput> ParseInline<I> for LpBytes {
         Ok(Self(data))
     }
 }
-
-impl Tagged for LpBytes {}
-impl ListHashes for LpBytes {}
-impl Topological for LpBytes {}
 
 /// Length-prefixed [`String`].
 #[derive(Debug, Clone, ParseAsInline, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
