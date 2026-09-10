@@ -99,3 +99,9 @@ impl From<Hash> for Message {
         Self(BitArray::new(hash.into()))
     }
 }
+
+pub struct Signed<P, S, M> {
+    pub public: P,
+    pub signature: S,
+    pub message: M,
+}
