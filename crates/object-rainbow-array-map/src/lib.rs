@@ -6,26 +6,14 @@ use std::{
 
 use bitvec::array::BitArray;
 use object_rainbow::{
-    ByteOrd, Equivalent, EquivalentFor, Inline, InlineOutput, ListHashes, ParseAsInline,
-    ParseInline, ParseInput, PointInput, RainbowIterator, Tagged, ToOutput, Topological,
-    assert_impl, pod,
+    ByteOrd, Equivalent, EquivalentFor, Inline, InlineOutput, ParseAsInline, ParseInline,
+    ParseInput, PointInput, RainbowIterator, ToOutput, assert_impl, pod,
 };
 
 type Bits = BitArray<[u8; 32]>;
 
-#[derive(
-    Debug,
-    Tagged,
-    ListHashes,
-    Topological,
-    ParseAsInline,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-)]
+#[pod(no_copy, no_default, no_output, no_parse)]
+#[derive(ParseAsInline)]
 pub struct ArrayMap<T> {
     bits: Bits,
     map: BTreeMap<u8, T>,
