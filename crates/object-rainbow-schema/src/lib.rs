@@ -12,6 +12,7 @@ use object_rainbow::{
     extras::Extras,
     length_prefixed::LpVec,
     map_extra::MappedExtra,
+    pod,
     tuple_extra::{Extra0, Extra1},
     tuple_of_arrays::try_divide,
 };
@@ -169,23 +170,7 @@ pub enum InlineSchema {
 impl InlineOutput for InlineSchema {}
 impl Tagged for InlineSchema {}
 
-#[derive(
-    Debug,
-    Enum,
-    ToOutput,
-    Parse,
-    ParseInline,
-    MaybeHasNiche,
-    ListHashes,
-    Topological,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Default,
-)]
+#[pod(no_copy, no_tagged, no_size, no_inline_output)]
 #[enumtag("char")]
 #[niche(tag)]
 #[parse(unchecked)]
