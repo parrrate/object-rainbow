@@ -34,13 +34,13 @@ impl<T: ?Sized + ListHashes> ListHashes for Box<T> {
     }
 }
 
-impl<T: ?Sized + Topological> Topological for Box<T> {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
-        (**self).traverse(visitor);
+impl<T: Topological> Topological for Box<T> {
+    fn traverse(self, visitor: &mut impl PointVisitor) {
+        (*self).traverse(visitor);
     }
 
-    fn topology(&self) -> TopoVec {
-        (**self).topology()
+    fn topology(self) -> TopoVec {
+        (*self).topology()
     }
 }
 

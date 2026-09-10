@@ -34,13 +34,13 @@ impl<T: ?Sized + ListHashes> ListHashes for Arc<T> {
     }
 }
 
-impl<T: ?Sized + Topological> Topological for Arc<T> {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
-        (**self).traverse(visitor);
+impl<T: Topological + Clone> Topological for Arc<T> {
+    fn traverse(self, visitor: &mut impl PointVisitor) {
+        Self::unwrap_or_clone(self).traverse(visitor);
     }
 
-    fn topology(&self) -> TopoVec {
-        (**self).topology()
+    fn topology(self) -> TopoVec {
+        Self::unwrap_or_clone(self).topology()
     }
 }
 
@@ -71,41 +71,5 @@ impl<T: Clone> Equivalent<T> for Arc<T> {
 impl<T: ?Sized + ByteOrd> ByteOrd for Arc<T> {
     fn bytes_cmp(&self, other: &Self) -> std::cmp::Ordering {
         (**self).bytes_cmp(other)
-    }
-}
-
-impl<T: ?Sized + FetchBytes> FetchBytes for Arc<T> {
-    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        (**self).fetch_bytes()
-    }
-
-    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        (**self).fetch_data()
-    }
-
-    fn fetch_bytes_local(&self) -> Result<Option<ByteNode>> {
-        (**self).fetch_bytes_local()
-    }
-
-    fn fetch_data_local(&self) -> Option<Vec<u8>> {
-        (**self).fetch_data_local()
-    }
-
-    fn as_inner(&self) -> Option<&dyn Any> {
-        (**self).as_inner()
-    }
-
-    fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
-        (**self).as_resolve()
-    }
-
-    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
-        Arc::try_unwrap(self).ok()?.try_unwrap_resolve()
-    }
-}
-
-impl<T: ?Sized + Singular> Singular for Arc<T> {
-    fn hash(&self) -> Hash {
-        (**self).hash()
     }
 }

@@ -1,5 +1,6 @@
 use crate::*;
 
+#[derive(Clone)]
 pub struct LocalFetch<T> {
     object: T,
 }
@@ -10,23 +11,14 @@ impl<T: Traversible> LocalFetch<T> {
     }
 }
 
-impl<T: Traversible + Clone> Fetch for LocalFetch<T> {
+impl<T: Traversible> Fetch for LocalFetch<T> {
     type T = T;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        Box::pin(ready(Ok((self.object.clone(), self.object.to_resolve()))))
-    }
-
-    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        Box::pin(ready(Ok(self.object.clone())))
-    }
-
-    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
-        Ok(Some((self.object.clone(), self.object.to_resolve())))
-    }
-
-    fn fetch_local(&self) -> Option<Self::T> {
-        Some(self.object.clone())
+    fn fetch<'a>(self: Box<Self>) -> FailFuture<'a, Self::T>
+    where
+        Self: 'a,
+    {
+        Box::pin(ready(Ok(self.object)))
     }
 
     fn get(&self) -> Option<&Self::T> {
@@ -37,26 +29,35 @@ impl<T: Traversible + Clone> Fetch for LocalFetch<T> {
         Some(&mut self.object)
     }
 
-    fn try_unwrap(self: Arc<Self>) -> Option<Self::T> {
-        Arc::try_unwrap(self).ok().map(|Self { object }| object)
+    fn try_unwrap(self: Box<Self>) -> Option<Self::T> {
+        Some(self.object)
+    }
+
+    fn clone_boxed<'a>(&self) -> Box<dyn 'a + Fetch<T = Self::T>>
+    where
+        Self: 'a,
+        Self::T: Clone,
+    {
+        Box::new(self.clone())
     }
 }
 
 impl<T: Traversible> FetchBytes for LocalFetch<T> {
-    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        Box::pin(ready(Ok((self.object.output(), self.object.to_resolve()))))
+    fn fetch_bytes<'a>(self: Box<Self>) -> FailFuture<'a, ByteNode>
+    where
+        Self: 'a,
+    {
+        Box::pin(ready(Ok((
+            self.object.output(),
+            self.object.into_resolve(),
+        ))))
     }
 
-    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
+    fn fetch_data<'a>(self: Box<Self>) -> FailFuture<'a, Vec<u8>>
+    where
+        Self: 'a,
+    {
         Box::pin(ready(Ok(self.object.output())))
-    }
-
-    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
-        Ok(Some((self.object.output(), self.object.to_resolve())))
-    }
-
-    fn fetch_data_local(&self) -> Option<Vec<u8>> {
-        Some(self.object.output())
     }
 }
 

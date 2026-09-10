@@ -12,12 +12,6 @@ impl<T: ListHashes> ListHashes for [T] {
     }
 }
 
-impl<T: Topological> Topological for [T] {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
-        self.iter_traverse(visitor);
-    }
-}
-
 impl<T: Tagged> Tagged for [T] {
     const TAGS: Tags = T::TAGS;
 }

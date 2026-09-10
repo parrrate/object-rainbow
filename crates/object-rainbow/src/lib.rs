@@ -211,19 +211,7 @@ pub trait Resolve: Send + Sync + AsAny {
         this: &'a Arc<dyn Resolve>,
     ) -> FailFuture<'a, ByteNode>;
     fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>>;
-    fn try_resolve_local(
-        &self,
-        address: Address,
-        this: &Arc<dyn Resolve>,
-    ) -> Result<Option<ByteNode>> {
-        let _ = address;
-        let _ = this;
-        Ok(None)
-    }
     fn topology_hash(&self) -> Option<Hash> {
-        None
-    }
-    fn into_topovec(self: Arc<Self>) -> Option<TopoVec> {
         None
     }
 }
@@ -247,35 +235,28 @@ impl<I: PointInput> ParseInline<I> for Arc<dyn Resolve> {
 }
 
 pub trait FetchBytes: AsAny {
-    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode>;
-    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>>;
-    fn fetch_bytes_local(&self) -> Result<Option<ByteNode>> {
-        Ok(None)
-    }
-    fn fetch_data_local(&self) -> Option<Vec<u8>> {
-        None
-    }
+    fn fetch_bytes<'a>(self: Box<Self>) -> FailFuture<'a, ByteNode>
+    where
+        Self: 'a;
+    fn fetch_data<'a>(self: Box<Self>) -> FailFuture<'a, Vec<u8>>
+    where
+        Self: 'a;
     fn as_inner(&self) -> Option<&dyn Any> {
         None
     }
     fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
         None
     }
-    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
+    fn try_unwrap_resolve(self: Box<Self>) -> Option<Arc<dyn Resolve>> {
         None
     }
 }
 
 pub trait Fetch: Send + Sync + FetchBytes {
     type T;
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>>;
-    fn fetch(&'_ self) -> FailFuture<'_, Self::T>;
-    fn try_fetch_local(&self) -> Result<Option<Node<Self::T>>> {
-        Ok(None)
-    }
-    fn fetch_local(&self) -> Option<Self::T> {
-        None
-    }
+    fn fetch<'a>(self: Box<Self>) -> FailFuture<'a, Self::T>
+    where
+        Self: 'a;
     fn get(&self) -> Option<&Self::T> {
         None
     }
@@ -283,15 +264,19 @@ pub trait Fetch: Send + Sync + FetchBytes {
         None
     }
     fn get_mut_finalize(&mut self) {}
-    fn try_unwrap(self: Arc<Self>) -> Option<Self::T> {
+    fn try_unwrap(self: Box<Self>) -> Option<Self::T> {
         None
     }
-    fn into_dyn_fetch<'a>(self) -> Arc<dyn 'a + Fetch<T = Self::T>>
+    fn into_dyn_fetch<'a>(self) -> Box<dyn 'a + Fetch<T = Self::T>>
     where
         Self: 'a + Sized,
     {
-        Arc::new(self)
+        Box::new(self)
     }
+    fn clone_boxed<'a>(&self) -> Box<dyn 'a + Fetch<T = Self::T>>
+    where
+        Self: 'a,
+        Self::T: Clone;
 }
 
 impl<T: Tagged> Tagged for dyn Fetch<T = T> {
@@ -300,7 +285,7 @@ impl<T: Tagged> Tagged for dyn Fetch<T = T> {
 }
 
 pub trait PointVisitor {
-    fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone));
+    fn visit(&mut self, point: impl 'static + SingularFetch<T: Traversible>);
 }
 
 struct ReflessData<'d> {
@@ -771,40 +756,28 @@ pub trait ListHashes {
     }
 }
 
-pub trait Topological: ListHashes {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+pub trait Topological: Sized + ListHashes {
+    fn traverse(self, visitor: &mut impl PointVisitor) {
         let _ = visitor;
     }
 
-    fn topology(&self) -> TopoVec {
+    fn topology(self) -> TopoVec {
         let mut topology = TopoVec::with_capacity(self.point_count());
         self.traverse(&mut topology);
         topology
     }
 
-    fn to_resolve(&self) -> Arc<dyn Resolve> {
+    fn into_resolve(self) -> Arc<dyn Resolve> {
         struct ByTopology {
             topology: TopoVec,
             topology_hash: Hash,
-        }
-
-        impl Drop for ByTopology {
-            fn drop(&mut self) {
-                while let Some(singular) = self.topology.pop() {
-                    if let Some(resolve) = singular.try_unwrap_resolve()
-                        && let Some(topology) = &mut resolve.into_topovec()
-                    {
-                        self.topology.append(topology);
-                    }
-                }
-            }
         }
 
         impl ByTopology {
             fn try_resolve(&'_ self, address: Address) -> Result<FailFuture<'_, ByteNode>> {
                 let point = self
                     .topology
-                    .get(address.index)
+                    .take(address.index)
                     .ok_or(Error::AddressOutOfBounds)?;
                 if point.hash() != address.hash {
                     Err(Error::ResolutionMismatch)
@@ -816,7 +789,7 @@ pub trait Topological: ListHashes {
             fn try_resolve_data(&'_ self, address: Address) -> Result<FailFuture<'_, Vec<u8>>> {
                 let point = self
                     .topology
-                    .get(address.index)
+                    .take(address.index)
                     .ok_or(Error::AddressOutOfBounds)?;
                 if point.hash() != address.hash {
                     Err(Error::ResolutionMismatch)
@@ -847,43 +820,13 @@ pub trait Topological: ListHashes {
                     .unwrap_or_else(|x| x)
             }
 
-            fn try_resolve_local(
-                &self,
-                address: Address,
-                _: &Arc<dyn Resolve>,
-            ) -> Result<Option<ByteNode>> {
-                let point = self
-                    .topology
-                    .get(address.index)
-                    .ok_or(Error::AddressOutOfBounds)?;
-                if point.hash() != address.hash {
-                    Err(Error::ResolutionMismatch)
-                } else {
-                    point.fetch_bytes_local()
-                }
-            }
-
             fn topology_hash(&self) -> Option<Hash> {
                 Some(self.topology_hash)
-            }
-
-            fn into_topovec(self: Arc<Self>) -> Option<TopoVec> {
-                Arc::try_unwrap(self)
-                    .ok()
-                    .as_mut()
-                    .map(|Self { topology, .. }| std::mem::take(topology))
             }
         }
 
         let topology = self.topology();
         let topology_hash = topology.data_hash();
-        for singular in &topology {
-            if let Some(resolve) = singular.as_resolve()
-                && resolve.topology_hash() == Some(topology_hash)
-            {
-                return resolve.clone();
-            }
-        }
         Arc::new(ByTopology {
             topology,
             topology_hash,
@@ -901,7 +844,7 @@ pub trait ParseSlice: for<'a> Parse<Input<'a>> {
         Self::parse_slice_extra(slice, resolve, &())
     }
 
-    fn reparse(&self) -> crate::Result<Self>
+    fn reparse(self) -> crate::Result<Self>
     where
         Self: Traversible,
     {
@@ -932,11 +875,11 @@ pub trait ParseSliceExtra<Extra: Clone>: for<'a> Parse<Input<'a, Extra>> {
         Ok(object)
     }
 
-    fn reparse_extra(&self, extra: &Extra) -> crate::Result<Self>
+    fn reparse_extra(self, extra: &Extra) -> crate::Result<Self>
     where
         Self: Traversible,
     {
-        Self::parse_slice_extra(&self.vec(), &self.to_resolve(), extra)
+        Self::parse_slice_extra(&self.vec(), &self.into_resolve(), extra)
     }
 }
 
@@ -1007,10 +950,7 @@ pub trait DefaultHash: FullHash + Default {
 impl<T: FullHash + Default> DefaultHash for T {}
 
 pub trait Traversible: 'static + Sized + Send + Sync + FullHash + Topological {
-    fn local_fetch(self) -> Arc<dyn Fetch<T = Self>>
-    where
-        Self: Clone,
-    {
+    fn local_fetch(self) -> Box<dyn Fetch<T = Self>> {
         self::local_fetch::LocalFetch::new(self).into_dyn_fetch()
     }
 }
@@ -1140,7 +1080,7 @@ fn const_hash() {
 
 pub trait Topology: Resolve {
     fn len(&self) -> usize;
-    fn get(&self, index: usize) -> Option<&Arc<dyn Singular>>;
+    fn take(&self, index: usize) -> Option<Box<dyn Singular>>;
 
     fn is_empty(&self) -> bool {
         self.len() == 0
@@ -1173,11 +1113,23 @@ impl ListHashes for Arc<dyn Singular> {
     }
 }
 
-pub type TopoVec = Vec<Arc<dyn Singular>>;
+pub type TopoVec = Vec<std::sync::Mutex<Option<Box<dyn Singular>>>>;
+
+impl<T: ToOutput> ToOutput for std::sync::Mutex<T> {
+    fn to_output(&self, output: &mut impl Output) {
+        self.lock().unwrap().to_output(output);
+    }
+}
+
+impl MaybeHasNiche for dyn Singular {
+    type MnArray = <Hash as MaybeHasNiche>::MnArray;
+}
+
+impl<T: InlineOutput> InlineOutput for std::sync::Mutex<T> {}
 
 impl PointVisitor for TopoVec {
-    fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone)) {
-        self.push(Arc::new(point.clone()));
+    fn visit(&mut self, point: impl 'static + SingularFetch<T: Traversible>) {
+        self.push(std::sync::Mutex::new(Some(Box::new(point))));
     }
 }
 
@@ -1188,7 +1140,7 @@ impl Resolve for TopoVec {
         _: &'a Arc<dyn Resolve>,
     ) -> FailFuture<'a, ByteNode> {
         Box::pin(async move {
-            let singular = self.get(address.index).ok_or(Error::AddressOutOfBounds)?;
+            let singular = self.take(address.index).ok_or(Error::AddressOutOfBounds)?;
             if singular.hash() != address.hash {
                 Err(Error::FullHashMismatch)
             } else {
@@ -1199,7 +1151,7 @@ impl Resolve for TopoVec {
 
     fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>> {
         Box::pin(async move {
-            let singular = self.get(address.index).ok_or(Error::AddressOutOfBounds)?;
+            let singular = self.take(address.index).ok_or(Error::AddressOutOfBounds)?;
             if singular.hash() != address.hash {
                 Err(Error::FullHashMismatch)
             } else {
@@ -1208,25 +1160,8 @@ impl Resolve for TopoVec {
         })
     }
 
-    fn try_resolve_local(
-        &self,
-        address: Address,
-        _: &Arc<dyn Resolve>,
-    ) -> Result<Option<ByteNode>> {
-        let singular = self.get(address.index).ok_or(Error::AddressOutOfBounds)?;
-        if singular.hash() != address.hash {
-            Err(Error::FullHashMismatch)
-        } else {
-            singular.fetch_bytes_local()
-        }
-    }
-
     fn topology_hash(&self) -> Option<Hash> {
         Some(self.data_hash())
-    }
-
-    fn into_topovec(self: Arc<Self>) -> Option<TopoVec> {
-        Some((*self).clone())
     }
 }
 
@@ -1235,8 +1170,8 @@ impl Topology for TopoVec {
         self.len()
     }
 
-    fn get(&self, index: usize) -> Option<&Arc<dyn Singular>> {
-        (**self).get(index)
+    fn take(&self, index: usize) -> Option<Box<dyn Singular>> {
+        (**self).get(index)?.try_lock().ok()?.take()
     }
 }
 
@@ -1772,7 +1707,6 @@ impl<T> Size for dyn Send + Sync + ExtraFor<T> {
 
 impl<T> InlineOutput for dyn Send + Sync + ExtraFor<T> {}
 impl<T> ListHashes for dyn Send + Sync + ExtraFor<T> {}
-impl<T> Topological for dyn Send + Sync + ExtraFor<T> {}
 
 impl<T, I: PointInput<Extra: Send + Sync + ExtraFor<T>>> Parse<I>
     for Arc<dyn Send + Sync + ExtraFor<T>>
@@ -1793,15 +1727,6 @@ impl<T, I: PointInput<Extra: Send + Sync + ExtraFor<T>>> ParseInline<I>
 impl<T> MaybeHasNiche for dyn Send + Sync + ExtraFor<T> {
     type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
 }
-
-assert_impl!(
-    impl<T, E> Inline<E> for Arc<dyn Send + Sync + ExtraFor<T>>
-    where
-        T: Object<E>,
-        E: 'static + Send + Sync + Clone + ExtraFor<T>,
-    {
-    }
-);
 
 #[doc(hidden)]
 pub trait BoundPair: Sized {

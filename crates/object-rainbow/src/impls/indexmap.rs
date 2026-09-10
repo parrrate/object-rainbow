@@ -18,7 +18,7 @@ impl<T: ListHashes> ListHashes for IndexSet<T> {
 }
 
 impl<T: Topological> Topological for IndexSet<T> {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(self, visitor: &mut impl PointVisitor) {
         self.iter_traverse(visitor);
     }
 }
@@ -49,7 +49,7 @@ impl<K: ListHashes, V: ListHashes> ListHashes for IndexMap<K, V> {
 }
 
 impl<K: Topological, V: Topological> Topological for IndexMap<K, V> {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(self, visitor: &mut impl PointVisitor) {
         self.iter_traverse(visitor);
     }
 }

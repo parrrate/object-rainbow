@@ -32,26 +32,22 @@ struct ByAddressInner {
 }
 
 impl FetchBytes for ByAddressInner {
-    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        self.resolve.resolve(self.address, &self.resolve)
+    fn fetch_bytes<'a>(self: Box<Self>) -> FailFuture<'a, ByteNode>
+    where
+        Self: 'a,
+    {
+        Box::pin(async move { self.resolve.resolve(self.address, &self.resolve).await })
     }
 
-    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        self.resolve.resolve_data(self.address)
-    }
-
-    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
-        self.resolve.try_resolve_local(self.address, &self.resolve)
+    fn fetch_data<'a>(self: Box<Self>) -> FailFuture<'a, Vec<u8>>
+    where
+        Self: 'a,
+    {
+        Box::pin(async move { self.resolve.resolve_data(self.address).await })
     }
 
     fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
         Some(&self.resolve)
-    }
-
-    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
-        Arc::try_unwrap(self)
-            .ok()
-            .map(|Self { resolve, .. }| resolve)
     }
 }
 
@@ -67,6 +63,16 @@ struct ByAddress<T, Extra> {
     _object: PhantomData<fn() -> T>,
 }
 
+impl<T, Extra: Clone> Clone for ByAddress<T, Extra> {
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            extra: self.extra.clone(),
+            _object: PhantomData,
+        }
+    }
+}
+
 impl<T, Extra> ByAddress<T, Extra> {
     fn from_inner(inner: ByAddressInner, extra: Extra) -> Self {
         Self {
@@ -78,16 +84,18 @@ impl<T, Extra> ByAddress<T, Extra> {
 }
 
 impl<T, Extra> FetchBytes for ByAddress<T, Extra> {
-    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        self.inner.fetch_bytes()
+    fn fetch_bytes<'a>(self: Box<Self>) -> FailFuture<'a, ByteNode>
+    where
+        Self: 'a,
+    {
+        Box::new(self.inner).fetch_bytes()
     }
 
-    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        self.inner.fetch_data()
-    }
-
-    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
-        self.inner.fetch_bytes_local()
+    fn fetch_data<'a>(self: Box<Self>) -> FailFuture<'a, Vec<u8>>
+    where
+        Self: 'a,
+    {
+        Box::new(self.inner).fetch_data()
     }
 
     fn as_inner(&self) -> Option<&dyn Any> {
@@ -98,13 +106,8 @@ impl<T, Extra> FetchBytes for ByAddress<T, Extra> {
         self.inner.as_resolve()
     }
 
-    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
-        Arc::try_unwrap(self).ok().map(
-            |Self {
-                 inner: ByAddressInner { resolve, .. },
-                 ..
-             }| resolve,
-        )
+    fn try_unwrap_resolve(self: Box<Self>) -> Option<Arc<dyn Resolve>> {
+        Some(self.inner.resolve)
     }
 }
 
@@ -114,46 +117,49 @@ impl<T, Extra: Send + Sync> Singular for ByAddress<T, Extra> {
     }
 }
 
-impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for ByAddress<T, Extra> {
+impl<T: FullHash, Extra: Send + Sync + Clone + ExtraFor<T>> Fetch for ByAddress<T, Extra> {
     type T = T;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        Box::pin(async {
+    fn fetch<'a>(self: Box<Self>) -> FailFuture<'a, Self::T>
+    where
+        Self: 'a,
+    {
+        Box::pin(async move {
+            let hash = self.inner.address.hash;
+            let extra = self.extra.clone();
             let (data, resolve) = self.fetch_bytes().await?;
-            let object = self
-                .extra
-                .parse_checked(self.inner.address.hash, &data, &resolve)?;
-            Ok((object, resolve))
+            extra.parse_checked(hash, &data, &resolve)
         })
     }
 
-    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        Box::pin(async {
-            let (data, resolve) = self.fetch_bytes().await?;
-            self.extra
-                .parse_checked(self.inner.address.hash, &data, &resolve)
-        })
-    }
-
-    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
-        let Some((data, resolve)) = self.fetch_bytes_local()? else {
-            return Ok(None);
-        };
-        let object = self
-            .extra
-            .parse_checked(self.inner.address.hash, &data, &resolve)?;
-        Ok(Some((object, resolve)))
+    fn clone_boxed<'a>(&self) -> Box<dyn 'a + Fetch<T = Self::T>>
+    where
+        Self: 'a,
+        Self::T: Clone,
+    {
+        Box::new(self.clone())
     }
 }
 
 struct FetchExtra<T, D> {
     inner: ByAddressInner,
-    fetch: D,
+    fetch: Box<D>,
     _object: PhantomData<fn() -> T>,
+}
+
+impl<T, D: Clone> Clone for FetchExtra<T, D> {
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            fetch: self.fetch.clone(),
+            _object: PhantomData,
+        }
+    }
 }
 
 impl<T, D> FetchExtra<T, D> {
     fn from_inner(inner: ByAddressInner, fetch: D) -> Self {
+        let fetch = fetch.into();
         Self {
             inner,
             fetch,
@@ -163,56 +169,64 @@ impl<T, D> FetchExtra<T, D> {
 }
 
 impl<T, D> FetchBytes for FetchExtra<T, D> {
-    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        self.inner.fetch_bytes()
+    fn fetch_bytes<'a>(self: Box<Self>) -> FailFuture<'a, ByteNode>
+    where
+        Self: 'a,
+    {
+        Box::new(self.inner).fetch_bytes()
     }
 
-    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        self.inner.fetch_data()
+    fn fetch_data<'a>(self: Box<Self>) -> FailFuture<'a, Vec<u8>>
+    where
+        Self: 'a,
+    {
+        Box::new(self.inner).fetch_data()
     }
 }
 
-impl<T: FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> FetchExtra<T, D> {
-    async fn fetch_object(&self) -> object_rainbow::Result<Node<T>> {
-        let ((data, resolve), extra) =
-            futures_util::future::try_join(self.fetch_bytes(), self.fetch.fetch()).await?;
-        let object = extra.parse_checked(self.inner.address.hash, &data, &resolve)?;
+impl<T: FullHash, D: Clone + Fetch<T: Send + Sync + ExtraFor<T>>> FetchExtra<T, D> {
+    async fn fetch_object(self) -> object_rainbow::Result<Node<T>> {
+        let hash = self.inner.address.hash;
+        let ((data, resolve), extra) = futures_util::future::try_join(
+            Box::new(self.clone()).fetch_bytes(),
+            self.fetch.clone().fetch(),
+        )
+        .await?;
+        let object = extra.parse_checked(hash, &data, &resolve)?;
         Ok((object, resolve))
     }
 }
 
-impl<T: Send + FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> Fetch for FetchExtra<T, D> {
+impl<T: Send + FullHash, D: Clone + Fetch<T: Send + Sync + ExtraFor<T>>> Fetch
+    for FetchExtra<T, D>
+{
     type T = T;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        Box::pin(self.fetch_object())
-    }
-
-    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
+    fn fetch<'a>(self: Box<Self>) -> FailFuture<'a, Self::T>
+    where
+        Self: 'a,
+    {
         Box::pin(async {
             let (object, _) = self.fetch_object().await?;
             Ok(object)
         })
     }
+
+    fn clone_boxed<'a>(&self) -> Box<dyn 'a + Fetch<T = Self::T>>
+    where
+        Self: 'a,
+        Self::T: Clone,
+    {
+        Box::new(self.clone())
+    }
 }
 
 trait FromInner {
-    type Inner: 'static + Clone;
+    type Inner: 'static;
     type Extra: 'static + Clone;
 
     fn from_inner(inner: Self::Inner, extra: Self::Extra) -> Self;
 }
-
-trait InnerCast: FetchBytes {
-    fn inner_cast<T: FromInner>(&self, extra: &T::Extra) -> Option<T> {
-        self.as_inner()?
-            .downcast_ref()
-            .cloned()
-            .map(|inner| T::from_inner(inner, extra.clone()))
-    }
-}
-
-impl<T: ?Sized + FetchBytes> InnerCast for T {}
 
 pub trait ExtractResolve: FetchBytes {
     fn extract_resolve<R: Any>(&self) -> Option<(&Address, &R)> {
@@ -225,10 +239,10 @@ pub trait ExtractResolve: FetchBytes {
 
 impl<T: ?Sized + FetchBytes> ExtractResolve for T {}
 
-#[derive(Clone, ParseAsInline)]
+#[derive(ParseAsInline)]
 pub struct RawPointInner {
     hash: Hash,
-    fetch: Arc<dyn Send + Sync + FetchBytes>,
+    fetch: Box<dyn Send + Sync + FetchBytes>,
 }
 
 impl RawPointInner {
@@ -239,14 +253,14 @@ impl RawPointInner {
     pub fn from_address(address: Address, resolve: Arc<dyn Resolve>) -> Self {
         Self {
             hash: address.hash,
-            fetch: Arc::new(ByAddressInner { address, resolve }),
+            fetch: Box::new(ByAddressInner { address, resolve }),
         }
     }
 
     pub fn from_singular(singular: impl 'static + Singular) -> Self {
         Self {
             hash: singular.hash(),
-            fetch: Arc::new(singular),
+            fetch: Box::new(singular),
         }
     }
 }
@@ -284,28 +298,26 @@ impl ListHashes for RawPointInner {
 }
 
 impl FetchBytes for RawPointInner {
-    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        self.fetch.fetch_bytes()
+    fn fetch_bytes<'a>(self: Box<Self>) -> FailFuture<'a, ByteNode>
+    where
+        Self: 'a,
+    {
+        Box::new(self.fetch).fetch_bytes()
     }
 
-    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        self.fetch.fetch_data()
-    }
-
-    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
-        self.fetch.fetch_bytes_local()
-    }
-
-    fn fetch_data_local(&self) -> Option<Vec<u8>> {
-        self.fetch.fetch_data_local()
+    fn fetch_data<'a>(self: Box<Self>) -> FailFuture<'a, Vec<u8>>
+    where
+        Self: 'a,
+    {
+        Box::new(self.fetch).fetch_data()
     }
 
     fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
         self.fetch.as_resolve()
     }
 
-    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
-        Arc::try_unwrap(self).ok()?.fetch.try_unwrap_resolve()
+    fn try_unwrap_resolve(self: Box<Self>) -> Option<Arc<dyn Resolve>> {
+        self.fetch.try_unwrap_resolve()
     }
 }
 
@@ -351,24 +363,6 @@ impl<T, Extra: 'static + Clone> FromInner for RawPoint<T, Extra> {
     }
 }
 
-impl<T, Extra: Clone> Clone for RawPoint<T, Extra> {
-    fn clone(&self) -> Self {
-        Self {
-            inner: self.inner.clone(),
-            extra: self.extra.clone(),
-            object: Default::default(),
-        }
-    }
-}
-
-impl<T: 'static + Traversible, Extra: 'static + Send + Sync + Clone + ExtraFor<T>> Topological
-    for RawPoint<T, Extra>
-{
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
-        visitor.visit(self);
-    }
-}
-
 impl<T, Extra: Send + Sync> Singular for RawPoint<T, Extra> {
     fn hash(&self) -> Hash {
         self.inner.hash()
@@ -381,27 +375,19 @@ impl<T, Extra: 'static + Clone> RawPoint<T, Extra> {
     }
 }
 
-impl<T: 'static + FullHash, Extra: 'static + Send + Sync + ExtraFor<T>> RawPoint<T, Extra> {
-    pub fn into_point(self) -> Point<T> {
-        Point::from_singular(self)
-    }
-}
-
 impl<T, Extra> FetchBytes for RawPoint<T, Extra> {
-    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        self.inner.fetch_bytes()
+    fn fetch_bytes<'a>(self: Box<Self>) -> FailFuture<'a, ByteNode>
+    where
+        Self: 'a,
+    {
+        Box::new(self.inner).fetch_bytes()
     }
 
-    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        self.inner.fetch_data()
-    }
-
-    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
-        self.inner.fetch_bytes_local()
-    }
-
-    fn fetch_data_local(&self) -> Option<Vec<u8>> {
-        self.inner.fetch_data_local()
+    fn fetch_data<'a>(self: Box<Self>) -> FailFuture<'a, Vec<u8>>
+    where
+        Self: 'a,
+    {
+        Box::new(self.inner).fetch_data()
     }
 
     fn as_inner(&self) -> Option<&dyn Any> {
@@ -412,52 +398,12 @@ impl<T, Extra> FetchBytes for RawPoint<T, Extra> {
         self.inner.as_resolve()
     }
 
-    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
-        Arc::try_unwrap(self).ok()?.inner.fetch.try_unwrap_resolve()
-    }
-}
-
-impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra> {
-    type T = T;
-
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        Box::pin(async {
-            let (data, resolve) = self.inner.fetch.fetch_bytes().await?;
-            let object = self
-                .extra
-                .0
-                .parse_checked(self.inner.hash, &data, &resolve)?;
-            Ok((object, resolve))
-        })
-    }
-
-    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        Box::pin(async {
-            let (data, resolve) = self.inner.fetch.fetch_bytes().await?;
-            self.extra.0.parse_checked(self.inner.hash, &data, &resolve)
-        })
-    }
-
-    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
-        let Some((data, resolve)) = self.inner.fetch.fetch_bytes_local()? else {
-            return Ok(None);
-        };
-        let object = self
-            .extra
-            .0
-            .parse_checked(self.inner.hash, &data, &resolve)?;
-        Ok(Some((object, resolve)))
+    fn try_unwrap_resolve(self: Box<Self>) -> Option<Arc<dyn Resolve>> {
+        self.inner.fetch.try_unwrap_resolve()
     }
 }
 
 impl<T> Point<T> {
-    pub async fn echo(fetch: impl 'static + Fetch<T = T>) -> object_rainbow::Result<Self>
-    where
-        T: FullHash,
-    {
-        Ok(Self::from_alternate_source(&fetch.fetch().await?, fetch))
-    }
-
     pub fn from_alternate_source(object: &T, fetch: impl 'static + Fetch<T = T>) -> Self
     where
         T: FullHash,
@@ -465,10 +411,10 @@ impl<T> Point<T> {
         Self::from_fetch(object.full_hash(), fetch)
     }
 
-    fn from_trusted_fetch(hash: Hash, fetch: Arc<dyn Fetch<T = T>>) -> Self {
+    fn from_trusted_fetch(hash: Hash, fetch: Box<dyn Fetch<T = T>>) -> Self {
         Self {
             hash: hash.into(),
-            fetch,
+            fetch: Some(fetch),
         }
     }
 
@@ -482,11 +428,11 @@ impl<T> Point<T> {
 
     fn map_fetch<U>(
         self,
-        f: impl FnOnce(Arc<dyn Fetch<T = T>>) -> Arc<dyn Fetch<T = U>>,
+        f: impl FnOnce(Box<dyn Fetch<T = T>>) -> Box<dyn Fetch<T = U>>,
     ) -> Point<U> {
         Point {
             hash: self.hash,
-            fetch: f(self.fetch),
+            fetch: Some(f(self.fetch.unwrap())),
         }
     }
 }
@@ -515,7 +461,7 @@ impl<U: 'static + Equivalent<T>, T: 'static, Extra> Equivalent<RawPoint<T, Extra
 #[must_use]
 pub struct Point<T> {
     hash: OptionalHash,
-    fetch: Arc<dyn Fetch<T = T>>,
+    fetch: Option<Box<dyn Fetch<T = T>>>,
 }
 
 impl<T> std::hash::Hash for Point<T> {
@@ -532,21 +478,6 @@ impl<T> std::fmt::Debug for Point<T> {
             .field("hash", &self.hash)
             .field("fetch", &Arc)
             .finish()
-    }
-}
-
-impl<T> Point<T> {
-    pub fn raw<Extra: 'static + Clone>(self, extra: Extra) -> RawPoint<T, Extra> {
-        {
-            if let Some(raw) = self.fetch.inner_cast(&extra) {
-                return raw;
-            }
-        }
-        RawPointInner {
-            hash: self.hash(),
-            fetch: self.fetch,
-        }
-        .cast(extra)
     }
 }
 
@@ -570,11 +501,11 @@ impl<T> PartialEq for Point<T> {
     }
 }
 
-impl<T> Clone for Point<T> {
+impl<T: 'static + Clone> Clone for Point<T> {
     fn clone(&self) -> Self {
         Self {
             hash: self.hash,
-            fetch: self.fetch.clone(),
+            fetch: Some(self.fetch.as_ref().unwrap().clone_boxed()),
         }
     }
 }
@@ -616,7 +547,7 @@ impl<T: 'static + FullHash> Point<T> {
     pub fn from_fetch_extra<Extra: 'static + Send + Sync + Clone + ExtraFor<T>>(
         address: Address,
         resolve: Arc<dyn Resolve>,
-        fetch: impl 'static + Fetch<T = Extra>,
+        fetch: impl 'static + Clone + Fetch<T = Extra>,
     ) -> Self
     where
         T: Send,
@@ -639,7 +570,7 @@ impl<T> ListHashes for Point<T> {
 }
 
 impl<T: Traversible> Topological for Point<T> {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(self, visitor: &mut impl PointVisitor) {
         visitor.visit(self);
     }
 }
@@ -665,32 +596,30 @@ impl<T> ToOutput for Point<T> {
 impl<T> InlineOutput for Point<T> {}
 
 impl<T> FetchBytes for Point<T> {
-    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        self.fetch.fetch_bytes()
+    fn fetch_bytes<'a>(self: Box<Self>) -> FailFuture<'a, ByteNode>
+    where
+        Self: 'a,
+    {
+        self.fetch.unwrap().fetch_bytes()
     }
 
-    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        self.fetch.fetch_data()
-    }
-
-    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
-        self.fetch.fetch_bytes_local()
-    }
-
-    fn fetch_data_local(&self) -> Option<Vec<u8>> {
-        self.fetch.fetch_data_local()
+    fn fetch_data<'a>(self: Box<Self>) -> FailFuture<'a, Vec<u8>>
+    where
+        Self: 'a,
+    {
+        self.fetch.unwrap().fetch_data()
     }
 
     fn as_inner(&self) -> Option<&dyn Any> {
-        self.fetch.as_inner()
+        self.fetch.as_ref().unwrap().as_inner()
     }
 
     fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
-        self.fetch.as_resolve()
+        self.fetch.as_ref().unwrap().as_resolve()
     }
 
-    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
-        Arc::try_unwrap(self).ok()?.fetch.try_unwrap_resolve()
+    fn try_unwrap_resolve(self: Box<Self>) -> Option<Arc<dyn Resolve>> {
+        self.fetch.unwrap().try_unwrap_resolve()
     }
 }
 
@@ -702,43 +631,38 @@ impl<T> Singular for Point<T> {
 
 impl<T> Point<T> {
     pub fn get(&self) -> Option<&T> {
-        self.fetch.get()
+        self.fetch.as_ref().unwrap().get()
     }
 
-    pub fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<T>>> {
-        self.fetch.try_fetch_local()
-    }
-
-    pub fn try_unwrap(self) -> Option<T> {
-        self.fetch.try_unwrap()
-    }
-
-    pub fn fetch(&self) -> FailFuture<'_, T> {
-        self.fetch.fetch()
+    pub fn fetch<'a>(self) -> FailFuture<'a, T>
+    where
+        Self: 'a,
+    {
+        self.fetch.unwrap().fetch()
     }
 }
 
-impl<T: Traversible + Clone> Point<T> {
+impl<T: Traversible> Point<T> {
     pub fn from_object(object: T) -> Self {
         Self::from_trusted_fetch(object.full_hash(), object.local_fetch())
     }
 
     fn yolo_mut(&mut self) -> bool {
-        self.fetch.get().is_some()
-            && Arc::get_mut(&mut self.fetch).is_some_and(|fetch| fetch.get_mut().is_some())
+        self.fetch.as_ref().unwrap().get().is_some()
+            && self.fetch.as_mut().unwrap().get_mut().is_some()
     }
 
     async fn prepare_yolo_fetch(&mut self) -> object_rainbow::Result<()> {
         if !self.yolo_mut() {
-            let object = self.fetch.fetch().await?;
-            self.fetch = object.local_fetch();
+            let object = self.fetch.take().unwrap().fetch().await?;
+            self.fetch = Some(object.local_fetch());
         }
         Ok(())
     }
 
     pub async fn fetch_mut(&'_ mut self) -> object_rainbow::Result<PointMut<'_, T>> {
         self.prepare_yolo_fetch().await?;
-        let fetch = Arc::get_mut(&mut self.fetch).expect("shared fetch?");
+        let fetch = &mut **self.fetch.as_mut().unwrap();
         assert!(fetch.get_mut().is_some());
         self.hash.clear();
         Ok(PointMut {
@@ -749,7 +673,7 @@ impl<T: Traversible + Clone> Point<T> {
 
     pub async fn fetch_ref(&mut self) -> object_rainbow::Result<&T> {
         self.prepare_yolo_fetch().await?;
-        Ok(self.fetch.get().expect("non-local fetch"))
+        Ok(self.fetch.as_ref().unwrap().get().expect("non-local fetch"))
     }
 
     pub async fn fetch_take(&mut self) -> object_rainbow::Result<T>
@@ -760,56 +684,55 @@ impl<T: Traversible + Clone> Point<T> {
     }
 }
 
-impl<T: FullHash> Fetch for Point<T> {
+impl<T: 'static + FullHash> Fetch for Point<T> {
     type T = T;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        self.fetch.fetch_full()
-    }
-
-    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        self.fetch.fetch()
-    }
-
-    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
-        self.fetch.try_fetch_local()
-    }
-
-    fn fetch_local(&self) -> Option<Self::T> {
-        self.fetch.fetch_local()
+    fn fetch<'a>(self: Box<Self>) -> FailFuture<'a, Self::T>
+    where
+        Self: 'a,
+    {
+        self.fetch.unwrap().fetch()
     }
 
     fn get(&self) -> Option<&Self::T> {
-        self.fetch.get()
+        self.fetch.as_ref().unwrap().get()
     }
 
     fn get_mut(&mut self) -> Option<&mut Self::T> {
-        let object = Arc::get_mut(&mut self.fetch)?.get_mut()?;
+        let object = self.fetch.as_mut().unwrap().get_mut()?;
         self.hash.clear();
         Some(object)
     }
 
     fn get_mut_finalize(&mut self) {
-        let fetch = Arc::get_mut(&mut self.fetch).expect("shared fetch?");
+        let fetch = self.fetch.as_mut().unwrap();
         fetch.get_mut_finalize();
         self.hash = fetch.get().expect("non-local fetch").full_hash().into();
     }
 
-    fn try_unwrap(self: Arc<Self>) -> Option<Self::T> {
-        Arc::try_unwrap(self).ok()?.fetch.try_unwrap()
+    fn try_unwrap(self: Box<Self>) -> Option<Self::T> {
+        self.fetch.unwrap().try_unwrap()
     }
 
-    fn into_dyn_fetch<'a>(self) -> Arc<dyn 'a + Fetch<T = Self::T>>
+    fn into_dyn_fetch<'a>(self) -> Box<dyn 'a + Fetch<T = Self::T>>
     where
         Self: 'a + Sized,
     {
-        self.fetch
+        self.fetch.unwrap()
+    }
+
+    fn clone_boxed<'a>(&self) -> Box<dyn 'a + Fetch<T = Self::T>>
+    where
+        Self: 'a,
+        Self::T: Clone,
+    {
+        Box::new(self.clone())
     }
 }
 
 /// This implementation is the main goal of [`Equivalent`]: we assume transmuting the pointer is
 /// safe.
-impl<U: 'static + Equivalent<T>, T: 'static> Equivalent<Point<T>> for Point<U> {
+impl<U: 'static + Clone + Equivalent<T>, T: 'static + Clone> Equivalent<Point<T>> for Point<U> {
     fn into_equivalent(self) -> Point<T> {
         self.map_fetch(|fetch| {
             MapEquivalent {
@@ -848,10 +771,7 @@ impl<T: Default + Traversible + Clone> Default for Point<T> {
 }
 
 pub trait IntoPoint: Traversible {
-    fn point(self) -> Point<Self>
-    where
-        Self: Clone,
-    {
+    fn point(self) -> Point<Self> {
         Point::from_object(self)
     }
 }
@@ -859,70 +779,72 @@ pub trait IntoPoint: Traversible {
 impl<T: Traversible> IntoPoint for T {}
 
 struct MapEquivalent<T, F> {
-    fetch: Arc<dyn Fetch<T = T>>,
+    fetch: Box<dyn Fetch<T = T>>,
     map: F,
 }
 
+impl<T: 'static + Clone, F: Clone> Clone for MapEquivalent<T, F> {
+    fn clone(&self) -> Self {
+        Self {
+            fetch: self.fetch.clone_boxed(),
+            map: self.map.clone(),
+        }
+    }
+}
+
 impl<T, F> FetchBytes for MapEquivalent<T, F> {
-    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
+    fn fetch_bytes<'a>(self: Box<Self>) -> FailFuture<'a, ByteNode>
+    where
+        Self: 'a,
+    {
         self.fetch.fetch_bytes()
     }
 
-    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
+    fn fetch_data<'a>(self: Box<Self>) -> FailFuture<'a, Vec<u8>>
+    where
+        Self: 'a,
+    {
         self.fetch.fetch_data()
-    }
-
-    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
-        self.fetch.fetch_bytes_local()
-    }
-
-    fn fetch_data_local(&self) -> Option<Vec<u8>> {
-        self.fetch.fetch_data_local()
     }
 
     fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
         self.fetch.as_resolve()
     }
 
-    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
-        Arc::try_unwrap(self).ok()?.fetch.try_unwrap_resolve()
+    fn try_unwrap_resolve(self: Box<Self>) -> Option<Arc<dyn Resolve>> {
+        self.fetch.try_unwrap_resolve()
     }
 }
 
-trait Map1<T>: Fn(T) -> Self::U {
+trait Map1<T>: Clone + FnOnce(T) -> Self::U {
     type U;
 }
 
-impl<T, U, F: Fn(T) -> U> Map1<T> for F {
+impl<T, U, F: Clone + FnOnce(T) -> U> Map1<T> for F {
     type U = U;
 }
 
-impl<T, F: Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
+impl<T: 'static + Clone, F: Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
     type T = F::U;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        Box::pin(self.fetch.fetch_full().map_ok(|(x, r)| ((self.map)(x), r)))
+    fn fetch<'a>(self: Box<Self>) -> FailFuture<'a, Self::T>
+    where
+        Self: 'a,
+    {
+        Box::pin(self.fetch.fetch().map_ok(self.map))
     }
 
-    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        Box::pin(self.fetch.fetch().map_ok(&self.map))
-    }
-
-    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
-        let Some((object, resolve)) = self.fetch.try_fetch_local()? else {
-            return Ok(None);
-        };
-        let object = (self.map)(object);
-        Ok(Some((object, resolve)))
-    }
-
-    fn fetch_local(&self) -> Option<Self::T> {
-        self.fetch.fetch_local().map(&self.map)
-    }
-
-    fn try_unwrap(self: Arc<Self>) -> Option<Self::T> {
-        let Self { fetch, map } = Arc::try_unwrap(self).ok()?;
+    fn try_unwrap(self: Box<Self>) -> Option<Self::T> {
+        let Self { fetch, map } = *self;
         fetch.try_unwrap().map(map)
+    }
+
+    fn clone_boxed<'a>(&self) -> Box<dyn 'a + Fetch<T = Self::T>>
+    where
+        Self: 'a,
+        Self::T: Clone,
+    {
+        Box::new(self.clone())
     }
 }
 
@@ -975,7 +897,7 @@ impl<T, Extra: std::fmt::Debug> std::fmt::Debug for ExtraPoint<T, Extra> {
     }
 }
 
-impl<T, Extra: Clone> Clone for ExtraPoint<T, Extra> {
+impl<T: 'static + Clone, Extra: Clone> Clone for ExtraPoint<T, Extra> {
     fn clone(&self) -> Self {
         Self {
             extra: self.extra.clone(),
@@ -999,24 +921,37 @@ impl<T, Extra: Clone> CanonicalExtra for ExtraPoint<T, Extra> {
 }
 
 impl<T, E> FetchBytes for ExtraPoint<T, E> {
-    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        self.point.fetch_bytes()
+    fn fetch_bytes<'a>(self: Box<Self>) -> FailFuture<'a, ByteNode>
+    where
+        Self: 'a,
+    {
+        Box::new(self.point).fetch_bytes()
     }
 
-    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        self.point.fetch_data()
+    fn fetch_data<'a>(self: Box<Self>) -> FailFuture<'a, Vec<u8>>
+    where
+        Self: 'a,
+    {
+        Box::new(self.point).fetch_data()
     }
 }
 
-impl<T: FullHash, E: Send + Sync> Fetch for ExtraPoint<T, E> {
+impl<T: 'static + FullHash, E: Send + Sync + Clone> Fetch for ExtraPoint<T, E> {
     type T = T;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        self.point.fetch_full()
+    fn fetch<'a>(self: Box<Self>) -> FailFuture<'a, Self::T>
+    where
+        Self: 'a,
+    {
+        self.point.fetch()
     }
 
-    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        self.point.fetch()
+    fn clone_boxed<'a>(&self) -> Box<dyn 'a + Fetch<T = Self::T>>
+    where
+        Self: 'a,
+        Self::T: Clone,
+    {
+        Box::new(self.clone())
     }
 }
 

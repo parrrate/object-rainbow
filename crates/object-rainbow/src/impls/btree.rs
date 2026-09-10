@@ -18,7 +18,7 @@ impl<T: ListHashes> ListHashes for BTreeSet<T> {
 }
 
 impl<T: Topological> Topological for BTreeSet<T> {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(self, visitor: &mut impl PointVisitor) {
         self.iter_traverse(visitor);
     }
 }
@@ -55,7 +55,7 @@ impl<K: ListHashes, V: ListHashes> ListHashes for BTreeMap<K, V> {
 }
 
 impl<K: Topological, V: Topological> Topological for BTreeMap<K, V> {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(self, visitor: &mut impl PointVisitor) {
         self.iter_traverse(visitor);
     }
 }

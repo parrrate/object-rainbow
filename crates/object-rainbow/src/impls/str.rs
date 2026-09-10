@@ -7,7 +7,6 @@ impl ToOutput for str {
 }
 
 impl ListHashes for str {}
-impl Topological for str {}
 impl Tagged for str {}
 impl MaybeHasNiche for str {
     type MnArray = NoNiche<NicheForUnsized>;

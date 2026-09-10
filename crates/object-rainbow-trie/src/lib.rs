@@ -23,24 +23,25 @@ mod serde;
 type TriePoint<Tr> = Point<(Tr, Vec<u8>)>;
 
 #[derive(
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Clone,
-    PartialEq,
-    Eq,
+    ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, PartialEq, Eq,
 )]
 #[topology(recursive, inline)]
+#[topology(bound = "T: 'static")]
 pub struct Trie<T> {
     value: Option<T>,
     #[tags(skip)]
     #[parse(unchecked)]
     #[topology(unchecked)]
     children: ArrayMap<TriePoint<Self>>,
+}
+
+impl<T: 'static + Clone> Clone for Trie<T> {
+    fn clone(&self) -> Self {
+        Self {
+            value: self.value.clone(),
+            children: self.children.clone(),
+        }
+    }
 }
 
 assert_impl!(
@@ -69,19 +70,16 @@ impl<T> Trie<T> {
 
 trait TrieChildren<Tr = Self>: Sized {
     fn c_get_mut(&mut self, key: u8) -> Option<&mut TriePoint<Tr>>;
-    fn c_get(&self, key: u8) -> Option<&TriePoint<Tr>>;
     fn c_contains(&self, key: u8) -> bool;
     fn c_insert(&mut self, key: u8, point: TriePoint<Tr>);
     fn c_empty(&self) -> bool;
     fn c_len(&self) -> usize;
     fn c_remove(&mut self, key: u8) -> Option<TriePoint<Tr>>;
-    fn c_range<'a>(
-        &'a self,
+    fn c_range(
+        self,
         min_inclusive: u8,
         max_inclusive: u8,
-    ) -> impl Iterator<Item = (u8, &'a TriePoint<Tr>)>
-    where
-        Tr: 'a;
+    ) -> impl Iterator<Item = (u8, TriePoint<Tr>)>;
     fn c_pop_first(&mut self) -> Option<(u8, TriePoint<Tr>)>;
     fn c_iter_mut<'a>(&'a mut self) -> impl Iterator<Item = (u8, &'a mut TriePoint<Tr>)>
     where
@@ -91,10 +89,6 @@ trait TrieChildren<Tr = Self>: Sized {
 impl<T> TrieChildren for Trie<T> {
     fn c_get_mut(&mut self, key: u8) -> Option<&mut TriePoint<Self>> {
         self.children.get_mut(key)
-    }
-
-    fn c_get(&self, key: u8) -> Option<&TriePoint<Self>> {
-        self.children.get(key)
     }
 
     fn c_contains(&self, key: u8) -> bool {
@@ -117,15 +111,14 @@ impl<T> TrieChildren for Trie<T> {
         self.children.remove(key)
     }
 
-    fn c_range<'a>(
-        &'a self,
+    fn c_range(
+        self,
         min_inclusive: u8,
         max_inclusive: u8,
-    ) -> impl Iterator<Item = (u8, &'a TriePoint<Self>)>
-    where
-        Self: 'a,
-    {
-        self.children.range(min_inclusive..=max_inclusive)
+    ) -> impl Iterator<Item = (u8, TriePoint<Self>)> {
+        self.children
+            .into_iter()
+            .filter(move |(k, _)| min_inclusive <= *k && *k <= max_inclusive)
     }
 
     fn c_pop_first(&mut self) -> Option<(u8, TriePoint<Self>)> {
@@ -144,15 +137,15 @@ fn common_length(a: &[u8], b: &[u8]) -> usize {
     a.iter().zip(b).take_while(|(a, b)| a == b).count()
 }
 
-impl<T: 'static + Send + Sync + Clone> Trie<T>
+impl<T: 'static + Send + Sync> Trie<T>
 where
     Option<T>: Traversible + InlineOutput,
 {
-    pub async fn get(&self, key: &[u8]) -> object_rainbow::Result<Option<T>> {
+    pub async fn get(mut self, key: &[u8]) -> object_rainbow::Result<Option<T>> {
         let Some((first, key)) = key.split_first() else {
-            return Ok(self.value.clone());
+            return Ok(self.value);
         };
-        let Some(point) = self.c_get(*first) else {
+        let Some(point) = self.c_remove(*first) else {
             return Ok(None);
         };
         let (trie, prefix) = point.fetch().await?;
@@ -309,11 +302,11 @@ where
     }
 
     async fn yield_all(
-        &self,
+        mut self,
         context: &mut Vec<u8>,
         co: &Co<(Vec<u8>, T), object_rainbow::Error>,
     ) -> object_rainbow::Result<()> {
-        if let Some(value) = self.value.clone() {
+        if let Some(value) = self.value.take() {
             co.yield_((context.clone(), value)).await;
         }
         let len = context.len();
@@ -330,7 +323,7 @@ where
     }
 
     async fn prefix_yield(
-        &self,
+        mut self,
         context: &mut Vec<u8>,
         key: &[u8],
         co: &Co<(Vec<u8>, T), object_rainbow::Error>,
@@ -339,7 +332,7 @@ where
             self.yield_all(context, co).await?;
             return Ok(());
         };
-        let Some(point) = self.c_get(*first) else {
+        let Some(point) = self.c_remove(*first) else {
             return Ok(());
         };
         let len = context.len();
@@ -361,14 +354,14 @@ where
     }
 
     async fn range_yield(
-        &self,
+        mut self,
         context: &mut Vec<u8>,
         range_start: Bound<&[u8]>,
         range_end: Bound<&[u8]>,
         co: &Co<(Vec<u8>, T), object_rainbow::Error>,
     ) -> object_rainbow::Result<()> {
         if <_ as RangeBounds<[u8]>>::contains(&(range_start, range_end), b"".as_slice())
-            && let Some(value) = self.value.clone()
+            && let Some(value) = self.value.take()
         {
             co.yield_((context.clone(), value)).await;
         }
@@ -452,15 +445,15 @@ where
     }
 
     pub fn prefix_stream(
-        &self,
+        self,
         prefix: &[u8],
     ) -> impl Send + Stream<Item = object_rainbow::Result<(Vec<u8>, T)>> {
         try_stream(async |co| self.prefix_yield(&mut Vec::new(), prefix, &co).await)
     }
 
-    pub fn range_stream<'a, B: AsRef<[u8]>>(
-        &'a self,
-        range: impl 'a + Send + Sync + RangeBounds<B>,
+    pub fn range_stream<B: AsRef<[u8]>>(
+        self,
+        range: impl Send + Sync + RangeBounds<B>,
     ) -> impl Send + Stream<Item = object_rainbow::Result<(Vec<u8>, T)>> {
         try_stream(async move |co| {
             self.range_yield(
@@ -473,7 +466,7 @@ where
         })
     }
 
-    pub async fn count(&self) -> object_rainbow::Result<u64> {
+    pub async fn count(self) -> object_rainbow::Result<u64> {
         self.range_stream::<&[u8]>(..)
             .try_fold(0u64, async |ctr, _| Ok(ctr.saturating_add(1)))
             .await
@@ -490,7 +483,10 @@ where
         Ok(trie)
     }
 
-    pub fn all_subsequences(value: T, key: &[u8]) -> Self {
+    pub fn all_subsequences(value: T, key: &[u8]) -> Self
+    where
+        T: Clone,
+    {
         struct SeenAt<T>(T, [Option<TriePoint<Trie<T>>>; 256]);
         impl<T: 'static + Send + Sync + Clone> SeenAt<T>
         where
@@ -531,7 +527,7 @@ assert_impl!(
     }
 );
 
-impl<K, V: Clone> Clone for TrieMap<K, V> {
+impl<K, V: 'static + Clone> Clone for TrieMap<K, V> {
     fn clone(&self) -> Self {
         Self {
             key: self.key,
@@ -555,11 +551,11 @@ impl<K, V> TrieMap<K, V> {
     }
 }
 
-impl<K: ReflessObject, V: 'static + Send + Sync + Clone> TrieMap<K, V>
+impl<K: ReflessObject, V: 'static + Send + Sync> TrieMap<K, V>
 where
     Option<V>: Traversible + InlineOutput,
 {
-    pub async fn get(&self, key: &K) -> object_rainbow::Result<Option<V>> {
+    pub async fn get(self, key: &K) -> object_rainbow::Result<Option<V>> {
         self.trie.get(&key.vec()).await
     }
 
@@ -580,7 +576,7 @@ where
     }
 
     pub fn prefix_stream(
-        &self,
+        self,
         prefix: &[u8],
     ) -> impl Send + Stream<Item = object_rainbow::Result<(K, V)>> {
         self.trie
@@ -589,8 +585,8 @@ where
     }
 
     pub fn range_stream<'a>(
-        &'a self,
-        range: impl 'a + Send + Sync + RangeBounds<&'a K>,
+        self,
+        range: impl Send + Sync + RangeBounds<&'a K>,
     ) -> impl Send + Stream<Item = object_rainbow::Result<(K, V)>> {
         self.trie
             .range_stream((
@@ -647,7 +643,7 @@ impl<T> TrieSet<T> {
 }
 
 impl<T: ReflessObject> TrieSet<T> {
-    pub async fn contains(&self, value: &T) -> object_rainbow::Result<bool> {
+    pub async fn contains(self, value: &T) -> object_rainbow::Result<bool> {
         Ok(self.map.get(value).await?.is_some())
     }
 
@@ -668,15 +664,15 @@ impl<T: ReflessObject> TrieSet<T> {
     }
 
     pub fn prefix_stream(
-        &self,
+        self,
         prefix: &[u8],
     ) -> impl Send + Stream<Item = object_rainbow::Result<T>> {
         self.map.prefix_stream(prefix).map_ok(|(value, ())| value)
     }
 
     pub fn range_stream<'a>(
-        &'a self,
-        range: impl 'a + Send + Sync + RangeBounds<&'a T>,
+        self,
+        range: impl Send + Sync + RangeBounds<&'a T>,
     ) -> impl Send + Stream<Item = object_rainbow::Result<T>> {
         self.map.range_stream(range).map_ok(|(value, ())| value)
     }
@@ -713,17 +709,18 @@ mod test {
     async fn test() -> object_rainbow::Result<()> {
         let mut trie = Trie::<u8>::default();
         trie.insert(b"abc", 1).await?;
-        assert_eq!(trie.get(b"abc").await?, Some(1));
+        assert_eq!(trie.clone().get(b"abc").await?, Some(1));
         trie.insert(b"abd", 2).await?;
-        assert_eq!(trie.get(b"abd").await?, Some(2));
+        assert_eq!(trie.clone().get(b"abd").await?, Some(2));
         trie.insert(b"ab", 3).await?;
-        assert_eq!(trie.get(b"ab").await?, Some(3));
+        assert_eq!(trie.clone().get(b"ab").await?, Some(3));
         trie.insert(b"a", 4).await?;
-        assert_eq!(trie.get(b"a").await?, Some(4));
+        assert_eq!(trie.clone().get(b"a").await?, Some(4));
         trie.insert(b"abce", 5).await?;
-        assert_eq!(trie.get(b"abce").await?, Some(5));
+        assert_eq!(trie.clone().get(b"abce").await?, Some(5));
         assert_eq!(
-            trie.prefix_stream(b"")
+            trie.clone()
+                .prefix_stream(b"")
                 .try_collect::<_, _, Vec<_>>()
                 .await?,
             [
@@ -735,7 +732,8 @@ mod test {
             ],
         );
         assert_eq!(
-            trie.prefix_stream(b"a")
+            trie.clone()
+                .prefix_stream(b"a")
                 .try_collect::<_, _, Vec<_>>()
                 .await?,
             [
@@ -747,7 +745,8 @@ mod test {
             ],
         );
         assert_eq!(
-            trie.prefix_stream(b"ab")
+            trie.clone()
+                .prefix_stream(b"ab")
                 .try_collect::<_, _, Vec<_>>()
                 .await?,
             [
@@ -758,7 +757,8 @@ mod test {
             ],
         );
         assert_eq!(
-            trie.range_stream::<&[u8]>(..)
+            trie.clone()
+                .range_stream::<&[u8]>(..)
                 .try_collect::<_, _, Vec<_>>()
                 .await?,
             [
@@ -770,19 +770,22 @@ mod test {
             ],
         );
         assert_eq!(
-            trie.range_stream(..=b"abc".as_slice())
+            trie.clone()
+                .range_stream(..=b"abc".as_slice())
                 .try_collect::<_, _, Vec<_>>()
                 .await?,
             [(b"a".into(), 4), (b"ab".into(), 3), (b"abc".into(), 1)],
         );
         assert_eq!(
-            trie.range_stream(..b"abc".as_slice())
+            trie.clone()
+                .range_stream(..b"abc".as_slice())
                 .try_collect::<_, _, Vec<_>>()
                 .await?,
             [(b"a".into(), 4), (b"ab".into(), 3)],
         );
         assert_eq!(
-            trie.range_stream(b"ab".as_slice()..)
+            trie.clone()
+                .range_stream(b"ab".as_slice()..)
                 .try_collect::<_, _, Vec<_>>()
                 .await?,
             [
@@ -793,7 +796,8 @@ mod test {
             ],
         );
         assert_eq!(
-            trie.range_stream(b"ab".as_slice()..=b"abce".as_slice())
+            trie.clone()
+                .range_stream(b"ab".as_slice()..=b"abce".as_slice())
                 .try_collect::<_, _, Vec<_>>()
                 .await?,
             [(b"ab".into(), 3), (b"abc".into(), 1), (b"abce".into(), 5)],
@@ -821,8 +825,8 @@ mod test {
         let mut trie = Trie::<u8>::default();
         trie.insert(b"apple", 1).await?;
         trie.insert(b"apricot", 2).await?;
-        assert_eq!(trie.get(b"apple").await?, Some(1));
-        assert_eq!(trie.get(b"apricot").await?, Some(2));
+        assert_eq!(trie.clone().get(b"apple").await?, Some(1));
+        assert_eq!(trie.clone().get(b"apricot").await?, Some(2));
         Ok(())
     }
 
@@ -837,12 +841,12 @@ mod test {
         rd.insert(&b"Loco Musica".to_vec()).await?;
         rd.insert(&b"Leberblume".to_vec()).await?;
         enormita.append(&mut rd).await?;
-        assert!(enormita.contains(&b"Magia Baiser".to_vec()).await?);
-        assert!(enormita.contains(&b"Leopard".to_vec()).await?);
-        assert!(enormita.contains(&b"Nero Alice".to_vec()).await?);
-        assert!(enormita.contains(&b"Lord Enorme".to_vec()).await?);
-        assert!(enormita.contains(&b"Loco Musica".to_vec()).await?);
-        assert!(enormita.contains(&b"Leberblume".to_vec()).await?);
+        assert!(enormita.clone().contains(&b"Magia Baiser".to_vec()).await?);
+        assert!(enormita.clone().contains(&b"Leopard".to_vec()).await?);
+        assert!(enormita.clone().contains(&b"Nero Alice".to_vec()).await?);
+        assert!(enormita.clone().contains(&b"Lord Enorme".to_vec()).await?);
+        assert!(enormita.clone().contains(&b"Loco Musica".to_vec()).await?);
+        assert!(enormita.clone().contains(&b"Leberblume".to_vec()).await?);
         assert!(rd.is_empty());
         Ok(())
     }

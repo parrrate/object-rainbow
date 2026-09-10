@@ -16,6 +16,7 @@ where
 {
     fn to_map(&self) -> object_rainbow::Result<Map<K, V>> {
         let future = self
+            .clone()
             .range_stream(..)
             .map_ok(|(k, v)| (ByBytes(k), v))
             .try_collect();

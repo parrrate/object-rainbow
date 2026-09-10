@@ -685,7 +685,7 @@ pub fn derive_topological(input: TokenStream) -> TokenStream {
             impl #impl_generics ::object_rainbow::Topological for #target #ty_generics
             #where_clause
             {
-                fn traverse(&self, visitor: &mut impl ::object_rainbow::PointVisitor) {
+                fn traverse(self, visitor: &mut impl ::object_rainbow::PointVisitor) {
                     #traverse
                 }
             }
@@ -938,7 +938,7 @@ fn gen_traverse(data: &Data, attrs: &[Attribute]) -> proc_macro2::TokenStream {
             });
             let tagged = if untagged.is_none() {
                 quote! {
-                    let kind = ::object_rainbow::Enum::kind(self);
+                    let kind = ::object_rainbow::Enum::kind(&self);
                     let tag = ::object_rainbow::enumkind::EnumKind::to_tag(kind);
                     tag.traverse(visitor);
                 }

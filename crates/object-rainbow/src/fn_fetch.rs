@@ -1,7 +1,15 @@
 use crate::*;
 
 pub struct FnFetch<F> {
-    fetch: F,
+    fetch: Arc<F>,
+}
+
+impl<F> Clone for FnFetch<F> {
+    fn clone(&self) -> Self {
+        Self {
+            fetch: self.fetch.clone(),
+        }
+    }
 }
 
 pub trait FetchFn: Send + Sync {
@@ -17,8 +25,9 @@ impl<F: Send + Sync + Fn() -> Fut, Fut: Send + Future<Output = Result<T>>, T> Fe
     }
 }
 
-impl<F: FetchFn> FnFetch<F> {
+impl<F: FetchFn<T: Clone>> FnFetch<F> {
     pub fn new(fetch: F) -> Self {
+        let fetch = fetch.into();
         Self { fetch }
     }
 
@@ -31,13 +40,16 @@ impl<F: FetchFn> FnFetch<F> {
         F::T: Traversible,
     {
         let object = self.fetch().await?;
-        let resolve = object.to_resolve();
+        let resolve = object.clone().into_resolve();
         Ok((object, resolve))
     }
 }
 
-impl<F: FetchFn<T: Traversible>> FetchBytes for FnFetch<F> {
-    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
+impl<F: FetchFn<T: Clone + Traversible>> FetchBytes for FnFetch<F> {
+    fn fetch_bytes<'a>(self: Box<Self>) -> FailFuture<'a, ByteNode>
+    where
+        Self: 'a,
+    {
         Box::pin(async move {
             let (object, resolve) = self.fetch_node().await?;
             let data = object.output();
@@ -45,20 +57,30 @@ impl<F: FetchFn<T: Traversible>> FetchBytes for FnFetch<F> {
         })
     }
 
-    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
+    fn fetch_data<'a>(self: Box<Self>) -> FailFuture<'a, Vec<u8>>
+    where
+        Self: 'a,
+    {
         Box::pin(async move { Ok(self.fetch().await?.output()) })
     }
 }
 
-impl<F: FetchFn<T: Traversible>> Fetch for FnFetch<F> {
+impl<F: FetchFn<T: Clone + Traversible>> Fetch for FnFetch<F> {
     type T = F::T;
 
-    fn fetch_full(&'_ self) -> FailFuture<'_, Node<Self::T>> {
-        Box::pin(async move { self.fetch_node().await })
+    fn fetch<'a>(self: Box<Self>) -> FailFuture<'a, Self::T>
+    where
+        Self: 'a,
+    {
+        Box::pin(async move { self.fetch().await })
     }
 
-    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        Box::pin(async move { self.fetch().await })
+    fn clone_boxed<'a>(&self) -> Box<dyn 'a + Fetch<T = Self::T>>
+    where
+        Self: 'a,
+        Self::T: Clone,
+    {
+        Box::new(self.clone())
     }
 }
 

@@ -131,7 +131,7 @@ impl<T> Topological for Nt<T>
 where
     for<'a> &'a T: IntoIterator<Item: Topological>,
 {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(self, visitor: &mut impl PointVisitor) {
         self.iter_traverse(visitor);
     }
 }

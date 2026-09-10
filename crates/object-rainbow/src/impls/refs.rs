@@ -27,9 +27,9 @@ impl<T: ?Sized + Tagged> Tagged for &T {
     const HASH: Hash = T::HASH;
 }
 
-impl<T: ?Sized + Topological> Topological for &T {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
-        (**self).traverse(visitor);
+impl<T: Topological + Clone> Topological for &T {
+    fn traverse(self, visitor: &mut impl PointVisitor) {
+        (*self).clone().traverse(visitor);
     }
 }
 

@@ -18,7 +18,7 @@ impl<T: ListHashes> ListHashes for Vec<T> {
 }
 
 impl<T: Topological> Topological for Vec<T> {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(self, visitor: &mut impl PointVisitor) {
         self.iter_traverse(visitor);
     }
 }
@@ -57,7 +57,7 @@ impl<T: ListHashes> ListHashes for VecDeque<T> {
 }
 
 impl<T: Topological> Topological for VecDeque<T> {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(self, visitor: &mut impl PointVisitor) {
         self.iter_traverse(visitor);
     }
 }

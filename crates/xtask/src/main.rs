@@ -95,7 +95,11 @@ struct Method {
 
 impl Method {
     fn out(self, n: usize) -> OutMethod {
-        OutMethod { method: self, n }
+        OutMethod {
+            method: self,
+            n,
+            receiver: "&self",
+        }
     }
 
     fn parse(self, n: usize, most: &'static str) -> ParseMethod {
@@ -111,17 +115,25 @@ impl Method {
 struct OutMethod {
     method: Method,
     n: usize,
+    receiver: &'static str,
 }
 
 impl Display for OutMethod {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let Method { name, arg, aty } = self.method;
-        writeln!(f, "    fn {name}(&self, {arg}: {aty}) {{")?;
+        let receiver = self.receiver;
+        writeln!(f, "    fn {name}({receiver}, {arg}: {aty}) {{")?;
         for i in 0..self.n {
             writeln!(f, "        self.{i}.{name}({arg});")?;
         }
         writeln!(f, "    }}")?;
         Ok(())
+    }
+}
+
+impl OutMethod {
+    fn receiver(self, receiver: &'static str) -> Self {
+        Self { receiver, ..self }
     }
 }
 
@@ -326,7 +338,8 @@ fn per_n(n: usize) -> String {
             members: vec![Box::new(
                 "traverse"
                     .method("visitor", "&mut impl PointVisitor")
-                    .out(n),
+                    .out(n)
+                    .receiver("self"),
             )],
         },
         Impl {

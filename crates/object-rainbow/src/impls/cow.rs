@@ -38,13 +38,9 @@ impl<'a, B: 'a + ToOwned + ListHashes + ?Sized> ListHashes for Cow<'a, B> {
     }
 }
 
-impl<'a, B: 'a + ToOwned + Topological + ?Sized> Topological for Cow<'a, B> {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
-        (**self).traverse(visitor);
-    }
-
-    fn topology(&self) -> TopoVec {
-        (**self).topology()
+impl<'a, B: 'a + ToOwned<Owned: Topological> + ListHashes + ?Sized> Topological for Cow<'a, B> {
+    fn traverse(self, visitor: &mut impl PointVisitor) {
+        self.into_owned().traverse(visitor);
     }
 }
 

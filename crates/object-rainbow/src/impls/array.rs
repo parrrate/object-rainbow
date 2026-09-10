@@ -22,7 +22,7 @@ impl<T: ListHashes, const N: usize> ListHashes for [T; N] {
 }
 
 impl<T: Topological, const N: usize> Topological for [T; N] {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(self, visitor: &mut impl PointVisitor) {
         self.iter_traverse(visitor);
     }
 }
