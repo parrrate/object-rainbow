@@ -9,9 +9,9 @@ use futures_util::{
     io::BufReader,
 };
 use object_rainbow::{
-    FullHash, Hash, InlineOutput, ListHashes, Parse, ParseInline, Singular, Size, SizeExt, Tagged,
-    ToOutput, Topological,
+    FullHash, Hash, ListHashes, Parse, Singular, SizeExt, Tagged, ToOutput, Topological,
     fn_fetch::{FetchFn, FnFetch, closure_fetch},
+    pod,
 };
 use object_rainbow_point::{IntoPoint, Point};
 use sha2::{Digest, Sha256};
@@ -115,9 +115,7 @@ impl Chunks {
     }
 }
 
-#[derive(
-    ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Size, Clone,
-)]
+#[pod(no_copy, no_default)]
 pub struct Chunk {
     len_lower: u16,
     data: Point<Vec<u8>>,
