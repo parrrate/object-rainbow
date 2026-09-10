@@ -108,7 +108,8 @@ impl<I: ParseInput> ParseInline<I> for LpBytes {
 }
 
 /// Length-prefixed [`String`].
-#[derive(Debug, Clone, ParseAsInline, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[pod(no_copy, no_output, no_parse)]
+#[derive(ParseAsInline)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LpString(pub String);
 
@@ -164,10 +165,6 @@ impl<I: ParseInput> ParseInline<I> for LpString {
             .map(Self)
     }
 }
-
-impl Tagged for LpString {}
-impl ListHashes for LpString {}
-impl Topological for LpString {}
 
 #[derive(
     Debug,
