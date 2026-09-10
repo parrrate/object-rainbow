@@ -120,8 +120,7 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for ByAddress<T, Extra
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
-            self.extra
-                .parse_checked(self.inner.address.hash, &data, &resolve)
+            self.extra.parse_checked(self.inner.hash(), &data, &resolve)
         })
     }
 
@@ -131,7 +130,7 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for ByAddress<T, Extra
         };
         let object = self
             .extra
-            .parse_checked(self.inner.address.hash, &data, &resolve)?;
+            .parse_checked(self.inner.hash(), &data, &resolve)?;
         Ok(Some((object, resolve)))
     }
 }
@@ -166,7 +165,7 @@ impl<T: FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> FetchExtra<T, D> {
     async fn fetch_object(&self) -> object_rainbow::Result<Node<T>> {
         let ((data, resolve), extra) =
             futures_util::future::try_join(self.fetch_bytes(), self.fetch.fetch()).await?;
-        let object = extra.parse_checked(self.inner.address.hash, &data, &resolve)?;
+        let object = extra.parse_checked(self.inner.hash(), &data, &resolve)?;
         Ok((object, resolve))
     }
 }
