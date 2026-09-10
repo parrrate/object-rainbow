@@ -8,10 +8,7 @@ use async_executor::{Executor, Task};
 use futures_channel::oneshot;
 use futures_util::{FutureExt, Sink, SinkExt, Stream, StreamExt, TryStreamExt, future::Shared};
 use genawaiter_try_stream::try_stream;
-use object_rainbow::{
-    Address, Enum, FetchBytes, Hash, ListHashes, Parse, Resolve, Singular, Tagged, ToOutput,
-    Topological, pod,
-};
+use object_rainbow::{Address, FetchBytes, Hash, Resolve, Singular, pod};
 use object_rainbow_point::RawPointInner;
 
 /// Commands coming from a consumer.
@@ -32,7 +29,7 @@ pub enum Consume {
 }
 
 /// Responses coming from a provider.
-#[derive(Debug, Enum, ToOutput, Tagged, ListHashes, Topological, Parse)]
+#[pod(no_copy, no_default, no_inline, no_size)]
 pub enum Provide {
     /// Fulfil an [`Consume::Order`].
     Deliver(Hash, Vec<u8>),
