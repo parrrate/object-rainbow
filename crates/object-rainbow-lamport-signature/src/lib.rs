@@ -27,7 +27,7 @@ pub struct PublicKey([PublicPair; LENGTH]);
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
 pub struct SignatureFragment(SecretFragment);
 
-#[derive(Debug, ToOutput, Clone, Copy)]
+#[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
 pub struct Signature([SignatureFragment; LENGTH]);
 
 pub struct MessageFragment(pub bool);
