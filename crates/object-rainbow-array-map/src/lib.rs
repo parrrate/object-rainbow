@@ -6,9 +6,9 @@ use std::{
 
 use bitvec::array::BitArray;
 use object_rainbow::{
-    ByteOrd, Equivalent, EquivalentFor, Inline, InlineOutput, ListHashes, MaybeHasNiche, Parse,
-    ParseAsInline, ParseInline, ParseInput, PointInput, RainbowIterator, Size, Tagged, ToOutput,
-    Topological, assert_impl, pod,
+    ByteOrd, Equivalent, EquivalentFor, Inline, InlineOutput, ListHashes, ParseAsInline,
+    ParseInline, ParseInput, PointInput, RainbowIterator, Tagged, ToOutput, Topological,
+    assert_impl, pod,
 };
 
 type Bits = BitArray<[u8; 32]>;
@@ -457,19 +457,7 @@ impl<T, U: Equivalent<T>> Equivalent<KeyedArrayMap<T>> for KeyedArrayMap<U> {
     }
 }
 
-#[derive(
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Clone,
-    Size,
-    MaybeHasNiche,
-    Default,
-)]
+#[pod]
 pub struct ArraySet {
     bits: Bits,
 }
