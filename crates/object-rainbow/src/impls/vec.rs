@@ -94,3 +94,7 @@ impl<T> Equivalent<Vec<T>> for VecDeque<T> {
         vec.into()
     }
 }
+
+impl<T> MaybeHasNiche for VecDeque<T> {
+    type MnArray = NoNiche<NicheForUnsized>;
+}
