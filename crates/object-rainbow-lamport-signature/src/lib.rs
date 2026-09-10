@@ -57,8 +57,8 @@ impl PrivatePair {
         PublicPair(self.0.map(PrivateFragment::public))
     }
 
-    pub fn sign(self, data: MessageFragment) -> SignatureFragment {
-        self.0[data.0 as usize].sign()
+    pub fn sign(self, message: MessageFragment) -> SignatureFragment {
+        self.0[message.0 as usize].sign()
     }
 }
 
@@ -67,8 +67,8 @@ impl PrivateKey {
         PublicKey(self.0.map(PrivatePair::public))
     }
 
-    pub fn sign(self, data: Message) -> Signature {
-        Signature(std::array::from_fn(|n| self.0[n].sign(data.fragment(n))))
+    pub fn sign(self, message: Message) -> Signature {
+        Signature(std::array::from_fn(|n| self.0[n].sign(message.fragment(n))))
     }
 
     pub fn sign_hash(self, hash: Hash) -> Signature {
@@ -77,14 +77,14 @@ impl PrivateKey {
 }
 
 impl SignatureFragment {
-    pub fn validate(self, public: PublicPair, data: MessageFragment) -> bool {
-        self.0.public() == public.0[data.0 as usize]
+    pub fn validate(self, public: PublicPair, message: MessageFragment) -> bool {
+        self.0.public() == public.0[message.0 as usize]
     }
 }
 
 impl Signature {
-    pub fn validate(self, public: PublicKey, data: Message) -> bool {
-        (0..=255).all(|n| self.0[n].validate(public.0[n], data.fragment(n)))
+    pub fn validate(self, public: PublicKey, message: Message) -> bool {
+        (0..=255).all(|n| self.0[n].validate(public.0[n], message.fragment(n)))
     }
 }
 
