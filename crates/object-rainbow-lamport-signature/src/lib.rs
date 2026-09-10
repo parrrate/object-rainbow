@@ -35,6 +35,10 @@ impl PrivateFragment {
     pub fn public(self) -> PublicFragment {
         PublicFragment(self.data_hash())
     }
+
+    pub fn sign(self) -> SignatureFragment {
+        SignatureFragment(self.0)
+    }
 }
 
 impl PrivatePair {
