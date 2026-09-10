@@ -9,7 +9,7 @@ use futures_util::{
     io::BufReader,
 };
 use object_rainbow::{
-    FullHash, Hash, ListHashes, Parse, Singular, SizeExt, Tagged, ToOutput, Topological,
+    FullHash, Hash, Singular, SizeExt, ToOutput,
     fn_fetch::{FetchFn, FnFetch, closure_fetch},
     pod,
 };
@@ -25,7 +25,7 @@ pub mod fastcdc;
 #[cfg(feature = "fs")]
 mod fs;
 
-#[derive(ToOutput, Tagged, ListHashes, Topological, Parse, Clone)]
+#[pod(no_copy, no_inline, no_size)]
 pub struct Chunks {
     chunks: Vec<Chunk>,
 }
