@@ -17,13 +17,13 @@ use std::{
     sync::Arc,
 };
 
+#[cfg(feature = "apply")]
+use object_rainbow::pod;
 use object_rainbow::{
     Address, ByteNode, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node, Object, Output,
     Parse, ParseInput, ParseSliceExtra, PointInput, Resolve, Singular, Tagged, ToOutput,
     Topological, Traversible,
 };
-#[cfg(feature = "apply")]
-use object_rainbow::{InlineOutput, MaybeHasNiche, ParseInline, Size};
 #[cfg(feature = "apply")]
 use object_rainbow_apply::Apply;
 use object_rainbow_fetchall::fetchall;
@@ -357,23 +357,7 @@ impl<T> Deref for Marshalled<T> {
 }
 
 #[cfg(feature = "apply")]
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Default,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Size,
-    MaybeHasNiche,
-)]
+#[pod]
 pub struct MarshalledDiffs<T>(pub T);
 
 #[cfg(feature = "apply")]
