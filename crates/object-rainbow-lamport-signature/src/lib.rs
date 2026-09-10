@@ -8,7 +8,7 @@ pub struct PrivateFragment([u8; HASH_SIZE]);
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
 pub struct PrivatePair([PrivateFragment; 2]);
 
-#[derive(Debug, ToOutput)]
+#[derive(Debug, ToOutput, Clone)]
 pub struct PrivateKey([PrivatePair; LENGTH]);
 
 #[derive(Debug, ToOutput, InlineOutput)]
