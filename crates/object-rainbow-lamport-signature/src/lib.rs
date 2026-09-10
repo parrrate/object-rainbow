@@ -2,13 +2,23 @@ use std::ops::Index;
 
 use bitvec::array::BitArray;
 use object_rainbow::{
-    HASH_SIZE, Hash, InlineOutput, ListHashes, Tagged, ToOutput, Topological, pod,
+    HASH_SIZE, Hash, InlineOutput, ListHashes, Parse, Tagged, ToOutput, Topological, pod,
 };
 
 const LENGTH: usize = HASH_SIZE * 8;
 
 #[derive(
-    Debug, ToOutput, InlineOutput, Tagged, ListHashes, Topological, Clone, Copy, PartialEq, Eq,
+    Debug,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
 )]
 pub struct FragmentSequence<T>([T; LENGTH]);
 
