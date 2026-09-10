@@ -1,19 +1,7 @@
 use crate::{map_extra::Map, *};
 
 /// Parses `Extra`, then provides it to `T`'s parser.
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Clone,
-    Copy,
-    Parse,
-    ParseInline,
-    PartialEq,
-)]
+#[pod]
 pub struct InlineExtra<Extra = ()>(pub Extra);
 
 impl<E: 'static + Clone, X: 'static + Clone> Map<X> for InlineExtra<E> {
