@@ -19,3 +19,9 @@ pub struct PublicPair([PublicFragment; 2]);
 
 #[derive(Debug, ToOutput)]
 pub struct PublicKey([PublicPair; LENGTH]);
+
+impl PrivateFragment {
+    pub fn public(&self) -> PublicFragment {
+        PublicFragment(self.data_hash())
+    }
+}
