@@ -2640,6 +2640,8 @@ struct PodArgs {
     no_output: SpannedValue<bool>,
     #[darling(default)]
     no_parse: SpannedValue<bool>,
+    #[darling(default)]
+    no_inline: SpannedValue<bool>,
 }
 
 #[proc_macro_attribute]
@@ -2650,6 +2652,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
             no_niche,
             no_output,
             no_parse,
+            no_inline,
         },
         args_error,
     ) = match syn::parse(args) {
@@ -2682,6 +2685,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
     };
     let yes_output = !no_output.into_inner();
     let yes_parse = !no_parse.into_inner();
+    let yes_inline = !no_inline.into_inner();
     let derive_to_output = if yes_output {
         quote! {
             ::object_rainbow::ToOutput,
@@ -2689,7 +2693,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
     } else {
         quote! {}
     };
-    let derive_inline_output = if yes_output {
+    let derive_inline_output = if yes_output && yes_inline {
         quote! {
             ::object_rainbow::InlineOutput,
         }
@@ -2703,7 +2707,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
     } else {
         quote! {}
     };
-    let derive_parse_inline = if yes_parse {
+    let derive_parse_inline = if yes_parse && yes_inline {
         quote! {
             ::object_rainbow::ParseInline,
         }
