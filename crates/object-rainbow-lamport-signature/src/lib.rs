@@ -100,8 +100,9 @@ impl From<Hash> for Message {
     }
 }
 
+#[derive(ToOutput)]
 pub struct Signed<P, S, M> {
-    pub public: P,
-    pub signature: S,
-    pub message: M,
+    public: P,
+    signature: S,
+    message: M,
 }
