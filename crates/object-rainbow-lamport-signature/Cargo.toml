@@ -11,6 +11,7 @@ authors.workspace = true
 object-rainbow.workspace = true
 
 bitvec.workspace = true
+futures-util.workspace = true
 
 [package.metadata.tagit]
 skip = true
