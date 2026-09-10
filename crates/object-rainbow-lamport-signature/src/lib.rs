@@ -12,7 +12,7 @@ pub struct PrivateFragment(SecretFragment);
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
 pub struct PrivatePair([PrivateFragment; 2]);
 
-#[derive(Debug, ToOutput, Clone, Copy)]
+#[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
 pub struct PrivateKey([PrivatePair; LENGTH]);
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy, PartialEq, Eq)]
