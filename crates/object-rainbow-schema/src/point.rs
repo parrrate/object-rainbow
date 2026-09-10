@@ -1,9 +1,6 @@
 use std::sync::Arc;
 
-use object_rainbow::{
-    CanonicalExtra, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Tagged, ToOutput,
-    Topological,
-};
+use object_rainbow::{CanonicalExtra, pod};
 use object_rainbow_point::{ExtraPoint, Extras, IntoPoint};
 
 use crate::{
@@ -11,23 +8,7 @@ use crate::{
     TailSchema, TailValue,
 };
 
-#[derive(
-    Debug,
-    ToOutput,
-    InlineOutput,
-    Parse,
-    ParseInline,
-    MaybeHasNiche,
-    ListHashes,
-    Topological,
-    Tagged,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-)]
+#[pod(no_copy, no_size)]
 pub struct PointSchema {
     pub schema: Arc<TailSchema>,
 }
