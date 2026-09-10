@@ -6,7 +6,7 @@ const LENGTH: usize = HASH_SIZE * 8;
 #[pod]
 pub struct SecretFragment([u8; HASH_SIZE]);
 
-#[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
+#[pod]
 pub struct PrivateFragment(SecretFragment);
 
 #[derive(Debug, ToOutput, InlineOutput, Clone, Copy)]
