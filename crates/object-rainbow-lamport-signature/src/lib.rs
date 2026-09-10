@@ -136,6 +136,21 @@ pub struct Signed<P, S, M> {
 }
 
 impl<P: Fetch<T = PublicKey>, S: Fetch<T = Signature>, M: Singular> Signed<P, S, M> {
+    pub async fn sign(private: PrivateKey, public: P, message: M) -> object_rainbow::Result<Self>
+    where
+        S: From<Signature>,
+    {
+        if public.fetch().await? != private.public() {
+            return Err(object_rainbow::error_operation!("public key mismatch"));
+        }
+        let signature = private.sign_hash(message.hash()).into();
+        Ok(Self {
+            public,
+            signature,
+            message,
+        })
+    }
+
     pub async fn new(public: P, signature: S, message: M) -> object_rainbow::Result<Self> {
         let signed = Self {
             public,
