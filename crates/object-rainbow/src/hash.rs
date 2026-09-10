@@ -106,25 +106,7 @@ impl AsRef<[u8]> for Hash {
 }
 
 /// `Option<Hash>` but more explicitly represented as `[u8; HASH_SIZE]`.
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    ToOutput,
-    InlineOutput,
-    Parse,
-    ParseInline,
-    Tagged,
-    ListHashes,
-    Topological,
-    Size,
-    Default,
-)]
+#[pod(no_niche)]
 pub struct OptionalHash([u8; HASH_SIZE]);
 
 impl Display for OptionalHash {
