@@ -235,6 +235,7 @@ impl ToOutput for dyn Resolve {
 }
 
 impl InlineOutput for dyn Resolve {}
+impl Tagged for dyn Resolve {}
 
 impl<I: PointInput> Parse<I> for Arc<dyn Resolve> {
     fn parse(input: I) -> crate::Result<Self> {
