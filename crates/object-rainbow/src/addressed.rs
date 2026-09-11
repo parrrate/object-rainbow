@@ -37,3 +37,15 @@ impl Singular for AddressedBytes {
         self.address.hash
     }
 }
+
+impl<I: PointInput> Parse<I> for Arc<dyn Singular> {
+    fn parse(input: I) -> crate::Result<Self> {
+        Self::parse_as_inline(input)
+    }
+}
+
+impl<I: PointInput> ParseInline<I> for Arc<dyn Singular> {
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        Ok(Arc::new(input.parse_inline::<AddressedBytes>()?))
+    }
+}
