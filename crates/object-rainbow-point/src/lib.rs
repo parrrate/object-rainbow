@@ -181,19 +181,11 @@ impl FetchBytes for RawPointInner {
     }
 }
 
-#[derive(ToOutput, InlineOutput, Tagged, Parse, ParseInline)]
+#[derive(ToOutput, InlineOutput, Tagged, Parse, ParseInline, CanonicalExtra)]
 pub struct RawPoint<T, Extra = ()> {
     extra: Extras<Extra>,
     inner: RawPointInner,
     object: ObjectMarker<T>,
-}
-
-impl<T, Extra: Clone> CanonicalExtra for RawPoint<T, Extra> {
-    type Extra = Extra;
-
-    fn canonical_extra(&self) -> Self::Extra {
-        self.extra.canonical_extra()
-    }
 }
 
 impl<T, Extra> ListHashes for RawPoint<T, Extra> {
