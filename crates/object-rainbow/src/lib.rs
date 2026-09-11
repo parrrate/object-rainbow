@@ -242,6 +242,11 @@ impl InlineOutput for dyn Resolve {}
 impl Tagged for dyn Resolve {}
 impl ListHashes for dyn Resolve {}
 
+impl Size for dyn Resolve {
+    type Size = typenum::U0;
+    const SIZE: usize = 0;
+}
+
 impl<I: PointInput> Parse<I> for Arc<dyn Resolve> {
     fn parse(input: I) -> crate::Result<Self> {
         Self::parse_as_inline(input)
