@@ -1,6 +1,6 @@
 use crate::{extra_option::ExtraNoneOutput, extras::Extras, none_terminated::Nt, *};
 
-#[derive(Debug, ListHashes, Topological, Parse, ParseInline, Tagged)]
+#[derive(Debug, ListHashes, Topological, Parse, ParseInline, Tagged, CanonicalExtra)]
 pub struct Ent<T, E = ()> {
     pub extra: Extras<E>,
     pub items: Nt<T>,
@@ -74,11 +74,3 @@ where
 }
 
 impl<T, E> InlineOutput for Ent<T, E> where Self: ToOutput {}
-
-impl<T, E: Clone> CanonicalExtra for Ent<T, E> {
-    type Extra = E;
-
-    fn canonical_extra(&self) -> Self::Extra {
-        self.extra.canonical_extra()
-    }
-}
