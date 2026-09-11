@@ -1348,6 +1348,11 @@ impl<T: ?Sized + ToOutput> ToOutput for Mangled<T> {
     }
 }
 
+#[doc(hidden)]
+pub trait SizeSumHelper {
+    type SizeArray;
+}
+
 pub trait Size {
     const SIZE: usize = <Self::Size as Unsigned>::USIZE;
     type Size: Unsigned;

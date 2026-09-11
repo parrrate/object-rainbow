@@ -1267,6 +1267,12 @@ pub fn derive_size(input: TokenStream) -> TokenStream {
             use ::object_rainbow::typenum::tarr;
 
             #[automatically_derived]
+            impl #impl_generics ::object_rainbow::SizeSumHelper
+            for #target #ty_generics #where_clause {
+                type SizeArray = #size_arr;
+            }
+
+            #[automatically_derived]
             impl #impl_generics ::object_rainbow::Size for #target #ty_generics #where_clause {
                 const SIZE: usize = #size;
 
