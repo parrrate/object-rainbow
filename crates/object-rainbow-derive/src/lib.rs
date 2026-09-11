@@ -445,6 +445,7 @@ pub fn derive_byte_ord(input: TokenStream) -> TokenStream {
     let output = quote! {
         #[automatically_derived]
         impl #impl_generics ::object_rainbow::ByteOrd for #target #ty_generics #where_clause {
+            #[allow(non_snake_style)]
             fn bytes_cmp(&self, other: &Self) -> ::core::cmp::Ordering {
                 #bytes_cmp
             }
