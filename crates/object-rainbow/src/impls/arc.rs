@@ -110,10 +110,41 @@ impl<T: ?Sized + Singular> Singular for Arc<T> {
     }
 }
 
-impl<T: ?Sized + Fetch> Fetch for Arc<T> {
+impl<T: Fetch + Clone> Fetch for Arc<T> {
     type T = T::T;
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         (**self).fetch()
+    }
+
+    fn try_fetch_local(&self) -> Result<Option<Node<Self::T>>> {
+        (**self).try_fetch_local()
+    }
+
+    fn fetch_local(&self) -> Option<Self::T> {
+        (**self).fetch_local()
+    }
+
+    fn get(&self) -> Option<&Self::T> {
+        (**self).get()
+    }
+
+    fn get_mut(&mut self) -> Option<&mut Self::T> {
+        Arc::make_mut(self).get_mut()
+    }
+
+    fn get_mut_finalize(&mut self) {
+        Arc::make_mut(self).get_mut_finalize();
+    }
+
+    fn try_unwrap(self: Arc<Self>) -> Option<Self::T> {
+        Arc::try_unwrap(self).ok()?.try_unwrap()
+    }
+
+    fn into_dyn_fetch<'a>(self) -> Arc<dyn 'a + Fetch<T = Self::T>>
+    where
+        Self: 'a + Sized,
+    {
+        self
     }
 }
