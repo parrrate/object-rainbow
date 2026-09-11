@@ -117,6 +117,7 @@ impl ToOutput for Address {
 }
 
 impl InlineOutput for Address {}
+impl Tagged for Address {}
 
 impl ListHashes for Address {
     fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
