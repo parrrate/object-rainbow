@@ -27,6 +27,7 @@ pub trait UsizeTag: Sized {
     PartialEq,
     Eq,
     PartialOrd,
+    Ord,
 )]
 pub struct EnumTag<T, const MAX: usize>(T);
 
