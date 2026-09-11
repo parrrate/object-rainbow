@@ -247,6 +247,10 @@ impl Size for dyn Resolve {
     const SIZE: usize = 0;
 }
 
+impl MaybeHasNiche for dyn Resolve {
+    type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
+}
+
 impl<I: PointInput> Parse<I> for Arc<dyn Resolve> {
     fn parse(input: I) -> crate::Result<Self> {
         Self::parse_as_inline(input)
