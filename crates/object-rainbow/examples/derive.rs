@@ -84,10 +84,15 @@ enum Either<L, R> {
     Parse,
     ParseInline,
     MaybeHasNiche,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    ByteOrd,
 )]
-#[enumtag("Le<u8>")]
+#[enumtag("u8")]
 enum Abc {
-    NoNiche(Le<u8>),
+    NoNiche(u8),
     Niche(bool),
 }
 
