@@ -587,7 +587,7 @@ impl<T: Traversible + Clone> Point<T> {
     async fn prepare_yolo_fetch(&mut self) -> object_rainbow::Result<()> {
         if !self.yolo_mut() {
             let object = self.fetch.fetch().await?;
-            self.fetch = object.local_fetch();
+            self.fetch = Local(object).into_dyn_fetch();
         }
         Ok(())
     }
