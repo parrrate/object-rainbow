@@ -1257,7 +1257,9 @@ pub fn derive_size(input: TokenStream) -> TokenStream {
     let generics_array = generics.clone();
     let (_, _, where_clause_array) = generics_array.split_for_impl();
     generics.make_where_clause().predicates.push(parse_quote!(
-        Self: ::object_rainbow::SizeSumHelper
+        Self: ::object_rainbow::SizeSumHelper<
+            SizeArray: ::object_rainbow::typenum::FoldAdd
+        >
     ));
     let (_, ty_generics, where_clause) = generics.split_for_impl();
     let mut generics = input.generics;
