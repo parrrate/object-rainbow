@@ -70,6 +70,16 @@ pub struct Addressed<T, Extra> {
     _object: ObjectMarker<T>,
 }
 
+impl<T, Extra: Clone> Clone for Addressed<T, Extra> {
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            extra: self.extra.clone(),
+            _object: Default::default(),
+        }
+    }
+}
+
 impl<T, Extra> Addressed<T, Extra> {
     pub fn from_inner(inner: AddressedBytes, extra: Extra) -> Self {
         Self {
