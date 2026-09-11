@@ -28,7 +28,7 @@ mod point_serialize;
 
 struct Addressed<T, Extra> {
     inner: AddressedBytes,
-    extra: Extra,
+    extra: Extras<Extra>,
     _object: PhantomData<fn() -> T>,
 }
 
@@ -36,7 +36,7 @@ impl<T, Extra> Addressed<T, Extra> {
     fn from_inner(inner: AddressedBytes, extra: Extra) -> Self {
         Self {
             inner,
-            extra,
+            extra: Extras(extra),
             _object: PhantomData,
         }
     }
