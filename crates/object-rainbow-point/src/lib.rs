@@ -52,6 +52,12 @@ impl<T, D> FetchBytes for FetchExtra<T, D> {
     }
 }
 
+impl<T, D: Send + Sync> Singular for FetchExtra<T, D> {
+    fn hash(&self) -> Hash {
+        self.inner.hash()
+    }
+}
+
 impl<T: FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> FetchExtra<T, D> {
     async fn fetch_object(&self) -> object_rainbow::Result<Node<T>> {
         let ((data, resolve), extra) =
@@ -470,10 +476,10 @@ impl<T: 'static + FullHash> Point<T> {
     where
         T: Send,
     {
-        Self::from_trusted_fetch(
-            address.hash,
-            FetchExtra::from_inner(AddressedBytes { address, resolve }, fetch).into_dyn_fetch(),
-        )
+        Self::from_trusted_singular(FetchExtra::from_inner(
+            AddressedBytes { address, resolve },
+            fetch,
+        ))
     }
 }
 
