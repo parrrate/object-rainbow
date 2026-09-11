@@ -67,3 +67,8 @@ impl<T: ?Sized> Debug for ObjectMarker<T> {
             .finish()
     }
 }
+
+impl<T: ?Sized> Size for ObjectMarker<T> {
+    type Size = typenum::U0;
+    const SIZE: usize = 0;
+}
