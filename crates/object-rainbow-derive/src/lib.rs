@@ -1249,42 +1249,52 @@ pub fn derive_size(input: TokenStream) -> TokenStream {
     let name = input.ident;
     let size_arr = gen_size_arr(&input.data);
     let size = gen_size(&input.data);
-    let (mut generics, is_enum) = match bounds_size(input.generics.clone(), &input.data, &size_arr)
+    let mut original_generics = input.generics.clone();
+    let (generics, needs_output) = match bounds_size(input.generics.clone(), &input.data, &size_arr)
     {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
     let generics_array = generics.clone();
     let (_, _, where_clause_array) = generics_array.split_for_impl();
-    generics.make_where_clause().predicates.push(parse_quote!(
-        Self: ::object_rainbow::SizeSumHelper<
-            SizeArray: ::object_rainbow::typenum::FoldAdd
-        >
-    ));
-    let (_, ty_generics, where_clause) = generics.split_for_impl();
+    original_generics
+        .make_where_clause()
+        .predicates
+        .push(parse_quote!(
+            Self: ::object_rainbow::SizeSumHelper<
+                SizeArray: ::object_rainbow::typenum::FoldAdd<
+                    Output: ::object_rainbow::typenum::Unsigned
+                >
+            >
+        ));
+    let (impl_generics, ty_generics, where_clause) = original_generics.split_for_impl();
     let mut generics = input.generics;
-    if is_enum {
+    if needs_output {
         generics.params.push(parse_quote!(
             __Output: ::object_rainbow::typenum::Unsigned
         ));
     }
-    let (impl_generics, _, _) = generics.split_for_impl();
+    let (impl_generics_array, _, _) = generics.split_for_impl();
     let target = parse_for(&name, &input.attrs);
     let output = quote! {
         const _: () = {
             use ::object_rainbow::typenum::tarr;
 
             #[automatically_derived]
-            impl #impl_generics ::object_rainbow::SizeSumHelper
+            impl #impl_generics_array ::object_rainbow::SizeSumHelper
             for #target #ty_generics #where_clause_array {
+                const SIZE_ARRAY: usize = #size;
                 type SizeArray = #size_arr;
             }
 
             #[automatically_derived]
             impl #impl_generics ::object_rainbow::Size for #target #ty_generics #where_clause {
-                const SIZE: usize = #size;
-
-                type Size = <#size_arr as ::object_rainbow::typenum::FoldAdd>::Output;
+                const SIZE: usize = <Self as ::object_rainbow::SizeSumHelper>::SIZE_ARRAY;
+                type Size = <
+                    <Self as ::object_rainbow::SizeSumHelper>::SizeArray
+                    as
+                    ::object_rainbow::typenum::FoldAdd
+                >::Output;
             }
         };
     };
@@ -1309,12 +1319,21 @@ fn bounds_size(
                     );
                 }
             }
-            generics.make_where_clause().predicates.push(parse_quote!(
-                #size_arr: ::object_rainbow::typenum::FoldAdd<
-                    Output: ::object_rainbow::typenum::Unsigned
-                >
-            ));
-            false
+            if generics.params.is_empty() {
+                generics.make_where_clause().predicates.push(parse_quote!(
+                    #size_arr: ::object_rainbow::typenum::FoldAdd<
+                        Output: ::object_rainbow::typenum::Unsigned
+                    >
+                ));
+                false
+            } else {
+                generics.make_where_clause().predicates.push(parse_quote!(
+                    #size_arr: ::object_rainbow::typenum::FoldAdd<
+                        Output = __Output
+                    >
+                ));
+                true
+            }
         }
         Data::Enum(data) => {
             for v in data.variants.iter() {

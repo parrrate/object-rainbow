@@ -1350,6 +1350,7 @@ impl<T: ?Sized + ToOutput> ToOutput for Mangled<T> {
 
 #[doc(hidden)]
 pub trait SizeSumHelper {
+    const SIZE_ARRAY: usize;
     type SizeArray;
 }
 
