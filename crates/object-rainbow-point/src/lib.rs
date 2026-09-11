@@ -510,10 +510,8 @@ impl<T: 'static + FullHash, I: PointInput<Extra: Send + Sync + ExtraFor<T>>> Par
     for Point<T>
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
-        Ok(Self::from_address_extra(
-            input.parse_inline()?,
-            input.resolve(),
-            input.extra().clone(),
+        Ok(Self::from_trusted_singular(
+            input.parse_inline::<Addressed<_, _>>()?,
         ))
     }
 }
