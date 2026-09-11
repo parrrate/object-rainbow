@@ -14,6 +14,7 @@ use crate::{enumkind::UsizeTag, incr_byte_niche::IncrByteNiche, *};
     PartialEq,
     Eq,
     PartialOrd,
+    Ord,
 )]
 pub struct PartialByteTag<K>(u8, PhantomData<K>);
 
