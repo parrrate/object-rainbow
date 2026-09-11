@@ -42,6 +42,7 @@ pub use self::{
     ordering::{ByteOrd, OrderedByBytes, SignificantLength},
 };
 
+pub mod addressed;
 pub mod ascii;
 mod assert_impl;
 pub mod decr_byte_niche;

@@ -16,6 +16,7 @@ use object_rainbow::{
     FetchBytes, FullHash, Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, OptionalHash,
     Output, Parse, ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Size, Tagged, ToOutput, Topological, Traversible,
+    addressed::AddressedBytes,
     extras::fetch_extra::{ParseFetch, ParseFetchInline},
     object_marker::ObjectMarker,
 };
@@ -24,42 +25,6 @@ use object_rainbow::{
 mod point_deserialize;
 #[cfg(feature = "point-serialize")]
 mod point_serialize;
-
-#[derive(Clone)]
-struct AddressedBytes {
-    address: Address,
-    resolve: Arc<dyn Resolve>,
-}
-
-impl FetchBytes for AddressedBytes {
-    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        self.resolve.resolve(self.address, &self.resolve)
-    }
-
-    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        self.resolve.resolve_data(self.address)
-    }
-
-    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
-        self.resolve.try_resolve_local(self.address, &self.resolve)
-    }
-
-    fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
-        Some(&self.resolve)
-    }
-
-    fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
-        Arc::try_unwrap(self)
-            .ok()
-            .map(|Self { resolve, .. }| resolve)
-    }
-}
-
-impl Singular for AddressedBytes {
-    fn hash(&self) -> Hash {
-        self.address.hash
-    }
-}
 
 struct Addressed<T, Extra> {
     inner: AddressedBytes,
