@@ -8,7 +8,7 @@ use crate::{u63::U63, *};
 /// Length-prefixed value. Used to make [`Inline`]s out of arbitrary [`Object`]s.
 ///
 /// If you can guarantee absence of zeroes, see [`zero_terminated::Zt`].
-#[pod(no_output, no_parse, no_byte_ord)]
+#[pod(no_output, no_parse)]
 #[derive(ParseAsInline)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Lp<T>(pub T);
@@ -178,6 +178,12 @@ impl<T: PartialOrd> PartialOrd for LpVec<T> {
 impl<T: Ord> Ord for LpVec<T> {
     fn cmp(&self, other: &Self) -> Ordering {
         (self.len(), &self.0).cmp(&(other.len(), &other.0))
+    }
+}
+
+impl<T: ByteOrd + InlineOutput> ByteOrd for LpVec<T> {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        (U63::len_of(&self.0), &self.0).bytes_cmp(&(U63::len_of(&other.0), &other.0))
     }
 }
 
