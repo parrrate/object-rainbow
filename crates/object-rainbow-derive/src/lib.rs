@@ -458,15 +458,9 @@ fn bounds_byte_ord(mut generics: Generics, data: &Data) -> syn::Result<Generics>
     let g = &bounds_g(&generics);
     match data {
         Data::Struct(data) => {
-            let last_at = data.fields.len().saturating_sub(1);
-            'field: for (i, f) in data.fields.iter().enumerate() {
-                let last = i == last_at;
+            'field: for f in data.fields.iter() {
                 let ty = &f.ty;
-                let tr = if last {
-                    quote!(::object_rainbow::ByteOrd)
-                } else {
-                    quote!(::object_rainbow::ByteOrd + ::object_rainbow::InlineOutput)
-                };
+                let tr = quote!(::object_rainbow::ByteOrd);
                 for attr in &f.attrs {
                     if attr_str(attr).as_deref() == Some("output") {
                         let FieldOutputArgs { unchecked, .. } = attr.parse_args()?;
@@ -475,7 +469,7 @@ fn bounds_byte_ord(mut generics: Generics, data: &Data) -> syn::Result<Generics>
                         }
                     }
                 }
-                if !last || type_contains_generics(GContext { g, always: false }, ty) {
+                if type_contains_generics(GContext { g, always: false }, ty) {
                     generics.make_where_clause().predicates.push(
                         parse_quote_spanned! { ty.span() =>
                             #ty: #tr
@@ -486,15 +480,9 @@ fn bounds_byte_ord(mut generics: Generics, data: &Data) -> syn::Result<Generics>
         }
         Data::Enum(data) => {
             for v in data.variants.iter() {
-                let last_at = v.fields.len().saturating_sub(1);
-                'field: for (i, f) in v.fields.iter().enumerate() {
-                    let last = i == last_at;
+                'field: for f in v.fields.iter() {
                     let ty = &f.ty;
-                    let tr = if last {
-                        quote!(::object_rainbow::ByteOrd)
-                    } else {
-                        quote!(::object_rainbow::ByteOrd + ::object_rainbow::InlineOutput)
-                    };
+                    let tr = quote!(::object_rainbow::ByteOrd);
                     for attr in &f.attrs {
                         if attr_str(attr).as_deref() == Some("output") {
                             let FieldOutputArgs { unchecked, .. } = attr.parse_args()?;
@@ -503,7 +491,7 @@ fn bounds_byte_ord(mut generics: Generics, data: &Data) -> syn::Result<Generics>
                             }
                         }
                     }
-                    if !last || type_contains_generics(GContext { g, always: false }, ty) {
+                    if type_contains_generics(GContext { g, always: false }, ty) {
                         generics.make_where_clause().predicates.push(
                             parse_quote_spanned! { ty.span() =>
                                 #ty: #tr
@@ -529,7 +517,7 @@ fn bounds_byte_ord(mut generics: Generics, data: &Data) -> syn::Result<Generics>
         }
     }
     generics.make_where_clause().predicates.push(parse_quote! {
-        Self: ::core::cmp::PartialOrd
+        Self: ::core::cmp::PartialOrd + ::object_rainbow::ToOutput
     });
     Ok(generics)
 }
@@ -2870,6 +2858,8 @@ struct PodArgs {
     no_inline: SpannedValue<bool>,
     #[darling(default)]
     no_inline_output: SpannedValue<bool>,
+    #[darling(default)]
+    no_byte_ord: SpannedValue<bool>,
 }
 
 #[proc_macro_attribute]
@@ -2886,6 +2876,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
             no_parse,
             no_inline,
             no_inline_output,
+            no_byte_ord,
         },
         args_error,
     ) = match syn::parse(args) {
@@ -2936,6 +2927,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
     let yes_parse = !no_parse.into_inner();
     let yes_inline = !no_inline.into_inner();
     let yes_inline_output = !no_inline_output.into_inner();
+    let yes_byte_ord = !no_byte_ord.into_inner();
     let yes_size = !no_size.into_inner();
     let yes_niche = !no_niche.into_inner();
     let derive_to_output = if yes_output {
@@ -2948,6 +2940,13 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
     let derive_inline_output = if yes_output && yes_inline && yes_inline_output {
         quote! {
             ::object_rainbow::InlineOutput,
+        }
+    } else {
+        quote! {}
+    };
+    let derive_byte_ord = if yes_output && yes_byte_ord {
+        quote! {
+            ::object_rainbow::ByteOrd,
         }
     } else {
         quote! {}
@@ -2995,6 +2994,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
             ::core::hash::Hash,
             #derive_to_output
             #derive_inline_output
+            #derive_byte_ord
             #derive_tagged
             ::object_rainbow::ListHashes,
             ::object_rainbow::Topological,
