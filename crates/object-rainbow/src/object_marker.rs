@@ -72,3 +72,7 @@ impl<T: ?Sized> Size for ObjectMarker<T> {
     type Size = typenum::U0;
     const SIZE: usize = 0;
 }
+
+impl<T: ?Sized> MaybeHasNiche for ObjectMarker<T> {
+    type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
+}
