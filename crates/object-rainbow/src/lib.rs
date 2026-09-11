@@ -134,6 +134,10 @@ impl<I: PointInput> ParseInline<I> for Address {
     }
 }
 
+impl Size for Address {
+    type Size = <Hash as Size>::Size;
+}
+
 /// Fallible future type yielding either `T` or [`Error`].
 pub type FailFuture<'a, T> = Pin<Box<dyn 'a + Send + Future<Output = Result<T>>>>;
 
