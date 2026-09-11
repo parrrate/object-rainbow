@@ -312,18 +312,32 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra>
 }
 
 impl<T> Point<T> {
-    pub async fn echo(fetch: impl 'static + Fetch<T = T>) -> object_rainbow::Result<Self>
-    where
-        T: FullHash,
-    {
-        Ok(Self::from_alternate_source(&fetch.fetch().await?, fetch))
-    }
-
     pub fn from_alternate_source(object: &T, fetch: impl 'static + Fetch<T = T>) -> Self
     where
         T: FullHash,
     {
         Self::from_fetch(object.full_hash(), fetch)
+    }
+
+    pub fn from_fetch(hash: Hash, fetch: impl 'static + Fetch<T = T>) -> Self
+    where
+        T: FullHash,
+    {
+        Self::from_trusted_fetch(hash, fetch.into_dyn_fetch())
+    }
+
+    pub fn from_singular(singular: impl 'static + SingularFetch<T = T>) -> Self
+    where
+        T: FullHash,
+    {
+        Self::from_fetch(singular.hash(), singular)
+    }
+
+    pub async fn echo(fetch: impl 'static + Fetch<T = T>) -> object_rainbow::Result<Self>
+    where
+        T: FullHash,
+    {
+        Ok(Self::from_alternate_source(&fetch.fetch().await?, fetch))
     }
 
     fn from_trusted_fetch(hash: Hash, fetch: Arc<dyn Fetch<T = T>>) -> Self {
@@ -333,16 +347,8 @@ impl<T> Point<T> {
         }
     }
 
-    pub fn from_fetch(hash: Hash, fetch: impl 'static + Fetch<T = T>) -> Self {
-        Self::from_trusted_fetch(hash, fetch.into_dyn_fetch())
-    }
-
     fn from_trusted_singular(singular: impl 'static + SingularFetch<T = T>) -> Self {
         Self::from_trusted_fetch(singular.hash(), singular.into_dyn_fetch())
-    }
-
-    pub fn from_singular(singular: impl 'static + SingularFetch<T = T>) -> Self {
-        Self::from_fetch(singular.hash(), singular)
     }
 
     fn map_fetch<U>(
