@@ -330,6 +330,10 @@ impl<T> Point<T> {
         Self::from_trusted_fetch(hash, fetch.into_dyn_fetch())
     }
 
+    fn from_trusted_singular(singular: impl 'static + SingularFetch<T = T>) -> Self {
+        Self::from_trusted_fetch(singular.hash(), singular.into_dyn_fetch())
+    }
+
     pub fn from_singular(singular: impl 'static + SingularFetch<T = T>) -> Self {
         Self::from_fetch(singular.hash(), singular)
     }
@@ -444,10 +448,10 @@ impl<T: 'static + FullHash> Point<T> {
         resolve: Arc<dyn Resolve>,
         extra: Extra,
     ) -> Self {
-        Self::from_trusted_fetch(
-            address.hash,
-            Addressed::from_inner(AddressedBytes { address, resolve }, extra).into_dyn_fetch(),
-        )
+        Self::from_trusted_singular(Addressed::from_inner(
+            AddressedBytes { address, resolve },
+            extra,
+        ))
     }
 
     pub fn with_resolve<Extra: 'static + Send + Sync + Clone + ExtraFor<T>>(
