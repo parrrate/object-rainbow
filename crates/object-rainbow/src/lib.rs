@@ -346,6 +346,12 @@ impl<T> Ord for dyn Fetch<T = T> {
     }
 }
 
+impl<T> ByteOrd for dyn Fetch<T = T> {
+    fn bytes_cmp(&self, _: &Self) -> Ordering {
+        Ordering::Equal
+    }
+}
+
 pub trait PointVisitor {
     fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone));
 }
