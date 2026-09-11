@@ -26,6 +26,7 @@ pub trait UsizeTag: Sized {
     MaybeHasNiche,
     PartialEq,
     Eq,
+    PartialOrd,
 )]
 pub struct EnumTag<T, const MAX: usize>(T);
 
