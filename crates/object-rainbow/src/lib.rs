@@ -328,6 +328,18 @@ impl<T> PartialEq for dyn Fetch<T = T> {
 
 impl<T> Eq for dyn Fetch<T = T> {}
 
+impl<T> PartialOrd for dyn Fetch<T = T> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<T> Ord for dyn Fetch<T = T> {
+    fn cmp(&self, _: &Self) -> Ordering {
+        Ordering::Equal
+    }
+}
+
 pub trait PointVisitor {
     fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone));
 }
