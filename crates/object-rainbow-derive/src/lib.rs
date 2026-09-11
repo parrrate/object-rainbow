@@ -528,6 +528,9 @@ fn bounds_byte_ord(mut generics: Generics, data: &Data) -> syn::Result<Generics>
             ));
         }
     }
+    generics.make_where_clause().predicates.push(parse_quote! {
+        Self: ::core::cmp::PartialOrd
+    });
     Ok(generics)
 }
 
