@@ -183,8 +183,8 @@ impl FetchBytes for RawPointInner {
 
 #[derive(ToOutput, InlineOutput, Tagged, Parse, ParseInline)]
 pub struct RawPoint<T, Extra = ()> {
-    inner: RawPointInner,
     extra: Extras<Extra>,
+    inner: RawPointInner,
     object: ObjectMarker<T>,
 }
 
