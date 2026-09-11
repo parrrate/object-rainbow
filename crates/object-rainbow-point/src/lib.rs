@@ -18,6 +18,7 @@ use object_rainbow::{
     SingularFetch, Size, Tagged, ToOutput, Topological, Traversible,
     addressed::{Addressed, AddressedBytes},
     extras::fetch_extra::{ParseFetch, ParseFetchInline},
+    local_fetch::Local,
     object_marker::ObjectMarker,
 };
 
@@ -575,7 +576,7 @@ impl<T> Point<T> {
 
 impl<T: Traversible + Clone> Point<T> {
     pub fn from_object(object: T) -> Self {
-        Self::from_trusted_fetch(object.full_hash(), object.local_fetch())
+        Self::from_trusted_singular(Local(object))
     }
 
     fn yolo_mut(&mut self) -> bool {
