@@ -236,6 +236,7 @@ impl ToOutput for dyn Resolve {
 
 impl InlineOutput for dyn Resolve {}
 impl Tagged for dyn Resolve {}
+impl ListHashes for dyn Resolve {}
 
 impl<I: PointInput> Parse<I> for Arc<dyn Resolve> {
     fn parse(input: I) -> crate::Result<Self> {
@@ -881,7 +882,7 @@ pub trait Topological: ListHashes {
         let topology_hash = topology.data_hash();
         for singular in &topology {
             if let Some(resolve) = singular.as_resolve()
-                && resolve.topology_hash() == Some(topology_hash)
+                && (**resolve).topology_hash() == Some(topology_hash)
             {
                 return resolve.clone();
             }
