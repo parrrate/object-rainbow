@@ -10,8 +10,8 @@ use crate::{FromInner, RawPoint};
 
 #[derive(Clone, ParseAsInline)]
 pub struct RawPointInner {
-    pub(crate) hash: Hash,
-    pub(crate) fetch: Arc<dyn Send + Sync + FetchBytes>,
+    hash: Hash,
+    fetch: Arc<dyn Send + Sync + FetchBytes>,
 }
 
 impl RawPointInner {
@@ -35,6 +35,10 @@ impl RawPointInner {
             hash: singular.hash(),
             fetch: Arc::new(singular),
         }
+    }
+
+    pub fn try_unwrap_resolve(self) -> Option<Arc<dyn Resolve>> {
+        self.fetch.try_unwrap_resolve()
     }
 }
 
@@ -92,6 +96,6 @@ impl FetchBytes for RawPointInner {
     }
 
     fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
-        Arc::try_unwrap(self).ok()?.fetch.try_unwrap_resolve()
+        Arc::try_unwrap(self).ok()?.try_unwrap_resolve()
     }
 }

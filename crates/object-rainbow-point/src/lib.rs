@@ -196,7 +196,7 @@ impl<T, Extra> FetchBytes for RawPoint<T, Extra> {
     }
 
     fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
-        Arc::try_unwrap(self).ok()?.inner.fetch.try_unwrap_resolve()
+        Arc::try_unwrap(self).ok()?.inner.try_unwrap_resolve()
     }
 }
 
