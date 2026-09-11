@@ -136,6 +136,7 @@ impl<I: PointInput> ParseInline<I> for Address {
 
 impl Size for Address {
     type Size = <Hash as Size>::Size;
+    const SIZE: usize = <Hash as Size>::SIZE;
 }
 
 impl MaybeHasNiche for Address {
