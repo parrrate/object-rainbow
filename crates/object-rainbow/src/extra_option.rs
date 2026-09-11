@@ -1,6 +1,6 @@
 use crate::{extras::Extras, *};
 
-#[derive(Enum, Debug, Clone, PartialEq, ListHashes, Topological, Tagged)]
+#[derive(Enum, Debug, Clone, PartialEq, ListHashes, Topological, Tagged, CanonicalExtra)]
 #[rainbow(untagged)]
 pub enum ExtraOption<T, E = ()> {
     Some(T),
@@ -73,16 +73,5 @@ impl<T: OptionParse<I>, I: PointInput> Parse<I> for ExtraOption<T, I::Extra> {
 impl<T: OptionParseInline<I>, I: PointInput> ParseInline<I> for ExtraOption<T, I::Extra> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         input.parse_inline().map(Self::from_tuple)
-    }
-}
-
-impl<T: CanonicalExtra<Extra = E>, E: Clone> CanonicalExtra for ExtraOption<T, E> {
-    type Extra = T::Extra;
-
-    fn canonical_extra(&self) -> Self::Extra {
-        match self {
-            Self::Some(value) => value.canonical_extra(),
-            Self::None(extra) => extra.canonical_extra(),
-        }
     }
 }
