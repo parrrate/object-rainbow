@@ -320,6 +320,12 @@ impl<T: Tagged> Tagged for dyn Fetch<T = T> {
     const HASH: Hash = T::HASH;
 }
 
+impl<T> PartialEq for dyn Fetch<T = T> {
+    fn eq(&self, _: &Self) -> bool {
+        true
+    }
+}
+
 pub trait PointVisitor {
     fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone));
 }
