@@ -13,7 +13,7 @@ use object_rainbow::{
 };
 
 /// Commands coming from a consumer.
-#[pod(no_default)]
+#[pod(no_default, no_size)]
 pub enum Consume {
     /// Request [`Provide::Deliver`]y. Requires refcount of at least 1.
     Order(Hash),
