@@ -2,6 +2,17 @@ use std::sync::Arc;
 
 use crate::*;
 
+pub trait ExtractResolve: FetchBytes {
+    fn extract_resolve<R: Any>(&self) -> Option<(&Address, &R)> {
+        let AddressedBytes { address, resolve } =
+            self.as_inner()?.downcast_ref::<AddressedBytes>()?;
+        let resolve = resolve.as_ref().any_ref().downcast_ref::<R>()?;
+        Some((address, resolve))
+    }
+}
+
+impl<T: ?Sized + FetchBytes> ExtractResolve for T {}
+
 #[derive(Clone, Parse, ParseInline)]
 pub struct AddressedBytes {
     pub address: Address,

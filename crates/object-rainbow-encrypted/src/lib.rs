@@ -24,13 +24,15 @@ use std::{
 use object_rainbow::{
     Address, ByteNode, Error, ExtraFor, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node,
     Parse, ParseInline, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular,
-    SingularFetch, Tagged, ToOutput, TopoVec, Topological, Traversible, derive_for_wrapped,
+    SingularFetch, Tagged, ToOutput, TopoVec, Topological, Traversible,
+    addressed::ExtractResolve,
+    derive_for_wrapped,
     fn_fetch::{FnFetch, closure_fetch},
     length_prefixed::LpVec,
     map_extra::MappedExtra,
     tuple_extra::Extra0,
 };
-use object_rainbow_point::{ExtractResolve, Extras, Point};
+use object_rainbow_point::{Extras, Point};
 
 pub mod tuple_key;
 

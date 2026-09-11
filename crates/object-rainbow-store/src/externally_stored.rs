@@ -3,9 +3,8 @@ use std::sync::Arc;
 use object_rainbow::{
     Address, Error, Hash, InlineOutput, Parse, ParseInline, ParseInput, ParseSlice,
     ParseSliceExtra, ParseSliceRefless, PointInput, PointVisitor, Resolve, SingularFetch, Tagged,
-    ToOutput, Traversible, length_prefixed::LpVec,
+    ToOutput, Traversible, addressed::ExtractResolve, length_prefixed::LpVec,
 };
-use object_rainbow_point::ExtractResolve;
 
 use crate::ExternalStore;
 

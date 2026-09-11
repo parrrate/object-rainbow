@@ -8,9 +8,9 @@ use object_rainbow::{
     Address, ExtraFor, FullHash, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object,
     OptionalHash, Parse, ParseInline, ParseSlice, ParseSliceExtra, PointInput, PointVisitor,
     ReflessInline, Resolve, Singular, SingularFetch, Size, Tagged, ToOutput, Topological,
-    Traversible, WithHash, assert_impl, derive_for_wrapped,
+    Traversible, WithHash, addressed::ExtractResolve, assert_impl, derive_for_wrapped,
 };
-use object_rainbow_point::{ExtractResolve, Extras, Point};
+use object_rainbow_point::{Extras, Point};
 
 mod externally_stored;
 
