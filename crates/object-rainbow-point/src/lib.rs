@@ -804,7 +804,9 @@ impl<'a, T: FullHash> PointMut<'a, T> {
     }
 }
 
-#[derive(ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline)]
+#[derive(
+    ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline, CanonicalExtra,
+)]
 pub struct ExtraPoint<T, Extra = ()> {
     pub extra: Extras<Extra>,
     pub point: Point<T>,
@@ -831,14 +833,6 @@ impl<T, Extra: Clone> Clone for ExtraPoint<T, Extra> {
 impl<T, Extra: PartialEq> PartialEq for ExtraPoint<T, Extra> {
     fn eq(&self, other: &Self) -> bool {
         self.extra == other.extra && self.point == other.point
-    }
-}
-
-impl<T, Extra: Clone> CanonicalExtra for ExtraPoint<T, Extra> {
-    type Extra = Extra;
-
-    fn canonical_extra(&self) -> Self::Extra {
-        self.extra.canonical_extra()
     }
 }
 
