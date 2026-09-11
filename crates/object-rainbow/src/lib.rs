@@ -326,6 +326,8 @@ impl<T> PartialEq for dyn Fetch<T = T> {
     }
 }
 
+impl<T> Eq for dyn Fetch<T = T> {}
+
 pub trait PointVisitor {
     fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone));
 }
