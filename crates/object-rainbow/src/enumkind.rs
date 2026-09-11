@@ -16,7 +16,15 @@ pub trait UsizeTag: Sized {
 
 /// [`EnumKind::Tag`].
 #[derive(
-    ToOutput, InlineOutput, ListHashes, Topological, Tagged, ParseAsInline, Size, MaybeHasNiche,
+    ToOutput,
+    InlineOutput,
+    ListHashes,
+    Topological,
+    Tagged,
+    ParseAsInline,
+    Size,
+    MaybeHasNiche,
+    PartialEq,
 )]
 pub struct EnumTag<T, const MAX: usize>(T);
 
