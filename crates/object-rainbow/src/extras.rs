@@ -42,3 +42,7 @@ impl<Extra> Size for Extras<Extra> {
     type Size = typenum::U0;
     const SIZE: usize = 0;
 }
+
+impl<Extra> MaybeHasNiche for Extras<Extra> {
+    type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
+}
