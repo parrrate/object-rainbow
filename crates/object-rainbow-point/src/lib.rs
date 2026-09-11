@@ -438,15 +438,6 @@ impl<T> Size for Point<T> {
     type Size = <Hash as Size>::Size;
 }
 
-impl<T: 'static + FullHash> Point<T>
-where
-    (): ExtraFor<T>,
-{
-    pub fn from_address(address: Address, resolve: Arc<dyn Resolve>) -> Self {
-        Self::from_address_extra(address, resolve, ())
-    }
-}
-
 impl<T: 'static + FullHash> Point<T> {
     pub fn from_address_extra<Extra: 'static + Send + Sync + Clone + ExtraFor<T>>(
         address: Address,
