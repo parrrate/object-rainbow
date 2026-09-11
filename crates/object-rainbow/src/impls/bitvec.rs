@@ -3,7 +3,16 @@ use bitvec::{array::BitArray, order::BitOrder, view::BitViewSized};
 use crate::*;
 
 #[derive(
-    ToOutput, InlineOutput, Tagged, ListHashes, Topological, Parse, ParseInline, Size, MaybeHasNiche,
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    Parse,
+    ParseInline,
+    Size,
+    MaybeHasNiche,
+    ByteOrd,
 )]
 #[rainbow(remote = "BitArray")]
 struct __BitArray<A: BitViewSized, O: BitOrder> {
