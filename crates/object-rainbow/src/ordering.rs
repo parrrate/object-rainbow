@@ -1,5 +1,7 @@
 use std::cmp::Ordering;
 
+pub use object_rainbow_derive::ByteOrd;
+
 use crate::*;
 
 /// Traits for which total order matches that of [`ToOutput::vec`].

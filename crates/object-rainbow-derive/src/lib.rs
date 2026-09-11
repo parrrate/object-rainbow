@@ -431,6 +431,187 @@ fn bounds_inline_output(
     Ok(generics)
 }
 
+#[proc_macro_derive(ByteOrd)]
+pub fn derive_byte_ord(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+    let generics = match bounds_byte_ord(input.generics, &input.data) {
+        Ok(g) => g,
+        Err(e) => return e.into_compile_error().into(),
+    };
+    let bytes_cmp = gen_bytes_cmp(&input.data);
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let target = parse_for(&name, &input.attrs);
+    let output = quote! {
+        #[automatically_derived]
+        impl #impl_generics ::object_rainbow::ByteOrd for #target #ty_generics #where_clause {
+            fn bytes_cmp(&self, other: &Self) -> ::core::cmp::Ordering {
+                #bytes_cmp
+            }
+        }
+    };
+    TokenStream::from(output)
+}
+
+fn bounds_byte_ord(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    let g = &bounds_g(&generics);
+    match data {
+        Data::Struct(data) => {
+            let last_at = data.fields.len().saturating_sub(1);
+            'field: for (i, f) in data.fields.iter().enumerate() {
+                let last = i == last_at;
+                let ty = &f.ty;
+                let tr = if last {
+                    quote!(::object_rainbow::ByteOrd)
+                } else {
+                    quote!(::object_rainbow::ByteOrd + ::object_rainbow::InlineOutput)
+                };
+                for attr in &f.attrs {
+                    if attr_str(attr).as_deref() == Some("output") {
+                        let FieldOutputArgs { unchecked, .. } = attr.parse_args()?;
+                        if unchecked {
+                            continue 'field;
+                        }
+                    }
+                }
+                if !last || type_contains_generics(GContext { g, always: false }, ty) {
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: #tr
+                        },
+                    );
+                }
+            }
+        }
+        Data::Enum(data) => {
+            for v in data.variants.iter() {
+                let last_at = v.fields.len().saturating_sub(1);
+                'field: for (i, f) in v.fields.iter().enumerate() {
+                    let last = i == last_at;
+                    let ty = &f.ty;
+                    let tr = if last {
+                        quote!(::object_rainbow::ByteOrd)
+                    } else {
+                        quote!(::object_rainbow::ByteOrd + ::object_rainbow::InlineOutput)
+                    };
+                    for attr in &f.attrs {
+                        if attr_str(attr).as_deref() == Some("output") {
+                            let FieldOutputArgs { unchecked, .. } = attr.parse_args()?;
+                            if unchecked {
+                                continue 'field;
+                            }
+                        }
+                    }
+                    if !last || type_contains_generics(GContext { g, always: false }, ty) {
+                        generics.make_where_clause().predicates.push(
+                            parse_quote_spanned! { ty.span() =>
+                                #ty: #tr
+                            },
+                        );
+                    }
+                }
+            }
+            generics.make_where_clause().predicates.push(parse_quote! {
+                <
+                    <Self as ::object_rainbow::Enum>::Kind
+                    as
+                ::object_rainbow::enumkind::EnumKind
+                >::Tag:
+                    ::object_rainbow::ByteOrd + ::object_rainbow::InlineOutput
+            });
+        }
+        Data::Union(data) => {
+            return Err(Error::new_spanned(
+                data.union_token,
+                "`union`s are not supported",
+            ));
+        }
+    }
+    Ok(generics)
+}
+
+fn let_self_other(fields: &syn::Fields, prefix: &str) -> proc_macro2::TokenStream {
+    match fields {
+        syn::Fields::Named(fields) => {
+            let fragments = fields.named.iter().map(|f| {
+                let ident = f.ident.as_ref().unwrap();
+                let prefixed_ident = Ident::new(&format!("{prefix}{ident}"), f.ty.span());
+                let colon = f.colon_token.unwrap();
+                quote! { #ident #colon #prefixed_ident }
+            });
+            quote! { {#(#fragments),*} }
+        }
+        syn::Fields::Unnamed(fields) => {
+            let fragments = fields.unnamed.iter().enumerate().map(|(i, f)| {
+                let prefixed_ident = Ident::new(&format!("{prefix}{i}"), f.ty.span());
+                quote! { #prefixed_ident }
+            });
+            quote! { (#(#fragments),*) }
+        }
+        syn::Fields::Unit => quote! {},
+    }
+}
+
+fn bytes_cmp_self_other(fields: &syn::Fields) -> proc_macro2::TokenStream {
+    let then = match fields {
+        syn::Fields::Named(fields) => {
+            let fragments = fields.named.iter().map(|f| {
+                let ident = f.ident.as_ref().unwrap();
+                let self_ident = Ident::new(&format!("__self_{ident}"), f.ty.span());
+                let other_ident = Ident::new(&format!("__other_{ident}"), f.ty.span());
+                quote! { .then_with(|| ::object_rainbow::ByteOrd::bytes_cmp(#self_ident, #other_ident)) }
+            });
+            quote! { #(#fragments)* }
+        }
+        syn::Fields::Unnamed(fields) => {
+            let fragments = fields.unnamed.iter().enumerate().map(|(i, f)| {
+                let self_ident = Ident::new(&format!("__self_{i}"), f.ty.span());
+                let other_ident = Ident::new(&format!("__other_{i}"), f.ty.span());
+                quote! { .then_with(|| ::object_rainbow::ByteOrd::bytes_cmp(#self_ident, #other_ident)) }
+            });
+            quote! { #(#fragments)* }
+        }
+        syn::Fields::Unit => quote! {},
+    };
+    quote! { ::core::cmp::Ordering::Equal #then }
+}
+
+fn gen_bytes_cmp(data: &Data) -> proc_macro2::TokenStream {
+    match data {
+        Data::Struct(data) => {
+            let let_self = let_self_other(&data.fields, "__self_");
+            let let_other = let_self_other(&data.fields, "__other_");
+            let bytes_cmp = bytes_cmp_self_other(&data.fields);
+            quote! {
+                match (self, other) {
+                    (Self #let_self, Self #let_other) => #bytes_cmp,
+                }
+            }
+        }
+        Data::Enum(data) => {
+            let arms = data.variants.iter().map(|variant| {
+                let ident = &variant.ident;
+                let let_self = let_self_other(&variant.fields, "__self_");
+                let let_other = let_self_other(&variant.fields, "__other_");
+                let bytes_cmp = bytes_cmp_self_other(&variant.fields);
+                quote! {
+                    (Self::#ident #let_self, Self::#ident #let_other) => #bytes_cmp,
+                    (Self::#ident { .. }, _) => ::core::cmp::Ordering::Less,
+                    (_, Self::#ident { .. }) => ::core::cmp::Ordering::Greater,
+                }
+            });
+            quote! {
+                match (self, other) {
+                    #(#arms)*
+                }
+            }
+        }
+        Data::Union(data) => {
+            Error::new_spanned(data.union_token, "`union`s are not supported").to_compile_error()
+        }
+    }
+}
+
 /// ```rust
 /// use object_rainbow::ListHashes;
 ///
