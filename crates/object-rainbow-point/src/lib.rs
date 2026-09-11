@@ -326,11 +326,7 @@ impl<T> Point<T> {
                 return raw;
             }
         }
-        RawPointInner {
-            hash: self.hash(),
-            fetch: self.fetch,
-        }
-        .cast(extra)
+        RawPointInner::new(self.hash(), self.fetch).cast(extra)
     }
 }
 

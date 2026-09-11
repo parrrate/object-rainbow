@@ -15,6 +15,10 @@ pub struct RawPointInner {
 }
 
 impl RawPointInner {
+    pub fn new(hash: Hash, fetch: Arc<dyn Send + Sync + FetchBytes>) -> Self {
+        Self { hash, fetch }
+    }
+
     pub fn cast<T, Extra: 'static + Clone>(self, extra: Extra) -> RawPoint<T, Extra> {
         RawPoint::from_inner(self, extra)
     }
