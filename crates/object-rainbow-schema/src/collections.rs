@@ -59,7 +59,16 @@ pub type HamtMapInner = HamtMap<Arc<InlineValue>>;
 
 #[cfg(feature = "_collections-kv")]
 #[derive(
-    Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline, PartialEq,
+    Debug,
+    ToOutput,
+    InlineOutput,
+    ListHashes,
+    Topological,
+    Tagged,
+    Parse,
+    ParseInline,
+    PartialEq,
+    CanonicalExtra,
 )]
 pub struct KvValue<T> {
     pub kv: Extras<KvSchema>,
@@ -67,28 +76,20 @@ pub struct KvValue<T> {
 }
 #[cfg(feature = "_collections-item")]
 #[derive(
-    Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline, PartialEq,
+    Debug,
+    ToOutput,
+    InlineOutput,
+    ListHashes,
+    Topological,
+    Tagged,
+    Parse,
+    ParseInline,
+    PartialEq,
+    CanonicalExtra,
 )]
 pub struct ItemValue<T> {
     pub item: Extras<ItemSchema>,
     pub set: T,
-}
-
-#[cfg(feature = "_collections-kv")]
-impl<T> CanonicalExtra for KvValue<T> {
-    type Extra = KvSchema;
-
-    fn canonical_extra(&self) -> Self::Extra {
-        self.kv.canonical_extra()
-    }
-}
-#[cfg(feature = "_collections-item")]
-impl<T> CanonicalExtra for ItemValue<T> {
-    type Extra = ItemSchema;
-
-    fn canonical_extra(&self) -> Self::Extra {
-        self.item.canonical_extra()
-    }
 }
 
 #[cfg(feature = "_collections-kv")]
