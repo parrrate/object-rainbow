@@ -8,7 +8,7 @@ use crate::{u63::U63, *};
 /// Length-prefixed value. Used to make [`Inline`]s out of arbitrary [`Object`]s.
 ///
 /// If you can guarantee absence of zeroes, see [`zero_terminated::Zt`].
-#[pod(no_output, no_parse)]
+#[pod(no_output, no_parse, no_byte_ord)]
 #[derive(ParseAsInline)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Lp<T>(pub T);
@@ -166,20 +166,20 @@ impl<I: ParseInput> ParseInline<I> for LpString {
     }
 }
 
-#[derive(
-    Debug,
-    ListHashes,
-    Topological,
-    Tagged,
-    ParseAsInline,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-)]
+#[derive(Debug, ListHashes, Topological, Tagged, ParseAsInline, Clone, PartialEq, Eq, Hash)]
 pub struct LpVec<T>(pub Vec<T>);
+
+impl<T: PartialOrd> PartialOrd for LpVec<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        (self.len(), &self.0).partial_cmp(&(other.len(), &other.0))
+    }
+}
+
+impl<T: Ord> Ord for LpVec<T> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        (self.len(), &self.0).cmp(&(other.len(), &other.0))
+    }
+}
 
 impl<T> Deref for LpVec<T> {
     type Target = Vec<T>;
