@@ -205,7 +205,7 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra>
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
-            let (data, resolve) = self.inner.fetch.fetch_bytes().await?;
+            let (data, resolve) = self.inner.fetch_bytes().await?;
             self.extra
                 .0
                 .parse_checked(self.inner.hash(), &data, &resolve)
