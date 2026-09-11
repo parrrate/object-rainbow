@@ -12,8 +12,8 @@ use std::{
 use futures_util::TryFutureExt;
 pub use object_rainbow::extras::Extras;
 use object_rainbow::{
-    Address, ByteNode, CanonicalExtra, DefaultHash, Equivalent, ExtraFor, FailFuture, Fetch,
-    FetchBytes, FullHash, Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, OptionalHash,
+    Address, ByteNode, ByteOrd, CanonicalExtra, DefaultHash, Equivalent, ExtraFor, FailFuture,
+    Fetch, FetchBytes, FullHash, Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, OptionalHash,
     Output, Parse, ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Size, Tagged, ToOutput, Topological, Traversible,
     addressed::{Addressed, AddressedBytes},
@@ -382,7 +382,7 @@ impl<U: 'static + Equivalent<T>, T: 'static, Extra> Equivalent<RawPoint<T, Extra
     }
 }
 
-#[derive(ParseAsInline, Tagged)]
+#[derive(ParseAsInline, Tagged, ByteOrd)]
 #[must_use]
 pub struct Point<T> {
     hash: OptionalHash,
