@@ -316,7 +316,7 @@ impl<T> Point<T> {
     where
         T: FullHash,
     {
-        Self::from_trusted_fetch(hash, fetch.into_dyn_fetch())
+        Self::from_trusted_fetch(hash, Checked { hash, fetch }.into_dyn_fetch())
     }
 
     pub fn from_alternate_source(object: &T, fetch: impl 'static + Fetch<T = T>) -> Self
@@ -895,5 +895,69 @@ impl<T: 'static + Send + FullHash, E: 'static + Send + Sync + Clone + ExtraFor<T
 impl<T: IntoPoint + Clone> From<T> for Point<T> {
     fn from(object: T) -> Self {
         object.point()
+    }
+}
+
+struct Checked<F> {
+    hash: Hash,
+    fetch: F,
+}
+
+impl<F: FetchBytes> FetchBytes for Checked<F> {
+    fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
+        self.fetch.fetch_bytes()
+    }
+
+    fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
+        self.fetch.fetch_data()
+    }
+
+    fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
+        self.fetch.fetch_bytes_local()
+    }
+
+    fn fetch_data_local(&self) -> Option<Vec<u8>> {
+        self.fetch.fetch_data_local()
+    }
+
+    fn as_inner(&self) -> Option<&dyn Any> {
+        self.fetch.as_inner()
+    }
+
+    fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
+        self.fetch.as_resolve()
+    }
+}
+
+impl<F: Send + Sync + FetchBytes> Singular for Checked<F> {
+    fn hash(&self) -> Hash {
+        self.hash
+    }
+}
+
+impl<F: Fetch<T: FullHash>> Fetch for Checked<F> {
+    type T = F::T;
+
+    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
+        Box::pin(async move {
+            let object = self.fetch.fetch().await?;
+            if self.hash == object.full_hash() {
+                Ok(object)
+            } else {
+                Err(object_rainbow::Error::FullHashMismatch)
+            }
+        })
+    }
+
+    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
+        self.fetch.try_fetch_local()
+    }
+
+    fn fetch_local(&self) -> Option<Self::T> {
+        self.fetch.fetch_local()
+    }
+
+    fn get(&self) -> Option<&Self::T> {
+        self.fetch.get()
     }
 }
