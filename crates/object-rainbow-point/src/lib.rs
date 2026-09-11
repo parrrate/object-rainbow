@@ -31,12 +31,6 @@ struct AddressedBytes {
     resolve: Arc<dyn Resolve>,
 }
 
-impl AddressedBytes {
-    fn into_resolve(self) -> Arc<dyn Resolve> {
-        self.resolve
-    }
-}
-
 impl FetchBytes for AddressedBytes {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
         self.resolve.resolve(self.address, &self.resolve)
@@ -107,7 +101,7 @@ impl<T, Extra> FetchBytes for Addressed<T, Extra> {
     fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
         Arc::try_unwrap(self)
             .ok()
-            .map(|Self { inner, .. }| inner.into_resolve())
+            .map(|Self { inner, .. }| inner.resolve)
     }
 }
 
