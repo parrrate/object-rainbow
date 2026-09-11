@@ -70,6 +70,14 @@ pub struct Addressed<T, Extra> {
     _object: ObjectMarker<T>,
 }
 
+impl<T: Traversible, Extra: 'static + Send + Sync + Clone + ExtraFor<T>> Topological
+    for Addressed<T, Extra>
+{
+    fn traverse(&self, visitor: &mut impl PointVisitor) {
+        visitor.visit(self);
+    }
+}
+
 impl<T, Extra: Clone> Clone for Addressed<T, Extra> {
     fn clone(&self) -> Self {
         Self {
