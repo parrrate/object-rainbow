@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::*;
 
-#[derive(Clone, Parse)]
+#[derive(Clone, Parse, ParseInline)]
 pub struct AddressedBytes {
     pub address: Address,
     pub resolve: Arc<dyn Resolve>,
