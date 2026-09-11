@@ -109,3 +109,11 @@ impl<T: ?Sized + Singular> Singular for Arc<T> {
         (**self).hash()
     }
 }
+
+impl<T: ?Sized + Fetch> Fetch for Arc<T> {
+    type T = T::T;
+
+    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
+        (**self).fetch()
+    }
+}
