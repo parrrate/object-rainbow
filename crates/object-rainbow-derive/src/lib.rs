@@ -1249,10 +1249,16 @@ pub fn derive_size(input: TokenStream) -> TokenStream {
     let name = input.ident;
     let size_arr = gen_size_arr(&input.data);
     let size = gen_size(&input.data);
-    let (generics, is_enum) = match bounds_size(input.generics.clone(), &input.data, &size_arr) {
+    let (mut generics, is_enum) = match bounds_size(input.generics.clone(), &input.data, &size_arr)
+    {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
+    let generics_array = generics.clone();
+    let (_, _, where_clause_array) = generics_array.split_for_impl();
+    generics.make_where_clause().predicates.push(parse_quote!(
+        Self: ::object_rainbow::SizeSumHelper
+    ));
     let (_, ty_generics, where_clause) = generics.split_for_impl();
     let mut generics = input.generics;
     if is_enum {
@@ -1268,7 +1274,7 @@ pub fn derive_size(input: TokenStream) -> TokenStream {
 
             #[automatically_derived]
             impl #impl_generics ::object_rainbow::SizeSumHelper
-            for #target #ty_generics #where_clause {
+            for #target #ty_generics #where_clause_array {
                 type SizeArray = #size_arr;
             }
 
