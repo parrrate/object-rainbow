@@ -13,7 +13,7 @@ pub trait ExtractResolve: FetchBytes {
 
 impl<T: ?Sized + FetchBytes> ExtractResolve for T {}
 
-#[derive(Clone, Parse, ParseInline)]
+#[derive(Clone, ToOutput, Parse, ParseInline)]
 pub struct AddressedBytes {
     pub address: Address,
     pub resolve: Arc<dyn Resolve>,
