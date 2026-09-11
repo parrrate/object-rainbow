@@ -8,8 +8,9 @@ use async_executor::{Executor, Task};
 use futures_channel::oneshot;
 use futures_util::{FutureExt, Sink, SinkExt, Stream, StreamExt, TryStreamExt, future::Shared};
 use genawaiter_try_stream::try_stream;
-use object_rainbow::{Address, FetchBytes, Hash, Resolve, Singular, pod};
-use object_rainbow_point::RawPointInner;
+use object_rainbow::{
+    Address, FetchBytes, Hash, Resolve, Singular, addressed::AddressedBytes, pod,
+};
 
 /// Commands coming from a consumer.
 #[pod(no_default)]
@@ -231,15 +232,15 @@ where
                                 let recv = recv.shared();
                                 Arc::new(DelayedResolve { recv })
                             };
-                            retain.retain(Arc::new(RawPointInner::from_address(
-                                Address {
+                            retain.retain(Arc::new(AddressedBytes {
+                                address: Address {
                                     index: child_index
                                         .try_into()
                                         .map_err(|_| object_rainbow::Error::UnsupportedLength)?,
                                     hash: child_hash,
                                 },
                                 resolve,
-                            )));
+                            }));
                         }
                     }
                     ProviderEvent::Published((point, reason)) => {
