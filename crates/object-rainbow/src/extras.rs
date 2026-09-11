@@ -37,3 +37,8 @@ impl<Extra: Clone> CanonicalExtra for Extras<Extra> {
         self.0.clone()
     }
 }
+
+impl<Extra> Size for Extras<Extra> {
+    type Size = typenum::U0;
+    const SIZE: usize = 0;
+}
