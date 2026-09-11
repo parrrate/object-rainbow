@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{extras::Extras, *};
+use crate::{extras::Extras, object_marker::ObjectMarker, *};
 
 pub trait ExtractResolve: FetchBytes {
     fn extract_resolve<R: Any>(&self) -> Option<(&Address, &R)> {
@@ -65,7 +65,7 @@ impl<I: PointInput> ParseInline<I> for Arc<dyn Singular> {
 pub struct Addressed<T, Extra> {
     inner: AddressedBytes,
     extra: Extras<Extra>,
-    _object: PhantomData<fn() -> T>,
+    _object: ObjectMarker<T>,
 }
 
 impl<T, Extra> Addressed<T, Extra> {
@@ -73,7 +73,7 @@ impl<T, Extra> Addressed<T, Extra> {
         Self {
             inner,
             extra: Extras(extra),
-            _object: PhantomData,
+            _object: Default::default(),
         }
     }
 }
