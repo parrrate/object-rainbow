@@ -4,7 +4,17 @@ use typenum::{ToInt, U1};
 
 use crate::{enumkind::UsizeTag, incr_byte_niche::IncrByteNiche, *};
 
-#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Topological, ParseAsInline, PartialEq, Eq)]
+#[derive(
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Topological,
+    ParseAsInline,
+    PartialEq,
+    Eq,
+    PartialOrd,
+)]
 pub struct PartialByteTag<K>(u8, PhantomData<K>);
 
 impl<K> Size for PartialByteTag<K> {
