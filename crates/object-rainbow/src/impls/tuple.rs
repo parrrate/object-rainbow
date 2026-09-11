@@ -58,8 +58,9 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche> MaybeHasNiche for (A, B) {
 
 impl<A: ByteOrd + InlineOutput, B: ByteOrd> ByteOrd for (A, B) {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
-        (OrderedByBytes(&self.0), OrderedByBytes(&self.1))
-            .cmp(&(OrderedByBytes(&other.0), OrderedByBytes(&other.1)))
+        Ordering::Equal
+            .then_with(|| self.0.bytes_cmp(&other.0))
+            .then_with(|| self.1.bytes_cmp(&other.1))
     }
 }
 
@@ -128,16 +129,10 @@ impl<A: MaybeHasNiche, B: MaybeHasNiche, C: MaybeHasNiche> MaybeHasNiche for (A,
 
 impl<A: ByteOrd + InlineOutput, B: ByteOrd + InlineOutput, C: ByteOrd> ByteOrd for (A, B, C) {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
-        (
-            OrderedByBytes(&self.0),
-            OrderedByBytes(&self.1),
-            OrderedByBytes(&self.2),
-        )
-            .cmp(&(
-                OrderedByBytes(&other.0),
-                OrderedByBytes(&other.1),
-                OrderedByBytes(&other.2),
-            ))
+        Ordering::Equal
+            .then_with(|| self.0.bytes_cmp(&other.0))
+            .then_with(|| self.1.bytes_cmp(&other.1))
+            .then_with(|| self.2.bytes_cmp(&other.2))
     }
 }
 
@@ -224,18 +219,11 @@ impl<A: ByteOrd + InlineOutput, B: ByteOrd + InlineOutput, C: ByteOrd + InlineOu
     ByteOrd for (A, B, C, D)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
-        (
-            OrderedByBytes(&self.0),
-            OrderedByBytes(&self.1),
-            OrderedByBytes(&self.2),
-            OrderedByBytes(&self.3),
-        )
-            .cmp(&(
-                OrderedByBytes(&other.0),
-                OrderedByBytes(&other.1),
-                OrderedByBytes(&other.2),
-                OrderedByBytes(&other.3),
-            ))
+        Ordering::Equal
+            .then_with(|| self.0.bytes_cmp(&other.0))
+            .then_with(|| self.1.bytes_cmp(&other.1))
+            .then_with(|| self.2.bytes_cmp(&other.2))
+            .then_with(|| self.3.bytes_cmp(&other.3))
     }
 }
 
@@ -350,20 +338,12 @@ impl<
 > ByteOrd for (A, B, C, D, E)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
-        (
-            OrderedByBytes(&self.0),
-            OrderedByBytes(&self.1),
-            OrderedByBytes(&self.2),
-            OrderedByBytes(&self.3),
-            OrderedByBytes(&self.4),
-        )
-            .cmp(&(
-                OrderedByBytes(&other.0),
-                OrderedByBytes(&other.1),
-                OrderedByBytes(&other.2),
-                OrderedByBytes(&other.3),
-                OrderedByBytes(&other.4),
-            ))
+        Ordering::Equal
+            .then_with(|| self.0.bytes_cmp(&other.0))
+            .then_with(|| self.1.bytes_cmp(&other.1))
+            .then_with(|| self.2.bytes_cmp(&other.2))
+            .then_with(|| self.3.bytes_cmp(&other.3))
+            .then_with(|| self.4.bytes_cmp(&other.4))
     }
 }
 
@@ -521,22 +501,13 @@ impl<
 > ByteOrd for (A, B, C, D, E, F)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
-        (
-            OrderedByBytes(&self.0),
-            OrderedByBytes(&self.1),
-            OrderedByBytes(&self.2),
-            OrderedByBytes(&self.3),
-            OrderedByBytes(&self.4),
-            OrderedByBytes(&self.5),
-        )
-            .cmp(&(
-                OrderedByBytes(&other.0),
-                OrderedByBytes(&other.1),
-                OrderedByBytes(&other.2),
-                OrderedByBytes(&other.3),
-                OrderedByBytes(&other.4),
-                OrderedByBytes(&other.5),
-            ))
+        Ordering::Equal
+            .then_with(|| self.0.bytes_cmp(&other.0))
+            .then_with(|| self.1.bytes_cmp(&other.1))
+            .then_with(|| self.2.bytes_cmp(&other.2))
+            .then_with(|| self.3.bytes_cmp(&other.3))
+            .then_with(|| self.4.bytes_cmp(&other.4))
+            .then_with(|| self.5.bytes_cmp(&other.5))
     }
 }
 
@@ -742,24 +713,14 @@ impl<
 > ByteOrd for (A, B, C, D, E, F, G)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
-        (
-            OrderedByBytes(&self.0),
-            OrderedByBytes(&self.1),
-            OrderedByBytes(&self.2),
-            OrderedByBytes(&self.3),
-            OrderedByBytes(&self.4),
-            OrderedByBytes(&self.5),
-            OrderedByBytes(&self.6),
-        )
-            .cmp(&(
-                OrderedByBytes(&other.0),
-                OrderedByBytes(&other.1),
-                OrderedByBytes(&other.2),
-                OrderedByBytes(&other.3),
-                OrderedByBytes(&other.4),
-                OrderedByBytes(&other.5),
-                OrderedByBytes(&other.6),
-            ))
+        Ordering::Equal
+            .then_with(|| self.0.bytes_cmp(&other.0))
+            .then_with(|| self.1.bytes_cmp(&other.1))
+            .then_with(|| self.2.bytes_cmp(&other.2))
+            .then_with(|| self.3.bytes_cmp(&other.3))
+            .then_with(|| self.4.bytes_cmp(&other.4))
+            .then_with(|| self.5.bytes_cmp(&other.5))
+            .then_with(|| self.6.bytes_cmp(&other.6))
     }
 }
 
@@ -991,26 +952,15 @@ impl<
 > ByteOrd for (A, B, C, D, E, F, G, H)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
-        (
-            OrderedByBytes(&self.0),
-            OrderedByBytes(&self.1),
-            OrderedByBytes(&self.2),
-            OrderedByBytes(&self.3),
-            OrderedByBytes(&self.4),
-            OrderedByBytes(&self.5),
-            OrderedByBytes(&self.6),
-            OrderedByBytes(&self.7),
-        )
-            .cmp(&(
-                OrderedByBytes(&other.0),
-                OrderedByBytes(&other.1),
-                OrderedByBytes(&other.2),
-                OrderedByBytes(&other.3),
-                OrderedByBytes(&other.4),
-                OrderedByBytes(&other.5),
-                OrderedByBytes(&other.6),
-                OrderedByBytes(&other.7),
-            ))
+        Ordering::Equal
+            .then_with(|| self.0.bytes_cmp(&other.0))
+            .then_with(|| self.1.bytes_cmp(&other.1))
+            .then_with(|| self.2.bytes_cmp(&other.2))
+            .then_with(|| self.3.bytes_cmp(&other.3))
+            .then_with(|| self.4.bytes_cmp(&other.4))
+            .then_with(|| self.5.bytes_cmp(&other.5))
+            .then_with(|| self.6.bytes_cmp(&other.6))
+            .then_with(|| self.7.bytes_cmp(&other.7))
     }
 }
 
@@ -1269,28 +1219,16 @@ impl<
 > ByteOrd for (A, B, C, D, E, F, G, H, I)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
-        (
-            OrderedByBytes(&self.0),
-            OrderedByBytes(&self.1),
-            OrderedByBytes(&self.2),
-            OrderedByBytes(&self.3),
-            OrderedByBytes(&self.4),
-            OrderedByBytes(&self.5),
-            OrderedByBytes(&self.6),
-            OrderedByBytes(&self.7),
-            OrderedByBytes(&self.8),
-        )
-            .cmp(&(
-                OrderedByBytes(&other.0),
-                OrderedByBytes(&other.1),
-                OrderedByBytes(&other.2),
-                OrderedByBytes(&other.3),
-                OrderedByBytes(&other.4),
-                OrderedByBytes(&other.5),
-                OrderedByBytes(&other.6),
-                OrderedByBytes(&other.7),
-                OrderedByBytes(&other.8),
-            ))
+        Ordering::Equal
+            .then_with(|| self.0.bytes_cmp(&other.0))
+            .then_with(|| self.1.bytes_cmp(&other.1))
+            .then_with(|| self.2.bytes_cmp(&other.2))
+            .then_with(|| self.3.bytes_cmp(&other.3))
+            .then_with(|| self.4.bytes_cmp(&other.4))
+            .then_with(|| self.5.bytes_cmp(&other.5))
+            .then_with(|| self.6.bytes_cmp(&other.6))
+            .then_with(|| self.7.bytes_cmp(&other.7))
+            .then_with(|| self.8.bytes_cmp(&other.8))
     }
 }
 
@@ -1576,30 +1514,17 @@ impl<
 > ByteOrd for (A, B, C, D, E, F, G, H, I, J)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
-        (
-            OrderedByBytes(&self.0),
-            OrderedByBytes(&self.1),
-            OrderedByBytes(&self.2),
-            OrderedByBytes(&self.3),
-            OrderedByBytes(&self.4),
-            OrderedByBytes(&self.5),
-            OrderedByBytes(&self.6),
-            OrderedByBytes(&self.7),
-            OrderedByBytes(&self.8),
-            OrderedByBytes(&self.9),
-        )
-            .cmp(&(
-                OrderedByBytes(&other.0),
-                OrderedByBytes(&other.1),
-                OrderedByBytes(&other.2),
-                OrderedByBytes(&other.3),
-                OrderedByBytes(&other.4),
-                OrderedByBytes(&other.5),
-                OrderedByBytes(&other.6),
-                OrderedByBytes(&other.7),
-                OrderedByBytes(&other.8),
-                OrderedByBytes(&other.9),
-            ))
+        Ordering::Equal
+            .then_with(|| self.0.bytes_cmp(&other.0))
+            .then_with(|| self.1.bytes_cmp(&other.1))
+            .then_with(|| self.2.bytes_cmp(&other.2))
+            .then_with(|| self.3.bytes_cmp(&other.3))
+            .then_with(|| self.4.bytes_cmp(&other.4))
+            .then_with(|| self.5.bytes_cmp(&other.5))
+            .then_with(|| self.6.bytes_cmp(&other.6))
+            .then_with(|| self.7.bytes_cmp(&other.7))
+            .then_with(|| self.8.bytes_cmp(&other.8))
+            .then_with(|| self.9.bytes_cmp(&other.9))
     }
 }
 
@@ -1916,32 +1841,18 @@ impl<
 > ByteOrd for (A, B, C, D, E, F, G, H, I, J, K)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
-        (
-            OrderedByBytes(&self.0),
-            OrderedByBytes(&self.1),
-            OrderedByBytes(&self.2),
-            OrderedByBytes(&self.3),
-            OrderedByBytes(&self.4),
-            OrderedByBytes(&self.5),
-            OrderedByBytes(&self.6),
-            OrderedByBytes(&self.7),
-            OrderedByBytes(&self.8),
-            OrderedByBytes(&self.9),
-            OrderedByBytes(&self.10),
-        )
-            .cmp(&(
-                OrderedByBytes(&other.0),
-                OrderedByBytes(&other.1),
-                OrderedByBytes(&other.2),
-                OrderedByBytes(&other.3),
-                OrderedByBytes(&other.4),
-                OrderedByBytes(&other.5),
-                OrderedByBytes(&other.6),
-                OrderedByBytes(&other.7),
-                OrderedByBytes(&other.8),
-                OrderedByBytes(&other.9),
-                OrderedByBytes(&other.10),
-            ))
+        Ordering::Equal
+            .then_with(|| self.0.bytes_cmp(&other.0))
+            .then_with(|| self.1.bytes_cmp(&other.1))
+            .then_with(|| self.2.bytes_cmp(&other.2))
+            .then_with(|| self.3.bytes_cmp(&other.3))
+            .then_with(|| self.4.bytes_cmp(&other.4))
+            .then_with(|| self.5.bytes_cmp(&other.5))
+            .then_with(|| self.6.bytes_cmp(&other.6))
+            .then_with(|| self.7.bytes_cmp(&other.7))
+            .then_with(|| self.8.bytes_cmp(&other.8))
+            .then_with(|| self.9.bytes_cmp(&other.9))
+            .then_with(|| self.10.bytes_cmp(&other.10))
     }
 }
 
@@ -2279,34 +2190,19 @@ impl<
 > ByteOrd for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
-        (
-            OrderedByBytes(&self.0),
-            OrderedByBytes(&self.1),
-            OrderedByBytes(&self.2),
-            OrderedByBytes(&self.3),
-            OrderedByBytes(&self.4),
-            OrderedByBytes(&self.5),
-            OrderedByBytes(&self.6),
-            OrderedByBytes(&self.7),
-            OrderedByBytes(&self.8),
-            OrderedByBytes(&self.9),
-            OrderedByBytes(&self.10),
-            OrderedByBytes(&self.11),
-        )
-            .cmp(&(
-                OrderedByBytes(&other.0),
-                OrderedByBytes(&other.1),
-                OrderedByBytes(&other.2),
-                OrderedByBytes(&other.3),
-                OrderedByBytes(&other.4),
-                OrderedByBytes(&other.5),
-                OrderedByBytes(&other.6),
-                OrderedByBytes(&other.7),
-                OrderedByBytes(&other.8),
-                OrderedByBytes(&other.9),
-                OrderedByBytes(&other.10),
-                OrderedByBytes(&other.11),
-            ))
+        Ordering::Equal
+            .then_with(|| self.0.bytes_cmp(&other.0))
+            .then_with(|| self.1.bytes_cmp(&other.1))
+            .then_with(|| self.2.bytes_cmp(&other.2))
+            .then_with(|| self.3.bytes_cmp(&other.3))
+            .then_with(|| self.4.bytes_cmp(&other.4))
+            .then_with(|| self.5.bytes_cmp(&other.5))
+            .then_with(|| self.6.bytes_cmp(&other.6))
+            .then_with(|| self.7.bytes_cmp(&other.7))
+            .then_with(|| self.8.bytes_cmp(&other.8))
+            .then_with(|| self.9.bytes_cmp(&other.9))
+            .then_with(|| self.10.bytes_cmp(&other.10))
+            .then_with(|| self.11.bytes_cmp(&other.11))
     }
 }
 

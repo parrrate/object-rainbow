@@ -267,17 +267,12 @@ struct BytesCmp {
 
 impl Display for BytesCmp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let then = (0..self.n)
+            .map(|i| format!(".then_with(|| self.{i}.bytes_cmp(&other.{i}))"))
+            .collect::<String>();
         writeln!(
             f,
-            "fn bytes_cmp(&self, other: &Self) -> Ordering {{ ({}).cmp(&({})) }}",
-            (0..self.n)
-                .map(|i| format!("OrderedByBytes(&self.{i})"))
-                .collect::<Vec<_>>()
-                .join(", "),
-            (0..self.n)
-                .map(|i| format!("OrderedByBytes(&other.{i})"))
-                .collect::<Vec<_>>()
-                .join(", "),
+            "fn bytes_cmp(&self, other: &Self) -> Ordering {{ Ordering::Equal{then} }}",
         )
     }
 }
