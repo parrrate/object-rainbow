@@ -2,7 +2,7 @@ use std::ops::Index;
 
 use bitvec::array::BitArray;
 use object_rainbow::{HASH_SIZE, Hash, Singular, ToOutput, pod};
-use object_rainbow_sign::VerifyKey;
+use object_rainbow_sign::{SigningKey, VerifyKey};
 
 #[cfg(feature = "generate")]
 pub mod generate;
@@ -148,5 +148,19 @@ impl VerifyKey<Signature> for PublicKey {
         } else {
             Err(InvalidSignature)
         }
+    }
+}
+
+impl SigningKey for PrivateKey {
+    type Signature = Signature;
+
+    type VerifyKey = PublicKey;
+
+    fn sign(&self, message: &Hash) -> Self::Signature {
+        self.sign_hash(*message)
+    }
+
+    fn to_verify_key(&self) -> Self::VerifyKey {
+        self.public()
     }
 }
