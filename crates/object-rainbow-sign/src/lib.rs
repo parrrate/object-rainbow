@@ -9,9 +9,9 @@ pub trait SigningKey<V: VerifyKey<S, M>, S, M = Hash> {
     fn to_verify_key(&self) -> V;
 }
 
-pub trait VerifyKey<Signature, Message = Hash>: Send + Sync + Eq {
+pub trait VerifyKey<S, M = Hash>: Send + Sync + Eq {
     type Error: 'static + Send + Sync + std::error::Error;
-    fn verify(&self, signature: &Signature, message: &Message) -> Result<(), Self::Error>;
+    fn verify(&self, signature: &S, message: &M) -> Result<(), Self::Error>;
 }
 
 #[pod]
