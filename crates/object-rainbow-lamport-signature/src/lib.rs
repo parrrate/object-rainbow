@@ -151,16 +151,12 @@ impl VerifyKey<Signature> for PublicKey {
     }
 }
 
-impl SigningKey for PrivateKey {
-    type Signature = Signature;
-
-    type VerifyKey = PublicKey;
-
-    fn sign(&self, message: &Hash) -> Self::Signature {
+impl SigningKey<PublicKey, Signature> for PrivateKey {
+    fn sign(&self, message: &Hash) -> Signature {
         self.sign_hash(*message)
     }
 
-    fn to_verify_key(&self) -> Self::VerifyKey {
+    fn to_verify_key(&self) -> PublicKey {
         self.public()
     }
 }
