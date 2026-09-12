@@ -46,7 +46,7 @@ impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch, M: Singular> Signed<V, S, M> {
         Ok(&self.message)
     }
 
-    pub async fn sign<K: SigningKey<V::T, S::T>>(
+    pub async fn sign_fetch<K: SigningKey<V::T, S::T>>(
         signing_key: &K,
         verify_key: V,
         message: M,
