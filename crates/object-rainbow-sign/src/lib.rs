@@ -8,7 +8,7 @@ pub trait SigningKey<Message = Hash> {
     fn to_verify_key(&self) -> Self::VerifyKey;
 }
 
-pub trait VerifyKey<Signature, Message = Hash> {
+pub trait VerifyKey<Signature, Message = Hash>: Eq {
     type Error: 'static + Send + Sync + std::error::Error;
     fn verify(&self, signature: &Signature, message: &Message) -> Result<(), Self::Error>;
 }
