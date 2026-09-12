@@ -1,4 +1,5 @@
-use object_rainbow::{Hash, pod};
+use futures_concurrency::future::TryJoin;
+use object_rainbow::{Fetch, Hash, Singular, pod};
 
 pub trait SigningKey<Message = Hash> {
     type Signature;
@@ -13,8 +14,19 @@ pub trait VerifyKey<Signature, Message = Hash> {
 }
 
 #[pod]
-pub struct Signed<P, S, M> {
-    public: P,
+pub struct Signed<V, S, M> {
+    public: V,
     signature: S,
     message: M,
+}
+
+impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch, M: Singular> Signed<V, S, M> {
+    pub async fn verify(&self) -> object_rainbow::Result<()> {
+        let (verifykey, signature) = (self.public.fetch(), self.signature.fetch())
+            .try_join()
+            .await?;
+        verifykey
+            .verify(&signature, &self.message.hash())
+            .map_err(object_rainbow::Error::consistency)
+    }
 }

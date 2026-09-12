@@ -10,5 +10,7 @@ authors.workspace = true
 [dependencies]
 object-rainbow.workspace = true
 
+futures-concurrency.workspace = true
+
 [package.metadata.tagit]
 skip = true
