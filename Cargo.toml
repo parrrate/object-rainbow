@@ -55,6 +55,7 @@ object-rainbow-history = { version = "0.0.0-a.36", path = "crates/object-rainbow
 object-rainbow-local-map = { version = "0.0.0-a.9", path = "crates/object-rainbow-local-map" }
 object-rainbow-parse-prefix = { version = "0.0.0-a.6", path = "crates/object-rainbow-parse-prefix" }
 object-rainbow-point = { version = "0.0.0-a.18", path = "crates/object-rainbow-point" }
+object-rainbow-sign = { version = "0.0.0-a.0", path = "crates/object-rainbow-sign" }
 object-rainbow-store = { version = "0.0.0-a.13", path = "crates/object-rainbow-store" }
 object-rainbow-store-opendal = { version = "0.0.0-a.8", path = "crates/object-rainbow-store-opendal" }
 object-rainbow-trie = { version = "0.0.0-a.21", path = "crates/object-rainbow-trie" }

@@ -1954,8 +1954,10 @@ version = "0.0.0-a.0"
 dependencies = [
  "bitvec",
  "object-rainbow",
+ "object-rainbow-sign",
  "rand 0.10.2",
  "smol",
+ "thiserror",
 ]
 
 [[package]]

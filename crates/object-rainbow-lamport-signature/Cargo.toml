@@ -9,9 +9,11 @@ authors.workspace = true
 
 [dependencies]
 object-rainbow.workspace = true
+object-rainbow-sign.workspace = true
 
 bitvec.workspace = true
 rand = { workspace = true, optional = true }
+thiserror.workspace = true
 
 [features]
 generate = ["dep:rand"]

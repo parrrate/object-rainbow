@@ -2,6 +2,7 @@ use std::ops::Index;
 
 use bitvec::array::BitArray;
 use object_rainbow::{HASH_SIZE, Hash, Singular, ToOutput, pod};
+use object_rainbow_sign::VerifyKey;
 
 #[cfg(feature = "generate")]
 pub mod generate;
@@ -131,5 +132,21 @@ impl Message {
 impl From<Hash> for Message {
     fn from(hash: Hash) -> Self {
         Self(BitArray::new(hash.into()))
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+#[error("invalid signature")]
+pub struct InvalidSignature;
+
+impl VerifyKey<Signature> for PublicKey {
+    type Error = InvalidSignature;
+
+    fn verify(&self, signature: &Signature, message: &Hash) -> Result<(), Self::Error> {
+        if signature.verify(*self, (*message).into()) {
+            Ok(())
+        } else {
+            Err(InvalidSignature)
+        }
     }
 }
