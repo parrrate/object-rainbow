@@ -1,5 +1,5 @@
 use futures_concurrency::future::TryJoin;
-use object_rainbow::{Fetch, Hash, Singular, pod};
+use object_rainbow::{Fetch, FetchBytes, Hash, Singular, pod};
 
 pub trait SigningKey<Message = Hash> {
     type Signature: Send + Sync;
@@ -62,5 +62,17 @@ impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch, M: Singular> Signed<V, S, M> {
             signature,
             message,
         })
+    }
+}
+
+impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch<T: Send + Sync>, M: Singular> FetchBytes
+    for Signed<V, S, M>
+{
+    fn fetch_bytes(&'_ self) -> object_rainbow::FailFuture<'_, object_rainbow::ByteNode> {
+        Box::pin(async move { self.message().await?.fetch_bytes().await })
+    }
+
+    fn fetch_data(&'_ self) -> object_rainbow::FailFuture<'_, Vec<u8>> {
+        Box::pin(async move { self.message().await?.fetch_data().await })
     }
 }
