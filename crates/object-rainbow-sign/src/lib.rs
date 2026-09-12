@@ -29,4 +29,14 @@ impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch, M: Singular> Signed<V, S, M> {
             .verify(&signature, &self.message.hash())
             .map_err(object_rainbow::Error::consistency)
     }
+
+    pub async fn new(verify_key: V, signature: S, message: M) -> object_rainbow::Result<Self> {
+        let signed = Self {
+            verify_key,
+            signature,
+            message,
+        };
+        signed.verify().await?;
+        Ok(signed)
+    }
 }
