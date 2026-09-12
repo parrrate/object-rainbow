@@ -1953,7 +1953,6 @@ name = "object-rainbow-lamport-signature"
 version = "0.0.0-a.0"
 dependencies = [
  "bitvec",
- "futures-util",
  "object-rainbow",
  "rand 0.10.2",
  "smol",

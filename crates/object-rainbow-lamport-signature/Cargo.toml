@@ -11,7 +11,6 @@ authors.workspace = true
 object-rainbow.workspace = true
 
 bitvec.workspace = true
-futures-util.workspace = true
 rand = { workspace = true, optional = true }
 
 [features]

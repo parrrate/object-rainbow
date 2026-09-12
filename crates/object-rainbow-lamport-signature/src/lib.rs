@@ -1,8 +1,7 @@
 use std::ops::Index;
 
 use bitvec::array::BitArray;
-use futures_util::future::try_join;
-use object_rainbow::{Fetch, FetchBytes, HASH_SIZE, Hash, Singular, SingularFetch, ToOutput, pod};
+use object_rainbow::{HASH_SIZE, Hash, Singular, ToOutput, pod};
 
 #[cfg(feature = "generate")]
 pub mod generate;
@@ -132,77 +131,5 @@ impl Message {
 impl From<Hash> for Message {
     fn from(hash: Hash) -> Self {
         Self(BitArray::new(hash.into()))
-    }
-}
-
-#[pod]
-pub struct Signed<P, S, M> {
-    public: P,
-    signature: S,
-    message: M,
-}
-
-impl<P: Fetch<T = PublicKey>, S: Fetch<T = Signature>, M: Singular> Signed<P, S, M> {
-    pub async fn sign(private: PrivateKey, public: P, message: M) -> object_rainbow::Result<Self>
-    where
-        S: From<Signature>,
-    {
-        if public.fetch().await? != private.public() {
-            return Err(object_rainbow::error_operation!("public key mismatch"));
-        }
-        let signature = private.sign_singular(&message).into();
-        Ok(Self {
-            public,
-            signature,
-            message,
-        })
-    }
-
-    pub async fn new(public: P, signature: S, message: M) -> object_rainbow::Result<Self> {
-        let signed = Self {
-            public,
-            signature,
-            message,
-        };
-        signed.verify().await?;
-        Ok(signed)
-    }
-
-    pub async fn verify(&self) -> object_rainbow::Result<()> {
-        let (public, signature) = try_join(self.public.fetch(), self.signature.fetch()).await?;
-        if signature.verify(public, self.message.hash().into()) {
-            Ok(())
-        } else {
-            Err(object_rainbow::error_consistency!("invalid signature"))
-        }
-    }
-
-    pub async fn message(&self) -> object_rainbow::Result<&M> {
-        self.verify().await?;
-        Ok(&self.message)
-    }
-}
-
-impl<P: Fetch<T = PublicKey>, S: Fetch<T = Signature>, M: Singular> FetchBytes for Signed<P, S, M> {
-    fn fetch_bytes(&'_ self) -> object_rainbow::FailFuture<'_, object_rainbow::ByteNode> {
-        Box::pin(async move { self.message().await?.fetch_bytes().await })
-    }
-
-    fn fetch_data(&'_ self) -> object_rainbow::FailFuture<'_, Vec<u8>> {
-        Box::pin(async move { self.message().await?.fetch_data().await })
-    }
-}
-
-impl<P: Fetch<T = PublicKey>, S: Fetch<T = Signature>, M: Singular> Singular for Signed<P, S, M> {
-    fn hash(&self) -> Hash {
-        self.message.hash()
-    }
-}
-
-impl<P: Fetch<T = PublicKey>, S: Fetch<T = Signature>, M: SingularFetch> Fetch for Signed<P, S, M> {
-    type T = M::T;
-
-    fn fetch(&'_ self) -> object_rainbow::FailFuture<'_, Self::T> {
-        Box::pin(async move { self.message().await?.fetch().await })
     }
 }
