@@ -15,14 +15,14 @@ pub trait VerifyKey<Signature, Message = Hash> {
 
 #[pod]
 pub struct Signed<V, S, M> {
-    public: V,
+    verify: V,
     signature: S,
     message: M,
 }
 
 impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch, M: Singular> Signed<V, S, M> {
     pub async fn verify(&self) -> object_rainbow::Result<()> {
-        let (verifykey, signature) = (self.public.fetch(), self.signature.fetch())
+        let (verifykey, signature) = (self.verify.fetch(), self.signature.fetch())
             .try_join()
             .await?;
         verifykey
