@@ -76,3 +76,11 @@ impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch<T: Send + Sync>, M: Singular> FetchB
         Box::pin(async move { self.message().await?.fetch_data().await })
     }
 }
+
+impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch<T: Send + Sync>, M: Singular> Singular
+    for Signed<V, S, M>
+{
+    fn hash(&self) -> Hash {
+        self.message.hash()
+    }
+}
