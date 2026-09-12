@@ -1,5 +1,5 @@
 use futures_concurrency::future::TryJoin;
-use object_rainbow::{Fetch, FetchBytes, Hash, Singular, SingularFetch, pod};
+use object_rainbow::{Fetch, FetchBytes, FullHash, Hash, Singular, SingularFetch, pod};
 
 #[cfg(feature = "signature")]
 mod signature;
@@ -55,6 +55,26 @@ impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch, M: Singular> Signed<V, S, M> {
         S: From<S::T>,
     {
         if verify_key.fetch().await? != signing_key.to_verify_key() {
+            return Err(object_rainbow::error_operation!("public key mismatch"));
+        }
+        let signature = signing_key.sign(&message.hash()).into();
+        Ok(Self {
+            verify_key,
+            signature,
+            message,
+        })
+    }
+
+    pub fn sign<K: SigningKey<V::T, S::T>>(
+        signing_key: &K,
+        verify_key: V,
+        message: M,
+    ) -> object_rainbow::Result<Self>
+    where
+        S: From<S::T>,
+        V: SingularFetch<T: FullHash>,
+    {
+        if verify_key.hash() != signing_key.to_verify_key().full_hash() {
             return Err(object_rainbow::error_operation!("public key mismatch"));
         }
         let signature = signing_key.sign(&message.hash()).into();
