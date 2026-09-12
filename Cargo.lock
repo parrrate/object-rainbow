@@ -2015,6 +2015,7 @@ version = "0.0.0-a.0"
 dependencies = [
  "futures-concurrency",
  "object-rainbow",
+ "signature",
 ]
 
 [[package]]
@@ -2943,6 +2944,12 @@ dependencies = [
  "errno",
  "libc",
 ]
+
+[[package]]
+name = "signature"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "28d567dcbaf0049cb8ac2608a76cd95ff9e4412e1899d389ee400918ca7537f5"
 
 [[package]]
 name = "simd_cesu8"

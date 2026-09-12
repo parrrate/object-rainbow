@@ -11,6 +11,10 @@ authors.workspace = true
 object-rainbow.workspace = true
 
 futures-concurrency.workspace = true
+signature = { workspace = true, optional = true }
+
+[features]
+signature = ["dep:signature"]
 
 [package.metadata.tagit]
 skip = true
