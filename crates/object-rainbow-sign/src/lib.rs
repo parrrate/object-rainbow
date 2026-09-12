@@ -46,6 +46,22 @@ impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch, M: Singular> Signed<V, S, M> {
         Ok(&self.message)
     }
 
+    fn sign_trusted<K: SigningKey<V::T, S::T>>(
+        signing_key: &K,
+        verify_key: V,
+        message: M,
+    ) -> object_rainbow::Result<Self>
+    where
+        S: From<S::T>,
+    {
+        let signature = signing_key.sign(&message.hash()).into();
+        Ok(Self {
+            verify_key,
+            signature,
+            message,
+        })
+    }
+
     pub async fn sign_fetch<K: SigningKey<V::T, S::T>>(
         signing_key: &K,
         verify_key: V,
@@ -57,12 +73,7 @@ impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch, M: Singular> Signed<V, S, M> {
         if verify_key.fetch().await? != signing_key.to_verify_key() {
             return Err(object_rainbow::error_operation!("public key mismatch"));
         }
-        let signature = signing_key.sign(&message.hash()).into();
-        Ok(Self {
-            verify_key,
-            signature,
-            message,
-        })
+        Self::sign_trusted(signing_key, verify_key, message)
     }
 
     pub fn sign<K: SigningKey<V::T, S::T>>(
@@ -77,12 +88,7 @@ impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch, M: Singular> Signed<V, S, M> {
         if verify_key.hash() != signing_key.to_verify_key().full_hash() {
             return Err(object_rainbow::error_operation!("public key mismatch"));
         }
-        let signature = signing_key.sign(&message.hash()).into();
-        Ok(Self {
-            verify_key,
-            signature,
-            message,
-        })
+        Self::sign_trusted(signing_key, verify_key, message)
     }
 }
 
