@@ -4,6 +4,7 @@ pub trait SigningKey<Message = Hash> {
     type Signature;
     type VerifyKey: VerifyKey<Self::Signature, Message>;
     fn sign(&self, message: &Message) -> Self::Signature;
+    fn to_verify_key(&self) -> Self::VerifyKey;
 }
 
 pub trait VerifyKey<Signature, Message = Hash> {
