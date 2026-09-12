@@ -4,10 +4,9 @@ use object_rainbow::{Fetch, FetchBytes, Hash, Singular, SingularFetch, pod};
 #[cfg(feature = "signature")]
 mod signature;
 
-pub trait SigningKey<Message = Hash> {
-    type Signature: Send + Sync;
-    type VerifyKey: VerifyKey<Self::Signature, Message>;
-    fn sign(&self, message: &Message) -> Self::Signature;
+pub trait SigningKey<Signature, Message = Hash> {
+    type VerifyKey: VerifyKey<Signature, Message>;
+    fn sign(&self, message: &Message) -> Signature;
     fn to_verify_key(&self) -> Self::VerifyKey;
 }
 
@@ -48,7 +47,7 @@ impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch, M: Singular> Signed<V, S, M> {
         Ok(&self.message)
     }
 
-    pub async fn sign<K: SigningKey<Signature = S::T, VerifyKey = V::T>>(
+    pub async fn sign<K: SigningKey<S::T, VerifyKey = V::T>>(
         signing_key: &K,
         verify_key: V,
         message: M,
