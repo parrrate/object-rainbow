@@ -44,4 +44,23 @@ impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch, M: Singular> Signed<V, S, M> {
         self.verify().await?;
         Ok(&self.message)
     }
+
+    pub async fn sign<K: SigningKey<Signature = S::T, VerifyKey = V::T>>(
+        signing_key: &K,
+        verify_key: V,
+        message: M,
+    ) -> object_rainbow::Result<Self>
+    where
+        S: From<S::T>,
+    {
+        if verify_key.fetch().await? != signing_key.to_verify_key() {
+            return Err(object_rainbow::error_operation!("public key mismatch"));
+        }
+        let signature = signing_key.sign(&message.hash()).into();
+        Ok(Self {
+            verify_key,
+            signature,
+            message,
+        })
+    }
 }
