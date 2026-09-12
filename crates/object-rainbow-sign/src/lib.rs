@@ -22,10 +22,10 @@ pub struct Signed<V, S, M> {
 
 impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch, M: Singular> Signed<V, S, M> {
     pub async fn verify(&self) -> object_rainbow::Result<()> {
-        let (verifykey, signature) = (self.verify.fetch(), self.signature.fetch())
+        let (verify_key, signature) = (self.verify.fetch(), self.signature.fetch())
             .try_join()
             .await?;
-        verifykey
+        verify_key
             .verify(&signature, &self.message.hash())
             .map_err(object_rainbow::Error::consistency)
     }
