@@ -39,4 +39,9 @@ impl<V: Fetch<T: VerifyKey<S::T>>, S: Fetch, M: Singular> Signed<V, S, M> {
         signed.verify().await?;
         Ok(signed)
     }
+
+    pub async fn message(&self) -> object_rainbow::Result<&M> {
+        self.verify().await?;
+        Ok(&self.message)
+    }
 }
