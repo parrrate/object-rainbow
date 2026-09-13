@@ -1,6 +1,6 @@
 use std::{path::Path, sync::Arc};
 
-use futures_util::{StreamExt, TryStreamExt};
+use futures_util::{TryStreamExt, future::try_join_all};
 use object_rainbow::zero_terminated::Zt;
 use object_rainbow_dirtree::DirEntry;
 use object_rainbow_point::{IntoPoint, Point};
@@ -24,10 +24,10 @@ impl Chunks {
             let chunks = Chunks::from_file(path).await?.point();
             Ok(DirEntry::File(chunks))
         } else if file_type.is_dir() {
-            let children = async_fs::read_dir(path)
-                .await?
-                .map_ok(|entry| {
-                    futures_util::stream::once(async move {
+            let children = try_join_all(
+                async_fs::read_dir(path)
+                    .await?
+                    .map_ok(|entry| async move {
                         let p = entry.path();
                         let segment = Zt::new(
                             p.strip_prefix(path)
@@ -40,13 +40,12 @@ impl Chunks {
                         let tree = Arc::new(Chunks::read_tree_inner(p).await?);
                         Ok::<_, object_rainbow::Error>((segment, tree))
                     })
-                    .boxed()
-                })
-                .try_flatten_unordered(None)
-                .try_collect::<Vec<_>>()
-                .await?
-                .into_iter()
-                .collect();
+                    .try_collect::<Vec<_>>()
+                    .await?,
+            )
+            .await?
+            .into_iter()
+            .collect();
             Ok(DirEntry::Directory {
                 children,
                 directory: (),
