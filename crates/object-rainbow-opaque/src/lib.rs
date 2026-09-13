@@ -23,7 +23,7 @@ impl<T: ?Sized + ListHashes> ListHashesDyn for T {
 }
 
 pub trait PointVisitorDyn {
-    fn visit(&mut self, point: Arc<dyn SingularFetch<T = Arc<dyn TraversibleDyn>>>);
+    fn visit_dyn(&mut self, point: Arc<dyn SingularFetch<T = Arc<dyn TraversibleDyn>>>);
 }
 
 pub trait TopologicalDyn: ListHashesDyn {
