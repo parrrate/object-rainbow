@@ -1,4 +1,6 @@
-use object_rainbow::{Hash, ListHashes, Output, ToOutput};
+use std::sync::Arc;
+
+use object_rainbow::{Hash, ListHashes, Output, SingularFetch, ToOutput};
 
 pub trait ToOutputDyn {
     fn to_output_dyn(&self, output: &mut dyn Output);
@@ -20,7 +22,9 @@ impl<T: ?Sized + ListHashes> ListHashesDyn for T {
     }
 }
 
-pub trait PointVisitorDyn {}
+pub trait PointVisitorDyn {
+    fn visit(&mut self, point: Arc<dyn SingularFetch<T = Arc<dyn TraversibleDyn>>>);
+}
 
 pub trait TopologicalDyn: ListHashesDyn {}
 
