@@ -2,6 +2,7 @@ use signature::{Signer, Verifier};
 
 use crate::{SigningKey, VerifyKey};
 
+#[derive(Debug)]
 pub struct Compat<T>(pub T);
 
 impl<V: Send + Sync + Eq + Verifier<S>, S, M: AsRef<[u8]>> VerifyKey<S, M> for V {
