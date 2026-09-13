@@ -18,13 +18,13 @@ impl<
     V: Send + Sync + Clone + Eq + Verifier<S>,
     S: Send + Sync,
     M: AsRef<[u8]>,
-> SigningKey<V, S, M> for K
+> SigningKey<V, S, M> for Compat<K>
 {
     fn sign(&self, message: &M) -> S {
-        self.sign(message.as_ref())
+        self.0.sign(message.as_ref())
     }
 
     fn to_verify_key(&self) -> V {
-        self.as_ref().clone()
+        self.0.as_ref().clone()
     }
 }
