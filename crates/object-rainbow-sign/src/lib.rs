@@ -2,7 +2,7 @@ use futures_concurrency::future::TryJoin;
 use object_rainbow::{Fetch, FetchBytes, FullHash, Hash, Singular, SingularFetch, pod};
 
 #[cfg(feature = "signature")]
-mod signature;
+pub mod signature;
 
 pub trait SigningKey<V: VerifyKey<S, M>, S, M = Hash> {
     fn sign(&self, message: &M) -> S;
