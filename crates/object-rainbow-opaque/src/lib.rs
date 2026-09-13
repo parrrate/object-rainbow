@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use object_rainbow::{Hash, ListHashes, Output, SingularFetch, ToOutput};
+use object_rainbow::{Hash, ListHashes, Output, SingularFetch, Tagged, ToOutput};
 
 pub trait ToOutputDyn {
     fn to_output_dyn(&self, output: &mut dyn Output);
@@ -39,6 +39,8 @@ impl ToOutput for dyn TraversibleDyn {
         self.to_output_dyn(&mut &mut *output);
     }
 }
+
+impl Tagged for dyn TraversibleDyn {}
 
 impl ListHashes for dyn TraversibleDyn {
     fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
