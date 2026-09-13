@@ -24,4 +24,4 @@ pub trait PointVisitorDyn {}
 
 pub trait TopologicalDyn {}
 
-pub trait TraversibleDyn: ToOutputDyn {}
+pub trait TraversibleDyn: ToOutputDyn + TopologicalDyn {}
