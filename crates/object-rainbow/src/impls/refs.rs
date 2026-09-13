@@ -46,3 +46,9 @@ impl<T: ?Sized + Size> Size for &T {
 impl<T: ?Sized + MaybeHasNiche> MaybeHasNiche for &T {
     type MnArray = T::MnArray;
 }
+
+impl<T: ?Sized + Output> Output for &mut T {
+    fn write(&mut self, data: &[u8]) {
+        (**self).write(data);
+    }
+}
