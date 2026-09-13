@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 
-use futures_util::Stream;
+use futures_concurrency::future::TryJoin;
+use futures_core::Stream;
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{
     Inline, InlineOutput, ListHashes, MaybeHasNiche, Object, Parse, ParseInline, Size, Tagged,
@@ -242,7 +243,7 @@ impl<T: Clone + Traversible> ChainTree<T> {
         let Some(early) = &other.0 else {
             return Ok(true);
         };
-        let (late, node) = futures_util::try_join!(late.fetch(), early.fetch())?;
+        let (late, node) = (late.fetch(), early.fetch()).try_join().await?;
         let follows = late
             .tree
             .get(node.tree.len())

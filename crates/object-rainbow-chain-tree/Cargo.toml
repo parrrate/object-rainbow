@@ -13,7 +13,8 @@ object-rainbow.workspace = true
 object-rainbow-append-tree.workspace = true
 object-rainbow-point.workspace = true
 
-futures-util = { workspace = true, features = ["async-await-macro"] }
+futures-core.workspace = true
+futures-concurrency.workspace = true
 genawaiter-try-stream.workspace = true
 
 [dev-dependencies]
