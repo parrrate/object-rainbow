@@ -21,6 +21,7 @@ use std::{
     sync::Arc,
 };
 
+use futures_concurrency::future::TryJoin;
 use object_rainbow::{
     Address, ByteNode, Error, ExtraFor, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node,
     Parse, ParseInline, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular,
@@ -548,7 +549,7 @@ pub async fn encrypt<K: Key, T: Traversible>(
         extracted: &mut futures,
         key: &key,
     });
-    let topology = futures_util::future::try_join_all(futures).await?;
+    let topology = futures.try_join().await?;
     let topology = Arc::new(LpVec(topology));
     Ok(Encrypted::from_topology(key, topology, decrypted))
 }

@@ -13,7 +13,7 @@ object-rainbow.workspace = true
 object-rainbow-point.workspace = true
 
 anyhow.workspace = true
-futures-util = { workspace = true, features = ["std"] }
+futures-concurrency.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]

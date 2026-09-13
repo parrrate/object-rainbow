@@ -1835,7 +1835,7 @@ version = "0.0.0-a.23"
 dependencies = [
  "anyhow",
  "chacha20poly1305",
- "futures-util",
+ "futures-concurrency",
  "hex",
  "object-rainbow",
  "object-rainbow-fetchall",
