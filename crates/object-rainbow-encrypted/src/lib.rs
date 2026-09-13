@@ -338,7 +338,7 @@ impl<K: Send + Sync, D: Send + Sync> Singular for InnerFetch<K, D> {
     }
 }
 
-struct IterateResolution<'a, 'r, K, V> {
+struct IterateResolution<'a, 'r, K, V: ?Sized> {
     key: &'a K,
     topology: &'r mut std::slice::Iter<'a, Arc<dyn Singular>>,
     visitor: &'a mut V,
