@@ -85,6 +85,12 @@ impl Hash {
     }
 }
 
+impl From<sha2::Sha256> for Hash {
+    fn from(hasher: sha2::Sha256) -> Self {
+        Self::from_hasher(hasher)
+    }
+}
+
 impl From<Hash> for [u8; HASH_SIZE] {
     fn from(hash: Hash) -> Self {
         hash.into_bytes()
