@@ -812,15 +812,19 @@ pub trait OptionParseInline<I: ParseInput>: OptionParse<I> + ParseInline<I> {
 
 pub struct Hashes<T>(pub T);
 
+impl<T: ListHashes> ToOutput for Hashes<T> {
+    fn to_output(&self, output: &mut impl Output) {
+        self.0.list_hashes(&mut |hash| hash.to_output(output));
+    }
+}
+
 pub trait ListHashes {
     fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
         let _ = f;
     }
 
     fn topology_hash(&self) -> Hash {
-        let mut hasher = Sha256::new();
-        self.list_hashes(&mut |hash| hasher.update(hash));
-        hasher.into()
+        Hashes(self).data_hash()
     }
 
     fn point_count(&self) -> usize {
