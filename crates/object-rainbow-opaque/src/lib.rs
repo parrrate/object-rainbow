@@ -111,4 +111,4 @@ impl<T: Traversible> TopologicalDyn for T {
     }
 }
 
-pub struct Opaque(pub Arc<dyn TopologicalDyn>);
+pub struct Opaque(pub Arc<dyn TraversibleDyn>);
