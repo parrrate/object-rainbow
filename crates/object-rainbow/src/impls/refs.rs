@@ -52,3 +52,9 @@ impl<T: ?Sized + Output> Output for &mut T {
         (**self).write(data);
     }
 }
+
+impl<T: ?Sized + PointVisitor> PointVisitor for &mut T {
+    fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone)) {
+        (**self).visit(point);
+    }
+}
