@@ -21,6 +21,7 @@ members = [
     "crates/object-rainbow-lamport-signature",
     "crates/object-rainbow-local-map",
     "crates/object-rainbow-marshall",
+    "crates/object-rainbow-opaque",
     "crates/object-rainbow-parse-prefix",
     "crates/object-rainbow-point",
     "crates/object-rainbow-schema",
