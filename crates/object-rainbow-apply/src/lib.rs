@@ -4,7 +4,7 @@
 
 use core::future::ready;
 
-use futures_util::future::try_join;
+use futures_concurrency::future::TryJoin;
 use object_rainbow::{
     derive_for_wrapped,
     map_extra::{SmExtra, StaticMap},
@@ -54,7 +54,7 @@ impl<A: Apply<DiffA>, B: Apply<DiffB>, DiffA: Send, DiffB: Send> Apply<(DiffA, D
         &mut self,
         (a, b): (DiffA, DiffB),
     ) -> impl Send + Future<Output = object_rainbow::Result<Self::Output>> {
-        try_join(self.0.apply(a), self.1.apply(b))
+        (self.0.apply(a), self.1.apply(b)).try_join()
     }
 }
 

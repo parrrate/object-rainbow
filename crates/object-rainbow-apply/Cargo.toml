@@ -15,7 +15,7 @@ object-rainbow-hamt = { workspace = true, optional = true }
 object-rainbow-point = { workspace = true, optional = true }
 object-rainbow-trie = { workspace = true, optional = true }
 
-futures-util.workspace = true
+futures-concurrency.workspace = true
 thiserror.workspace = true
 
 [features]
