@@ -151,7 +151,7 @@ impl<T> WithPrefix<T> {
     }
 }
 
-struct PrefixOutput<'a, O> {
+struct PrefixOutput<'a, O: ?Sized> {
     len: usize,
     output: &'a mut O,
 }
