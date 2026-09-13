@@ -1326,10 +1326,15 @@ pub trait Output {
     fn is_real(&self) -> bool {
         !self.is_mangling()
     }
+}
+
+pub trait OutputExt: Output {
     fn as_write(&mut self) -> AsWrite<'_, Self> {
         AsWrite { output: self }
     }
 }
+
+impl<T: ?Sized + Output> OutputExt for T {}
 
 pub struct AsWrite<'a, O: ?Sized> {
     output: &'a mut O,
