@@ -75,10 +75,6 @@ impl Hash {
         Self(hash)
     }
 
-    pub fn from_hasher(hasher: sha2::Sha256) -> Self {
-        Self::from_sha256(hasher.finalize().into())
-    }
-
     /// Convert into raw bytes.
     pub fn into_bytes(self) -> [u8; HASH_SIZE] {
         self.0
@@ -87,7 +83,7 @@ impl Hash {
 
 impl From<sha2::Sha256> for Hash {
     fn from(hasher: sha2::Sha256) -> Self {
-        Self::from_hasher(hasher)
+        Self::from_sha256(hasher.finalize().into())
     }
 }
 
