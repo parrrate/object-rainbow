@@ -1698,7 +1698,6 @@ dependencies = [
  "bytes",
  "cid",
  "futures-channel",
- "futures-util",
  "generic-array 1.4.5",
  "ghost",
  "hex",

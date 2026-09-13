@@ -5,7 +5,8 @@ use std::{
 };
 
 use futures_channel::oneshot;
-use futures_util::{FutureExt, future::BoxFuture};
+
+use crate::FailFuture;
 
 struct NestedGuard<'a, T> {
     original: &'a mut T,
@@ -74,7 +75,7 @@ impl<T: Clone> LendTo for T {}
 
 pub struct NestedMut<'a, T> {
     lent: Option<Lent<T>>,
-    _guard: oneshot::Receiver<BoxFuture<'a, object_rainbow::Result<()>>>,
+    _guard: oneshot::Receiver<FailFuture<'a, ()>>,
 }
 
 impl<T> Deref for NestedMut<'_, T> {
@@ -99,7 +100,7 @@ impl<T> Drop for NestedMut<'_, T> {
 
 struct WaitingLease<'a, T> {
     borrowing: oneshot::Receiver<Lent<T>>,
-    future: Option<BoxFuture<'a, object_rainbow::Result<()>>>,
+    future: Option<FailFuture<'a, ()>>,
 }
 
 impl<'a, T> Future for WaitingLease<'a, T> {
@@ -111,12 +112,13 @@ impl<'a, T> Future for WaitingLease<'a, T> {
             .future
             .as_mut()
             .expect("invalid state")
-            .poll_unpin(cx)?
+            .as_mut()
+            .poll(cx)?
             .is_ready()
         {
             Poll::Ready(Ok(None))
         } else {
-            let Ok(lent) = ready!(this.borrowing.poll_unpin(cx)) else {
+            let Ok(lent) = ready!(Pin::new(&mut this.borrowing).poll(cx)) else {
                 return Poll::Ready(Ok(None));
             };
             Poll::Ready(Ok(Some(NestedMut::new(
@@ -128,7 +130,7 @@ impl<'a, T> Future for WaitingLease<'a, T> {
 }
 
 impl<'a, T> NestedMut<'a, T> {
-    fn new(lent: Lent<T>, future: BoxFuture<'a, object_rainbow::Result<()>>) -> Self {
+    fn new(lent: Lent<T>, future: FailFuture<'a, ()>) -> Self {
         let (send, recv) = oneshot::channel();
         send.send(future).ok();
         Self {
@@ -141,7 +143,7 @@ impl<'a, T> NestedMut<'a, T> {
         f: impl FnOnce(Borrower<T>) -> F,
     ) -> object_rainbow::Result<Option<Self>> {
         let (lending, borrowing) = oneshot::channel();
-        let future = f(Borrower(lending)).boxed();
+        let future = Box::pin(f(Borrower(lending)));
         WaitingLease {
             borrowing,
             future: Some(future),
