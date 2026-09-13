@@ -307,7 +307,7 @@ impl<T: ToOutput> FetchBytes for Marshalled<T> {
     }
 
     fn fetch_data_local(&self) -> Option<Vec<u8>> {
-        Some(self.object.output())
+        Some(self.object.vec())
     }
 }
 
