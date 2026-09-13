@@ -156,7 +156,7 @@ struct PrefixOutput<'a, O: ?Sized> {
     output: &'a mut O,
 }
 
-impl<O: Output> Output for PrefixOutput<'_, O> {
+impl<O: ?Sized + Output> Output for PrefixOutput<'_, O> {
     fn write(&mut self, data: &[u8]) {
         if self.output.is_real() {
             let n = self.len.min(data.len());
