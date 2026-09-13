@@ -835,7 +835,7 @@ pub trait ListHashes {
 }
 
 pub trait Topological: ListHashes {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         let _ = visitor;
     }
 
@@ -1517,7 +1517,7 @@ pub trait RainbowIterator: Sized + IntoIterator {
         self.into_iter().for_each(|item| item.list_hashes(f));
     }
 
-    fn iter_traverse(self, visitor: &mut impl PointVisitor)
+    fn iter_traverse(self, visitor: &mut (impl ?Sized + PointVisitor))
     where
         Self::Item: Topological,
     {

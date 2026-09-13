@@ -73,7 +73,7 @@ pub struct Addressed<T, Extra> {
 impl<T: Traversible, Extra: 'static + Send + Sync + Clone + ExtraFor<T>> Topological
     for Addressed<T, Extra>
 {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         visitor.visit(self);
     }
 }

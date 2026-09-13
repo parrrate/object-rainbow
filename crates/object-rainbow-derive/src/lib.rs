@@ -859,7 +859,7 @@ pub fn derive_topological(input: TokenStream) -> TokenStream {
             impl #impl_generics ::object_rainbow::Topological for #target #ty_generics
             #where_clause
             {
-                fn traverse(&self, visitor: &mut impl ::object_rainbow::PointVisitor) {
+                fn traverse(&self, visitor: &mut (impl ?::core::marker::Sized + ::object_rainbow::PointVisitor)) {
                     #traverse
                 }
             }

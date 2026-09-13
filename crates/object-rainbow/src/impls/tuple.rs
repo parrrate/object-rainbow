@@ -21,7 +21,7 @@ impl<A: ListHashes, B: ListHashes> ListHashes for (A, B) {
 }
 
 impl<A: Topological, B: Topological> Topological for (A, B) {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         self.0.traverse(visitor);
         self.1.traverse(visitor);
     }
@@ -85,7 +85,7 @@ impl<A: ListHashes, B: ListHashes, C: ListHashes> ListHashes for (A, B, C) {
 }
 
 impl<A: Topological, B: Topological, C: Topological> Topological for (A, B, C) {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         self.0.traverse(visitor);
         self.1.traverse(visitor);
         self.2.traverse(visitor);
@@ -162,7 +162,7 @@ impl<A: ListHashes, B: ListHashes, C: ListHashes, D: ListHashes> ListHashes for 
 }
 
 impl<A: Topological, B: Topological, C: Topological, D: Topological> Topological for (A, B, C, D) {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         self.0.traverse(visitor);
         self.1.traverse(visitor);
         self.2.traverse(visitor);
@@ -261,7 +261,7 @@ impl<A: ListHashes, B: ListHashes, C: ListHashes, D: ListHashes, E: ListHashes> 
 impl<A: Topological, B: Topological, C: Topological, D: Topological, E: Topological> Topological
     for (A, B, C, D, E)
 {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         self.0.traverse(visitor);
         self.1.traverse(visitor);
         self.2.traverse(visitor);
@@ -398,7 +398,7 @@ impl<A: ListHashes, B: ListHashes, C: ListHashes, D: ListHashes, E: ListHashes, 
 impl<A: Topological, B: Topological, C: Topological, D: Topological, E: Topological, F: Topological>
     Topological for (A, B, C, D, E, F)
 {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         self.0.traverse(visitor);
         self.1.traverse(visitor);
         self.2.traverse(visitor);
@@ -580,7 +580,7 @@ impl<
     G: Topological,
 > Topological for (A, B, C, D, E, F, G)
 {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         self.0.traverse(visitor);
         self.1.traverse(visitor);
         self.2.traverse(visitor);
@@ -806,7 +806,7 @@ impl<
     H: Topological,
 > Topological for (A, B, C, D, E, F, G, H)
 {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         self.0.traverse(visitor);
         self.1.traverse(visitor);
         self.2.traverse(visitor);
@@ -1053,7 +1053,7 @@ impl<
     I: Topological,
 > Topological for (A, B, C, D, E, F, G, H, I)
 {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         self.0.traverse(visitor);
         self.1.traverse(visitor);
         self.2.traverse(visitor);
@@ -1328,7 +1328,7 @@ impl<
     J: Topological,
 > Topological for (A, B, C, D, E, F, G, H, I, J)
 {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         self.0.traverse(visitor);
         self.1.traverse(visitor);
         self.2.traverse(visitor);
@@ -1631,7 +1631,7 @@ impl<
     K: Topological,
 > Topological for (A, B, C, D, E, F, G, H, I, J, K)
 {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         self.0.traverse(visitor);
         self.1.traverse(visitor);
         self.2.traverse(visitor);
@@ -1966,7 +1966,7 @@ impl<
     L: Topological,
 > Topological for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         self.0.traverse(visitor);
         self.1.traverse(visitor);
         self.2.traverse(visitor);

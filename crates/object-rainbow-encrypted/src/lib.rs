@@ -372,7 +372,7 @@ impl<K, T> ListHashes for Inner<K, T> {
 }
 
 impl<K: Key, T: Topological> Topological for Inner<K, T> {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         let topology = &mut self.topology.iter();
         self.decrypted.traverse(&mut IterateResolution {
             key: &self.key.0,
@@ -428,7 +428,7 @@ impl<K, T> ListHashes for Encrypted<K, T> {
 }
 
 impl<K: Key, T: Topological> Topological for Encrypted<K, T> {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         self.inner.traverse(visitor);
     }
 }

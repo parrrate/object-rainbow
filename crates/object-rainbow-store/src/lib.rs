@@ -340,7 +340,7 @@ impl<S: ListHashes, T> ListHashes for Stored<S, T> {
 }
 
 impl<S: Topological, T> Topological for Stored<S, T> {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         self.store.traverse(visitor);
     }
 }

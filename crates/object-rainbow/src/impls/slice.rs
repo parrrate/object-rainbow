@@ -13,7 +13,7 @@ impl<T: ListHashes> ListHashes for [T] {
 }
 
 impl<T: Topological> Topological for [T] {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         self.iter_traverse(visitor);
     }
 }

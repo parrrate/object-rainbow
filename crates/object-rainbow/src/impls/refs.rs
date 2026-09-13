@@ -28,7 +28,7 @@ impl<T: ?Sized + Tagged> Tagged for &T {
 }
 
 impl<T: ?Sized + Topological> Topological for &T {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         (**self).traverse(visitor);
     }
 }

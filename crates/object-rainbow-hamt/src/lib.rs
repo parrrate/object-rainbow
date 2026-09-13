@@ -671,7 +671,7 @@ mod private {
             }
 
             impl<V: Traversible + InlineOutput> Topological for $next<V> {
-                fn traverse(&self, visitor: &mut impl PointVisitor) {
+                fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
                     self.0.traverse(visitor)
                 }
             }

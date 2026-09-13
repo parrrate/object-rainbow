@@ -146,7 +146,7 @@ impl<T, Extra: Clone> Clone for RawPoint<T, Extra> {
 impl<T: 'static + Traversible, Extra: 'static + Send + Sync + Clone + ExtraFor<T>> Topological
     for RawPoint<T, Extra>
 {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         visitor.visit(self);
     }
 }
@@ -409,7 +409,7 @@ impl<T> ListHashes for Point<T> {
 }
 
 impl<T: Traversible> Topological for Point<T> {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         visitor.visit(self);
     }
 }

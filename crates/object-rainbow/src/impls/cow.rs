@@ -39,7 +39,7 @@ impl<'a, B: 'a + ToOwned + ListHashes + ?Sized> ListHashes for Cow<'a, B> {
 }
 
 impl<'a, B: 'a + ToOwned + Topological + ?Sized> Topological for Cow<'a, B> {
-    fn traverse(&self, visitor: &mut impl PointVisitor) {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         (**self).traverse(visitor);
     }
 

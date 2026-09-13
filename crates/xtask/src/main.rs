@@ -324,7 +324,7 @@ fn per_n(n: usize) -> String {
             header: "Topological".bound().last("Topological").header(n),
             members: vec![Box::new(
                 "traverse"
-                    .method("visitor", "&mut impl PointVisitor")
+                    .method("visitor", "&mut (impl ?Sized + PointVisitor)")
                     .out(n),
             )],
         },
