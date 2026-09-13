@@ -4,6 +4,7 @@ use std::{
     sync::Arc,
 };
 
+use futures_concurrency::future::TryJoin;
 use object_rainbow::{
     Address, ExtraFor, FullHash, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object,
     OptionalHash, Parse, ParseInline, ParseSlice, ParseSliceExtra, PointInput, PointVisitor,
@@ -91,7 +92,7 @@ pub trait RainbowStore: 'static + Send + Sync + Clone + PartialEq {
             futures: &mut futures,
         });
         async {
-            futures_util::future::try_join_all(futures).await?;
+            futures.try_join().await?;
             Ok(())
         }
     }

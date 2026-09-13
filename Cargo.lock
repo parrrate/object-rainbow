@@ -2023,7 +2023,7 @@ name = "object-rainbow-store"
 version = "0.0.0-a.13"
 dependencies = [
  "dashmap",
- "futures-util",
+ "futures-concurrency",
  "object-rainbow",
  "object-rainbow-point",
  "smol",

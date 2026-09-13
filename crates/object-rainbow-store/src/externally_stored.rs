@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use futures_concurrency::future::TryJoin;
 use object_rainbow::{
     Address, Error, Hash, InlineOutput, Parse, ParseInline, ParseInput, ParseSlice,
     ParseSliceExtra, ParseSliceRefless, PointInput, PointVisitor, Resolve, SingularFetch, Tagged,
@@ -145,7 +146,7 @@ pub(crate) async fn store_object<S: ExternalStore, T: Traversible>(
         extracted: &mut futures,
         store,
     });
-    let topology = futures_util::future::try_join_all(futures).await?;
+    let topology = futures.try_join().await?;
     let topology = Arc::new(LpVec(topology));
     let header = Header {
         tags: T::HASH,

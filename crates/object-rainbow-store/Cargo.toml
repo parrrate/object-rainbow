@@ -12,7 +12,7 @@ description = "storage abstraction for object-rainbow"
 object-rainbow.workspace = true
 object-rainbow-point.workspace = true
 
-futures-util = { workspace = true, features = ["std"] }
+futures-concurrency.workspace = true
 
 [dev-dependencies]
 dashmap.workspace = true
