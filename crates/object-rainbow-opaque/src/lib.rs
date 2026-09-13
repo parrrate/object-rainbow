@@ -28,4 +28,4 @@ pub trait PointVisitorDyn {
 
 pub trait TopologicalDyn: ListHashesDyn {}
 
-pub trait TraversibleDyn: ToOutputDyn + TopologicalDyn {}
+pub trait TraversibleDyn: Send + ToOutputDyn + TopologicalDyn {}
