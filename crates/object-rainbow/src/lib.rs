@@ -1051,7 +1051,7 @@ pub struct WithHash<'a, T: ?Sized> {
 pub trait FullHash: ToOutput + ListHashes + Tagged {
     fn diff_hashes(&self) -> DiffHashes {
         DiffHashes {
-            tags: Self::HASH,
+            tags: self.tags_hash(),
             topology: self.topology_hash(),
             mangle: self.mangle_hash(),
         }
