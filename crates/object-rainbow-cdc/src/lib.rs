@@ -14,7 +14,7 @@ use object_rainbow::{
     pod,
 };
 use object_rainbow_point::{IntoPoint, Point};
-use sha2::{Digest, Sha256};
+use sha2::Digest;
 use static_assertions::const_assert_eq;
 
 use self::fastcdc::ChunkStream;
@@ -197,7 +197,7 @@ impl Chunk {
 
 pub fn generate_tail(data: &[u8]) -> object_rainbow::Result<(u16, Vec<u8>, Hash)> {
     let len_lower = (data.len() % 65536) as u16;
-    let hasher: Sha256 = data.with_hash().output();
+    let hasher = data.with_hash().hasher();
     let target = data.len() >> 16;
     let target: u32 = target
         .try_into()

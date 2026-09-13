@@ -763,9 +763,13 @@ impl Output for Sha256 {
 pub trait ToOutput {
     fn to_output(&self, output: &mut impl Output);
 
+    fn hasher(&self) -> Sha256 {
+        self.output()
+    }
+
     #[must_use]
     fn data_hash(&self) -> Hash {
-        Hash::from_hasher(self.output())
+        self.hasher().into()
     }
 
     fn mangle_hash(&self) -> Hash {
