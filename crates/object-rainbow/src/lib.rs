@@ -1369,7 +1369,7 @@ impl Output for Vec<u8> {
 
 struct MangleOutput<'a, T: ?Sized>(&'a mut T);
 
-impl<'a, T: Output> MangleOutput<'a, T> {
+impl<'a, T: ?Sized + Output> MangleOutput<'a, T> {
     fn new(output: &'a mut T) -> Self {
         assert!(output.is_real());
         assert!(!output.is_mangling());
