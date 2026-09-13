@@ -11,7 +11,7 @@ description = "default pointer type for object-rainbow"
 [dependencies]
 object-rainbow.workspace = true
 
-futures-util.workspace = true
+futures-concurrency.workspace = true
 serde = { workspace = true, optional = true }
 
 [features]

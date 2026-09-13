@@ -9,7 +9,7 @@ use std::{
     sync::Arc,
 };
 
-use futures_util::TryFutureExt;
+use futures_concurrency::future::TryJoin;
 pub use object_rainbow::extras::Extras;
 use object_rainbow::{
     Address, ByteNode, ByteOrd, CanonicalExtra, DefaultHash, Equivalent, ExtraFor, FailFuture,
@@ -64,8 +64,7 @@ impl<T, D: Send + Sync> Singular for FetchExtra<T, D> {
 
 impl<T: FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> FetchExtra<T, D> {
     async fn fetch_object(&self) -> object_rainbow::Result<Node<T>> {
-        let ((data, resolve), extra) =
-            futures_util::future::try_join(self.fetch_bytes(), self.fetch.fetch()).await?;
+        let ((data, resolve), extra) = (self.fetch_bytes(), self.fetch.fetch()).try_join().await?;
         let object = extra.parse_checked(self.inner.hash(), &data, &resolve)?;
         Ok((object, resolve))
     }
@@ -666,7 +665,7 @@ impl<T, F: Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
     type T = F::U;
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        Box::pin(self.fetch.fetch().map_ok(&self.map))
+        Box::pin(async move { self.fetch.fetch().await.map(&self.map) })
     }
 
     fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
