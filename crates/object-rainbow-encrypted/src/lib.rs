@@ -344,7 +344,7 @@ struct IterateResolution<'a, 'r, K, V: ?Sized> {
     visitor: &'a mut V,
 }
 
-impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, '_, K, V> {
+impl<'a, K: Key, V: ?Sized + PointVisitor> PointVisitor for IterateResolution<'a, '_, K, V> {
     fn visit(&mut self, decrypted: &(impl 'static + SingularFetch<T: Traversible> + Clone)) {
         let decrypted = decrypted.clone();
         let encrypted = self.topology.next().expect("length mismatch").clone();
