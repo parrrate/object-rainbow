@@ -5,11 +5,11 @@ use crate::{SigningKey, VerifyKey};
 #[derive(Debug, PartialEq, Eq)]
 pub struct Compat<T>(pub T);
 
-impl<V: Send + Sync + Eq + Verifier<S>, S, M: AsRef<[u8]>> VerifyKey<S, M> for V {
+impl<V: Send + Sync + Eq + Verifier<S>, S, M: AsRef<[u8]>> VerifyKey<S, M> for Compat<V> {
     type Error = signature::Error;
 
     fn verify(&self, signature: &S, message: &M) -> Result<(), Self::Error> {
-        self.verify(message.as_ref(), signature)
+        self.0.verify(message.as_ref(), signature)
     }
 }
 
@@ -18,13 +18,13 @@ impl<
     V: Send + Sync + Clone + Eq + Verifier<S>,
     S: Send + Sync,
     M: AsRef<[u8]>,
-> SigningKey<V, S, M> for Compat<K>
+> SigningKey<Compat<V>, S, M> for Compat<K>
 {
     fn sign(&self, message: &M) -> S {
         self.0.sign(message.as_ref())
     }
 
-    fn to_verify_key(&self) -> V {
-        self.0.as_ref().clone()
+    fn to_verify_key(&self) -> Compat<V> {
+        Compat(self.0.as_ref().clone())
     }
 }
