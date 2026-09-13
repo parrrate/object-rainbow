@@ -26,7 +26,9 @@ pub trait PointVisitorDyn {
     fn visit(&mut self, point: Arc<dyn SingularFetch<T = Arc<dyn TraversibleDyn>>>);
 }
 
-pub trait TopologicalDyn: ListHashesDyn {}
+pub trait TopologicalDyn: ListHashesDyn {
+    fn traverse_dyn(&self, visitor: &mut dyn PointVisitorDyn);
+}
 
 pub trait TraversibleDyn: Send + Sync + ToOutputDyn + TopologicalDyn {}
 
