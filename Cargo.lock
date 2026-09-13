@@ -2001,7 +2001,7 @@ dependencies = [
 name = "object-rainbow-schema"
 version = "0.0.0-a.4"
 dependencies = [
- "futures-util",
+ "futures-concurrency",
  "object-rainbow",
  "object-rainbow-amt",
  "object-rainbow-apply",

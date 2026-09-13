@@ -2,7 +2,7 @@
 use std::convert::Infallible;
 use std::{collections::BTreeSet, sync::Arc};
 
-use futures_util::future::try_join;
+use futures_concurrency::future::TryJoin;
 #[cfg(feature = "point")]
 use object_rainbow::Fetch;
 use object_rainbow::{
@@ -87,11 +87,12 @@ impl InlineMap {
             #[cfg(not(feature = "point"))]
             Self::Point(i) => match *i {},
             Self::S2(a, b) => {
-                let (a, b) = try_join(
+                let (a, b) = (
                     Box::pin(a.apply_then_map(value.clone())),
                     Box::pin(b.apply(value)),
                 )
-                .await?;
+                    .try_join()
+                    .await?;
                 Box::pin(a.apply(b)).await
             }
             _ => self.map(value),
