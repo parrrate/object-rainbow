@@ -810,6 +810,8 @@ pub trait OptionParseInline<I: ParseInput>: OptionParse<I> + ParseInline<I> {
     fn parse_option_inline(input: &mut I) -> crate::Result<Option<Self>>;
 }
 
+pub struct Hashes<T>(pub T);
+
 pub trait ListHashes {
     fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
         let _ = f;
