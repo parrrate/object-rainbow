@@ -14,13 +14,17 @@ object-rainbow-point = { workspace = true, features = [
     "point-serialize",
 ], optional = true }
 
-futures-util = { workspace = true, features = ["std"], optional = true }
+futures-concurrency = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 thiserror = { workspace = true, optional = true }
 
 [features]
-distributed = ["dep:object-rainbow-point", "dep:futures-util", "dep:thiserror"]
+distributed = [
+    "dep:object-rainbow-point",
+    "dep:futures-concurrency",
+    "dep:thiserror",
+]
 
 [package.metadata.docs.rs]
 all-features = true

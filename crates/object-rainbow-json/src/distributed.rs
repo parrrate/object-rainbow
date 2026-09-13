@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, num::NonZero};
 
-use futures_util::future::try_join_all;
+use futures_concurrency::future::TryJoin;
 use object_rainbow::{
     Enum, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseInline, Tagged, ToOutput,
     Topological, length_prefixed::LpString, numeric::Le,
@@ -49,26 +49,26 @@ impl Distributed {
             Distributed::U64(x) => x.0.into(),
             Distributed::F64(x) => x.0.into(),
             Distributed::String(ref point) => point.fetch().await?.into(),
-            Distributed::Array(ref point) => try_join_all(
-                point
-                    .fetch()
-                    .await?
-                    .into_iter()
-                    .map(async |x| x.to_value().await),
-            )
-            .await?
-            .into(),
-            Distributed::Object(ref point) => {
-                try_join_all(
-                    point.fetch().await?.into_iter().map(async |(k, x)| {
-                        Ok::<_, object_rainbow::Error>((k.0, x.to_value().await?))
-                    }),
-                )
+            Distributed::Array(ref point) => point
+                .fetch()
+                .await?
+                .into_iter()
+                .map(async |x| x.to_value().await)
+                .collect::<Vec<_>>()
+                .try_join()
+                .await?
+                .into(),
+            Distributed::Object(ref point) => point
+                .fetch()
+                .await?
+                .into_iter()
+                .map(async |(k, x)| Ok::<_, object_rainbow::Error>((k.0, x.to_value().await?)))
+                .collect::<Vec<_>>()
+                .try_join()
                 .await?
                 .into_iter()
                 .collect::<serde_json::Map<_, _>>()
-                .into()
-            }
+                .into(),
         })
     }
 }
