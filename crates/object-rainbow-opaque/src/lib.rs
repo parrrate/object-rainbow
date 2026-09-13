@@ -19,3 +19,5 @@ impl<T: ?Sized + ListHashes> ListHashesDyn for T {
         self.list_hashes(f);
     }
 }
+
+pub trait PointVisitorDyn {}
