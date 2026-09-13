@@ -16,7 +16,7 @@ impl<A: ByteOrd + Size, B: ByteOrd> ByteOrd for TupleOfArrays<A, B> {
 }
 
 impl<A: ToOutput, B: ToOutput> ToOutput for TupleOfArrays<A, B> {
-    fn to_output(&self, output: &mut impl crate::Output) {
+    fn to_output(&self, output: &mut impl Output) {
         self.0.to_output(output);
         self.1.to_output(output);
     }
