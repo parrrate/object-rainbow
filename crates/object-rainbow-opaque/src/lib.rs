@@ -35,3 +35,19 @@ impl ToOutput for dyn TraversibleDyn {
         self.to_output_dyn(&mut &mut *output);
     }
 }
+
+impl ListHashes for dyn TraversibleDyn {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
+        self.list_hashes_dyn(&mut &mut *f);
+    }
+
+    fn topology_hash(&self) -> Hash {
+        object_rainbow::Hashes(self).data_hash()
+    }
+
+    fn point_count(&self) -> usize {
+        let mut count = 0;
+        self.list_hashes(&mut |_| count += 1);
+        count
+    }
+}
