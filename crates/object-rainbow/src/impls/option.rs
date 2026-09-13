@@ -10,7 +10,7 @@ pub trait TaggedOption {
     type Niche;
     const TAGGED_OPTION: bool = true;
     fn none_data() -> impl AsRef<[u8]>;
-    fn none_output(output: &mut impl Output) {
+    fn none_output(output: &mut (impl ?Sized + Output)) {
         if output.is_real() {
             output.write(Self::none_data().as_ref());
         }
@@ -29,7 +29,7 @@ impl<T: MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag = B>,
 }
 
 impl<T: ToOutput + TaggedOption> OptionOutput for T {
-    fn to_option_output(option: Option<&Self>, output: &mut impl Output) {
+    fn to_option_output(option: Option<&Self>, output: &mut (impl ?Sized + Output)) {
         match option {
             Some(value) => {
                 if T::TAGGED_OPTION {
@@ -52,7 +52,7 @@ impl<T> ToOutput for Option<T>
 where
     T: OptionOutput,
 {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         T::to_option_output(self.as_ref(), output);
     }
 }

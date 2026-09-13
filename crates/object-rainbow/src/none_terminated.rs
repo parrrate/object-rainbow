@@ -93,7 +93,7 @@ where
     for<'a> &'a T: IntoIterator,
     for<'a> Option<<&'a T as IntoIterator>::Item>: InlineOutput,
 {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         for item in self {
             Some(item).to_output(output);
         }
@@ -186,7 +186,7 @@ impl<T> DerefMut for NtString<T> {
 }
 
 impl<T: AsRef<str>> ToOutput for NtString<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.as_ref().to_output(output);
         None::<char>.to_output(output);
     }

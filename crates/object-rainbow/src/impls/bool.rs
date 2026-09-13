@@ -3,7 +3,7 @@ use typenum::{U1, U2};
 use crate::{enumkind::UsizeTag, incr_byte_niche::IncrByteNiche, *};
 
 impl ToOutput for bool {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         if output.is_real() {
             output.write(&[*self as _])
         }

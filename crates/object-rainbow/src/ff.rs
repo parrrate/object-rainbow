@@ -7,7 +7,7 @@ use crate::{decr_byte_niche::DecrByteNiche, *};
 pub struct Ff;
 
 impl ToOutput for Ff {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         0xffu8.to_output(output);
     }
 }

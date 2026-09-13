@@ -92,7 +92,7 @@ impl<T> ToOutput for Sequence<T>
 where
     for<'a> &'a T: IntoIterator<Item: InlineOutput>,
 {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.iter_to_output(output);
     }
 }

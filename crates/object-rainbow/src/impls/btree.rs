@@ -6,7 +6,7 @@ use crate::{
 };
 
 impl<T: InlineOutput> ToOutput for BTreeSet<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.iter_to_output(output);
     }
 }
@@ -43,7 +43,7 @@ impl<T> PlainCollection for BTreeSet<T> {}
 impl<T> VecLike for BTreeSet<T> {}
 
 impl<K: InlineOutput, V: InlineOutput> ToOutput for BTreeMap<K, V> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.iter_to_output(output);
     }
 }

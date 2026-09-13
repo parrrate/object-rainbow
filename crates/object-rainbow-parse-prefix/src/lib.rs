@@ -178,7 +178,7 @@ impl<O: ?Sized + Output> Output for PrefixOutput<'_, O> {
 }
 
 impl<T: ToOutput> ToOutput for WithPrefix<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.value.to_output(&mut PrefixOutput {
             len: self.prefix.len(),
             output,

@@ -15,7 +15,7 @@ impl<T> Deref for Hashed<T> {
 }
 
 impl<T: ToOutput> ToOutput for Hashed<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         if output.is_mangling() {
             self.0.to_output(output);
         }

@@ -12,7 +12,7 @@ impl From<cid::Error> for crate::Error {
 }
 
 impl<const S: usize> ToOutput for CidGeneric<S> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.write_bytes(output.as_write())
             .expect("unserialisable Cid is considered a bug");
     }

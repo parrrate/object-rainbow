@@ -1,7 +1,7 @@
 use crate::*;
 
 impl ToOutput for () {
-    fn to_output(&self, _: &mut impl Output) {}
+    fn to_output(&self, _: &mut (impl ?Sized + Output)) {}
 }
 
 impl InlineOutput for () {}

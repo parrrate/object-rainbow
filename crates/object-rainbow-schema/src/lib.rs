@@ -48,7 +48,7 @@ pub mod zt;
 
 pub trait AbstractSchema: ReflessInline + Traversible {
     fn niche(&self) -> SchemaNiche;
-    fn none_output(&self, output: &mut impl Output) {
+    fn none_output(&self, output: &mut (impl ?Sized + Output)) {
         let niche = self.niche();
         if niche.needs_tag() {
             0xfeu8.to_output(output);
@@ -65,7 +65,7 @@ pub trait OptionSchema: AbstractSchema {
 pub trait AbstractValue: ToOutput {
     type Schema: AbstractSchema;
     fn schema(&self) -> Self::Schema;
-    fn some_output(&self, output: &mut impl Output) {
+    fn some_output(&self, output: &mut (impl ?Sized + Output)) {
         if self.schema().niche().needs_tag() {
             0xffu8.to_output(output);
         }
@@ -182,7 +182,7 @@ pub struct ValueToA(
 );
 
 impl ToOutput for ValueToA {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.0.to_output(output);
         self.1.to_output(output);
     }
@@ -272,7 +272,7 @@ pub enum SchemaNiche {
 }
 
 impl ToOutput for SchemaNiche {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         match self {
             Self::Zeroes(_) => {}
             Self::ZeroNoNiche(_) => {}
@@ -857,21 +857,21 @@ impl<T> Deref for Shared<T> {
 }
 
 impl<T: AbstractValue> ExtraNoneOutput<Arc<T::Schema>> for Shared<T> {
-    fn extra_some_output(&self, output: &mut impl Output) {
+    fn extra_some_output(&self, output: &mut (impl ?Sized + Output)) {
         self.some_output(output);
     }
 
-    fn extra_none_output(schema: &Arc<T::Schema>, output: &mut impl Output) {
+    fn extra_none_output(schema: &Arc<T::Schema>, output: &mut (impl ?Sized + Output)) {
         schema.none_output(output);
     }
 }
 
 impl<T: AbstractValue> ExtraNoneOutput<Arc<T::Schema>> for &Shared<T> {
-    fn extra_some_output(&self, output: &mut impl Output) {
+    fn extra_some_output(&self, output: &mut (impl ?Sized + Output)) {
         self.some_output(output);
     }
 
-    fn extra_none_output(schema: &Arc<T::Schema>, output: &mut impl Output) {
+    fn extra_none_output(schema: &Arc<T::Schema>, output: &mut (impl ?Sized + Output)) {
         schema.none_output(output);
     }
 }

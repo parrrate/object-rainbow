@@ -434,7 +434,7 @@ impl<K: Key, T: Topological> Topological for Encrypted<K, T> {
 }
 
 impl<K: Key, T: ToOutput> ToOutput for Encrypted<K, T> {
-    fn to_output(&self, output: &mut impl object_rainbow::Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + object_rainbow::Output)) {
         if output.is_mangling() {
             output.write(&*self.inner.key.mangle_prefix().data_hash());
             output.write(&*self.inner.decrypted.data_hash());

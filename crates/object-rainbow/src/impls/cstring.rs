@@ -3,7 +3,7 @@ use std::ffi::CString;
 use crate::*;
 
 impl ToOutput for CString {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.as_c_str().to_output(output);
     }
 }

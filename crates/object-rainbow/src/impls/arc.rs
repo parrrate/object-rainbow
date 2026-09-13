@@ -1,7 +1,7 @@
 use crate::*;
 
 impl<T: ?Sized + ToOutput> ToOutput for Arc<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         (**self).to_output(output);
     }
 }

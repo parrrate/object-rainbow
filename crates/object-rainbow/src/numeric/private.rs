@@ -93,7 +93,7 @@ macro_rules! nz_any_sign {
         }
 
         impl ToOutput for NonZero<$n> {
-            fn to_output(&self, output: &mut impl Output) {
+            fn to_output(&self, output: &mut (impl ?Sized + Output)) {
                 self.get().to_output(output);
             }
         }
@@ -162,7 +162,7 @@ macro_rules! lebe {
         }
 
         impl ToOutput for Le<$n> {
-            fn to_output(&self, output: &mut impl Output) {
+            fn to_output(&self, output: &mut (impl ?Sized + Output)) {
                 if output.is_real() {
                     output.write(&self.0.to_le_bytes());
                 }
@@ -170,7 +170,7 @@ macro_rules! lebe {
         }
 
         impl ToOutput for Be<$n> {
-            fn to_output(&self, output: &mut impl Output) {
+            fn to_output(&self, output: &mut (impl ?Sized + Output)) {
                 if output.is_real() {
                     output.write(&self.0.to_be_bytes());
                 }
@@ -178,7 +178,7 @@ macro_rules! lebe {
         }
 
         impl ToOutput for Le<NonZero<$n>> {
-            fn to_output(&self, output: &mut impl Output) {
+            fn to_output(&self, output: &mut (impl ?Sized + Output)) {
                 if output.is_real() {
                     output.write(&self.0.get().to_le_bytes());
                 }
@@ -186,7 +186,7 @@ macro_rules! lebe {
         }
 
         impl ToOutput for Be<NonZero<$n>> {
-            fn to_output(&self, output: &mut impl Output) {
+            fn to_output(&self, output: &mut (impl ?Sized + Output)) {
                 if output.is_real() {
                     output.write(&self.0.get().to_be_bytes());
                 }
@@ -341,7 +341,7 @@ macro_rules! float {
             const BIT: $u = (<$i>::MIN) as $u;
 
             impl ToOutput for $n {
-                fn to_output(&self, output: &mut impl Output) {
+                fn to_output(&self, output: &mut (impl ?Sized + Output)) {
                     let mut n = self.to_bits();
                     if n & BIT == 0 {
                         n ^= BIT;
@@ -353,7 +353,7 @@ macro_rules! float {
             }
 
             impl ToOutput for Le<$n> {
-                fn to_output(&self, output: &mut impl Output) {
+                fn to_output(&self, output: &mut (impl ?Sized + Output)) {
                     if output.is_real() {
                         output.write(&self.0.to_le_bytes());
                     }
@@ -361,7 +361,7 @@ macro_rules! float {
             }
 
             impl ToOutput for Be<$n> {
-                fn to_output(&self, output: &mut impl Output) {
+                fn to_output(&self, output: &mut (impl ?Sized + Output)) {
                     if output.is_real() {
                         output.write(&self.0.to_be_bytes());
                     }
@@ -460,7 +460,7 @@ macro_rules! float {
 macro_rules! byte_ordered {
     ($n:ty) => {
         impl ToOutput for $n {
-            fn to_output(&self, output: &mut impl Output) {
+            fn to_output(&self, output: &mut (impl ?Sized + Output)) {
                 if output.is_real() {
                     output.write(&(self ^ Self::MIN).to_be_bytes());
                 }

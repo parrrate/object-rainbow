@@ -15,7 +15,7 @@ impl<Extra> Deref for Extras<Extra> {
 }
 
 impl<Extra> ToOutput for Extras<Extra> {
-    fn to_output(&self, _: &mut impl Output) {}
+    fn to_output(&self, _: &mut (impl ?Sized + Output)) {}
 }
 
 impl<Extra> InlineOutput for Extras<Extra> {}

@@ -8,7 +8,7 @@ use crate::{
 };
 
 impl<T: InlineOutput, const N: usize> ToOutput for [T; N] {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         T::slice_to_output(self, output);
     }
 }

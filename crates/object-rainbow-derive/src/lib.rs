@@ -100,7 +100,7 @@ pub fn derive_to_output(input: TokenStream) -> TokenStream {
     let output = quote! {
         #[automatically_derived]
         impl #impl_generics ::object_rainbow::ToOutput for #target #ty_generics #where_clause {
-            fn to_output(&self, output: &mut impl ::object_rainbow::Output) {
+            fn to_output(&self, output: &mut (impl ?::core::marker::Sized + ::object_rainbow::Output)) {
                 #to_output
             }
         }

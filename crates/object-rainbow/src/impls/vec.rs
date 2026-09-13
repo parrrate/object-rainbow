@@ -6,7 +6,7 @@ use crate::{
 };
 
 impl<T: InlineOutput> ToOutput for Vec<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         T::slice_to_output(self, output);
     }
 }
@@ -47,7 +47,7 @@ impl<T> MaybeHasNiche for Vec<T> {
 }
 
 impl<T: InlineOutput> ToOutput for VecDeque<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         let (l, r) = self.as_slices();
         T::slice_to_output(l, output);
         T::slice_to_output(r, output);

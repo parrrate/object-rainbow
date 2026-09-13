@@ -27,7 +27,7 @@ impl<T, A: Default + InlineOutput> ToOutput for Dt<T, A>
 where
     for<'a> &'a T: IntoIterator<Item: InlineOutput>,
 {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.iter_to_output(output);
         self.inner.1.to_output(output);
     }

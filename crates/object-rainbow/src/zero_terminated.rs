@@ -69,7 +69,7 @@ impl<T> Deref for Zt<T> {
 }
 
 impl<T: ToOutput> ToOutput for Zt<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.inner.to_output(output);
         0u8.to_output(output);
     }

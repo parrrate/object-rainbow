@@ -5,7 +5,7 @@ use typenum::U1;
 use crate::*;
 
 impl ToOutput for Ordering {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         (*self as i8).to_output(output);
     }
 }

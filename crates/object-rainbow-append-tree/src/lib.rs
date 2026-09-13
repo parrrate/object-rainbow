@@ -68,7 +68,7 @@ trait History: Sized + Send + Sync {
 }
 
 trait ToContiguousOutput: History {
-    fn to_contiguous_output(&self, history: &Self::History, output: &mut impl Output);
+    fn to_contiguous_output(&self, history: &Self::History, output: &mut (impl ?Sized + Output));
 }
 
 trait ParseWithLen<I: ParseInput>: History {
@@ -158,7 +158,7 @@ impl<T: Send + Sync, N: Send + Sync + Unsigned> History for Node<T, N, Leaf> {
 impl<T: InlineOutput + Send + Sync, N: Send + Sync + Unsigned> ToContiguousOutput
     for Node<T, N, Leaf>
 {
-    fn to_contiguous_output(&self, (): &Self::History, output: &mut impl Output) {
+    fn to_contiguous_output(&self, (): &Self::History, output: &mut (impl ?Sized + Output)) {
         self.to_output(output);
     }
 }
@@ -247,7 +247,11 @@ impl<T: Send + Sync + History, N: Send + Sync + Unsigned> History for Node<Point
 impl<T: ToContiguousOutput, N: Send + Sync + Unsigned> ToContiguousOutput
     for Node<Point<T>, N, NonLeaf>
 {
-    fn to_contiguous_output(&self, (child, history): &Self::History, output: &mut impl Output) {
+    fn to_contiguous_output(
+        &self,
+        (child, history): &Self::History,
+        output: &mut (impl ?Sized + Output),
+    ) {
         self.prev.to_output(output);
         self.items.to_output(output);
         child.to_contiguous_output(history, output);
@@ -438,7 +442,7 @@ pub struct AppendTree<T> {
 }
 
 impl<T: Send + Sync + InlineOutput> ToOutput for AppendTree<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.len.to_output(output);
         match &self.kind {
             TreeKind::N1((node, history)) => node.to_contiguous_output(history, output),

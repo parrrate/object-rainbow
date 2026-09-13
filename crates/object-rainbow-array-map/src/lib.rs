@@ -20,7 +20,7 @@ pub struct ArrayMap<T> {
 }
 
 impl<T: InlineOutput> ToOutput for ArrayMap<T> {
-    fn to_output(&self, output: &mut impl object_rainbow::Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + object_rainbow::Output)) {
         self.bits.to_output(output);
         self.map.values().iter_to_output(output);
     }

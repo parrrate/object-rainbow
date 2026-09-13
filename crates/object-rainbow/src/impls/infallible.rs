@@ -3,7 +3,7 @@ use typenum::U0;
 use crate::*;
 
 impl ToOutput for Infallible {
-    fn to_output(&self, _: &mut impl Output) {
+    fn to_output(&self, _: &mut (impl ?Sized + Output)) {
         match *self {}
     }
 }

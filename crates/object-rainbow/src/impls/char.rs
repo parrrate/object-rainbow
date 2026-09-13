@@ -3,7 +3,7 @@ use typenum::{B0, B1, U1};
 use crate::{enumkind::UsizeTag, *};
 
 impl ToOutput for char {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         if output.is_real() {
             let mut buf = [0; 4];
             self.encode_utf8(&mut buf).to_output(output);

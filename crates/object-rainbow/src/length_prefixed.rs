@@ -28,7 +28,7 @@ impl<T> DerefMut for Lp<T> {
 }
 
 impl<T: ToOutput> ToOutput for Lp<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         if output.is_mangling() {
             self.0.to_output(output);
         }
@@ -86,7 +86,7 @@ impl DerefMut for LpBytes {
 }
 
 impl ToOutput for LpBytes {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         if output.is_real() {
             let data = &self.0;
             let prefix = U63::len_of(data);
@@ -146,7 +146,7 @@ impl DerefMut for LpString {
 }
 
 impl ToOutput for LpString {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         if output.is_real() {
             let data = &self.0;
             let prefix = U63::len_of(data.as_bytes());
@@ -202,7 +202,7 @@ impl<T> DerefMut for LpVec<T> {
 }
 
 impl<T: InlineOutput> ToOutput for LpVec<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         if output.is_mangling() {
             self.0.to_output(output);
         }

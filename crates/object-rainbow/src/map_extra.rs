@@ -147,7 +147,7 @@ impl<M: StaticMap<T>, T> StaticMap<T> for SmExtra<M> {
 }
 
 impl<M> ToOutput for SmExtra<M> {
-    fn to_output(&self, _: &mut impl Output) {}
+    fn to_output(&self, _: &mut (impl ?Sized + Output)) {}
 }
 
 impl<M> InlineOutput for SmExtra<M> {}

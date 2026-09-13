@@ -1,7 +1,7 @@
 use crate::*;
 
 impl ToOutput for str {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.as_bytes().to_output(output);
     }
 }

@@ -6,7 +6,7 @@ use typenum::{B0, B1, IsGreater, U0, U1};
 use crate::*;
 
 impl<T: InlineOutput, N: ArrayLength> ToOutput for GenericArray<T, N> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         T::slice_to_output(self, output);
     }
 }

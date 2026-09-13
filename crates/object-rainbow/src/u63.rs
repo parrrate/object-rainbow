@@ -24,7 +24,7 @@ impl U63 {
 }
 
 impl ToOutput for U63 {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         if self.0 < 128 {
             (self.0 as u8).to_output(output);
         } else {

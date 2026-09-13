@@ -43,7 +43,7 @@ impl RawPointInner {
 }
 
 impl ToOutput for RawPointInner {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.hash.to_output(output);
     }
 }

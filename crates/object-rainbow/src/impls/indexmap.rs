@@ -6,7 +6,7 @@ use crate::{
 };
 
 impl<T: InlineOutput> ToOutput for IndexSet<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.iter_to_output(output);
     }
 }
@@ -37,7 +37,7 @@ impl<T> PlainCollection for IndexSet<T> {}
 impl<T> VecLike for IndexSet<T> {}
 
 impl<K: InlineOutput, V: InlineOutput> ToOutput for IndexMap<K, V> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.iter_to_output(output);
     }
 }

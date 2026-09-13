@@ -425,7 +425,7 @@ impl<T: 'static + FullHash, I: PointInput<Extra: Send + Sync + ExtraFor<T>>> Par
 }
 
 impl<T> ToOutput for Point<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.hash().to_output(output);
     }
 }

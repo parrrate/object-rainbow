@@ -111,7 +111,7 @@ impl Address {
 }
 
 impl ToOutput for Address {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.hash.to_output(output);
     }
 }
@@ -240,7 +240,7 @@ pub trait Resolve: Send + Sync + AsAny {
 }
 
 impl ToOutput for dyn Resolve {
-    fn to_output(&self, _: &mut impl Output) {}
+    fn to_output(&self, _: &mut (impl ?Sized + Output)) {}
 }
 
 impl InlineOutput for dyn Resolve {}
@@ -316,7 +316,7 @@ pub trait Fetch: Send + Sync + FetchBytes {
 }
 
 impl<T> ToOutput for dyn Fetch<T = T> {
-    fn to_output(&self, _: &mut impl Output) {}
+    fn to_output(&self, _: &mut (impl ?Sized + Output)) {}
 }
 
 impl<T> InlineOutput for dyn Fetch<T = T> {}
@@ -761,7 +761,7 @@ impl Output for Sha256 {
 
 /// Values of this type can be uniquely represented as a `Vec<u8>`.
 pub trait ToOutput {
-    fn to_output(&self, output: &mut impl Output);
+    fn to_output(&self, output: &mut (impl ?Sized + Output));
 
     fn hasher(&self) -> Sha256 {
         self.output()
@@ -790,7 +790,7 @@ pub trait ToOutput {
 /// Marker trait indicating that [`ToOutput`] result cannot be extended (no value, when represented
 /// as a `Vec<u8>`, may be a prefix of another value). Effectively means prefix property.
 pub trait InlineOutput: ToOutput {
-    fn slice_to_output(slice: &[Self], output: &mut impl Output)
+    fn slice_to_output(slice: &[Self], output: &mut (impl ?Sized + Output))
     where
         Self: Sized,
     {
@@ -799,7 +799,7 @@ pub trait InlineOutput: ToOutput {
 }
 
 pub trait OptionOutput {
-    fn to_option_output(option: Option<&Self>, output: &mut impl Output);
+    fn to_option_output(option: Option<&Self>, output: &mut (impl ?Sized + Output));
 }
 
 pub trait OptionParse<I: ParseInput>: Parse<I> {
@@ -813,7 +813,7 @@ pub trait OptionParseInline<I: ParseInput>: OptionParse<I> + ParseInline<I> {
 pub struct Hashes<T>(pub T);
 
 impl<T: ListHashes> ToOutput for Hashes<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.0.list_hashes(&mut |hash| hash.to_output(output));
     }
 }
@@ -1212,7 +1212,7 @@ pub trait SingularFetch: Singular + Fetch {}
 impl<T: ?Sized + Singular + Fetch> SingularFetch for T {}
 
 impl ToOutput for dyn Singular {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.hash().to_output(output);
     }
 }
@@ -1390,7 +1390,7 @@ impl<T: ?Sized + Output> Output for MangleOutput<'_, T> {
 pub struct Mangled<T: ?Sized>(T);
 
 impl<T: ?Sized + ToOutput> ToOutput for Mangled<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.0.to_output(&mut MangleOutput::new(output));
     }
 }
@@ -1493,7 +1493,7 @@ from_sized_tuple!(
 );
 
 pub trait RainbowIterator: Sized + IntoIterator {
-    fn iter_to_output(self, output: &mut impl Output)
+    fn iter_to_output(self, output: &mut (impl ?Sized + Output))
     where
         Self::Item: InlineOutput,
     {
@@ -1824,7 +1824,7 @@ impl<T: for<'a> Parse<Input<'a, Extra>>, Extra: Clone> ExtraFor<T> for Extra {
 }
 
 impl<T> ToOutput for dyn Send + Sync + ExtraFor<T> {
-    fn to_output(&self, _: &mut impl Output) {}
+    fn to_output(&self, _: &mut (impl ?Sized + Output)) {}
 }
 
 impl<T: Tagged> Tagged for dyn Send + Sync + ExtraFor<T> {

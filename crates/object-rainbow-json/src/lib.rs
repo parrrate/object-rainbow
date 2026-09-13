@@ -73,7 +73,7 @@ impl<T: Serialize + Default> TryDefault for Json<T> {
 }
 
 impl<T> ToOutput for Json<T> {
-    fn to_output(&self, output: &mut impl Output) {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.inner.data.to_output(output);
     }
 }
