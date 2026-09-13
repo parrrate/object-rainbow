@@ -211,7 +211,7 @@ pub fn generate_tail(data: &[u8]) -> object_rainbow::Result<(u16, Vec<u8>, Hash)
             let tail = tail.to_be_bytes()[(16 - len)..].to_vec();
             let mut hasher = hasher.clone();
             hasher.update(&tail);
-            let hash = Hash::from_hasher(hasher);
+            let hash = hasher.into();
             if derive_length_from_hash(hash) == target {
                 return Ok((len_lower, tail, hash));
             }
