@@ -818,7 +818,7 @@ pub trait ListHashes {
     fn topology_hash(&self) -> Hash {
         let mut hasher = Sha256::new();
         self.list_hashes(&mut |hash| hasher.update(hash));
-        Hash::from_hasher(hasher)
+        hasher.into()
     }
 
     fn point_count(&self) -> usize {
