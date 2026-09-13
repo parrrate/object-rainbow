@@ -148,3 +148,30 @@ impl<T: Fetch + Clone> Fetch for Arc<T> {
         self
     }
 }
+
+impl<T> Fetch for Arc<dyn SingularFetch<T = T>> {
+    type T = T;
+
+    fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
+        (**self).fetch()
+    }
+
+    fn try_fetch_local(&self) -> Result<Option<Node<Self::T>>> {
+        (**self).try_fetch_local()
+    }
+
+    fn fetch_local(&self) -> Option<Self::T> {
+        (**self).fetch_local()
+    }
+
+    fn get(&self) -> Option<&Self::T> {
+        (**self).get()
+    }
+
+    fn into_dyn_fetch<'a>(self) -> Arc<dyn 'a + Fetch<T = Self::T>>
+    where
+        Self: 'a + Sized,
+    {
+        self
+    }
+}
