@@ -8,7 +8,6 @@ Alisa Feistel maintains this list for herself, please do NOT treat this as an in
 - IPLD storage
 - encrypted IPLD storage
 - `Ipld`
-- `#[derive(CanonicalExtra)]`
 - `{Hamt,Trie}{Map,Set}: FromIterator`
 - auto-inlining wrapper
 - generic `Trie` algorithms
@@ -17,5 +16,6 @@ Alisa Feistel maintains this list for herself, please do NOT treat this as an in
 - subtries
   - `Amt`
   - `Trie`
+- `#[derive(FromSized)]`
 - array `FromSized`
 - `hybrid-array`
