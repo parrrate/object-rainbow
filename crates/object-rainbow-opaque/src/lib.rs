@@ -23,3 +23,5 @@ impl<T: ?Sized + ListHashes> ListHashesDyn for T {
 pub trait PointVisitorDyn {}
 
 pub trait TopologicalDyn {}
+
+pub trait TraversibleDyn {}
