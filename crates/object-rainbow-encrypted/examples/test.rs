@@ -2,7 +2,7 @@ use chacha20poly1305::{
     ChaCha20Poly1305,
     aead::{Aead, generic_array::GenericArray},
 };
-use object_rainbow::Object;
+use object_rainbow::{Object, ToOutput};
 use object_rainbow_encrypted::{Key, encrypt_point};
 use object_rainbow_fetchall::fetchall;
 use object_rainbow_point::{IntoPoint, Point};
@@ -19,12 +19,7 @@ impl Key for Test {
             use chacha20poly1305::KeyInit;
             ChaCha20Poly1305::new(&self.0.into())
         };
-        let nonce = &{
-            use sha2::{Digest, Sha256};
-            let mut hasher = Sha256::new();
-            hasher.update(data);
-            hasher.finalize()
-        };
+        let nonce = data.data_hash();
         let nonce = &nonce.as_slice()[..12];
         let encrypted = cipher
             .encrypt(GenericArray::from_slice(nonce), data)

@@ -21,7 +21,6 @@ object-rainbow-fetchall.workspace = true
 
 chacha20poly1305.workspace = true
 hex.workspace = true
-sha2.workspace = true
 smol.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true

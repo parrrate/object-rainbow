@@ -1840,7 +1840,6 @@ dependencies = [
  "object-rainbow",
  "object-rainbow-fetchall",
  "object-rainbow-point",
- "sha2",
  "smol",
  "thiserror",
  "tracing",
