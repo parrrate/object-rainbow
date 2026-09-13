@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    Hash, ListHashes, Output, PointVisitor, SingularFetch, Tagged, ToOutput, Topological,
+    Fetch, FetchBytes, Hash, ListHashes, Output, PointVisitor, Singular, SingularFetch, Tagged,
+    ToOutput, Topological, Traversible,
 };
 
 pub trait ToOutputDyn {
@@ -69,5 +70,43 @@ impl<T: ?Sized + PointVisitor> PointVisitorDyn for T {
 impl Topological for dyn TraversibleDyn {
     fn traverse(&self, visitor: &mut (impl ?Sized + object_rainbow::PointVisitor)) {
         self.traverse_dyn(&mut &mut *visitor);
+    }
+}
+
+struct FetchDyn<T>(T);
+
+impl<T: FetchBytes> FetchBytes for FetchDyn<T> {
+    fn fetch_bytes(&'_ self) -> object_rainbow::FailFuture<'_, object_rainbow::ByteNode> {
+        self.0.fetch_bytes()
+    }
+
+    fn fetch_data(&'_ self) -> object_rainbow::FailFuture<'_, Vec<u8>> {
+        self.0.fetch_data()
+    }
+}
+
+impl<T: Singular> Singular for FetchDyn<T> {
+    fn hash(&self) -> Hash {
+        self.0.hash()
+    }
+}
+
+impl<T: Fetch<T: Traversible>> Fetch for FetchDyn<T> {
+    type T = Arc<dyn TraversibleDyn>;
+
+    fn fetch(&'_ self) -> object_rainbow::FailFuture<'_, Self::T> {
+        Box::pin(async move { Ok(Arc::new(self.0.fetch().await?) as _) })
+    }
+}
+
+impl PointVisitor for dyn '_ + PointVisitorDyn {
+    fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone)) {
+        self.visit_dyn(Arc::new(FetchDyn(point.clone())));
+    }
+}
+
+impl<T: Traversible> TopologicalDyn for T {
+    fn traverse_dyn(&self, visitor: &mut dyn PointVisitorDyn) {
+        self.traverse(visitor);
     }
 }
