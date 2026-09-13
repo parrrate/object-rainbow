@@ -959,7 +959,9 @@ pub trait Tagged {
     const HASH: Hash = Self::TAGS.hash();
 }
 
-pub trait TagsHash {}
+pub trait TagsHash {
+    fn tags_hash(&self) -> Hash;
+}
 
 pub trait ParseSlice: for<'a> Parse<Input<'a>> {
     fn parse_slice(slice: &[u8], resolve: &Arc<dyn Resolve>) -> crate::Result<Self> {
