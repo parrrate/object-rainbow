@@ -640,7 +640,7 @@ pub fn derive_list_hashes(input: TokenStream) -> TokenStream {
     let output = quote! {
         #[automatically_derived]
         impl #impl_generics ::object_rainbow::ListHashes for #target #ty_generics #where_clause {
-            fn list_hashes(&self, visitor: &mut impl FnMut(::object_rainbow::Hash)) {
+            fn list_hashes(&self, visitor: &mut (impl ?::core::marker::Sized + FnMut(::object_rainbow::Hash))) {
                 #list_hashes
             }
         }

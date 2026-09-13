@@ -334,7 +334,7 @@ pub struct Stored<S, T> {
 }
 
 impl<S: ListHashes, T> ListHashes for Stored<S, T> {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.store.list_hashes(f);
     }
 }

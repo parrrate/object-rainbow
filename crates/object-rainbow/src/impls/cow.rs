@@ -25,7 +25,7 @@ impl<'a, B: 'a + ToOwned<Owned: ParseInline<I>> + ?Sized, I: ParseInput> ParseIn
 }
 
 impl<'a, B: 'a + ToOwned + ListHashes + ?Sized> ListHashes for Cow<'a, B> {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         (**self).list_hashes(f);
     }
 

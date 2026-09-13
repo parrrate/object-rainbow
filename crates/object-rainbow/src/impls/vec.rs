@@ -12,7 +12,7 @@ impl<T: InlineOutput> ToOutput for Vec<T> {
 }
 
 impl<T: ListHashes> ListHashes for Vec<T> {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.iter_list_hashes(f);
     }
 }
@@ -55,7 +55,7 @@ impl<T: InlineOutput> ToOutput for VecDeque<T> {
 }
 
 impl<T: ListHashes> ListHashes for VecDeque<T> {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.iter_list_hashes(f);
     }
 }

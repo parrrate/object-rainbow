@@ -21,7 +21,7 @@ impl<T: ParseInline<I>, I: ParseInput> ParseInline<I> for Box<T> {
 }
 
 impl<T: ?Sized + ListHashes> ListHashes for Box<T> {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         (**self).list_hashes(f);
     }
 

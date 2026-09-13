@@ -42,7 +42,7 @@ impl<T, A> ListHashes for Dt<T, A>
 where
     for<'a> &'a T: IntoIterator<Item: ListHashes>,
 {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.iter_list_hashes(f);
     }
 }

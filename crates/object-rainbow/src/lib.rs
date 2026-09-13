@@ -120,7 +120,7 @@ impl InlineOutput for Address {}
 impl Tagged for Address {}
 
 impl ListHashes for Address {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         f(self.hash);
     }
 }
@@ -819,7 +819,7 @@ impl<T: ListHashes> ToOutput for Hashes<T> {
 }
 
 pub trait ListHashes {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         let _ = f;
     }
 
@@ -1220,7 +1220,7 @@ impl ToOutput for dyn Singular {
 impl InlineOutput for dyn Singular {}
 
 impl ListHashes for dyn Singular {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         f(self.hash());
     }
 
@@ -1500,7 +1500,7 @@ pub trait RainbowIterator: Sized + IntoIterator {
         self.into_iter().for_each(|item| item.to_output(output));
     }
 
-    fn iter_list_hashes(self, f: &mut impl FnMut(Hash))
+    fn iter_list_hashes(self, f: &mut (impl ?Sized + FnMut(Hash)))
     where
         Self::Item: ListHashes,
     {

@@ -665,7 +665,7 @@ mod private {
             }
 
             impl<V: ListHashes> ListHashes for $next<V> {
-                fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+                fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
                     self.0.list_hashes(f)
                 }
             }

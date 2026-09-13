@@ -14,7 +14,7 @@ impl<T: InlineOutput, N: ArrayLength> ToOutput for GenericArray<T, N> {
 impl<T: InlineOutput, N: ArrayLength> InlineOutput for GenericArray<T, N> {}
 
 impl<T: ListHashes, N: ArrayLength> ListHashes for GenericArray<T, N> {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.iter_list_hashes(f);
     }
 }

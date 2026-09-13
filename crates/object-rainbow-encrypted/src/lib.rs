@@ -358,7 +358,7 @@ impl<'a, K: Key, V: PointVisitor> PointVisitor for IterateResolution<'a, '_, K, 
 }
 
 impl<K, T> ListHashes for Inner<K, T> {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.topology.list_hashes(f);
     }
 
@@ -414,7 +414,7 @@ impl<K: Clone, T> Clone for Encrypted<K, T> {
 }
 
 impl<K, T> ListHashes for Encrypted<K, T> {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.inner.list_hashes(f);
     }
 

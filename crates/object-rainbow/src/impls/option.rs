@@ -71,7 +71,7 @@ impl<T: ByteOrd + TaggedOption<TaggedOption = B0, Niche: MinNiche>> ByteOrd for 
 }
 
 impl<T: ListHashes> ListHashes for Option<T> {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.iter_list_hashes(f);
     }
 }

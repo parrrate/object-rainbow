@@ -9,7 +9,7 @@ impl<T: ToOutput> ToOutput for (T,) {
 impl<T: InlineOutput> InlineOutput for (T,) {}
 
 impl<T: ListHashes> ListHashes for (T,) {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.0.list_hashes(f);
     }
 

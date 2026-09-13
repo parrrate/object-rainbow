@@ -14,7 +14,7 @@ impl<A: InlineOutput, B: ToOutput> ToOutput for (A, B) {
 impl<A: InlineOutput, B: InlineOutput> InlineOutput for (A, B) {}
 
 impl<A: ListHashes, B: ListHashes> ListHashes for (A, B) {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.0.list_hashes(f);
         self.1.list_hashes(f);
     }
@@ -77,7 +77,7 @@ impl<A: InlineOutput, B: InlineOutput, C: ToOutput> ToOutput for (A, B, C) {
 impl<A: InlineOutput, B: InlineOutput, C: InlineOutput> InlineOutput for (A, B, C) {}
 
 impl<A: ListHashes, B: ListHashes, C: ListHashes> ListHashes for (A, B, C) {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.0.list_hashes(f);
         self.1.list_hashes(f);
         self.2.list_hashes(f);
@@ -153,7 +153,7 @@ impl<A: InlineOutput, B: InlineOutput, C: InlineOutput, D: InlineOutput> InlineO
 }
 
 impl<A: ListHashes, B: ListHashes, C: ListHashes, D: ListHashes> ListHashes for (A, B, C, D) {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.0.list_hashes(f);
         self.1.list_hashes(f);
         self.2.list_hashes(f);
@@ -249,7 +249,7 @@ impl<A: InlineOutput, B: InlineOutput, C: InlineOutput, D: InlineOutput, E: Inli
 impl<A: ListHashes, B: ListHashes, C: ListHashes, D: ListHashes, E: ListHashes> ListHashes
     for (A, B, C, D, E)
 {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.0.list_hashes(f);
         self.1.list_hashes(f);
         self.2.list_hashes(f);
@@ -385,7 +385,7 @@ impl<
 impl<A: ListHashes, B: ListHashes, C: ListHashes, D: ListHashes, E: ListHashes, F: ListHashes>
     ListHashes for (A, B, C, D, E, F)
 {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.0.list_hashes(f);
         self.1.list_hashes(f);
         self.2.list_hashes(f);
@@ -559,7 +559,7 @@ impl<
     G: ListHashes,
 > ListHashes for (A, B, C, D, E, F, G)
 {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.0.list_hashes(f);
         self.1.list_hashes(f);
         self.2.list_hashes(f);
@@ -783,7 +783,7 @@ impl<
     H: ListHashes,
 > ListHashes for (A, B, C, D, E, F, G, H)
 {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.0.list_hashes(f);
         self.1.list_hashes(f);
         self.2.list_hashes(f);
@@ -1028,7 +1028,7 @@ impl<
     I: ListHashes,
 > ListHashes for (A, B, C, D, E, F, G, H, I)
 {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.0.list_hashes(f);
         self.1.list_hashes(f);
         self.2.list_hashes(f);
@@ -1301,7 +1301,7 @@ impl<
     J: ListHashes,
 > ListHashes for (A, B, C, D, E, F, G, H, I, J)
 {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.0.list_hashes(f);
         self.1.list_hashes(f);
         self.2.list_hashes(f);
@@ -1602,7 +1602,7 @@ impl<
     K: ListHashes,
 > ListHashes for (A, B, C, D, E, F, G, H, I, J, K)
 {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.0.list_hashes(f);
         self.1.list_hashes(f);
         self.2.list_hashes(f);
@@ -1935,7 +1935,7 @@ impl<
     L: ListHashes,
 > ListHashes for (A, B, C, D, E, F, G, H, I, J, K, L)
 {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.0.list_hashes(f);
         self.1.list_hashes(f);
         self.2.list_hashes(f);

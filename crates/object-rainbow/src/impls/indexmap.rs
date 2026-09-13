@@ -12,7 +12,7 @@ impl<T: InlineOutput> ToOutput for IndexSet<T> {
 }
 
 impl<T: ListHashes> ListHashes for IndexSet<T> {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.iter_list_hashes(f);
     }
 }
@@ -43,7 +43,7 @@ impl<K: InlineOutput, V: InlineOutput> ToOutput for IndexMap<K, V> {
 }
 
 impl<K: ListHashes, V: ListHashes> ListHashes for IndexMap<K, V> {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.iter_list_hashes(f);
     }
 }

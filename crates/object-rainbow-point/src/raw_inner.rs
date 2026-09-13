@@ -65,7 +65,7 @@ impl Singular for RawPointInner {
 }
 
 impl ListHashes for RawPointInner {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         f(self.hash)
     }
 

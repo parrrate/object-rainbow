@@ -107,7 +107,7 @@ pub struct RawPoint<T, Extra = ()> {
 }
 
 impl<T, Extra> ListHashes for RawPoint<T, Extra> {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.inner.list_hashes(f);
     }
 
@@ -399,7 +399,7 @@ impl<T: 'static + FullHash> Point<T> {
 }
 
 impl<T> ListHashes for Point<T> {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         f(self.hash());
     }
 

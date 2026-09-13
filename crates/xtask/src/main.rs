@@ -315,7 +315,9 @@ fn per_n(n: usize) -> String {
         Impl {
             header: "ListHashes".bound().last("ListHashes").header(n),
             members: vec![Box::new(
-                "list_hashes".method("f", "&mut impl FnMut(Hash)").out(n),
+                "list_hashes"
+                    .method("f", "&mut (impl ?Sized + FnMut(Hash))")
+                    .out(n),
             )],
         },
         Impl {

@@ -16,7 +16,7 @@ impl<T: InlineOutput, const N: usize> ToOutput for [T; N] {
 impl<T: InlineOutput, const N: usize> InlineOutput for [T; N] {}
 
 impl<T: ListHashes, const N: usize> ListHashes for [T; N] {
-    fn list_hashes(&self, f: &mut impl FnMut(Hash)) {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         self.iter_list_hashes(f);
     }
 }
