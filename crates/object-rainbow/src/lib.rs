@@ -963,6 +963,12 @@ pub trait TagsHash {
     fn tags_hash(&self) -> Hash;
 }
 
+impl<T: ?Sized + Tagged> TagsHash for T {
+    fn tags_hash(&self) -> Hash {
+        Self::HASH
+    }
+}
+
 pub trait ParseSlice: for<'a> Parse<Input<'a>> {
     fn parse_slice(slice: &[u8], resolve: &Arc<dyn Resolve>) -> crate::Result<Self> {
         Self::parse_slice_extra(slice, resolve, &())
