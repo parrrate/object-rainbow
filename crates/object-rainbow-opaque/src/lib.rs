@@ -32,6 +32,8 @@ pub trait TopologicalDyn: ListHashesDyn {
 
 pub trait TraversibleDyn: Send + Sync + ToOutputDyn + TopologicalDyn {}
 
+impl<T: ?Sized + Send + Sync + ToOutputDyn + TopologicalDyn> TraversibleDyn for T {}
+
 impl ToOutput for dyn TraversibleDyn {
     fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.to_output_dyn(&mut &mut *output);
