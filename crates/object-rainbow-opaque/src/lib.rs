@@ -29,3 +29,9 @@ pub trait PointVisitorDyn {
 pub trait TopologicalDyn: ListHashesDyn {}
 
 pub trait TraversibleDyn: Send + Sync + ToOutputDyn + TopologicalDyn {}
+
+impl ToOutput for dyn TraversibleDyn {
+    fn to_output(&self, output: &mut (impl ?Sized + Output)) {
+        self.to_output_dyn(&mut &mut *output);
+    }
+}
