@@ -110,3 +110,5 @@ impl<T: Traversible> TopologicalDyn for T {
         self.traverse(visitor);
     }
 }
+
+pub struct Opaque(pub Arc<dyn TopologicalDyn>);
