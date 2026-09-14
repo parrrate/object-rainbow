@@ -2025,3 +2025,5 @@ impl<A: CanonicalExtra, B> CanonicalExtra for (A, B) {
 }
 
 pub trait AsExtra: CanonicalExtra + AsRef<Self::Extra> {}
+
+impl<T: ?Sized + CanonicalExtra + AsRef<T::Extra>> AsExtra for T {}
