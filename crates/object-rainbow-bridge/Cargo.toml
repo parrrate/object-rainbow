@@ -15,7 +15,7 @@ object-rainbow-point.workspace = true
 async-executor.workspace = true
 flume.workspace = true
 futures-channel.workspace = true
-futures-util = { workspace = true, features = ["sink"] }
+futures-util = { workspace = true, features = ["sink", "std"] }
 genawaiter-try-stream.workspace = true
 
 [dev-dependencies]
