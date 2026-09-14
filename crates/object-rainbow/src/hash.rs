@@ -81,6 +81,10 @@ impl Hash {
     }
 }
 
+impl FromOutput for Hash {
+    type Output = sha2::Sha256;
+}
+
 impl From<sha2::Sha256> for Hash {
     fn from(hasher: sha2::Sha256) -> Self {
         Self::from_sha256(hasher.finalize().into())

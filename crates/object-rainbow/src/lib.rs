@@ -769,7 +769,7 @@ pub trait ToOutput {
 
     #[must_use]
     fn data_hash(&self) -> Hash {
-        self.hasher().into()
+        self.output()
     }
 
     fn mangle_hash(&self) -> Hash {
