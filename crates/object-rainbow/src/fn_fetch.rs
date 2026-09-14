@@ -30,9 +30,7 @@ impl<F: FetchFn> FnFetch<F> {
     where
         F::T: Traversible,
     {
-        let object = self.fetch().await?;
-        let resolve = object.to_resolve();
-        Ok((object, resolve))
+        Ok(self.fetch().await?.node())
     }
 }
 
