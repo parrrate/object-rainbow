@@ -153,7 +153,7 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for Addressed<T, Extra
     type T = T;
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        self.fetch_checked(&*self.extra)
+        self.fetch_checked()
     }
 
     fn try_fetch_local(&self) -> object_rainbow::Result<Option<Self::T>> {
