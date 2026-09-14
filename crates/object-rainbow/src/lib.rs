@@ -1232,18 +1232,6 @@ pub trait Singular: Send + Sync + FetchBytes {
     {
         extra.parse_checked(self.hash(), data, resolve)
     }
-    fn fetch_checked<'a, T: 'a + FullHash, E: 'a + Send + Sync + ExtraFor<T>>(
-        &'a self,
-        extra: &'a E,
-    ) -> FailFuture<'a, T>
-    where
-        Self: Sized,
-    {
-        Box::pin(async move {
-            let (data, resolve) = self.fetch_bytes().await?;
-            self.parse_checked(&data, &resolve, extra)
-        })
-    }
     fn try_fetch_local_checked<T: FullHash, E: Send + Sync + ExtraFor<T>>(
         &self,
         extra: &E,
@@ -1270,7 +1258,21 @@ pub trait Singular: Send + Sync + FetchBytes {
     }
 }
 
-pub trait SingularFetch: Singular + Fetch {}
+pub trait SingularFetch: Singular + Fetch {
+    fn fetch_checked<'a, E: 'a + Send + Sync + ExtraFor<Self::T>>(
+        &'a self,
+        extra: &'a E,
+    ) -> FailFuture<'a, Self::T>
+    where
+        Self: Sized,
+        Self::T: 'a + FullHash,
+    {
+        Box::pin(async move {
+            let (data, resolve) = self.fetch_bytes().await?;
+            self.parse_checked(&data, &resolve, extra)
+        })
+    }
+}
 
 impl<T: ?Sized + Singular + Fetch> SingularFetch for T {}
 
