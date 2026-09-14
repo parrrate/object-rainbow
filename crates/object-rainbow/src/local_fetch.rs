@@ -47,19 +47,19 @@ impl<T: Traversible + Clone> Fetch for Local<T> {
 
 impl<T: Traversible> FetchBytes for Local<T> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        Box::pin(ready(Ok((self.0.output(), self.0.to_resolve()))))
+        Box::pin(ready(Ok((self.0.vec(), self.0.to_resolve()))))
     }
 
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
-        Box::pin(ready(Ok(self.0.output())))
+        Box::pin(ready(Ok(self.0.vec())))
     }
 
     fn fetch_bytes_local(&self) -> object_rainbow::Result<Option<ByteNode>> {
-        Ok(Some((self.0.output(), self.0.to_resolve())))
+        Ok(Some((self.0.vec(), self.0.to_resolve())))
     }
 
     fn fetch_data_local(&self) -> Option<Vec<u8>> {
-        Some(self.0.output())
+        Some(self.0.vec())
     }
 }
 
