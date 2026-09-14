@@ -12,6 +12,7 @@ pub trait SigningKey<V: VerifyKey<S, M>, S, M = Hash> {
     fn to_verify_key(&self) -> V;
 }
 
+#[derive_for_wrapped]
 pub trait VerifyKey<S, M = Hash>: Send + Sync + Eq {
     type Error: 'static + Send + Sync + std::error::Error;
     fn verify(&self, signature: &S, message: &M) -> Result<(), Self::Error>;
