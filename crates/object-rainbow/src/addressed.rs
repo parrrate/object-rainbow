@@ -73,6 +73,7 @@ impl<I: PointInput> ParseInline<I> for Arc<dyn Singular> {
     Size,
     MaybeHasNiche,
     CanonicalExtra,
+    ToCanonicalExtra,
 )]
 pub struct Addressed<T, Extra> {
     extra: Extras<Extra>,
