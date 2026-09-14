@@ -125,8 +125,16 @@ impl<I: PointInput<Extra = Arc<dyn Send + Sync + ExtraFor<ParsedOpaque>>>> Parse
     }
 }
 
-#[derive(Clone)]
 pub struct OpaqueFactory<Extra, T> {
     pub extra: Extra,
     pub object: ObjectMarker<T>,
+}
+
+impl<Extra: Clone, T> Clone for OpaqueFactory<Extra, T> {
+    fn clone(&self) -> Self {
+        Self {
+            extra: self.extra.clone(),
+            object: self.object,
+        }
+    }
 }
