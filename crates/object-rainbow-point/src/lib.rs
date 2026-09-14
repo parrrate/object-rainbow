@@ -124,8 +124,8 @@ impl<T, Extra: 'static + Clone> FromInner for RawPoint<T, Extra> {
 impl<T, Extra: Clone> Clone for RawPoint<T, Extra> {
     fn clone(&self) -> Self {
         Self {
-            inner: self.inner.clone(),
             extra: self.extra.clone(),
+            inner: self.inner.clone(),
             object: Default::default(),
         }
     }
