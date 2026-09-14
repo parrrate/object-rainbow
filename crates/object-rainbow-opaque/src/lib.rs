@@ -3,6 +3,7 @@ use std::sync::Arc;
 use object_rainbow::{
     ExtraFor, Fetch, FetchBytes, Hash, ListHashes, Output, Parse, PointInput, PointVisitor,
     Singular, SingularFetch, Tagged, ToOutput, Topological, Traversible,
+    object_marker::ObjectMarker,
 };
 
 pub trait ToOutputDyn {
@@ -122,4 +123,9 @@ impl<I: PointInput<Extra = Arc<dyn Send + Sync + ExtraFor<Arc<dyn TraversibleDyn
         let resolve = input.resolve().clone();
         extra.parse(&input.parse_all()?, &resolve)
     }
+}
+
+pub struct OpaqueFactory<Extra, T> {
+    pub extra: Extra,
+    pub object: ObjectMarker<T>,
 }
