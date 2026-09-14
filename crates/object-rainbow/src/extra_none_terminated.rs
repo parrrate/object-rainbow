@@ -1,6 +1,8 @@
 use crate::{extra_option::ExtraNoneOutput, extras::Extras, none_terminated::Nt, *};
 
-#[derive(Debug, ListHashes, Topological, Parse, ParseInline, Tagged, CanonicalExtra)]
+#[derive(
+    Debug, ListHashes, Topological, Parse, ParseInline, Tagged, CanonicalExtra, ToCanonicalExtra,
+)]
 pub struct Ent<T, E = ()> {
     pub extra: Extras<E>,
     pub items: Nt<T>,
