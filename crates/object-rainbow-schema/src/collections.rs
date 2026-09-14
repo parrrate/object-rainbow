@@ -69,6 +69,7 @@ pub type HamtMapInner = HamtMap<Arc<InlineValue>>;
     ParseInline,
     PartialEq,
     CanonicalExtra,
+    ToCanonicalExtra,
 )]
 pub struct KvValue<T> {
     pub kv: Extras<KvSchema>,
@@ -86,6 +87,7 @@ pub struct KvValue<T> {
     ParseInline,
     PartialEq,
     CanonicalExtra,
+    ToCanonicalExtra,
 )]
 pub struct ItemValue<T> {
     pub item: Extras<ItemSchema>,
@@ -176,7 +178,9 @@ impl AbstractValue for CollectionValue {
 
 impl CanonicalExtra for CollectionValue {
     type Extra = CollectionSchema;
+}
 
+impl ToCanonicalExtra for CollectionValue {
     fn canonical_extra(&self) -> Self::Extra {
         match *self {
             #[cfg(feature = "amt")]

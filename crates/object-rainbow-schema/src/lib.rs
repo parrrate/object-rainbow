@@ -6,8 +6,8 @@ use std::{convert::Infallible, ops::Deref, sync::Arc};
 
 use object_rainbow::{
     CanonicalExtra, Inline, InlineOutput, ListHashes, OptionParse, OptionParseInline, Output,
-    Parse, ParseAsInline, ParseInline, PointInput, ReflessInline, Tagged, ToOutput, Topological,
-    Traversible, assert_impl,
+    Parse, ParseAsInline, ParseInline, PointInput, ReflessInline, Tagged, ToCanonicalExtra,
+    ToOutput, Topological, Traversible, assert_impl,
     extra_option::ExtraNoneOutput,
     extras::Extras,
     length_prefixed::LpVec,
@@ -494,7 +494,9 @@ impl AbstractValue for InlineValue {
 
 impl CanonicalExtra for InlineValue {
     type Extra = Arc<InlineSchema>;
+}
 
+impl ToCanonicalExtra for InlineValue {
     fn canonical_extra(&self) -> Self::Extra {
         Arc::new(self.schema())
     }
@@ -580,7 +582,9 @@ impl AbstractValue for TailValue {
 
 impl CanonicalExtra for TailValue {
     type Extra = Arc<TailSchema>;
+}
 
+impl ToCanonicalExtra for TailValue {
     fn canonical_extra(&self) -> Self::Extra {
         Arc::new(self.schema())
     }
@@ -914,7 +918,9 @@ impl<T: AbstractValue + ParseInline<I>, I: PointInput<Extra = Arc<T::Schema>>> O
 
 impl<T: AbstractValue> CanonicalExtra for Shared<T> {
     type Extra = Arc<T::Schema>;
+}
 
+impl<T: AbstractValue> ToCanonicalExtra for Shared<T> {
     fn canonical_extra(&self) -> Self::Extra {
         Arc::new(self.schema())
     }

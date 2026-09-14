@@ -19,9 +19,11 @@ pub struct ExtraArray<T, E> {
     pub items: RuntimeArray<T>,
 }
 
-impl<T, E: Clone> CanonicalExtra for ExtraArray<T, E> {
+impl<T, E> CanonicalExtra for ExtraArray<T, E> {
     type Extra = (u64, E);
+}
 
+impl<T, E: Clone> ToCanonicalExtra for ExtraArray<T, E> {
     fn canonical_extra(&self) -> Self::Extra {
         (self.items.len() as _, self.extra.1.0.clone())
     }

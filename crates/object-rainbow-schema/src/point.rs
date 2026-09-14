@@ -1,12 +1,9 @@
 use std::sync::Arc;
 
-use object_rainbow::{CanonicalExtra, pod};
+use object_rainbow::pod;
 use object_rainbow_point::{ExtraPoint, Extras, IntoPoint};
 
-use crate::{
-    AbstractSchema, AbstractValue, DefaultSchema, InlineSchema, InlineValue, SchemaNiche,
-    TailSchema, TailValue,
-};
+use crate::*;
 
 #[pod(no_copy, no_size)]
 pub struct PointSchema {

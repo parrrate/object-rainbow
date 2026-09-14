@@ -22,7 +22,7 @@ use futures_concurrency::future::TryJoin;
 use generic_array::{ArrayLength, GenericArray, functional::FunctionalSequence, sequence::Split};
 pub use object_rainbow_derive::{
     CanonicalExtra, Enum, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseAsInline,
-    ParseInline, Size, Tagged, ToOutput, Topological, derive_for_wrapped, pod,
+    ParseInline, Size, Tagged, ToCanonicalExtra, ToOutput, Topological, derive_for_wrapped, pod,
 };
 use sha2::{Digest, Sha256};
 #[doc(hidden)]
@@ -2017,12 +2017,17 @@ impl<T: Default> TryDefault for T {
 
 pub trait CanonicalExtra {
     type Extra;
+}
+
+pub trait ToCanonicalExtra: CanonicalExtra {
     fn canonical_extra(&self) -> Self::Extra;
 }
 
 impl<A: CanonicalExtra, B> CanonicalExtra for (A, B) {
     type Extra = A::Extra;
+}
 
+impl<A: ToCanonicalExtra, B> ToCanonicalExtra for (A, B) {
     fn canonical_extra(&self) -> Self::Extra {
         self.0.canonical_extra()
     }

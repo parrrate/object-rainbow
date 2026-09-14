@@ -14,7 +14,7 @@ use object_rainbow::{
     Address, ByteNode, ByteOrd, CanonicalExtra, DefaultHash, Equivalent, ExtraFor, FailFuture,
     Fetch, FetchBytes, FullHash, Hash, InlineOutput, ListHashes, MaybeHasNiche, OptionalHash,
     Output, Parse, ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular,
-    SingularFetch, Size, Tagged, ToOutput, Topological, Traversible,
+    SingularFetch, Size, Tagged, ToCanonicalExtra, ToOutput, Topological, Traversible,
     addressed::{Addressed, AddressedBytes},
     extras::fetch_extra::{ParseFetch, ParseFetchInline},
     local_fetch::Local,
@@ -87,7 +87,7 @@ trait InnerCast: FetchBytes {
 
 impl<T: ?Sized + FetchBytes> InnerCast for T {}
 
-#[derive(ToOutput, InlineOutput, Tagged, Parse, ParseInline, CanonicalExtra)]
+#[derive(ToOutput, InlineOutput, Tagged, Parse, ParseInline, CanonicalExtra, ToCanonicalExtra)]
 pub struct RawPoint<T, Extra = ()> {
     extra: Extras<Extra>,
     inner: RawPointInner,
@@ -703,7 +703,15 @@ impl<'a, T: FullHash> PointMut<'a, T> {
 }
 
 #[derive(
-    ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline, CanonicalExtra,
+    ToOutput,
+    InlineOutput,
+    ListHashes,
+    Topological,
+    Tagged,
+    Parse,
+    ParseInline,
+    CanonicalExtra,
+    ToCanonicalExtra,
 )]
 pub struct ExtraPoint<T, Extra = ()> {
     pub extra: Extras<Extra>,

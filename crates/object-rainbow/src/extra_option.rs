@@ -1,6 +1,8 @@
 use crate::{extras::Extras, *};
 
-#[derive(Enum, Debug, Clone, PartialEq, ListHashes, Topological, Tagged, CanonicalExtra)]
+#[derive(
+    Enum, Debug, Clone, PartialEq, ListHashes, Topological, Tagged, CanonicalExtra, ToCanonicalExtra,
+)]
 #[rainbow(untagged)]
 pub enum ExtraOption<T, E = ()> {
     Some(T),

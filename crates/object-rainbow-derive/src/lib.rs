@@ -2729,14 +2729,33 @@ pub fn derive_canonical_extra(input: TokenStream) -> TokenStream {
         Ok(g) => g,
         Err(e) => return e.into_compile_error().into(),
     };
-    let canonical_extra = gen_canonical_extra(&input.data);
     let (impl_generics, _, where_clause) = generics.split_for_impl();
     let target = parse_for(&name, &input.attrs);
     let output = quote! {
         #[automatically_derived]
         impl #impl_generics ::object_rainbow::CanonicalExtra for #target #ty_generics #where_clause {
             type Extra = __Extra;
+        }
+    };
+    TokenStream::from(output)
+}
 
+#[proc_macro_derive(ToCanonicalExtra)]
+pub fn derive_to_canonical_extra(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+    let generics = input.generics.clone();
+    let (_, ty_generics, _) = generics.split_for_impl();
+    let generics = match bounds_to_canonical_extra(input.generics, &input.data) {
+        Ok(g) => g,
+        Err(e) => return e.into_compile_error().into(),
+    };
+    let canonical_extra = gen_canonical_extra(&input.data);
+    let (impl_generics, _, where_clause) = generics.split_for_impl();
+    let target = parse_for(&name, &input.attrs);
+    let output = quote! {
+        #[automatically_derived]
+        impl #impl_generics ::object_rainbow::ToCanonicalExtra for #target #ty_generics #where_clause {
             fn canonical_extra(&self) -> Self::Extra {
                 #canonical_extra
             }
@@ -2781,6 +2800,42 @@ fn bounds_canonical_extra(mut generics: Generics, data: &Data) -> syn::Result<Ge
     Ok(generics)
 }
 
+fn bounds_to_canonical_extra(mut generics: Generics, data: &Data) -> syn::Result<Generics> {
+    match data {
+        Data::Struct(data) => {
+            if let Some(f) = data.fields.iter().next() {
+                let ty = &f.ty;
+                generics
+                    .make_where_clause()
+                    .predicates
+                    .push(parse_quote_spanned! { ty.span() =>
+                        #ty: ::object_rainbow::ToCanonicalExtra<Extra = __Extra>
+                    });
+            }
+        }
+        Data::Enum(data) => {
+            for variant in &data.variants {
+                if let Some(f) = variant.fields.iter().next() {
+                    let ty = &f.ty;
+                    generics.make_where_clause().predicates.push(
+                        parse_quote_spanned! { ty.span() =>
+                            #ty: ::object_rainbow::ToCanonicalExtra<Extra = __Extra>
+                        },
+                    );
+                }
+            }
+        }
+        Data::Union(data) => {
+            return Err(Error::new_spanned(
+                data.union_token,
+                "`union`s are not supported",
+            ));
+        }
+    }
+    generics.params.push(parse_quote!(__Extra));
+    Ok(generics)
+}
+
 fn fields_canonical_extra(
     fields: &syn::Fields,
     unit_span: Option<Span>,
@@ -2791,7 +2846,7 @@ fn fields_canonical_extra(
                 let ident = f.ident.as_ref().unwrap();
                 quote! {
                     { #ident, .. }
-                        => ::object_rainbow::CanonicalExtra::canonical_extra(#ident),
+                        => ::object_rainbow::ToCanonicalExtra::canonical_extra(#ident),
                 }
             } else {
                 let span = fields.brace_token.span.close();
@@ -2802,7 +2857,7 @@ fn fields_canonical_extra(
             if !fields.unnamed.is_empty() {
                 quote! {
                     (__first, ..)
-                        => ::object_rainbow::CanonicalExtra::canonical_extra(__first),
+                        => ::object_rainbow::ToCanonicalExtra::canonical_extra(__first),
                 }
             } else {
                 let span = fields.paren_token.span.close();

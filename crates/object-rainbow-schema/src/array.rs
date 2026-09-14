@@ -1,4 +1,4 @@
-use object_rainbow::{CanonicalExtra, extras::array::ExtraArray};
+use object_rainbow::extras::array::ExtraArray;
 
 use crate::*;
 

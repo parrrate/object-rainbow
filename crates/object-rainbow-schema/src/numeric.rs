@@ -178,7 +178,9 @@ impl AbstractValue for NumericValue {
 
 impl CanonicalExtra for NumericValue {
     type Extra = NumericSchema;
+}
 
+impl ToCanonicalExtra for NumericValue {
     fn canonical_extra(&self) -> Self::Extra {
         match self {
             Self::U8(_) => NumericSchema::U8,

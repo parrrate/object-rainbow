@@ -1,11 +1,8 @@
 use std::sync::Arc;
 
-use object_rainbow::{
-    CanonicalExtra, InlineOutput, ListHashes, Parse, ParseInline, Tagged, ToOutput, Topological,
-    inline_extra::InlineExtra, map_extra::MappedExtra, tuple_extra::Extra0,
-};
+use object_rainbow::inline_extra::InlineExtra;
 
-use crate::{InlineSchema, InlineValue};
+use crate::*;
 
 #[derive(
     Debug, ToOutput, InlineOutput, ListHashes, Topological, Tagged, Parse, ParseInline, PartialEq,

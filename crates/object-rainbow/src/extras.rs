@@ -30,9 +30,11 @@ impl<Extra> Tagged for Extras<Extra> {}
 impl<Extra> ListHashes for Extras<Extra> {}
 impl<Extra> Topological for Extras<Extra> {}
 
-impl<Extra: Clone> CanonicalExtra for Extras<Extra> {
+impl<Extra> CanonicalExtra for Extras<Extra> {
     type Extra = Extra;
+}
 
+impl<Extra: Clone> ToCanonicalExtra for Extras<Extra> {
     fn canonical_extra(&self) -> Self::Extra {
         self.0.clone()
     }

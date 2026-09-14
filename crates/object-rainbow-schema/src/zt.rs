@@ -1,4 +1,4 @@
-use object_rainbow::{CanonicalExtra, zero_terminated::Zt};
+use object_rainbow::zero_terminated::Zt;
 
 use crate::*;
 

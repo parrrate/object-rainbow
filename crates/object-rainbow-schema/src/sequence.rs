@@ -1,5 +1,3 @@
-use object_rainbow::CanonicalExtra;
-
 use crate::*;
 
 pub type SequenceValue = (Extras<Arc<InlineSchema>>, Vec<Arc<InlineValue>>);
