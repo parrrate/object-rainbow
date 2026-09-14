@@ -114,8 +114,8 @@ impl<T, Extra: 'static + Clone> FromInner for RawPoint<T, Extra> {
 
     fn from_inner(inner: Self::Inner, extra: Self::Extra) -> Self {
         RawPoint {
-            inner,
             extra: Extras(extra),
+            inner,
             object: Default::default(),
         }
     }
