@@ -138,7 +138,7 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for Addressed<T, Extra
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
             let (data, resolve) = self.fetch_bytes().await?;
-            self.extra.parse_checked(self.inner.hash(), &data, &resolve)
+            self.parse_checked(&data, &resolve, &*self.extra)
         })
     }
 

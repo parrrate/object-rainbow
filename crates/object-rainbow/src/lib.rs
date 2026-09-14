@@ -1231,6 +1231,17 @@ pub trait Topology: Resolve {
 
 pub trait Singular: Send + Sync + FetchBytes {
     fn hash(&self) -> Hash;
+    fn parse_checked<T: FullHash, E: ExtraFor<T>>(
+        &self,
+        data: &[u8],
+        resolve: &Arc<dyn Resolve>,
+        extra: &E,
+    ) -> object_rainbow::Result<T>
+    where
+        Self: Sized,
+    {
+        extra.parse_checked(self.hash(), data, resolve)
+    }
     fn fetch_checked_join<'a, T: 'a + FullHash, E: 'a + Send + Sync + ExtraFor<T>>(
         &'a self,
         extra: impl 'a + Send + Future<Output = object_rainbow::Result<E>>,
@@ -1240,8 +1251,7 @@ pub trait Singular: Send + Sync + FetchBytes {
     {
         Box::pin(async move {
             let ((data, resolve), extra) = (self.fetch_bytes(), extra).try_join().await?;
-            let object = extra.parse_checked(self.hash(), &data, &resolve)?;
-            Ok(object)
+            self.parse_checked(&data, &resolve, &extra)
         })
     }
 }
