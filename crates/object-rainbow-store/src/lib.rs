@@ -320,8 +320,8 @@ impl<
 
 #[derive(Parse, ParseInline)]
 struct StoredInner<S, E> {
-    hash: Hash,
     extra: Extras<E>,
+    hash: Hash,
     store: S,
 }
 
@@ -347,7 +347,7 @@ impl<S: Topological, T> Topological for Stored<S, T> {
 
 impl<S: RainbowStore, T: 'static + FullHash> Stored<S, T> {
     fn from_inner<E: 'static + Send + Sync + Clone + ExtraFor<T>>(
-        StoredInner { hash, extra, store }: StoredInner<S, E>,
+        StoredInner { extra, hash, store }: StoredInner<S, E>,
     ) -> Self {
         let point = store.point_extra(hash, extra.0);
         Self { point, store }
