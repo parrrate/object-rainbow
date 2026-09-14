@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    ExtraFor, Fetch, FetchBytes, Hash, ListHashes, Output, Parse, PointInput, PointVisitor,
+    AsAny, ExtraFor, Fetch, FetchBytes, Hash, ListHashes, Output, Parse, PointInput, PointVisitor,
     Singular, SingularFetch, Tagged, ToOutput, Topological, Traversible,
     object_marker::ObjectMarker,
 };
@@ -34,9 +34,9 @@ pub trait TopologicalDyn: ListHashesDyn {
     fn traverse_dyn(&self, visitor: &mut dyn PointVisitorDyn);
 }
 
-pub trait TraversibleDyn: Send + Sync + ToOutputDyn + TopologicalDyn {}
+pub trait TraversibleDyn: Send + Sync + ToOutputDyn + TopologicalDyn + AsAny {}
 
-impl<T: ?Sized + Send + Sync + ToOutputDyn + TopologicalDyn> TraversibleDyn for T {}
+impl<T: ?Sized + Send + Sync + ToOutputDyn + TopologicalDyn + AsAny> TraversibleDyn for T {}
 
 impl ToOutput for dyn TraversibleDyn {
     fn to_output(&self, output: &mut (impl ?Sized + Output)) {
