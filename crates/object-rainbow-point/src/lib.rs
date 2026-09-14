@@ -62,20 +62,14 @@ impl<T, D: Send + Sync> Singular for FetchExtra<T, D> {
     }
 }
 
-impl<T: FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> FetchExtra<T, D> {
-    async fn fetch_object(&self) -> object_rainbow::Result<Node<T>> {
-        let ((data, resolve), extra) = (self.fetch_bytes(), self.fetch.fetch()).try_join().await?;
-        let object = extra.parse_checked(self.inner.hash(), &data, &resolve)?;
-        Ok((object, resolve))
-    }
-}
-
 impl<T: Send + FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> Fetch for FetchExtra<T, D> {
     type T = T;
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
         Box::pin(async {
-            let (object, _) = self.fetch_object().await?;
+            let ((data, resolve), extra) =
+                (self.fetch_bytes(), self.fetch.fetch()).try_join().await?;
+            let object = extra.parse_checked(self.inner.hash(), &data, &resolve)?;
             Ok(object)
         })
     }
