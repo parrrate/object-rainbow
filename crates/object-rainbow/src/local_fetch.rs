@@ -24,8 +24,8 @@ impl<T: Traversible + Clone> Fetch for Local<T> {
         Box::pin(ready(Ok(self.0.clone())))
     }
 
-    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
-        Ok(Some(self.0.clone().node()))
+    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Self::T>> {
+        Ok(Some(self.0.clone()))
     }
 
     fn fetch_local(&self) -> Option<Self::T> {

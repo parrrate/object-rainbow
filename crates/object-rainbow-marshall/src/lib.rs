@@ -20,9 +20,9 @@ use std::{
 #[cfg(feature = "apply")]
 use object_rainbow::pod;
 use object_rainbow::{
-    Address, ByteNode, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node, Object, Output,
-    Parse, ParseInput, ParseSliceExtra, PointInput, Resolve, Singular, Tagged, ToOutput,
-    Topological, Traversible,
+    Address, ByteNode, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Object, Output, Parse,
+    ParseInput, ParseSliceExtra, PointInput, Resolve, Singular, Tagged, ToOutput, Topological,
+    Traversible,
 };
 #[cfg(feature = "apply")]
 use object_rainbow_apply::Apply;
@@ -318,11 +318,8 @@ impl<T: Send + Sync + Clone + ToOutput> Fetch for Marshalled<T> {
         Box::pin(async move { Ok(self.object.clone()) })
     }
 
-    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
-        Ok(Some((
-            self.object.clone(),
-            self.root.marshalled.to_resolve(),
-        )))
+    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Self::T>> {
+        Ok(Some(self.object.clone()))
     }
 
     fn fetch_local(&self) -> Option<Self::T> {

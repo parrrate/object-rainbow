@@ -12,7 +12,7 @@ use std::{
 pub use object_rainbow::extras::Extras;
 use object_rainbow::{
     Address, ByteNode, ByteOrd, CanonicalExtra, DefaultHash, Equivalent, ExtraFor, FailFuture,
-    Fetch, FetchBytes, FullHash, Hash, InlineOutput, ListHashes, MaybeHasNiche, Node, OptionalHash,
+    Fetch, FetchBytes, FullHash, Hash, InlineOutput, ListHashes, MaybeHasNiche, OptionalHash,
     Output, Parse, ParseAsInline, ParseInline, PointInput, PointVisitor, Resolve, Singular,
     SingularFetch, Size, Tagged, ToOutput, Topological, Traversible,
     addressed::{Addressed, AddressedBytes},
@@ -197,15 +197,11 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra>
         })
     }
 
-    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
+    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Self::T>> {
         let Some((data, resolve)) = self.inner.fetch_bytes_local()? else {
             return Ok(None);
         };
-        let object = self
-            .extra
-            .0
-            .parse_checked(self.inner.hash(), &data, &resolve)?;
-        Ok(Some((object, resolve)))
+        self.parse_checked(&data, &resolve, &*self.extra).map(Some)
     }
 }
 
@@ -459,7 +455,7 @@ impl<T> Point<T> {
         self.fetch.get()
     }
 
-    pub fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<T>>> {
+    pub fn try_fetch_local(&self) -> object_rainbow::Result<Option<T>> {
         self.fetch.try_fetch_local()
     }
 
@@ -521,7 +517,7 @@ impl<T: FullHash> Fetch for Point<T> {
         self.fetch.fetch()
     }
 
-    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
+    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Self::T>> {
         self.fetch.try_fetch_local()
     }
 
@@ -654,12 +650,12 @@ impl<T, F: Send + Sync + Map1<T>> Fetch for MapEquivalent<T, F> {
         Box::pin(async move { self.fetch.fetch().await.map(&self.map) })
     }
 
-    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
-        let Some((object, resolve)) = self.fetch.try_fetch_local()? else {
+    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Self::T>> {
+        let Some(object) = self.fetch.try_fetch_local()? else {
             return Ok(None);
         };
         let object = (self.map)(object);
-        Ok(Some((object, resolve)))
+        Ok(Some(object))
     }
 
     fn fetch_local(&self) -> Option<Self::T> {
@@ -835,7 +831,7 @@ impl<F: Fetch<T: FullHash>> Fetch for Checked<F> {
         })
     }
 
-    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
+    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Self::T>> {
         self.fetch.try_fetch_local()
     }
 

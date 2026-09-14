@@ -117,7 +117,7 @@ impl<T: Fetch + Clone> Fetch for Arc<T> {
         (**self).fetch()
     }
 
-    fn try_fetch_local(&self) -> Result<Option<Node<Self::T>>> {
+    fn try_fetch_local(&self) -> Result<Option<Self::T>> {
         (**self).try_fetch_local()
     }
 
@@ -156,7 +156,7 @@ impl<T> Fetch for Arc<dyn SingularFetch<T = T>> {
         (**self).fetch()
     }
 
-    fn try_fetch_local(&self) -> Result<Option<Node<Self::T>>> {
+    fn try_fetch_local(&self) -> Result<Option<Self::T>> {
         (**self).try_fetch_local()
     }
 

@@ -23,9 +23,9 @@ use std::{
 
 use futures_concurrency::future::TryJoin;
 use object_rainbow::{
-    Address, ByteNode, Error, ExtraFor, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Node,
-    Parse, ParseInline, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular,
-    SingularFetch, Tagged, ToOutput, TopoVec, Topological, Traversible,
+    Address, ByteNode, Error, ExtraFor, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Parse,
+    ParseInline, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular, SingularFetch,
+    Tagged, ToOutput, TopoVec, Topological, Traversible,
     addressed::ExtractResolve,
     derive_for_wrapped,
     fn_fetch::{FnFetch, closure_fetch},
@@ -205,7 +205,7 @@ impl<K: Key, D: Fetch<T: Topological + Tagged>> Fetch for RawFetch<K, D> {
         })
     }
 
-    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
+    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Self::T>> {
         let Some((encrypted, resolve)) = self
             .resolve
             .try_resolve_local(self.address, &self.resolve)?
@@ -213,11 +213,11 @@ impl<K: Key, D: Fetch<T: Topological + Tagged>> Fetch for RawFetch<K, D> {
             return Ok(None);
         };
         let (header, _) = side_parse(&self.key, &encrypted, &resolve)?;
-        let Some((decrypted, _)) = self.decrypted.try_fetch_local()? else {
+        let Some(decrypted) = self.decrypted.try_fetch_local()? else {
             return Ok(None);
         };
         let inner = header.with(decrypted)?;
-        Ok(Some((Encrypted { inner }, resolve)))
+        Ok(Some(Encrypted { inner }))
     }
 }
 
@@ -319,16 +319,16 @@ impl<K: Key, D: Fetch<T: Topological + Tagged>> Fetch for InnerFetch<K, D> {
         })
     }
 
-    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Node<Self::T>>> {
+    fn try_fetch_local(&self) -> object_rainbow::Result<Option<Self::T>> {
         let Some((encrypted, resolve)) = self.encrypted.fetch_bytes_local()? else {
             return Ok(None);
         };
         let (header, _) = side_parse(&self.key, &encrypted, &resolve)?;
-        let Some((decrypted, _)) = self.decrypted.try_fetch_local()? else {
+        let Some(decrypted) = self.decrypted.try_fetch_local()? else {
             return Ok(None);
         };
         let inner = header.with(decrypted)?;
-        Ok(Some((Encrypted { inner }, resolve)))
+        Ok(Some(Encrypted { inner }))
     }
 }
 
