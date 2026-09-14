@@ -776,10 +776,10 @@ pub trait ToOutput {
         Mangled(self).data_hash()
     }
 
-    fn output<T: Output + Default>(&self) -> T {
-        let mut output = T::default();
+    fn output<T: FromOutput<Output: Default>>(&self) -> T {
+        let mut output = T::Output::default();
         self.to_output(&mut output);
-        output
+        output.into()
     }
 
     fn vec(&self) -> Vec<u8> {
