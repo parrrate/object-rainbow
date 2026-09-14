@@ -1,4 +1,4 @@
-use std::ops::Mul;
+use std::ops::{Div, Mul};
 
 use typenum::ToUInt;
 
@@ -79,3 +79,22 @@ fn byte_array_niche() {
 
 impl<T, const N: usize> PlainCollection for [T; N] {}
 impl<T, const N: usize> VecLike for [T; N] {}
+
+impl<T: FromSized, const N: usize> FromSized for [T; N]
+where
+    typenum::generic_const_mappings::Const<N>: ToUInt<
+        Output: ArrayLength
+                    + Mul<
+            T::Size,
+            Output: ArrayLength
+                        + Div<
+                T::Size,
+                Output = <typenum::generic_const_mappings::Const<N> as ToUInt>::Output,
+            >,
+        >,
+    >,
+{
+    fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self {
+        GenericArray::<T, <typenum::generic_const_mappings::Const<N> as ToUInt>::Output>::from_sized(data).into()
+    }
+}
