@@ -1232,6 +1232,18 @@ pub trait Singular: Send + Sync + FetchBytes {
     {
         extra.parse_checked(self.hash(), data, resolve)
     }
+    fn fetch_checked<'a, T: 'a + FullHash, E: 'a + Send + Sync + ExtraFor<T>>(
+        &'a self,
+        extra: &'a E,
+    ) -> FailFuture<'a, T>
+    where
+        Self: Sized,
+    {
+        Box::pin(async move {
+            let (data, resolve) = self.fetch_bytes().await?;
+            self.parse_checked(&data, &resolve, extra)
+        })
+    }
     fn fetch_checked_join<'a, T: 'a + FullHash, E: 'a + Send + Sync + ExtraFor<T>>(
         &'a self,
         extra: impl 'a + Send + Future<Output = object_rainbow::Result<E>>,

@@ -191,10 +191,7 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra>
     type T = T;
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        Box::pin(async {
-            let (data, resolve) = self.inner.fetch_bytes().await?;
-            self.parse_checked(&data, &resolve, &*self.extra)
-        })
+        self.fetch_checked(&*self.extra)
     }
 
     fn try_fetch_local(&self) -> object_rainbow::Result<Option<Self::T>> {
