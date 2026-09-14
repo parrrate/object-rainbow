@@ -147,10 +147,8 @@ impl MaybeHasNiche for Address {
 /// Fallible future type yielding either `T` or [`Error`].
 pub type FailFuture<'a, T> = Pin<Box<dyn 'a + Send + Future<Output = Result<T>>>>;
 
-pub type Node<T> = (T, Arc<dyn Resolve>);
-
 /// Returned by [`Resolve`] and [`FetchBytes`]. Represents traversal through the object graph.
-pub type ByteNode = Node<Vec<u8>>;
+pub type ByteNode = (Vec<u8>, Arc<dyn Resolve>);
 
 /// Trait for contextually using [`Any`]. Can itself be implemented for non-`'static` and `?Sized`
 /// types, and is `dyn`-compatible.
