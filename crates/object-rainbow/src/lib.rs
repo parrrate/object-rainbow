@@ -2033,6 +2033,6 @@ impl<A: ToCanonicalExtra, B> ToCanonicalExtra for (A, B) {
     }
 }
 
-pub trait AsExtra: AsRef<Self::Extra> {
-    type Extra;
-}
+pub trait AsExtra: CanonicalExtra + AsRef<Self::Extra> {}
+
+impl<T: ?Sized + CanonicalExtra + AsRef<T::Extra>> AsExtra for T {}
