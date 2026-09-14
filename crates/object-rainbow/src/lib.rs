@@ -1338,7 +1338,7 @@ pub trait ReflessInline:
 
 impl<T: ReflessObject + InlineOutput + for<'a> ParseInline<ReflessInput<'a>>> ReflessInline for T {}
 
-pub trait FromOutput {
+pub trait FromOutput: From<Self::Output> {
     type Output: Output;
 }
 
