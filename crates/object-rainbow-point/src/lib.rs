@@ -199,6 +199,12 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra>
     }
 }
 
+impl<T, Extra> AsRef<Extra> for RawPoint<T, Extra> {
+    fn as_ref(&self) -> &Extra {
+        &self.extra
+    }
+}
+
 impl<T> Point<T> {
     pub fn from_fetch(hash: Hash, fetch: impl 'static + Fetch<T = T>) -> Self
     where
