@@ -1244,6 +1244,18 @@ pub trait Singular: Send + Sync + FetchBytes {
             self.parse_checked(&data, &resolve, extra)
         })
     }
+    fn try_fetch_local_checked<T: FullHash, E: Send + Sync + ExtraFor<T>>(
+        &self,
+        extra: &E,
+    ) -> object_rainbow::Result<Option<T>>
+    where
+        Self: Sized,
+    {
+        let Some((data, resolve)) = self.fetch_bytes_local()? else {
+            return Ok(None);
+        };
+        self.parse_checked(&data, &resolve, extra).map(Some)
+    }
     fn fetch_checked_join<'a, T: 'a + FullHash, E: 'a + Send + Sync + ExtraFor<T>>(
         &'a self,
         extra: impl 'a + Send + Future<Output = object_rainbow::Result<E>>,

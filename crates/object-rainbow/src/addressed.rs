@@ -140,9 +140,6 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for Addressed<T, Extra
     }
 
     fn try_fetch_local(&self) -> object_rainbow::Result<Option<Self::T>> {
-        let Some((data, resolve)) = self.fetch_bytes_local()? else {
-            return Ok(None);
-        };
-        self.parse_checked(&data, &resolve, &*self.extra).map(Some)
+        self.try_fetch_local_checked(&*self.extra)
     }
 }
