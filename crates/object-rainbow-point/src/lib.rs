@@ -9,7 +9,6 @@ use std::{
     sync::Arc,
 };
 
-use futures_concurrency::future::TryJoin;
 pub use object_rainbow::extras::Extras;
 use object_rainbow::{
     Address, ByteNode, ByteOrd, CanonicalExtra, DefaultHash, Equivalent, ExtraFor, FailFuture,
@@ -66,12 +65,7 @@ impl<T: Send + FullHash, D: Fetch<T: Send + Sync + ExtraFor<T>>> Fetch for Fetch
     type T = T;
 
     fn fetch(&'_ self) -> FailFuture<'_, Self::T> {
-        Box::pin(async {
-            let ((data, resolve), extra) =
-                (self.fetch_bytes(), self.fetch.fetch()).try_join().await?;
-            let object = extra.parse_checked(self.inner.hash(), &data, &resolve)?;
-            Ok(object)
-        })
+        self.fetch_checked_join(self.fetch.fetch())
     }
 }
 

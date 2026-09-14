@@ -1698,6 +1698,7 @@ dependencies = [
  "bytes",
  "cid",
  "futures-channel",
+ "futures-concurrency",
  "generic-array 1.4.5",
  "ghost",
  "hex",
@@ -1998,7 +1999,6 @@ dependencies = [
 name = "object-rainbow-point"
 version = "0.0.0-a.18"
 dependencies = [
- "futures-concurrency",
  "object-rainbow",
  "serde",
 ]

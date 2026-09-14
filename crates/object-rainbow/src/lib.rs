@@ -18,6 +18,7 @@ use std::{
 };
 
 pub use anyhow::anyhow;
+use futures_concurrency::future::TryJoin;
 use generic_array::{ArrayLength, GenericArray, functional::FunctionalSequence, sequence::Split};
 pub use object_rainbow_derive::{
     CanonicalExtra, Enum, InlineOutput, ListHashes, MaybeHasNiche, Parse, ParseAsInline,
@@ -1230,6 +1231,19 @@ pub trait Topology: Resolve {
 
 pub trait Singular: Send + Sync + FetchBytes {
     fn hash(&self) -> Hash;
+    fn fetch_checked_join<'a, T: 'a + FullHash, E: 'a + Send + Sync + ExtraFor<T>>(
+        &'a self,
+        extra: impl 'a + Send + Future<Output = object_rainbow::Result<E>>,
+    ) -> FailFuture<'a, T>
+    where
+        Self: Sized,
+    {
+        Box::pin(async move {
+            let ((data, resolve), extra) = (self.fetch_bytes(), extra).try_join().await?;
+            let object = extra.parse_checked(self.hash(), &data, &resolve)?;
+            Ok(object)
+        })
+    }
 }
 
 pub trait SingularFetch: Singular + Fetch {}
