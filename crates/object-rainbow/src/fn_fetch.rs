@@ -25,22 +25,11 @@ impl<F: FetchFn> FnFetch<F> {
     pub async fn fetch(&self) -> Result<F::T> {
         self.fetch.fetch().await
     }
-
-    async fn fetch_node(&self) -> Result<Node<F::T>>
-    where
-        F::T: Traversible,
-    {
-        Ok(self.fetch().await?.node())
-    }
 }
 
 impl<F: FetchFn<T: Traversible>> FetchBytes for FnFetch<F> {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode> {
-        Box::pin(async move {
-            let (object, resolve) = self.fetch_node().await?;
-            let data = object.vec();
-            Ok((data, resolve))
-        })
+        Box::pin(async move { Ok(self.fetch().await?.byte_node()) })
     }
 
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>> {
