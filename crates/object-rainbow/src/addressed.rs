@@ -70,6 +70,12 @@ pub struct Addressed<T, Extra> {
     _object: ObjectMarker<T>,
 }
 
+impl<T, Extra> AsRef<Extra> for Addressed<T, Extra> {
+    fn as_ref(&self) -> &Extra {
+        &self.extra
+    }
+}
+
 impl<T: Traversible, Extra: 'static + Send + Sync + Clone + ExtraFor<T>> Topological
     for Addressed<T, Extra>
 {
