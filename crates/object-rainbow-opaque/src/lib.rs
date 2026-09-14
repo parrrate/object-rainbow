@@ -138,3 +138,18 @@ impl<Extra: Clone, T> Clone for OpaqueFactory<Extra, T> {
         }
     }
 }
+
+impl<
+    Extra: Clone + ExtraFor<T>,
+    T: Send + Sync + Traversible,
+    I: PointInput<Extra = OpaqueFactory<Extra, T>>,
+> Parse<I> for ParsedOpaque
+{
+    fn parse(input: I) -> object_rainbow::Result<Self> {
+        let extra = input.extra().clone();
+        let resolve = input.resolve().clone();
+        Ok(Self(Arc::new(
+            extra.extra.parse(&input.parse_all()?, &resolve)?,
+        )))
+    }
+}
