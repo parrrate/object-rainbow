@@ -65,8 +65,8 @@ impl<I: PointInput> ParseInline<I> for Arc<dyn Singular> {
 
 #[derive(ToOutput, InlineOutput, Tagged, ListHashes, Parse, ParseInline, Size, MaybeHasNiche)]
 pub struct Addressed<T, Extra> {
-    inner: AddressedBytes,
     extra: Extras<Extra>,
+    inner: AddressedBytes,
     _object: ObjectMarker<T>,
 }
 
@@ -87,8 +87,8 @@ impl<T: Traversible, Extra: 'static + Send + Sync + Clone + ExtraFor<T>> Topolog
 impl<T, Extra: Clone> Clone for Addressed<T, Extra> {
     fn clone(&self) -> Self {
         Self {
-            inner: self.inner.clone(),
             extra: self.extra.clone(),
+            inner: self.inner.clone(),
             _object: Default::default(),
         }
     }
@@ -97,8 +97,8 @@ impl<T, Extra: Clone> Clone for Addressed<T, Extra> {
 impl<T, Extra> Addressed<T, Extra> {
     pub fn from_inner(inner: AddressedBytes, extra: Extra) -> Self {
         Self {
-            inner,
             extra: Extras(extra),
+            inner,
             _object: Default::default(),
         }
     }
