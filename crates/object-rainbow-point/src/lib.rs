@@ -195,7 +195,7 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for RawPoint<T, Extra>
     }
 
     fn try_fetch_local(&self) -> object_rainbow::Result<Option<Self::T>> {
-        self.try_fetch_local_checked(&*self.extra)
+        self.try_fetch_local_checked()
     }
 }
 

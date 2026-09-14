@@ -1248,18 +1248,17 @@ pub trait SingularFetch: Singular + Fetch {
             self.parse_checked(&data, &resolve, extra)
         })
     }
-    fn try_fetch_local_checked<E: Send + Sync + ExtraFor<Self::T>>(
-        &self,
-        extra: &E,
-    ) -> object_rainbow::Result<Option<Self::T>>
+    fn try_fetch_local_checked(&self) -> object_rainbow::Result<Option<Self::T>>
     where
         Self: Sized,
         Self::T: FullHash,
+        Self: AsExtra<Extra: ExtraFor<Self::T>>,
     {
         let Some((data, resolve)) = self.fetch_bytes_local()? else {
             return Ok(None);
         };
-        self.parse_checked(&data, &resolve, extra).map(Some)
+        self.parse_checked(&data, &resolve, self.as_extra())
+            .map(Some)
     }
     fn fetch_checked_join<'a, E: 'a + Send + Sync + ExtraFor<Self::T>>(
         &'a self,
