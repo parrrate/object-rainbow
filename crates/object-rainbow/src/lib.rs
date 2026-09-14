@@ -853,14 +853,6 @@ pub trait Topological: ListHashes {
         (self.vec(), self.to_resolve())
     }
 
-    fn node(self) -> Node<Self>
-    where
-        Self: Sized,
-    {
-        let resolve = self.to_resolve();
-        (self, resolve)
-    }
-
     fn to_resolve(&self) -> Arc<dyn Resolve> {
         struct ByTopology {
             topology: TopoVec,
