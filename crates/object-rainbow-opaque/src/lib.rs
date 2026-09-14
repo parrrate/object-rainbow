@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use object_rainbow::{
-    Fetch, FetchBytes, Hash, ListHashes, Output, PointVisitor, Singular, SingularFetch, Tagged,
-    ToOutput, Topological, Traversible,
+    ExtraFor, Fetch, FetchBytes, Hash, ListHashes, Output, Parse, PointInput, PointVisitor,
+    Singular, SingularFetch, Tagged, ToOutput, Topological, Traversible,
 };
 
 pub trait ToOutputDyn {
@@ -112,3 +112,13 @@ impl<T: Traversible> TopologicalDyn for T {
 }
 
 pub struct Opaque(pub Arc<dyn TraversibleDyn>);
+
+impl<I: PointInput<Extra = Arc<dyn Send + Sync + ExtraFor<Arc<dyn TraversibleDyn>>>>> Parse<I>
+    for Opaque
+{
+    fn parse(input: I) -> object_rainbow::Result<Self> {
+        let extra = input.extra().clone();
+        let resolve = input.resolve().clone();
+        extra.parse(&input.parse_all()?, &resolve)
+    }
+}
