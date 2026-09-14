@@ -63,7 +63,17 @@ impl<I: PointInput> ParseInline<I> for Arc<dyn Singular> {
     }
 }
 
-#[derive(ToOutput, InlineOutput, Tagged, ListHashes, Parse, ParseInline, Size, MaybeHasNiche)]
+#[derive(
+    ToOutput,
+    InlineOutput,
+    Tagged,
+    ListHashes,
+    Parse,
+    ParseInline,
+    Size,
+    MaybeHasNiche,
+    CanonicalExtra,
+)]
 pub struct Addressed<T, Extra> {
     extra: Extras<Extra>,
     inner: AddressedBytes,
