@@ -2781,7 +2781,7 @@ fn bounds_canonical_extra(mut generics: Generics, data: &Data) -> syn::Result<Ge
     Ok(generics)
 }
 
-fn fields_canonicai_extra(
+fn fields_canonical_extra(
     fields: &syn::Fields,
     unit_span: Option<Span>,
 ) -> proc_macro2::TokenStream {
@@ -2816,7 +2816,7 @@ fn fields_canonicai_extra(
 fn gen_canonical_extra(data: &Data) -> proc_macro2::TokenStream {
     match data {
         Data::Struct(data) => {
-            let arm = fields_canonicai_extra(&data.fields, data.semi_token.map(|x| x.span));
+            let arm = fields_canonical_extra(&data.fields, data.semi_token.map(|x| x.span));
             quote! {
                 match self {
                     Self #arm
@@ -2826,7 +2826,7 @@ fn gen_canonical_extra(data: &Data) -> proc_macro2::TokenStream {
         Data::Enum(data) => {
             let arms = data.variants.iter().map(|variant| {
                 let ident = &variant.ident;
-                let arm = fields_canonicai_extra(&variant.fields, Some(ident.span()));
+                let arm = fields_canonical_extra(&variant.fields, Some(ident.span()));
                 quote! {
                     Self::#ident #arm
                 }
