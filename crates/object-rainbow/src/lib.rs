@@ -1342,6 +1342,10 @@ pub trait FromOutput: From<Self::Output> {
     type Output: Output;
 }
 
+impl<T: Output> FromOutput for T {
+    type Output = T;
+}
+
 pub trait Output {
     fn write(&mut self, data: &[u8]);
     fn is_mangling(&self) -> bool {
