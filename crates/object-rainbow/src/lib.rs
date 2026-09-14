@@ -845,6 +845,13 @@ pub trait Topological: ListHashes {
         topology
     }
 
+    fn byte_node(&self) -> Node<Vec<u8>>
+    where
+        Self: ToOutput,
+    {
+        (self.vec(), self.to_resolve())
+    }
+
     fn to_resolve(&self) -> Arc<dyn Resolve> {
         struct ByTopology {
             topology: TopoVec,
