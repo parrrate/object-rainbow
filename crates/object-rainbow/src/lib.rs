@@ -846,7 +846,7 @@ pub trait Topological: ListHashes {
         topology
     }
 
-    fn byte_node(&self) -> Node<Vec<u8>>
+    fn byte_node(&self) -> ByteNode
     where
         Self: ToOutput,
     {
