@@ -112,14 +112,16 @@ impl<T: Traversible> TopologicalDyn for T {
     }
 }
 
+pub struct ParsedOpaque(pub Arc<dyn TraversibleDyn>);
+
 #[derive(ToOutput, Tagged, ListHashes, Topological, Clone)]
 pub struct Opaque(pub Arc<dyn TraversibleDyn>);
 
-impl<I: PointInput<Extra = Arc<dyn Send + Sync + ExtraFor<Opaque>>>> Parse<I> for Opaque {
+impl<I: PointInput<Extra = Arc<dyn Send + Sync + ExtraFor<ParsedOpaque>>>> Parse<I> for Opaque {
     fn parse(input: I) -> object_rainbow::Result<Self> {
         let extra = input.extra().clone();
         let resolve = input.resolve().clone();
-        (*extra).parse(&input.parse_all()?, &resolve)
+        Ok(Self((*extra).parse(&input.parse_all()?, &resolve)?.0))
     }
 }
 
