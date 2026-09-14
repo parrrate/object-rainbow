@@ -111,7 +111,7 @@ impl<T: Traversible> TopologicalDyn for T {
     }
 }
 
-#[derive(ToOutput, Tagged)]
+#[derive(ToOutput, Tagged, ListHashes)]
 pub struct Opaque(pub Arc<dyn TraversibleDyn>);
 
 impl<I: PointInput<Extra = Arc<dyn Send + Sync + ExtraFor<Arc<dyn TraversibleDyn>>>>> Parse<I>
