@@ -9,7 +9,7 @@ use futures_channel::oneshot;
 use futures_util::{FutureExt, Sink, SinkExt, Stream, StreamExt, TryStreamExt, future::Shared};
 use genawaiter_try_stream::try_stream;
 use object_rainbow::{
-    Address, FetchBytes, Hash, Resolve, Singular, addressed::AddressedBytes, pod,
+    Address, ByteNode, FetchBytes, Hash, Resolve, Singular, addressed::AddressedBytes, pod,
 };
 
 /// Commands coming from a consumer.
@@ -45,7 +45,7 @@ enum ProviderEvent {
     Over,
 }
 
-type Fetching = Task<Result<(Vec<u8>, Arc<dyn Resolve>), object_rainbow::Error>>;
+type Fetching = Task<Result<ByteNode, object_rainbow::Error>>;
 
 struct Retained {
     count: u128,
