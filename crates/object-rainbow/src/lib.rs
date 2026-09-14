@@ -2023,3 +2023,5 @@ impl<A: CanonicalExtra, B> CanonicalExtra for (A, B) {
         self.0.canonical_extra()
     }
 }
+
+pub trait AsExtra: CanonicalExtra + AsRef<Self::Extra> {}
