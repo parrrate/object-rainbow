@@ -1,6 +1,6 @@
-use std::ops::Mul;
+use std::ops::{Div, Mul};
 
-use generic_array::sequence::{Flatten, GenericSequence};
+use generic_array::sequence::{Flatten, GenericSequence, Unflatten};
 use typenum::{B0, B1, IsGreater, U0, U1};
 
 use crate::*;
@@ -133,4 +133,13 @@ impl<T, N: ArrayLength + IsGreater<U0, Output = B>, B: MoreThan0<T, N>> MaybeHas
     for GenericArray<T, N>
 {
     type MnArray = B::MnArray;
+}
+
+impl<T: FromSized, N: ArrayLength> FromSized for GenericArray<T, N>
+where
+    N: Mul<T::Size, Output: ArrayLength + Div<T::Size, Output = N>>,
+{
+    fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self {
+        data.unflatten().map(T::from_sized)
+    }
 }
