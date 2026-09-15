@@ -318,7 +318,7 @@ impl<T> ToOutput for dyn '_ + Fetch<T = T> {
     fn to_output(&self, _: &mut (impl ?Sized + Output)) {}
 }
 
-impl<T> InlineOutput for dyn Fetch<T = T> {}
+impl<T> InlineOutput for dyn '_ + Fetch<T = T> {}
 
 impl<T: Tagged> Tagged for dyn Fetch<T = T> {
     const TAGS: Tags = T::TAGS;
