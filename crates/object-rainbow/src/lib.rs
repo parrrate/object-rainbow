@@ -314,7 +314,7 @@ pub trait Fetch: Send + Sync + FetchBytes {
     }
 }
 
-impl<T> ToOutput for dyn Fetch<T = T> {
+impl<T> ToOutput for dyn '_ + Fetch<T = T> {
     fn to_output(&self, _: &mut (impl ?Sized + Output)) {}
 }
 
