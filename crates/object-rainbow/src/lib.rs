@@ -1305,6 +1305,11 @@ impl<T> ToOutput for dyn '_ + SingularFetch<T = T> {
 
 impl<T> InlineOutput for dyn '_ + SingularFetch<T = T> {}
 
+impl<T: Tagged> Tagged for dyn '_ + SingularFetch<T = T> {
+    const TAGS: Tags = T::TAGS;
+    const HASH: Hash = T::HASH;
+}
+
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
 impl PointVisitor for TopoVec {
