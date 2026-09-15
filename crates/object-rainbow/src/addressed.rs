@@ -173,6 +173,6 @@ impl<'a, T: 'a + FullHash, I: PointInput<Extra: Send + Sync + ExtraFor<T>>> Pars
     for Arc<dyn 'a + SingularFetch<T = T>>
 {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
-        Ok(Arc::new(input.parse_inline::<Addressed<T, _>>()?))
+        Ok(Arc::new(input.parse_inline::<Addressed<_, _>>()?))
     }
 }
