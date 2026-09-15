@@ -244,7 +244,7 @@ impl ToOutput for dyn '_ + Resolve {
 
 impl InlineOutput for dyn '_ + Resolve {}
 impl Tagged for dyn '_ + Resolve {}
-impl ListHashes for dyn Resolve {}
+impl ListHashes for dyn '_ + Resolve {}
 
 impl Size for dyn Resolve {
     type Size = typenum::U0;
