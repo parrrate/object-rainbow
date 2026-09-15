@@ -160,3 +160,19 @@ impl<T: FullHash, Extra: Send + Sync + ExtraFor<T>> Fetch for Addressed<T, Extra
         self.try_fetch_local_checked()
     }
 }
+
+impl<'a, T: 'a + FullHash, I: PointInput<Extra: Send + Sync + ExtraFor<T>>> Parse<I>
+    for Arc<dyn 'a + SingularFetch<T = T>>
+{
+    fn parse(input: I) -> crate::Result<Self> {
+        Self::parse_as_inline(input)
+    }
+}
+
+impl<'a, T: 'a + FullHash, I: PointInput<Extra: Send + Sync + ExtraFor<T>>> ParseInline<I>
+    for Arc<dyn 'a + SingularFetch<T = T>>
+{
+    fn parse_inline(input: &mut I) -> crate::Result<Self> {
+        Ok(Arc::new(input.parse_inline::<Addressed<T, _>>()?))
+    }
+}
