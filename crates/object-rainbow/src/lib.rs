@@ -251,7 +251,7 @@ impl Size for dyn '_ + Resolve {
     const SIZE: usize = 0;
 }
 
-impl MaybeHasNiche for dyn Resolve {
+impl MaybeHasNiche for dyn '_ + Resolve {
     type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
 }
 
