@@ -1322,6 +1322,12 @@ impl<T> ListHashes for dyn '_ + SingularFetch<T = T> {
 
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
+impl<T: Traversible> Topological for Arc<dyn SingularFetch<T = T>> {
+    fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
+        visitor.visit(self);
+    }
+}
+
 impl PointVisitor for TopoVec {
     fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone)) {
         self.push(Arc::new(point.clone()));
