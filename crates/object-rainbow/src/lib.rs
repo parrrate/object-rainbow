@@ -255,13 +255,13 @@ impl MaybeHasNiche for dyn '_ + Resolve {
     type MnArray = NoNiche<ZeroNoNiche<<Self as Size>::Size>>;
 }
 
-impl<I: PointInput> Parse<I> for Arc<dyn Resolve> {
+impl<I: PointInput> Parse<I> for Arc<dyn '_ + Resolve> {
     fn parse(input: I) -> crate::Result<Self> {
         Self::parse_as_inline(input)
     }
 }
 
-impl<I: PointInput> ParseInline<I> for Arc<dyn Resolve> {
+impl<I: PointInput> ParseInline<I> for Arc<dyn '_ + Resolve> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         Ok(input.resolve())
     }
