@@ -325,7 +325,7 @@ impl<T: Tagged> Tagged for dyn '_ + Fetch<T = T> {
     const HASH: Hash = T::HASH;
 }
 
-impl<T> PartialEq for dyn Fetch<T = T> {
+impl<T> PartialEq for dyn '_ + Fetch<T = T> {
     fn eq(&self, _: &Self) -> bool {
         true
     }
