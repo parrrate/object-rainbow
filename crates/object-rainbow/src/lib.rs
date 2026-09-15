@@ -349,7 +349,7 @@ impl<T> std::hash::Hash for dyn '_ + Fetch<T = T> {
     fn hash<H: std::hash::Hasher>(&self, _: &mut H) {}
 }
 
-impl<T> ByteOrd for dyn Fetch<T = T> {
+impl<T> ByteOrd for dyn '_ + Fetch<T = T> {
     fn bytes_cmp(&self, _: &Self) -> Ordering {
         Ordering::Equal
     }
