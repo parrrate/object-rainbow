@@ -242,7 +242,7 @@ impl ToOutput for dyn '_ + Resolve {
     fn to_output(&self, _: &mut (impl ?Sized + Output)) {}
 }
 
-impl InlineOutput for dyn Resolve {}
+impl InlineOutput for dyn '_ + Resolve {}
 impl Tagged for dyn Resolve {}
 impl ListHashes for dyn Resolve {}
 
