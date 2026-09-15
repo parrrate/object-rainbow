@@ -1303,6 +1303,8 @@ impl<T> ToOutput for dyn '_ + SingularFetch<T = T> {
     }
 }
 
+impl<T> InlineOutput for dyn '_ + SingularFetch<T = T> {}
+
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
 impl PointVisitor for TopoVec {
