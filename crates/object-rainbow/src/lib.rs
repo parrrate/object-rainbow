@@ -333,13 +333,13 @@ impl<T> PartialEq for dyn '_ + Fetch<T = T> {
 
 impl<T> Eq for dyn '_ + Fetch<T = T> {}
 
-impl<T> PartialOrd for dyn Fetch<T = T> {
+impl<T> PartialOrd for dyn '_ + Fetch<T = T> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<T> Ord for dyn Fetch<T = T> {
+impl<T> Ord for dyn '_ + Fetch<T = T> {
     fn cmp(&self, _: &Self) -> Ordering {
         Ordering::Equal
     }
