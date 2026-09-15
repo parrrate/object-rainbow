@@ -243,7 +243,7 @@ impl ToOutput for dyn '_ + Resolve {
 }
 
 impl InlineOutput for dyn '_ + Resolve {}
-impl Tagged for dyn Resolve {}
+impl Tagged for dyn '_ + Resolve {}
 impl ListHashes for dyn Resolve {}
 
 impl Size for dyn Resolve {
