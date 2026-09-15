@@ -16,6 +16,7 @@ use self::contains_generics::{GContext, type_contains_generics};
 
 mod contains_generics;
 
+/// leave all hope
 fn bounds_g(generics: &Generics) -> BTreeSet<Ident> {
     generics
         .params
