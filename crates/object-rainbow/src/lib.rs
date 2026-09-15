@@ -1310,6 +1310,16 @@ impl<T: Tagged> Tagged for dyn '_ + SingularFetch<T = T> {
     const HASH: Hash = T::HASH;
 }
 
+impl<T> ListHashes for dyn '_ + SingularFetch<T = T> {
+    fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
+        f(self.hash());
+    }
+
+    fn point_count(&self) -> usize {
+        1
+    }
+}
+
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
 impl PointVisitor for TopoVec {
