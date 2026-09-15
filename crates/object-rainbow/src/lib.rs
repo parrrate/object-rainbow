@@ -1279,7 +1279,7 @@ pub trait SingularFetch: Singular + Fetch {
 
 impl<T: ?Sized + Singular + Fetch> SingularFetch for T {}
 
-impl ToOutput for dyn Singular {
+impl ToOutput for dyn '_ + Singular {
     fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.hash().to_output(output);
     }
