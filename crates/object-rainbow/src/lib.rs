@@ -238,7 +238,7 @@ pub trait Resolve: Send + Sync + AsAny {
     }
 }
 
-impl ToOutput for dyn Resolve {
+impl ToOutput for dyn '_ + Resolve {
     fn to_output(&self, _: &mut (impl ?Sized + Output)) {}
 }
 
