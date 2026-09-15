@@ -1285,7 +1285,7 @@ impl ToOutput for dyn '_ + Singular {
     }
 }
 
-impl InlineOutput for dyn Singular {}
+impl InlineOutput for dyn '_ + Singular {}
 
 impl ListHashes for dyn Singular {
     fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
