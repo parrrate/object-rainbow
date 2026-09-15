@@ -19,3 +19,5 @@ Alisa Feistel maintains this list for herself, please do NOT treat this as an in
 - `#[derive(FromSized)]`
 - `hybrid-array`
 - `Immutable` point
+- fetch chain
+  - consistency error cascade
