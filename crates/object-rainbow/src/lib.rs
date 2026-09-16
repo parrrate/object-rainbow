@@ -1089,7 +1089,14 @@ pub trait DefaultHash: FullHash + Default {
 
 impl<T: FullHash + Default> DefaultHash for T {}
 
-pub trait Traversible: 'static + Sized + Send + Sync + FullHash + Topological {}
+pub trait Traversible: 'static + Sized + Send + Sync + FullHash + Topological {
+    fn local(self) -> Arc<dyn SingularFetch<T = Self>>
+    where
+        Self: Clone,
+    {
+        Arc::new(crate::local_fetch::Local(self))
+    }
+}
 
 impl<T: 'static + Send + Sync + FullHash + Topological> Traversible for T {}
 
