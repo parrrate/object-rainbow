@@ -21,3 +21,4 @@ Alisa Feistel maintains this list for herself, please do NOT treat this as an in
 - `Immutable` point
 - fetch chain
   - consistency error cascade
+- `tokio_util::codec`
