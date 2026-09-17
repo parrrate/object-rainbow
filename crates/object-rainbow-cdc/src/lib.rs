@@ -113,6 +113,10 @@ impl Chunks {
     pub fn chunks(&self) -> &[Chunk] {
         &self.chunks
     }
+
+    pub fn into_chunks(self) -> Vec<Chunk> {
+        self.chunks
+    }
 }
 
 #[pod(no_copy, no_default)]
