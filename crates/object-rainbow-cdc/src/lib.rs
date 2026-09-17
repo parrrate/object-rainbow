@@ -153,7 +153,7 @@ impl Chunk {
         Ok(Self { len_lower, data })
     }
 
-    pub fn with_alternate_source(
+    fn with_alternate_source(
         data: &[u8],
         fetch: impl 'static + FetchFn<T = Vec<u8>>,
     ) -> object_rainbow::Result<Self> {
