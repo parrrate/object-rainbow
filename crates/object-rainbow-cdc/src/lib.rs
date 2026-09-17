@@ -176,7 +176,7 @@ impl Chunk {
         Ok(len)
     }
 
-    pub fn from_seek(
+    fn from_seek(
         data: &[u8],
         offset: u64,
         open: impl 'static + FetchFn<T: Send + AsyncRead + AsyncSeek>,
