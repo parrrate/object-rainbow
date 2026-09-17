@@ -146,7 +146,7 @@ impl Chunk {
         Ok(data)
     }
 
-    pub fn new(data: &[u8]) -> object_rainbow::Result<Self> {
+    fn new(data: &[u8]) -> object_rainbow::Result<Self> {
         let (len_lower, tail, hash) = generate_tail(data)?;
         let data = [data, tail.as_slice()].concat().point();
         assert_eq!(hash, data.hash());
