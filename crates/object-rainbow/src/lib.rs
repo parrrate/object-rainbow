@@ -132,6 +132,7 @@ impl ListHashes for Address {
     }
 }
 
+/// This is where [`PointInput::next_index`] is used.
 impl<I: PointInput> ParseInline<I> for Address {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         Ok(Self {
