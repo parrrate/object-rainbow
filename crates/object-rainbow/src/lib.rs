@@ -311,7 +311,7 @@ pub trait FetchBytes: AsAny {
         None
     }
     /// Attempt unwrapping a [`Resolve`]. Should be implemented when possible, as it's use for some
-    /// anti-stack-overflow machiner.
+    /// anti-stack-overflow machinery.
     fn try_unwrap_resolve(self: Arc<Self>) -> Option<Arc<dyn Resolve>> {
         None
     }
