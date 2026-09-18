@@ -220,6 +220,14 @@ impl<T> Point<T> {
         Self::from_fetch(object.full_hash(), fetch)
     }
 
+    pub fn from_singular(singular: impl 'static + Singular) -> Self
+    where
+        (): ExtraFor<T>,
+        T: 'static + FullHash,
+    {
+        RawPointInner::from_singular(singular).cast(()).into_point()
+    }
+
     pub fn from_singular_fetch(singular: impl 'static + SingularFetch<T = T>) -> Self
     where
         T: FullHash,

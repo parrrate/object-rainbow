@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use futures_util::{SinkExt, StreamExt, TryStreamExt, future::try_join};
 use object_rainbow_bridge::{consume, provide};
-use object_rainbow_point::{IntoPoint, Point, RawPointInner};
+use object_rainbow_point::{IntoPoint, Point};
 
 fn main() -> object_rainbow::Result<()> {
     smol::block_on(async move {
@@ -30,9 +30,7 @@ fn main() -> object_rainbow::Result<()> {
             };
             assert_eq!(reason, b"test");
             let read = async move {
-                let point = RawPointInner::from_singular(point)
-                    .cast::<Point<Point<Point<Vec<u8>>>>, _>(())
-                    .into_point();
+                let point = Point::<Point<Point<Point<Vec<u8>>>>>::from_singular(point);
                 let data = point
                     .fetch()
                     .await?
