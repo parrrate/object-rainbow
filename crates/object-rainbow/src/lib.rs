@@ -351,6 +351,7 @@ pub trait Fetch: Send + Sync + FetchBytes {
     fn try_unwrap(self: Arc<Self>) -> Option<Self::T> {
         None
     }
+    /// Convenience method to force a conversion to a trait object.
     fn into_dyn_fetch<'a>(self) -> Arc<dyn 'a + Fetch<T = Self::T>>
     where
         Self: 'a + Sized,
