@@ -933,6 +933,7 @@ pub trait Topological: ListHashes {
         topology
     }
 
+    /// Useful in [`Resolve::resolve`] and [`FetchBytes::fetch_bytes`].
     fn byte_node(&self) -> ByteNode
     where
         Self: ToOutput,
