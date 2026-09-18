@@ -300,6 +300,8 @@ pub trait FetchBytes: AsAny {
     fn fetch_data_local(&self) -> Option<Vec<u8>> {
         None
     }
+    /// Reduce to some known grounded value, preferably one implementing [`FetchBytes`]. Typically,
+    /// this is [`addressed::AddressedBytes`].
     fn as_inner(&self) -> Option<&dyn Any> {
         None
     }
