@@ -909,6 +909,7 @@ pub trait ListHashes {
         Hashes(self).data_hash()
     }
 
+    /// How many others this object refers to.
     fn point_count(&self) -> usize {
         let mut count = 0;
         self.list_hashes(&mut |_| count += 1);
