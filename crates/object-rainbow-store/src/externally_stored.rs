@@ -30,18 +30,18 @@ impl<
 {
     fn parse(mut input: I) -> object_rainbow::Result<Self> {
         let header: Header<S::Id> = input.parse_refless_inline()?;
-        if header.tags != T::HASH {
-            return Err(object_rainbow::error_consistency!("tags mismatch"));
-        }
         let resolve = ExternalResolve {
             store: input.extra().0.clone(),
             topology: header.topology.clone(),
         };
         let extra = input.extra().1.clone();
-        let object = input
+        let object: T = input
             .with_extra(extra)
             .with_resolve(Arc::new(resolve))
             .parse()?;
+        if header.tags != object.tags_hash() {
+            return Err(object_rainbow::error_consistency!("tags mismatch"));
+        }
         Ok(Self { header, object })
     }
 }
