@@ -317,6 +317,7 @@ pub trait FetchBytes: AsAny {
     }
 }
 
+/// Application-facing traversal.
 pub trait Fetch: Send + Sync + FetchBytes {
     type T;
     fn fetch(&'_ self) -> FailFuture<'_, Self::T>;
