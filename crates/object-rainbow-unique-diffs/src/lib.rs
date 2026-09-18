@@ -4,9 +4,8 @@ use object_rainbow::{
     map_extra::{Return, ToHash},
     pod,
 };
+use object_rainbow_apply::{Apply, Parallel, Sequential, skip::FilterDiffs};
 use object_rainbow_hamt::HamtSet;
-
-use crate::{Apply, Parallel, Sequential, skip::FilterDiffs};
 
 #[pod]
 pub struct Inserted;

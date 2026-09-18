@@ -1,0 +1,14 @@
+[package]
+name = "object-rainbow-unique-diffs"
+version = "0.0.0-a.9"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "object-rainbow-apply deduplication"
+
+[dependencies]
+object-rainbow.workspace = true
+object-rainbow-apply = { workspace = true, features = ["hamt"] }
+object-rainbow-hamt.workspace = true

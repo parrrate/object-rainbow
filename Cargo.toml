@@ -28,7 +28,7 @@ members = [
     "crates/object-rainbow-sign",
     "crates/object-rainbow-store",
     "crates/object-rainbow-store-opendal",
-    "crates/object-rainbow-trie",
+    "crates/object-rainbow-trie", "crates/object-rainbow-unique-diffs",
     "crates/xtask",
     "crates/xtask-release",
 ]

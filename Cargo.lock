@@ -2064,6 +2064,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "object-rainbow-unique-diffs"
+version = "0.0.0-a.9"
+dependencies = [
+ "object-rainbow",
+ "object-rainbow-apply",
+ "object-rainbow-hamt",
+]
+
+[[package]]
 name = "once_cell"
 version = "1.21.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
