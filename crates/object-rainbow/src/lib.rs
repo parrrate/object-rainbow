@@ -323,6 +323,10 @@ pub trait Fetch: Send + Sync + FetchBytes {
     type T;
     /// Main traversal method.
     fn fetch(&'_ self) -> FailFuture<'_, Self::T>;
+    /// Attempt to fetch the object locally.
+    ///
+    /// Generally this is either [`Fetch::get`]+[`Clone::clone`] or
+    /// [`FetchBytes::fetch_bytes_local`]+[`Parse::parse`].
     fn try_fetch_local(&self) -> Result<Option<Self::T>> {
         Ok(None)
     }
