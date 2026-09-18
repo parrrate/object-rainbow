@@ -10,7 +10,6 @@ description = "sending objects over network"
 
 [dependencies]
 object-rainbow.workspace = true
-object-rainbow-point.workspace = true
 
 async-executor.workspace = true
 flume.workspace = true
@@ -19,4 +18,6 @@ futures-util = { workspace = true, features = ["sink", "std"] }
 genawaiter-try-stream.workspace = true
 
 [dev-dependencies]
+object-rainbow-point.workspace = true
+
 smol.workspace = true
