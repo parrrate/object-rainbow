@@ -93,6 +93,10 @@ pub const HASH_SIZE: usize = sha2_const::Sha256::DIGEST_SIZE;
 /// This was introduced:
 /// - to avoid using a [`Hash`]-only map
 /// - to differentiate between separate [`Hash`]es within a context
+///
+/// While [`Address`] implements a bunch of `trait`s from the object hierarchy, it's not a member of
+/// it: [`Address`]es are supposed to be used with [`Resolve`]s. Thus, it notably doesn't implement
+/// [`Topological`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, ParseAsInline)]
 pub struct Address {
     /// Monotonically incremented index. This is not present at all in the actual format.
