@@ -25,7 +25,7 @@ use futures_concurrency::future::TryJoin;
 use object_rainbow::{
     Address, ByteNode, Error, ExtraFor, FailFuture, Fetch, FetchBytes, Hash, ListHashes, Parse,
     ParseInline, ParseSliceExtra, PointInput, PointVisitor, Resolve, Singular, SingularFetch,
-    Tagged, ToOutput, TopoVec, Topological, Traversible,
+    Tagged, TagsHash, ToOutput, TopoVec, Topological, Traversible,
     addressed::ExtractResolve,
     derive_for_wrapped,
     fn_fetch::{FnFetch, closure_fetch},
@@ -124,7 +124,7 @@ struct InnerHeader<K> {
 
 impl<K: Key> InnerHeader<K> {
     fn with<T: Topological + Tagged>(self, decrypted: T) -> object_rainbow::Result<Inner<K, T>> {
-        if self.tags != T::HASH {
+        if self.tags != decrypted.tags_hash() {
             return Err(object_rainbow::error_consistency!("tags mismatch"));
         }
         let mut topology = TopoVec::new();
