@@ -813,6 +813,7 @@ impl<'d, Extra: 'static + Clone> PointInput for Input<'d, Extra> {
     }
 }
 
+/// [`Digest::update`]s the hasher.
 impl Output for Sha256 {
     fn write(&mut self, data: &[u8]) {
         self.update(data);
