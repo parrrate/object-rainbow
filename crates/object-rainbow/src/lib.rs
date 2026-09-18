@@ -926,6 +926,7 @@ pub trait Topological: ListHashes {
         let _ = visitor;
     }
 
+    /// Collect references into a dynamically-typed list.
     fn topology(&self) -> TopoVec {
         let mut topology = TopoVec::with_capacity(self.point_count());
         self.traverse(&mut topology);
