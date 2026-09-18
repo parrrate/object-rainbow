@@ -338,6 +338,10 @@ pub trait Fetch: Send + Sync + FetchBytes {
     fn get(&self) -> Option<&Self::T> {
         None
     }
+    /// Get a mutable reference to a locally stored object.
+    ///
+    /// [`Fetch::get_mut_finalize`] must be called to restore the state even if no mutations were
+    /// made.
     fn get_mut(&mut self) -> Option<&mut Self::T> {
         None
     }
