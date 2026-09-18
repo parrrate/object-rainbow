@@ -319,6 +319,7 @@ pub trait FetchBytes: AsAny {
 
 /// Application-facing traversal.
 pub trait Fetch: Send + Sync + FetchBytes {
+    /// Fetched object.
     type T;
     fn fetch(&'_ self) -> FailFuture<'_, Self::T>;
     fn try_fetch_local(&self) -> Result<Option<Self::T>> {
