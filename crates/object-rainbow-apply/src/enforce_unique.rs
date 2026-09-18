@@ -6,7 +6,7 @@ pub trait Collision<Diff: Send>: Send + Sized {
     type Output: Send;
     fn always_okay(diff: &Diff) -> bool;
     fn okay(self) -> Self::Output;
-    fn check(self) -> object_rainbow::Result<Self::Output>;
+    fn check(self) -> Result<Self::Output, NotUnique>;
 }
 
 #[pod]
@@ -23,7 +23,7 @@ impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, Output = O>, O: Send> App
         if always_okay {
             Ok(output.okay())
         } else {
-            output.check()
+            Ok(output.check()?)
         }
     }
 }
@@ -49,11 +49,11 @@ impl<K: Send, V: Send> Collision<(V, K)> for Option<V> {
         assert!(self.is_none());
     }
 
-    fn check(self) -> object_rainbow::Result<Self::Output> {
+    fn check(self) -> Result<Self::Output, NotUnique> {
         if self.is_none() {
             Ok(())
         } else {
-            Err(NotUnique.into())
+            Err(NotUnique)
         }
     }
 }
@@ -69,11 +69,11 @@ impl<K: Send, V: Send> Collision<(Option<V>, K)> for Option<V> {
         self
     }
 
-    fn check(self) -> object_rainbow::Result<Self::Output> {
+    fn check(self) -> Result<Self::Output, NotUnique> {
         if self.is_none() {
             Ok(None)
         } else {
-            Err(NotUnique.into())
+            Err(NotUnique)
         }
     }
 }
