@@ -435,6 +435,9 @@ impl<'a> ReflessData<'a> {
     }
 }
 
+/// Simplest provided implementation of [`ParseInput`].
+///
+/// Generally, you shouldn't be referring to this (see [`ReflessObject`], [`ReflessInline`]).
 pub struct ReflessInput<'d> {
     data: Option<ReflessData<'d>>,
 }
