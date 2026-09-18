@@ -305,6 +305,8 @@ pub trait FetchBytes: AsAny {
     fn as_inner(&self) -> Option<&dyn Any> {
         None
     }
+    /// Generalisation of [`FetchBytes::as_inner`] where we're only interested in the [`Resolve`]
+    /// component.
     fn as_resolve(&self) -> Option<&Arc<dyn Resolve>> {
         None
     }
