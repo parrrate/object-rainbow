@@ -253,6 +253,7 @@ pub trait Resolve: Send + Sync + AsAny {
     }
 }
 
+/// No-op matching the [`ParseInline`].
 impl ToOutput for dyn '_ + Resolve {
     fn to_output(&self, _: &mut (impl ?Sized + Output)) {}
 }
