@@ -3,8 +3,8 @@ use std::sync::Arc;
 use futures_concurrency::future::TryJoin;
 use object_rainbow::{
     Address, Error, Hash, InlineOutput, Parse, ParseInline, ParseInput, ParseSlice,
-    ParseSliceExtra, ParseSliceRefless, PointInput, PointVisitor, Resolve, SingularFetch, Tagged,
-    TagsHash, ToOutput, Traversible, addressed::ExtractResolve, length_prefixed::LpVec,
+    ParseSliceExtra, ParseSliceRefless, PointInput, PointVisitor, Resolve, SingularFetch, TagsHash,
+    ToOutput, Traversible, addressed::ExtractResolve, length_prefixed::LpVec,
 };
 
 use crate::ExternalStore;
@@ -176,7 +176,7 @@ pub(crate) async fn load_extra<
     Ok(object)
 }
 
-pub(crate) async fn load<S: ExternalStore, T: ParseSlice + Tagged>(
+pub(crate) async fn load<S: ExternalStore, T: ParseSlice + TagsHash>(
     store: &S,
     id: &S::Id,
 ) -> object_rainbow::Result<T> {
