@@ -28,27 +28,6 @@ impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, Output = O>, O: Send> App
     }
 }
 
-/// This is separate from [`NoOverwrites`] both because of potential implementation conflicts and
-/// because of some semantical differences.
-#[pod]
-pub struct NoCollisions<T>(T);
-
-impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, Output = O>, O: Send> Apply<D>
-    for NoCollisions<T>
-{
-    type Output = O;
-
-    async fn apply(&mut self, diff: D) -> object_rainbow::Result<Self::Output> {
-        let always_okay = X::always_okay(&diff);
-        let output = self.0.apply(diff).await?;
-        if always_okay {
-            Ok(output.okay())
-        } else {
-            output.check()
-        }
-    }
-}
-
 #[derive(Debug, thiserror::Error)]
 #[error("not unique")]
 pub struct NotUnique;
