@@ -287,6 +287,8 @@ impl<I: PointInput> ParseInline<I> for Arc<dyn '_ + Resolve> {
 /// Main machinery responsible for turning content-addressed structures into something we can
 /// actually traverse.
 pub trait FetchBytes: AsAny {
+    /// Central method for traversal of [`Hash`]-based pointers. Returns byte data and [`Resolve`]
+    /// for use in [`Parse`].
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode>;
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>>;
     fn fetch_bytes_local(&self) -> Result<Option<ByteNode>> {
