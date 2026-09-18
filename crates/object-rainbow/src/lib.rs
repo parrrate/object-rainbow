@@ -222,6 +222,9 @@ impl<T> AsAny for T {
 /// Something that can resolve [`Address`]es to [`ByteNode`]s.
 pub trait Resolve: Send + Sync + AsAny {
     /// Resolve the address. For an [`Object`], this is what gets used as [`PointInput`].
+    ///
+    /// `this` points to same thing as `self`. Provided for ease of cloning [`Hash`]-based
+    /// [`Resolve`]s.
     fn resolve<'a>(
         &'a self,
         address: Address,
