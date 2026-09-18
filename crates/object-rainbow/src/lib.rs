@@ -227,6 +227,7 @@ pub trait Resolve: Send + Sync + AsAny {
         address: Address,
         this: &'a Arc<dyn Resolve>,
     ) -> FailFuture<'a, ByteNode>;
+    /// Resolve data only (without a nested [`Resolve`]).
     fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>>;
     fn try_resolve_local(
         &self,
