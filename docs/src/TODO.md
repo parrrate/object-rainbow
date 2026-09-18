@@ -25,3 +25,4 @@ Alisa Feistel maintains this list for herself, please do NOT treat this as an in
 - fixed-size reverse parse-ahead
 - `0..0f..f` `Hash` niche
 - `DecrByteNiche` for `Option`
+- move `Apply` on things to things
