@@ -49,18 +49,6 @@ where
     }
 }
 
-impl<T: Component> Apply<(bool, T)> for AmtSet<T> {
-    type Output = bool;
-
-    async fn apply(&mut self, (remove, value): (bool, T)) -> object_rainbow::Result<Self::Output> {
-        Ok(if remove {
-            !self.remove(&value).await?
-        } else {
-            self.insert(value).await?
-        })
-    }
-}
-
 impl<T: Component> Apply<(Option<()>, T)> for AmtSet<T> {
     type Output = Option<T>;
 
