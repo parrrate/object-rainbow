@@ -2,7 +2,7 @@ use object_rainbow::pod;
 
 use crate::Apply;
 
-pub trait Collision<Diff: Send, State>: Send + Sized {
+pub trait Collision<Diff: Send>: Send + Sized {
     type Output: Send;
     fn always_okay(diff: &Diff) -> bool;
     fn okay(self) -> Self::Output;
@@ -15,7 +15,7 @@ pub struct ConcealedState;
 #[pod]
 pub struct NoOverwrites<T>(pub T);
 
-impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, ExposedState, Output = O>, O: Send> Apply<D>
+impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, Output = O>, O: Send> Apply<D>
     for NoOverwrites<T>
 {
     type Output = O;
@@ -36,8 +36,8 @@ impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, ExposedState, Output = O>
 #[pod]
 pub struct NoCollisions<T>(T);
 
-impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, ConcealedState, Output = O>, O: Send>
-    Apply<D> for NoCollisions<T>
+impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, Output = O>, O: Send> Apply<D>
+    for NoCollisions<T>
 {
     type Output = O;
 
@@ -56,7 +56,7 @@ impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, ConcealedState, Output = 
 #[error("not unique")]
 pub struct NotUnique;
 
-impl<K: Send, V: Send, S> Collision<(V, K), S> for Option<V> {
+impl<K: Send, V: Send> Collision<(V, K)> for Option<V> {
     type Output = ();
 
     fn always_okay(_: &(V, K)) -> bool {
@@ -76,7 +76,7 @@ impl<K: Send, V: Send, S> Collision<(V, K), S> for Option<V> {
     }
 }
 
-impl<K: Send, V: Send, S> Collision<(Option<V>, K), S> for Option<V> {
+impl<K: Send, V: Send> Collision<(Option<V>, K)> for Option<V> {
     type Output = Option<V>;
 
     fn always_okay((value, _): &(Option<V>, K)) -> bool {
