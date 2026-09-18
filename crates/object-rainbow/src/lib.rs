@@ -1464,6 +1464,7 @@ pub trait OutputExt: Output {
 
 impl<T: ?Sized + Output> OutputExt for T {}
 
+/// [`std::io::Write`] representation of an [`Output`].
 pub struct AsWrite<'a, O: ?Sized> {
     output: &'a mut O,
 }
