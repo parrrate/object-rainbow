@@ -941,6 +941,7 @@ pub trait Topological: ListHashes {
         (self.vec(), self.to_resolve())
     }
 
+    /// Reconstruct a [`Resolve`] usable for [`Parse::parse`]ing this object based on references.
     fn to_resolve(&self) -> Arc<dyn Resolve> {
         struct ByTopology {
             topology: TopoVec,
