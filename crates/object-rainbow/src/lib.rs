@@ -897,6 +897,7 @@ impl<T: ListHashes> ToOutput for Hashes<T> {
     }
 }
 
+/// Semantically part of [`Topological`] but decoupled for simpler recursive bounds.
 pub trait ListHashes {
     fn list_hashes(&self, f: &mut (impl ?Sized + FnMut(Hash))) {
         let _ = f;
