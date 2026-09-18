@@ -888,6 +888,7 @@ pub trait OptionParseInline<I: ParseInput>: OptionParse<I> + ParseInline<I> {
     fn parse_option_inline(input: &mut I) -> crate::Result<Option<Self>>;
 }
 
+/// [`ToOutput`] representing an object's [`Hash`]es list.
 pub struct Hashes<T>(pub T);
 
 impl<T: ListHashes> ToOutput for Hashes<T> {
