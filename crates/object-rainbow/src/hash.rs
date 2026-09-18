@@ -112,8 +112,15 @@ impl AsRef<[u8]> for Hash {
 }
 
 /// `Option<Hash>` but more explicitly represented as `[u8; HASH_SIZE]`.
-#[pod(no_niche)]
+#[pod(no_niche, no_default)]
 pub struct OptionalHash([u8; HASH_SIZE]);
+
+/// in preparation for non-all-`0`s `None`
+impl Default for OptionalHash {
+    fn default() -> Self {
+        Self::NONE
+    }
+}
 
 impl Display for OptionalHash {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
