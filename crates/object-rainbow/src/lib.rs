@@ -872,6 +872,7 @@ pub trait InlineOutput: ToOutput {
 
 /// Provide [`ToOutput`] for [`Option<Self>`].
 pub trait OptionOutput {
+    /// Provide [`ToOutput::to_output`] for [`Option<Self>`].
     fn to_option_output(option: Option<&Self>, output: &mut (impl ?Sized + Output));
 }
 
