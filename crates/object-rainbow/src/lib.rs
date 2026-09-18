@@ -830,6 +830,7 @@ pub trait ToOutput {
         self.output()
     }
 
+    /// [`Hash`] of (real, i.e. serialized) data of this object.
     #[must_use]
     fn data_hash(&self) -> Hash {
         self.output()
