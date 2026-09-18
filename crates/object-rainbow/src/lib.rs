@@ -822,6 +822,7 @@ impl Output for Sha256 {
 
 /// Values of this type can be uniquely represented as a `Vec<u8>`.
 pub trait ToOutput {
+    /// Provide object's byte representation to an [`Output`].
     fn to_output(&self, output: &mut (impl ?Sized + Output));
 
     fn hasher(&self) -> Sha256 {
