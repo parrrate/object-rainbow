@@ -95,23 +95,3 @@ impl<K: Send, V: Send> Collision<(Option<V>, K), ExposedState> for Option<V> {
         }
     }
 }
-
-impl<T: Send> Collision<(bool, T), ExposedState> for bool {
-    type Output = bool;
-
-    fn always_okay((remove, _): &(bool, T)) -> bool {
-        *remove
-    }
-
-    fn okay(self) -> Self::Output {
-        self
-    }
-
-    fn check(self) -> object_rainbow::Result<Self::Output> {
-        if self {
-            Ok(true)
-        } else {
-            Err(object_rainbow::Error::consistency(NotUnique))
-        }
-    }
-}
