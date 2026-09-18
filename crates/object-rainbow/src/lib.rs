@@ -1782,6 +1782,7 @@ pub trait ParseInput: Sized {
     }
 }
 
+/// [`std::io::Read`] representation of a [`ParseInput`].
 pub struct AsRead<'a, I> {
     input: &'a mut I,
 }
