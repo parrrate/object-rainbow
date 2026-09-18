@@ -32,6 +32,12 @@ impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, Output = O>, O: Send> App
 #[error("not unique")]
 pub struct NotUnique;
 
+impl From<NotUnique> for object_rainbow::Error {
+    fn from(error: NotUnique) -> Self {
+        Self::operation(error)
+    }
+}
+
 impl<K: Send, V: Send> Collision<(V, K)> for Option<V> {
     type Output = ();
 
@@ -47,7 +53,7 @@ impl<K: Send, V: Send> Collision<(V, K)> for Option<V> {
         if self.is_none() {
             Ok(())
         } else {
-            Err(object_rainbow::Error::operation(NotUnique))
+            Err(NotUnique.into())
         }
     }
 }
@@ -67,7 +73,7 @@ impl<K: Send, V: Send> Collision<(Option<V>, K)> for Option<V> {
         if self.is_none() {
             Ok(None)
         } else {
-            Err(object_rainbow::Error::operation(NotUnique))
+            Err(NotUnique.into())
         }
     }
 }
