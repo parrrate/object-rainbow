@@ -405,6 +405,8 @@ impl<T> ByteOrd for dyn '_ + Fetch<T = T> {
 
 /// Used in [`Topological::traverse`].
 pub trait PointVisitor {
+    /// Visit one [`SingularFetch`] of an object. Points are provided in a fixed known order (mostly
+    /// means order of parsing).
     fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone));
 }
 
