@@ -247,6 +247,7 @@ pub trait Resolve: Send + Sync + AsAny {
     fn topology_hash(&self) -> Option<Hash> {
         None
     }
+    /// Attempt unwrapping a [`TopoVec`]. Generally shouldn't be implemented.
     fn into_topovec(self: Arc<Self>) -> Option<TopoVec> {
         None
     }
