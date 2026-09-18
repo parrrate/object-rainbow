@@ -4,7 +4,7 @@ use futures_concurrency::future::TryJoin;
 use object_rainbow::{
     Address, Error, Hash, InlineOutput, Parse, ParseInline, ParseInput, ParseSlice,
     ParseSliceExtra, ParseSliceRefless, PointInput, PointVisitor, Resolve, SingularFetch, Tagged,
-    ToOutput, Traversible, addressed::ExtractResolve, length_prefixed::LpVec,
+    TagsHash, ToOutput, Traversible, addressed::ExtractResolve, length_prefixed::LpVec,
 };
 
 use crate::ExternalStore;
@@ -149,7 +149,7 @@ pub(crate) async fn store_object<S: ExternalStore, T: Traversible>(
     let topology = futures.try_join().await?;
     let topology = Arc::new(LpVec(topology));
     let header = Header {
-        tags: T::HASH,
+        tags: object.tags_hash(),
         topology,
     };
     let stored = ExternallyStored { header, object };
