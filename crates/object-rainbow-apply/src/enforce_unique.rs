@@ -10,10 +10,10 @@ pub trait Collision<Diff: Send>: Send + Sized {
 }
 
 #[pod]
-pub struct NoOverwrites<T>(pub T);
+pub struct NoCollisions<T>(pub T);
 
 impl<D: Send, T: Apply<D, Output = X>, X: Collision<D, Output = O>, O: Send> Apply<D>
-    for NoOverwrites<T>
+    for NoCollisions<T>
 {
     type Output = O;
 
