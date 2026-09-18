@@ -558,7 +558,7 @@ impl<K: Key, T: Traversible> Encrypted<K, T> {
     fn from_topology(key: K, topology: Arc<LpVec<Arc<dyn Singular>>>, decrypted: T) -> Self {
         let decrypted = Arc::new(decrypted);
         let inner = Inner {
-            tags: T::HASH,
+            tags: decrypted.tags_hash(),
             key: Extras(key),
             topology,
             decrypted,
