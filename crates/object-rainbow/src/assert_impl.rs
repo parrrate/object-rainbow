@@ -14,6 +14,8 @@ macro_rules! unpack_where {
     };
 }
 
+/// Assert that some `trait` is `impl`emented.
+///
 /// ```rust
 /// object_rainbow::assert_impl!(
 ///     impl<T> Send for std::sync::Arc<T>
