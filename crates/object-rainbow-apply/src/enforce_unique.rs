@@ -9,8 +9,6 @@ pub trait Collision<Diff: Send>: Send + Sized {
     fn check(self) -> object_rainbow::Result<Self::Output>;
 }
 
-pub struct ExposedState;
-
 #[pod]
 pub struct NoOverwrites<T>(pub T);
 
