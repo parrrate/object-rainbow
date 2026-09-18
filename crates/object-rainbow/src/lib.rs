@@ -290,6 +290,7 @@ pub trait FetchBytes: AsAny {
     /// Central method for traversal of [`Hash`]-based pointers. Returns byte data and [`Resolve`]
     /// for use in [`Parse`].
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode>;
+    /// Only fetch data.
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>>;
     fn fetch_bytes_local(&self) -> Result<Option<ByteNode>> {
         Ok(None)
