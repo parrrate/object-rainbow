@@ -403,6 +403,7 @@ impl<T> ByteOrd for dyn '_ + Fetch<T = T> {
     }
 }
 
+/// Used in [`Topological::traverse`].
 pub trait PointVisitor {
     fn visit(&mut self, point: &(impl 'static + SingularFetch<T: Traversible> + Clone));
 }
