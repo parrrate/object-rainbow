@@ -836,6 +836,8 @@ pub trait ToOutput {
         self.output()
     }
 
+    /// "Mangle hash" of the object. This is used to introduce runtime distinction between
+    /// data-identical objects similarly to compile-time [`Tagged::HASH`].
     fn mangle_hash(&self) -> Hash {
         Mangled(self).data_hash()
     }
