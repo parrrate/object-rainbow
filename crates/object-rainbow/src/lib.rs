@@ -292,7 +292,7 @@ pub trait FetchBytes: AsAny {
     fn fetch_bytes(&'_ self) -> FailFuture<'_, ByteNode>;
     /// Only fetch data.
     fn fetch_data(&'_ self) -> FailFuture<'_, Vec<u8>>;
-    /// Attempt to fetch data as if it's local. Returns [`None`] if it's not known to be local.
+    /// Attempt to fetch a node as if it's local. Returns [`None`] if it's not known to be local.
     fn fetch_bytes_local(&self) -> Result<Option<ByteNode>> {
         Ok(None)
     }
