@@ -25,7 +25,7 @@ impl<
     S: ExternalStore,
     E: 'static + Send + Sync + Clone,
     I: PointInput<Extra = (S, E)>,
-    T: Parse<I::WithExtra<E>> + Tagged,
+    T: Parse<I::WithExtra<E>> + TagsHash,
 > Parse<I> for ExternallyStored<T, S::Id>
 {
     fn parse(mut input: I) -> object_rainbow::Result<Self> {
