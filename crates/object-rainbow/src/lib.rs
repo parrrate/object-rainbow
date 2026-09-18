@@ -851,6 +851,7 @@ pub trait ToOutput {
         output.into()
     }
 
+    /// Collect this object's data (serialize the object).
     fn vec(&self) -> Vec<u8> {
         self.output()
     }
