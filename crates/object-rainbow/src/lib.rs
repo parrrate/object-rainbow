@@ -112,6 +112,7 @@ impl Address {
     }
 }
 
+/// The only valid connection between an [`Address`] and serialisation is in its [`Hash`].
 impl ToOutput for Address {
     fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.hash.to_output(output);
