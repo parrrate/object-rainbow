@@ -296,6 +296,7 @@ pub trait FetchBytes: AsAny {
     fn fetch_bytes_local(&self) -> Result<Option<ByteNode>> {
         Ok(None)
     }
+    /// Returns data if it's local and trivially/infallibly available.
     fn fetch_data_local(&self) -> Option<Vec<u8>> {
         None
     }
