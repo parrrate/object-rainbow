@@ -161,7 +161,7 @@ pub(crate) async fn store_object<S: ExternalStore, T: Traversible>(
 
 pub(crate) async fn load_extra<
     S: ExternalStore,
-    T: ParseSliceExtra<E> + Tagged,
+    T: ParseSliceExtra<E> + TagsHash,
     E: 'static + Send + Sync + Clone,
 >(
     store: &S,
