@@ -455,7 +455,7 @@ pub trait ExternalStore: 'static + Send + Sync + Clone + PartialEq {
     ) -> impl RainbowFuture<T = T> {
         externally_stored::load_extra::<_, T, _>(self, id, extra)
     }
-    fn load<T: ParseSlice + Tagged>(&self, id: &Self::Id) -> impl RainbowFuture<T = T> {
+    fn load<T: ParseSlice + TagsHash>(&self, id: &Self::Id) -> impl RainbowFuture<T = T> {
         externally_stored::load::<_, T>(self, id)
     }
 }
