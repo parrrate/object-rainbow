@@ -334,6 +334,7 @@ pub trait Fetch: Send + Sync + FetchBytes {
     fn fetch_local(&self) -> Option<Self::T> {
         None
     }
+    /// Get a reference to a locally stored object.
     fn get(&self) -> Option<&Self::T> {
         None
     }
