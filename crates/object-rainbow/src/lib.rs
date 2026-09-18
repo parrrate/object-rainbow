@@ -876,6 +876,7 @@ pub trait OptionOutput {
     fn to_option_output(option: Option<&Self>, output: &mut (impl ?Sized + Output));
 }
 
+/// Provide [`Parse`] for [`Option<Self>`].
 pub trait OptionParse<I: ParseInput>: Parse<I> {
     fn parse_option(input: I) -> crate::Result<Option<Self>>;
 }
