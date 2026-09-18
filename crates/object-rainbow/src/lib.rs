@@ -878,6 +878,7 @@ pub trait OptionOutput {
 
 /// Provide [`Parse`] for [`Option<Self>`].
 pub trait OptionParse<I: ParseInput>: Parse<I> {
+    /// Provide [`Parse::parse`] for [`Option<Self>`].
     fn parse_option(input: I) -> crate::Result<Option<Self>>;
 }
 
