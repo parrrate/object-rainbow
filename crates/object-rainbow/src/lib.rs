@@ -884,6 +884,7 @@ pub trait OptionParse<I: ParseInput>: Parse<I> {
 
 /// Provide [`ParseInline`] for [`Option<Self>`].
 pub trait OptionParseInline<I: ParseInput>: OptionParse<I> + ParseInline<I> {
+    /// Provide [`ParseInline::parse_inline`] for [`Option<Self>`].
     fn parse_option_inline(input: &mut I) -> crate::Result<Option<Self>>;
 }
 
