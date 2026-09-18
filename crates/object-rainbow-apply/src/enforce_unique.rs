@@ -10,7 +10,6 @@ pub trait Collision<Diff: Send>: Send + Sized {
 }
 
 pub struct ExposedState;
-pub struct ConcealedState;
 
 #[pod]
 pub struct NoOverwrites<T>(pub T);
