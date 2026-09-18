@@ -1407,7 +1407,7 @@ impl Resolve for TopoVec {
     }
 
     fn into_topovec(self: Arc<Self>) -> Option<TopoVec> {
-        Some((*self).clone())
+        Arc::try_unwrap(self).ok()
     }
 }
 
