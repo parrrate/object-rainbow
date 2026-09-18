@@ -232,6 +232,8 @@ pub trait Resolve: Send + Sync + AsAny {
     ) -> FailFuture<'a, ByteNode>;
     /// Resolve data only (without a nested [`Resolve`]).
     fn resolve_data(&'_ self, address: Address) -> FailFuture<'_, Vec<u8>>;
+    /// Attempt resolving assuming something is local. Returns [`None`] when it's not known to be
+    /// local.
     fn try_resolve_local(
         &self,
         address: Address,
