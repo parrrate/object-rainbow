@@ -917,6 +917,7 @@ pub trait ListHashes {
     }
 }
 
+/// Central `trait` responsible for providing access to walking the object tree.
 pub trait Topological: ListHashes {
     fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         let _ = visitor;
