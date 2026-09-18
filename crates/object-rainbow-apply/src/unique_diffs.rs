@@ -11,14 +11,6 @@ use crate::{Apply, Parallel, Sequential, skip::FilterDiffs};
 #[pod]
 pub struct Inserted;
 
-impl Apply<bool> for Inserted {
-    type Output = bool;
-
-    async fn apply(&mut self, inserted: bool) -> object_rainbow::Result<Self::Output> {
-        Ok(inserted)
-    }
-}
-
 impl<T: Send> Apply<Option<T>> for Inserted {
     type Output = bool;
 
