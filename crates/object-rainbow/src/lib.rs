@@ -347,6 +347,7 @@ pub trait Fetch: Send + Sync + FetchBytes {
     }
     /// Restore the inner state after mutations completed (for example, [`Hash`] of what's stored).
     fn get_mut_finalize(&mut self) {}
+    /// Attempt unwrapping the object stored inside.
     fn try_unwrap(self: Arc<Self>) -> Option<Self::T> {
         None
     }
