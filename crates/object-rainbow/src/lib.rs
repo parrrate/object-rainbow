@@ -919,6 +919,9 @@ pub trait ListHashes {
 
 /// Central `trait` responsible for providing access to walking the object tree.
 pub trait Topological: ListHashes {
+    /// List what objects this one refers to.
+    ///
+    /// Each referred object is also expected to be [`Traversible`].
     fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         let _ = visitor;
     }
