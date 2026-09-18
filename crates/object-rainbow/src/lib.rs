@@ -277,6 +277,7 @@ impl<I: PointInput> Parse<I> for Arc<dyn '_ + Resolve> {
     }
 }
 
+/// Just clone the [`Resolve`] from [`PointInput`].
 impl<I: PointInput> ParseInline<I> for Arc<dyn '_ + Resolve> {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         Ok(input.resolve())
