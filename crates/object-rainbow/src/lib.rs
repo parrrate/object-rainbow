@@ -17,6 +17,7 @@ use std::{
     sync::Arc,
 };
 
+#[doc(hidden)]
 pub use anyhow::anyhow;
 use futures_concurrency::future::TryJoin;
 use generic_array::{ArrayLength, GenericArray, functional::FunctionalSequence, sequence::Split};
