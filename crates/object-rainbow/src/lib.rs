@@ -330,6 +330,7 @@ pub trait Fetch: Send + Sync + FetchBytes {
     fn try_fetch_local(&self) -> Result<Option<Self::T>> {
         Ok(None)
     }
+    /// Fetch locally if possible. Typically this is just [`Fetch::get`]+[`Clone::clone`].
     fn fetch_local(&self) -> Option<Self::T> {
         None
     }
