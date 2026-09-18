@@ -8,7 +8,7 @@ use futures_concurrency::future::TryJoin;
 use object_rainbow::{
     Address, ExtraFor, FullHash, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Object,
     OptionalHash, Parse, ParseInline, ParseSlice, ParseSliceExtra, PointInput, PointVisitor,
-    ReflessInline, Resolve, Singular, SingularFetch, Size, Tagged, ToOutput, Topological,
+    ReflessInline, Resolve, Singular, SingularFetch, Size, Tagged, TagsHash, ToOutput, Topological,
     Traversible, WithHash, addressed::ExtractResolve, assert_impl, derive_for_wrapped,
 };
 use object_rainbow_point::{Extras, Point};
@@ -448,7 +448,7 @@ pub trait ExternalStore: 'static + Send + Sync + Clone + PartialEq {
     {
         externally_stored::store_object(self, object)
     }
-    fn load_extra<T: ParseSliceExtra<E> + Tagged, E: 'static + Send + Sync + Clone>(
+    fn load_extra<T: ParseSliceExtra<E> + TagsHash, E: 'static + Send + Sync + Clone>(
         &self,
         id: &Self::Id,
         extra: E,
