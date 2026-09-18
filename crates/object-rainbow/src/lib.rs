@@ -439,6 +439,9 @@ pub struct ReflessInput<'d> {
     data: Option<ReflessData<'d>>,
 }
 
+/// Canonical implementation of [`PointInput`].
+///
+/// Generally, you shouldn't be referring to this (see [`Object`], [`Inline`] and [`ExtraFor`]).
 pub struct Input<'d, Extra: Clone = ()> {
     refless: ReflessInput<'d>,
     resolve: Cow<'d, Arc<dyn Resolve>>,
