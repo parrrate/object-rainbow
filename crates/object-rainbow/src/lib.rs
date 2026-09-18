@@ -842,6 +842,9 @@ pub trait ToOutput {
         Mangled(self).data_hash()
     }
 
+    /// Construct an [`Output`], possibly finalising it afterwards.
+    ///
+    /// For an example of a [`FromOutput`] see [`Hash`].
     fn output<T: FromOutput<Output: Default>>(&self) -> T {
         let mut output = T::Output::default();
         self.to_output(&mut output);
