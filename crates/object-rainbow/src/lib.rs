@@ -825,6 +825,7 @@ pub trait ToOutput {
     /// Provide object's byte representation to an [`Output`].
     fn to_output(&self, output: &mut (impl ?Sized + Output));
 
+    /// Return a [`Sha256`] hasher pre-filled with data of this object.
     fn hasher(&self) -> Sha256 {
         self.output()
     }
