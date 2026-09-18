@@ -76,7 +76,7 @@ impl<K: Send, V: Send, S> Collision<(V, K), S> for Option<V> {
     }
 }
 
-impl<K: Send, V: Send> Collision<(Option<V>, K), ExposedState> for Option<V> {
+impl<K: Send, V: Send, S> Collision<(Option<V>, K), S> for Option<V> {
     type Output = Option<V>;
 
     fn always_okay((value, _): &(Option<V>, K)) -> bool {
