@@ -1051,6 +1051,8 @@ pub trait Topological: ListHashes {
     }
 }
 
+/// Compile-time type information used to differentiate objects even when they have same serialised
+/// data. Typically empty.
 pub trait Tagged {
     const TAGS: Tags = Tags(&[], &[]);
     const HASH: Hash = Self::TAGS.hash();
