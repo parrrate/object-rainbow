@@ -1469,6 +1469,7 @@ pub struct AsWrite<'a, O: ?Sized> {
     output: &'a mut O,
 }
 
+/// This implementation is guaranteed to never error (but might panic).
 impl<O: ?Sized + Output> std::io::Write for AsWrite<'_, O> {
     fn write(&mut self, data: &[u8]) -> std::io::Result<usize> {
         self.output.write(data);
