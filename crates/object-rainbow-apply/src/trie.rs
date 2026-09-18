@@ -35,19 +35,6 @@ where
     }
 }
 
-/// `true` represents removal, `false` represents insertion to keep layout equivalence.
-impl<T: ReflessObject> Apply<(bool, T)> for TrieSet<T> {
-    type Output = bool;
-
-    async fn apply(&mut self, (remove, value): (bool, T)) -> object_rainbow::Result<Self::Output> {
-        Ok(if remove {
-            !self.remove(&value).await?
-        } else {
-            self.insert(&value).await?
-        })
-    }
-}
-
 impl<T: ReflessObject> Apply<(Option<()>, T)> for TrieSet<T> {
     type Output = Option<T>;
 
