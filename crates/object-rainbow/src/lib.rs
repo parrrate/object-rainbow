@@ -57,7 +57,7 @@ pub mod extra_option;
 pub mod extras;
 pub mod ff;
 pub mod fn_fetch;
-mod hash;
+pub mod hash;
 pub mod hashed;
 mod impls;
 pub mod incr_byte_niche;
