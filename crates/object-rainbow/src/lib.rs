@@ -904,6 +904,7 @@ pub trait ListHashes {
         let _ = f;
     }
 
+    /// [`Hash`] of all [`Hash`]es the object refers to other objects by.
     fn topology_hash(&self) -> Hash {
         Hashes(self).data_hash()
     }
