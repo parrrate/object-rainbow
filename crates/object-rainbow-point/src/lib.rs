@@ -153,7 +153,7 @@ impl<T, Extra: 'static + Clone> RawPoint<T, Extra> {
 
 impl<T: 'static + FullHash, Extra: 'static + Send + Sync + ExtraFor<T>> RawPoint<T, Extra> {
     pub fn into_point(self) -> Point<T> {
-        Point::from_singular(self)
+        Point::from_singular_fetch(self)
     }
 }
 
@@ -220,7 +220,7 @@ impl<T> Point<T> {
         Self::from_fetch(object.full_hash(), fetch)
     }
 
-    pub fn from_singular(singular: impl 'static + SingularFetch<T = T>) -> Self
+    pub fn from_singular_fetch(singular: impl 'static + SingularFetch<T = T>) -> Self
     where
         T: FullHash,
     {

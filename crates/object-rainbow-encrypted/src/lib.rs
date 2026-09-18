@@ -348,7 +348,7 @@ impl<'a, K: Key, V: ?Sized + PointVisitor> PointVisitor for IterateResolution<'a
     fn visit(&mut self, decrypted: &(impl 'static + SingularFetch<T: Traversible> + Clone)) {
         let decrypted = decrypted.clone();
         let encrypted = self.topology.next().expect("length mismatch").clone();
-        let point = Point::from_singular(InnerFetch {
+        let point = Point::from_singular_fetch(InnerFetch {
             key: self.key.clone(),
             decrypted,
             encrypted,
@@ -515,7 +515,7 @@ pub async fn encrypt_point<K: Key, T: Traversible>(
         && resolve.key.0 == key
     {
         let address = resolve.translate(*address)?;
-        let point = Point::from_singular(RawFetch {
+        let point = Point::from_singular_fetch(RawFetch {
             key,
             resolve: resolve.resolve.clone(),
             address,
