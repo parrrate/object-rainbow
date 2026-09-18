@@ -210,8 +210,8 @@ impl ByteOrd for Hash {
 #[test]
 fn none_is_zeros() {
     assert_eq!(
-        None::<Hash>.to_array().into_array(),
-        [
+        &*None::<Hash>.to_array(),
+        &[
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0,
         ]
@@ -221,8 +221,8 @@ fn none_is_zeros() {
 #[test]
 fn none_none_is_one() {
     assert_eq!(
-        None::<Option<Hash>>.to_array().into_array(),
-        [
+        &*None::<Option<Hash>>.to_array(),
+        &[
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 1,
         ]
@@ -232,8 +232,8 @@ fn none_none_is_one() {
 #[test]
 fn none_none_none_is_two() {
     assert_eq!(
-        None::<Option<Option<Hash>>>.to_array().into_array(),
-        [
+        &*None::<Option<Option<Hash>>>.to_array(),
+        &[
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 2,
         ]
