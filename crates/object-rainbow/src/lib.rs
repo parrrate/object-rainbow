@@ -360,6 +360,8 @@ pub trait Fetch: Send + Sync + FetchBytes {
     }
 }
 
+/// Even though we refer to something, we don't know [`Hash`] for it. To match correctness, we don't
+/// `impl`ement [`Parse`]/[`ParseInline`].
 impl<T> ToOutput for dyn '_ + Fetch<T = T> {
     fn to_output(&self, _: &mut (impl ?Sized + Output)) {}
 }
