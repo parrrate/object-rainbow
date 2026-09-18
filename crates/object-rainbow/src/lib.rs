@@ -243,6 +243,7 @@ pub trait Resolve: Send + Sync + AsAny {
         let _ = this;
         Ok(None)
     }
+    /// Topology hash of the underyling sequence if this resolver is index-based.
     fn topology_hash(&self) -> Option<Hash> {
         None
     }
