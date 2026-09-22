@@ -113,7 +113,7 @@ impl AsRef<[u8]> for Hash {
     }
 }
 
-/// `Option<Hash>` but more explicitly represented as `[u8; HASH_SIZE]`.
+/// Some level of `Option<Hash>` but more explicitly represented as `[u8; HASH_SIZE]`.
 #[pod]
 pub struct OptionalHash([u8; HASH_SIZE]);
 
