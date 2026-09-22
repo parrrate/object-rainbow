@@ -1,7 +1,4 @@
-use std::ops::Add;
-
-use generic_array::{ArrayLength, GenericArray};
-use typenum::{B0, B1, Bit, IsGreater, IsLess, ToInt, U1, U2, U255, U256};
+use typenum::{B0, B1, Bit};
 
 use crate::{ff::Ff, niche_cut::NicheCut, *};
 
@@ -108,70 +105,11 @@ where
     type Size = N;
 }
 
-pub struct UnspecifiedOptionNiche;
-
-pub struct OptionNiche<N, K>(N, K);
-
-pub trait NextNiche {
-    type NextNiche<N: ArrayLength>;
-}
-
-pub trait WrapNext {
-    type Wrap<N: ArrayLength, J>;
-}
-
-impl WrapNext for B1 {
-    type Wrap<N: ArrayLength, J> = SomeNiche<OptionNiche<N, J>>;
-}
-
-impl WrapNext for B0 {
-    type Wrap<N: ArrayLength, J> = UnspecifiedOptionNiche;
-}
-
-impl<
-    K: IsGreater<U1, Output = B1>
-        + IsLess<U256, Output = B1>
-        + Add<B1, Output = J>
-        + IsLess<U255, Output = B>,
-    J,
-    B: WrapNext,
-> NextNiche for K
+impl<T: OptionPrefix, N: Niche<NeedsTag = B0>> MaybeHasNiche for Option<T>
+where
+    (T::OptionPrefix, T): MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
 {
-    type NextNiche<N: ArrayLength> = B::Wrap<N, J>;
-}
-
-impl<N: ArrayLength, K: ToInt<u8> + NextNiche> Niche for OptionNiche<N, K> {
-    type NeedsTag = B0;
-    type Cut = B1;
-    type N = N;
-    fn niche() -> GenericArray<u8, Self::N> {
-        let mut niche = GenericArray::default();
-        niche[0] = u8::MAX - K::INT;
-        niche
-    }
-    type Next = K::NextNiche<N>;
-}
-
-pub trait OptionNicheWrapper: Bit {
-    type Wrap<Mn: Niche<NeedsTag = Self, N: Add<Self, Output: ArrayLength>>>;
-}
-
-impl OptionNicheWrapper for B0 {
-    type Wrap<Mn: Niche<NeedsTag = Self, N: Add<Self, Output: ArrayLength>>> = Mn::Next;
-}
-
-impl OptionNicheWrapper for B1 {
-    type Wrap<Mn: Niche<NeedsTag = Self, N: Add<Self, Output: ArrayLength>>> =
-        SomeNiche<OptionNiche<<<Mn as Niche>::N as Add<Self>>::Output, U2>>;
-}
-
-impl<
-    T: MaybeHasNiche<MnArray: MnArray<MaybeNiche = Mn>>,
-    Mn: Niche<NeedsTag = B, N: Add<B, Output: ArrayLength>>,
-    B: OptionNicheWrapper,
-> MaybeHasNiche for Option<T>
-{
-    type MnArray = B::Wrap<Mn>;
+    type MnArray = N::Next;
 }
 
 impl<
