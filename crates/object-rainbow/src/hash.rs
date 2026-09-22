@@ -24,6 +24,7 @@ mod hex;
     Ord,
     Hash,
     Size,
+    ByteOrd,
 )]
 pub struct Hash([u8; HASH_SIZE]);
 
@@ -181,12 +182,6 @@ impl PartialEq<Hash> for OptionalHash {
 impl PartialEq<OptionalHash> for Hash {
     fn eq(&self, hash: &OptionalHash) -> bool {
         self.0 == hash.0
-    }
-}
-
-impl ByteOrd for Hash {
-    fn bytes_cmp(&self, other: &Self) -> Ordering {
-        self.cmp(other)
     }
 }
 
