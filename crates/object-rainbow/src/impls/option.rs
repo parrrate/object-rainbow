@@ -1,4 +1,4 @@
-use typenum::{B0, B1, Bit};
+use typenum::{B0, B1};
 
 use crate::{ff::Ff, niche_cut::NicheCut, *};
 
@@ -22,29 +22,6 @@ impl<T: MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B>>>, B: Opt
     OptionPrefix for T
 {
     type OptionPrefix = B::OptionPrefix;
-}
-
-pub trait TaggedOption {
-    type TaggedOption;
-    type Niche;
-    const TAGGED_OPTION: bool = true;
-    fn none_data() -> impl AsRef<[u8]>;
-    fn none_output(output: &mut (impl ?Sized + Output)) {
-        if output.is_real() {
-            output.write(Self::none_data().as_ref());
-        }
-    }
-}
-
-impl<T: MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag = B>, B: Bit>
-    TaggedOption for T
-{
-    type TaggedOption = B;
-    type Niche = N;
-    const TAGGED_OPTION: bool = B::BOOL;
-    fn none_data() -> impl AsRef<[u8]> {
-        N::niche()
-    }
 }
 
 impl<T: ToOutput + OptionPrefix, N: Niche<NeedsTag = B0>> OptionOutput for T
@@ -71,7 +48,10 @@ impl<T: OptionOutput> ToOutput for Option<T> {
 
 impl<T: OptionOutput + InlineOutput> InlineOutput for Option<T> {}
 
-impl<T: OptionOutput + ByteOrd + TaggedOption<Niche: MinNiche>> ByteOrd for Option<T> {
+impl<T: OptionOutput + ByteOrd + OptionPrefix> ByteOrd for Option<T>
+where
+    (T::OptionPrefix, T): MaybeHasNiche<MnArray: MnArray<MaybeNiche: MinNiche>>,
+{
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         match (self, other) {
             (Self::None, Self::None) => Ordering::Equal,
