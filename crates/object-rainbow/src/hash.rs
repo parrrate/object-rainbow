@@ -1,6 +1,6 @@
 use std::{fmt::Display, ops::Add};
 
-use typenum::{Add1, B0, B1, ToInt, U0, U1};
+use typenum::{Add1, B0, B1, ToInt, U0, U16, U32};
 
 use crate::*;
 
@@ -49,9 +49,11 @@ impl<N: ToInt<u8> + Add<B1>> Niche for HashNiche<N> {
     type Cut = B0;
     type N = <Hash as Size>::Size;
     fn niche() -> GenericArray<u8, Self::N> {
-        let mut niche = GenericArray::default();
-        let last_byte = niche.len() - 1;
-        niche[last_byte] = N::to_int();
+        let mut niche: GenericArray<u8, U32> = GenericArray::default();
+        let last = u128::MAX - u128::from(N::to_int());
+        let second: &mut GenericArray<u8, U16> =
+            <&mut GenericArray<u8, U32> as Split<u8, U16>>::split(&mut niche).1;
+        *second = GenericArray::<u8, U16>::from(last.to_be_bytes());
         niche
     }
     type Next = SomeNiche<HashNiche<Add1<N>>>;
@@ -134,7 +136,7 @@ impl Display for OptionalHash {
 }
 
 impl MaybeHasNiche for OptionalHash {
-    type MnArray = SomeNiche<HashNiche<U1>>;
+    type MnArray = <Option<Hash> as MaybeHasNiche>::MnArray;
 }
 
 impl From<[u8; HASH_SIZE]> for OptionalHash {
@@ -202,8 +204,8 @@ fn none_is_zeros() {
     assert_eq!(
         &*None::<Hash>.to_array(),
         &[
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         ]
     );
 }
@@ -213,8 +215,8 @@ fn none_none_is_one() {
     assert_eq!(
         &*None::<Option<Hash>>.to_array(),
         &[
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 1,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe,
         ]
     );
 }
@@ -224,8 +226,8 @@ fn none_none_none_is_two() {
     assert_eq!(
         &*None::<Option<Option<Hash>>>.to_array(),
         &[
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 2,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfd,
         ]
     );
 }

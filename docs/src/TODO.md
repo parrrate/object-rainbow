@@ -22,6 +22,5 @@ Alisa Feistel maintains this list for herself, please do NOT treat this as an in
   - consistency error cascade
 - `tokio_util::codec`
 - fixed-size reverse parse-ahead
-- simpler `Hash` niche
 - `DecrByteNiche` for `Option`
 - move `Apply` on things to things
