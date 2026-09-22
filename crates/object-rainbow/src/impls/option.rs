@@ -56,7 +56,7 @@ impl<T: OptionOutput> ToOutput for Option<T> {
 
 impl<T: OptionOutput + InlineOutput> InlineOutput for Option<T> {}
 
-impl<T: ByteOrd + TaggedOption<Niche: MinNiche>> ByteOrd for Option<T> {
+impl<T: OptionOutput + ByteOrd + TaggedOption<Niche: MinNiche>> ByteOrd for Option<T> {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         match (self, other) {
             (Self::None, Self::None) => Ordering::Equal,
