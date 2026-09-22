@@ -80,7 +80,8 @@ impl<T: Tagged> Tagged for Option<T> {
 
 impl<T: OptionPrefix, N: Unsigned> Size for Option<T>
 where
-    (T::OptionPrefix, T): Size<Size = N>,
+    (T::OptionPrefix, T):
+        Size<Size = N> + MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<N = N>>>,
 {
     type Size = N;
 }
