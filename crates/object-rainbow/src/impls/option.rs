@@ -188,67 +188,18 @@ impl<
     type MnArray = B::Wrap<Mn>;
 }
 
-pub trait OptionParseBit<T, I>: Bit {
-    fn parse_option(input: I) -> crate::Result<Option<T>>;
-}
-
-impl<T: Parse<I>, I: ParseInput> OptionParseBit<T, I> for B1 {
-    fn parse_option(mut input: I) -> crate::Result<Option<T>> {
-        match input.parse_inline::<u8>()? {
-            255 => Ok(Some(input.parse()?)),
-            254 => {
-                input.empty()?;
-                Ok(None)
-            }
-            _ => Err(Error::OutOfBounds),
-        }
-    }
-}
-
 impl<
-    T: Parse<I> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
+    T: Parse<I> + OptionPrefix<OptionPrefix: ParseInline<I>>,
+    I: ParseInput,
     N: Niche<NeedsTag = B0>,
-    I: ParseInput,
-> OptionParseBit<T, I> for B0
-{
-    fn parse_option(input: I) -> crate::Result<Option<T>> {
-        input.parse_compare(&N::niche())
-    }
-}
-
-pub trait OptionParseBitInline<T, I>: OptionParseBit<T, I> {
-    fn parse_option_inline(input: &mut I) -> crate::Result<Option<T>>;
-}
-
-impl<T: ParseInline<I>, I: ParseInput> OptionParseBitInline<T, I> for B1 {
-    fn parse_option_inline(input: &mut I) -> crate::Result<Option<T>> {
-        match input.parse_inline::<u8>()? {
-            255 => Ok(Some(input.parse_inline()?)),
-            254 => Ok(None),
-            _ => Err(Error::OutOfBounds),
-        }
-    }
-}
-
-impl<
-    T: ParseInline<I> + MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
-    N: Niche<NeedsTag = B0>,
-    I: ParseInput,
-> OptionParseBitInline<T, I> for B0
-{
-    fn parse_option_inline(input: &mut I) -> crate::Result<Option<T>> {
-        input.parse_compare_inline(&N::niche())
-    }
-}
-
-impl<
-    T: Parse<I> + MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B>>>,
-    B: OptionParseBit<T, I>,
-    I: ParseInput,
 > OptionParse<I> for T
+where
+    (T::OptionPrefix, T): MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
 {
     fn parse_option(input: I) -> crate::Result<Option<Self>> {
-        B::parse_option(input)
+        Ok(input
+            .parse_compare::<(T::OptionPrefix, T)>(&N::niche())?
+            .map(|(_, object)| object))
     }
 }
 
@@ -259,13 +210,17 @@ impl<T: OptionParse<I>, I: ParseInput> Parse<I> for Option<T> {
 }
 
 impl<
-    T: ParseInline<I> + MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B>>>,
-    B: OptionParseBitInline<T, I>,
+    T: ParseInline<I> + OptionPrefix<OptionPrefix: ParseInline<I>>,
     I: ParseInput,
+    N: Niche<NeedsTag = B0>,
 > OptionParseInline<I> for T
+where
+    (T::OptionPrefix, T): MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
 {
     fn parse_option_inline(input: &mut I) -> crate::Result<Option<Self>> {
-        B::parse_option_inline(input)
+        Ok(input
+            .parse_compare_inline::<(T::OptionPrefix, T)>(&N::niche())?
+            .map(|(_, object)| object))
     }
 }
 
