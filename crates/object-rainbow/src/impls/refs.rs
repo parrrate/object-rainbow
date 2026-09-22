@@ -31,6 +31,10 @@ impl<T: ?Sized + Topological> Topological for &T {
     fn traverse(&self, visitor: &mut (impl ?Sized + PointVisitor)) {
         (**self).traverse(visitor);
     }
+
+    fn topology(&self) -> TopoVec {
+        (**self).topology()
+    }
 }
 
 impl<T: ?Sized + ByteOrd> ByteOrd for &T {
