@@ -2099,10 +2099,10 @@ fn options() {
     assert_eq!(T3::SIZE, 1);
     assert_eq!(T4::SIZE, 1);
     assert_eq!(T5::SIZE, 1);
-    assert_eq!(Some(Some(Some(()))).vec(), [0]);
-    assert_eq!(Some(Some(None::<()>)).vec(), [1]);
-    assert_eq!(Some(None::<Option<()>>).vec(), [2]);
-    assert_eq!(None::<Option<Option<()>>>.vec(), [3]);
+    assert_eq!(Some(Some(Some(()))).vec(), [255]);
+    assert_eq!(Some(Some(None::<()>)).vec(), [254]);
+    assert_eq!(Some(None::<Option<()>>).vec(), [253]);
+    assert_eq!(None::<Option<Option<()>>>.vec(), [252]);
 
     assert_eq!(false.vec(), [0]);
     assert_eq!(true.vec(), [1]);
@@ -2119,8 +2119,8 @@ fn options() {
     assert_eq!(Some(None::<Option<bool>>).vec(), [3]);
     assert_eq!(None::<Option<Option<bool>>>.vec(), [4]);
     assert_eq!(Option::<Hash>::SIZE, HASH_SIZE);
-    assert_eq!(Some(()).vec(), [0]);
-    assert_eq!(Some(((), ())).vec(), [0]);
+    assert_eq!(Some(()).vec(), [255]);
+    assert_eq!(Some(((), ())).vec(), [255]);
     assert_eq!(Some(((), true)).vec(), [1]);
     assert_eq!(Some((true, true)).vec(), [1, 1]);
     assert_eq!(Some((Some(true), true)).vec(), [1, 1]);

@@ -33,13 +33,13 @@ impl<T: ToOutput + TaggedOption> OptionOutput for T {
         match option {
             Some(value) => {
                 if T::TAGGED_OPTION {
-                    0u8.to_output(output);
+                    255u8.to_output(output);
                 }
                 value.to_output(output);
             }
             None => {
                 if T::TAGGED_OPTION {
-                    1u8.to_output(output);
+                    254u8.to_output(output);
                 } else {
                     T::none_output(output);
                 }
@@ -145,7 +145,7 @@ impl<N: ArrayLength, K: ToInt<u8> + NextNiche> Niche for OptionNiche<N, K> {
     type N = N;
     fn niche() -> GenericArray<u8, Self::N> {
         let mut niche = GenericArray::default();
-        niche[0] = K::INT;
+        niche[0] = u8::MAX - K::INT;
         niche
     }
     type Next = K::NextNiche<N>;
@@ -179,11 +179,13 @@ pub trait OptionParseBit<T, I>: Bit {
 
 impl<T: Parse<I>, I: ParseInput> OptionParseBit<T, I> for B1 {
     fn parse_option(mut input: I) -> crate::Result<Option<T>> {
-        if input.parse_inline()? {
-            input.empty()?;
-            Ok(None)
-        } else {
-            Ok(Some(input.parse()?))
+        match input.parse_inline::<u8>()? {
+            255 => Ok(Some(input.parse()?)),
+            254 => {
+                input.empty()?;
+                Ok(None)
+            }
+            _ => Err(Error::OutOfBounds),
         }
     }
 }
@@ -205,10 +207,10 @@ pub trait OptionParseBitInline<T, I>: OptionParseBit<T, I> {
 
 impl<T: ParseInline<I>, I: ParseInput> OptionParseBitInline<T, I> for B1 {
     fn parse_option_inline(input: &mut I) -> crate::Result<Option<T>> {
-        if input.parse_inline()? {
-            Ok(None)
-        } else {
-            Ok(Some(input.parse_inline()?))
+        match input.parse_inline::<u8>()? {
+            255 => Ok(Some(input.parse_inline()?)),
+            254 => Ok(None),
+            _ => Err(Error::OutOfBounds),
         }
     }
 }
@@ -296,16 +298,16 @@ assert_impl!(
 );
 
 #[test]
-fn unit_none_is_1() {
-    assert_eq!(None::<()>.vec(), [1]);
+fn unit_none_is_254() {
+    assert_eq!(None::<()>.vec(), [254]);
 }
 
 #[test]
-fn unit_none_none_is_2() {
-    assert_eq!(None::<Option<()>>.vec(), [2]);
+fn unit_none_none_is_253() {
+    assert_eq!(None::<Option<()>>.vec(), [253]);
 }
 
 #[test]
-fn unit_none_none_none_is_3() {
-    assert_eq!(None::<Option<Option<()>>>.vec(), [3]);
+fn unit_none_none_none_is_252() {
+    assert_eq!(None::<Option<Option<()>>>.vec(), [252]);
 }
