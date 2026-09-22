@@ -258,16 +258,6 @@ impl<T: OptionParseInline<I>, I: ParseInput> ParseInline<I> for Option<T> {
     }
 }
 
-impl Equivalent<bool> for Option<()> {
-    fn into_equivalent(self) -> bool {
-        self.is_none()
-    }
-
-    fn from_equivalent(object: bool) -> Self {
-        (!object).then_some(())
-    }
-}
-
 impl<T, U: Equivalent<T>> Equivalent<Option<T>> for Option<U> {
     fn into_equivalent(self) -> Option<T> {
         self.map(U::into_equivalent)
@@ -304,12 +294,6 @@ assert_impl!(
     {
     }
 );
-
-#[test]
-fn equivalent_to_bool() {
-    assert_eq!(false.vec(), Option::from_equivalent(false).vec());
-    assert_eq!(true.vec(), Option::from_equivalent(true).vec());
-}
 
 #[test]
 fn unit_none_is_1() {
