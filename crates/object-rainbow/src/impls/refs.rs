@@ -4,6 +4,10 @@ impl<T: ?Sized + ToOutput> ToOutput for &T {
     fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         (**self).to_output(output);
     }
+
+    fn vec(&self) -> Vec<u8> {
+        (**self).vec()
+    }
 }
 
 impl<T: ?Sized + InlineOutput> InlineOutput for &T {}
