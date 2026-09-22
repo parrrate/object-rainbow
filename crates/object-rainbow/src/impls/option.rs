@@ -3,7 +3,29 @@ use std::ops::Add;
 use generic_array::{ArrayLength, GenericArray};
 use typenum::{B0, B1, Bit, IsGreater, IsLess, ToInt, U0, U1, U2, U255, U256};
 
-use crate::*;
+use crate::{ff::Ff, niche_cut::NicheCut, *};
+
+pub trait OptionPrefix {
+    type OptionPrefix: Monostate + InlineOutput + MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche>>;
+}
+
+pub trait OptionPrefixBit {
+    type OptionPrefix: Monostate + InlineOutput + MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche>>;
+}
+
+impl OptionPrefixBit for B0 {
+    type OptionPrefix = ();
+}
+
+impl OptionPrefixBit for B1 {
+    type OptionPrefix = (Ff, NicheCut);
+}
+
+impl<T: MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B>>>, B: OptionPrefixBit>
+    OptionPrefix for T
+{
+    type OptionPrefix = B::OptionPrefix;
+}
 
 pub trait TaggedOption {
     type TaggedOption;
@@ -28,21 +50,17 @@ impl<T: MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>, N: Niche<NeedsTag = B>,
     }
 }
 
-impl<T: ToOutput + TaggedOption> OptionOutput for T {
+impl<T: ToOutput + OptionPrefix, N: Niche<NeedsTag = B0>> OptionOutput for T
+where
+    (T::OptionPrefix, T): MaybeHasNiche<MnArray: MnArray<MaybeNiche = N>>,
+{
     fn to_option_output(option: Option<&Self>, output: &mut (impl ?Sized + Output)) {
         match option {
             Some(value) => {
-                if T::TAGGED_OPTION {
-                    255u8.to_output(output);
-                }
-                value.to_output(output);
+                (T::OptionPrefix::default(), value).to_output(output);
             }
             None => {
-                if T::TAGGED_OPTION {
-                    254u8.to_output(output);
-                } else {
-                    T::none_output(output);
-                }
+                N::niche().to_output(output);
             }
         }
     }
@@ -272,6 +290,7 @@ assert_impl!(
     where
         T: Inline<E> + MaybeHasNiche<MnArray: MaybeNiche + Niche<NeedsTag = B0>>,
         E: Clone,
+        ((), T): MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B0>>>,
     {
     }
 );
@@ -281,15 +300,7 @@ assert_impl!(
     where
         T: Inline<E> + MaybeHasNiche<MnArray: MaybeNiche + Niche<NeedsTag = B1>>,
         E: Clone,
-    {
-    }
-);
-
-assert_impl!(
-    impl<T, E> Object<E> for Option<T>
-    where
-        T: Object<E> + MaybeHasNiche<MnArray: MaybeNiche + Niche<NeedsTag = B1>>,
-        E: Clone,
+        ((Ff, NicheCut), T): MaybeHasNiche<MnArray: MnArray<MaybeNiche: Niche<NeedsTag = B0>>>,
     {
     }
 );
