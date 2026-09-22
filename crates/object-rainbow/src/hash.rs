@@ -156,7 +156,7 @@ impl OptionalHash {
 
     /// Check whether this is [`Self::NONE`].
     pub fn is_none(&self) -> bool {
-        *self == Self::NONE
+        self.0[..16] == Self::NONE.0[..16]
     }
 
     /// Get [`Hash`] or panic.
