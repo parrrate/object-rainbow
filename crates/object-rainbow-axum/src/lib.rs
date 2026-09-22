@@ -1,5 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
+#[derive(Debug)]
 pub struct Refless<T>(pub T);
 
 impl<T> Deref for Refless<T> {
