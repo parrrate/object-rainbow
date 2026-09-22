@@ -154,7 +154,7 @@ impl OptionalHash {
         !self.is_none()
     }
 
-    /// Check whether this is [`Self::NONE`].
+    /// Check whether this is [`Self::NONE`] or some less-nested [`None`].
     pub fn is_none(&self) -> bool {
         self.0[..16] == Self::NONE.0[..16]
     }
