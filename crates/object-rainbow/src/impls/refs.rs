@@ -41,6 +41,7 @@ impl<T: ?Sized + ByteOrd> ByteOrd for &T {
 
 impl<T: ?Sized + Size> Size for &T {
     type Size = T::Size;
+    const SIZE: usize = T::SIZE;
 }
 
 impl<T: ?Sized + MaybeHasNiche> MaybeHasNiche for &T {
