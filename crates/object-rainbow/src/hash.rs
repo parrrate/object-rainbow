@@ -114,7 +114,7 @@ impl AsRef<[u8]> for Hash {
 }
 
 /// `Option<Hash>` but more explicitly represented as `[u8; HASH_SIZE]`.
-#[pod(no_niche, no_default)]
+#[pod(no_default)]
 pub struct OptionalHash([u8; HASH_SIZE]);
 
 /// in preparation for non-all-`0`s `None`
@@ -133,10 +133,6 @@ impl Display for OptionalHash {
         }
         Ok(())
     }
-}
-
-impl MaybeHasNiche for OptionalHash {
-    type MnArray = <Option<Hash> as MaybeHasNiche>::MnArray;
 }
 
 impl From<[u8; HASH_SIZE]> for OptionalHash {
