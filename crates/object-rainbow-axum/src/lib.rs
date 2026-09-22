@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Refless<T>(pub T);
 
 impl<T> Deref for Refless<T> {
