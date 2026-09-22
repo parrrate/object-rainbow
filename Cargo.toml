@@ -5,6 +5,7 @@ members = [
     "crates/object-rainbow-append-tree",
     "crates/object-rainbow-apply",
     "crates/object-rainbow-array-map",
+    "crates/object-rainbow-axum",
     "crates/object-rainbow-bridge",
     "crates/object-rainbow-cdc",
     "crates/object-rainbow-chain-tree",
@@ -28,7 +29,8 @@ members = [
     "crates/object-rainbow-sign",
     "crates/object-rainbow-store",
     "crates/object-rainbow-store-opendal",
-    "crates/object-rainbow-trie", "crates/object-rainbow-unique-diffs",
+    "crates/object-rainbow-trie",
+    "crates/object-rainbow-unique-diffs",
     "crates/xtask",
     "crates/xtask-release",
 ]
@@ -65,6 +67,7 @@ object-rainbow-trie = { version = "0.0.0-a.21", path = "crates/object-rainbow-tr
 anyhow = "1.0.102"
 async-executor = "1.14.0"
 async-fs = "2.2.0"
+axum = { version = "0.8.9", default-features = false }
 bitvec = { version = "1.0.1", default-features = false }
 blocking = "1.7.0"
 bytes = "1.11.1"
