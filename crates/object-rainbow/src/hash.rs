@@ -63,6 +63,8 @@ impl MaybeHasNiche for Hash {
     type MnArray = SomeNiche<HashNiche<U0>>;
 }
 
+impl<N: ToInt<u8> + Add<B1>> MinNiche for HashNiche<N> {}
+
 impl<I: ParseInput> ParseInline<I> for Hash {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         input
