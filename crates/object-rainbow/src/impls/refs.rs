@@ -35,6 +35,10 @@ impl<T: ?Sized + Topological> Topological for &T {
     fn topology(&self) -> TopoVec {
         (**self).topology()
     }
+
+    fn to_resolve(&self) -> Arc<dyn Resolve> {
+        (**self).to_resolve()
+    }
 }
 
 impl<T: ?Sized + ByteOrd> ByteOrd for &T {
