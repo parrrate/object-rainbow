@@ -1819,6 +1819,7 @@ version = "0.0.0-a.0"
 dependencies = [
  "axum",
  "object-rainbow",
+ "thiserror",
 ]
 
 [[package]]

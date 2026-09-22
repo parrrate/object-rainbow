@@ -12,3 +12,4 @@ description = "object-rainbow extractor/response for axum"
 object-rainbow.workspace = true
 
 axum.workspace = true
+thiserror.workspace = true
