@@ -51,6 +51,14 @@ impl<T: ?Sized + Output> Output for &mut T {
     fn write(&mut self, data: &[u8]) {
         (**self).write(data);
     }
+
+    fn is_real(&self) -> bool {
+        (**self).is_real()
+    }
+
+    fn is_mangling(&self) -> bool {
+        (**self).is_mangling()
+    }
 }
 
 impl<T: ?Sized + PointVisitor> PointVisitor for &mut T {
