@@ -131,7 +131,7 @@ impl<
 impl<
     A: MaybeNiche<N: Add<B::N, Output: Unsigned>>,
     B: MaybeNiche<Cut = Cut>,
-    U: AsTailOf<Self>,
+    U,
     Cut: CutNone<Self, U>,
     R: MnArray<MaybeNiche = U>,
 > AsHeadOfArr<R> for NoNiche2<A, B>
