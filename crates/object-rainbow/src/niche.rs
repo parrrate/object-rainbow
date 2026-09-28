@@ -253,7 +253,7 @@ pub trait AsHeadOfArr<R> {
     type WithTail: MaybeNiche;
 }
 
-impl<T: MnArray<MaybeNiche = U>, U: AsHeadOfArr<R>, R: MnArray> MnArray for TArr<T, R> {
+impl<T: MnArray<MaybeNiche = U>, U: AsHeadOfArr<R>, R> MnArray for TArr<T, R> {
     type MaybeNiche = U::WithTail;
 }
 
