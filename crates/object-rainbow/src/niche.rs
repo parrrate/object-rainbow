@@ -1,7 +1,7 @@
 use std::ops::Add;
 
 use generic_array::{ArrayLength, GenericArray, functional::FunctionalSequence, sequence::Concat};
-use typenum::{ATerm, B0, B1, Bit, Sum, TArr, U0, Unsigned};
+use typenum::{ATerm, B0, B1, Bit, Sum, TArr, U0, UInt, UTerm, Unsigned};
 
 use crate::{
     Enum, Size, SizeExt, ToOutput,
@@ -442,8 +442,22 @@ pub trait CutSomeArr<A, R> {
     type Cut: MaybeNiche;
 }
 
-impl<A: MaybeNiche, B: AsTailOf<A>, R: MnArray<MaybeNiche = B>> CutNoneArr<A, R> for B0 {
+pub trait MaybeTailAsIs<A, B> {
+    type Cut: MaybeNiche;
+}
+
+impl<A, B: MaybeNiche> MaybeTailAsIs<A, B> for UTerm {
+    type Cut = B;
+}
+
+impl<A: MaybeNiche, B: AsTailOf<A>, U, X> MaybeTailAsIs<A, B> for UInt<U, X> {
     type Cut = B::WithHead;
+}
+
+impl<A: MaybeNiche<N = N>, B: MaybeNiche, N: MaybeTailAsIs<A, B>, R: MnArray<MaybeNiche = B>>
+    CutNoneArr<A, R> for B0
+{
+    type Cut = N::Cut;
 }
 
 impl<A: MaybeNiche, R> CutNoneArr<A, R> for B1 {
