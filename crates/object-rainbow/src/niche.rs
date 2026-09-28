@@ -169,17 +169,8 @@ where
     type WithHead = AndNiche<U, Self>;
 }
 
-impl<
-    V: MaybeNiche<N = N>,
-    N: Unsigned,
-    T: MaybeNiche<Cut = Cut>,
-    U: MaybeNiche,
-    Cut: CutSome<Self, U>,
-    R: MnArray<MaybeNiche = U>,
-> AsHeadOfArr<R> for AndNiche<V, T>
-where
-    N: Add<T::N, Output: Unsigned>,
-    Sum<N, T::N>: Add<U::N, Output: Unsigned>,
+impl<V, T: MaybeNiche<Cut = Cut>, U, Cut: CutSome<Self, U>, R: MnArray<MaybeNiche = U>>
+    AsHeadOfArr<R> for AndNiche<V, T>
 {
     type WithTail = Cut::Cut;
 }
