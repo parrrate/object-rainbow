@@ -469,22 +469,14 @@ impl<A: MaybeNiche, B> CutSome<A, B> for B1 {
     type Cut = A;
 }
 
-pub trait CutNone<A, B> {
-    type Cut: MaybeNiche;
-}
-
-impl<A: MaybeNiche, B: AsTailOf<A>> CutNone<A, B> for B0 {
+impl<A: MaybeNiche, B: AsTailOf<A>, R: MnArray<MaybeNiche = B>> CutNoneArr<A, R> for B0 {
     type Cut = B::WithHead;
 }
 
-impl<A: MaybeNiche, B> CutNone<A, B> for B1 {
+impl<A: MaybeNiche, R> CutNoneArr<A, R> for B1 {
     type Cut = A;
 }
 
 pub trait CutNoneArr<A, R> {
     type Cut: MaybeNiche;
-}
-
-impl<A, B, C: CutNone<A, B>, R: MnArray<MaybeNiche = B>> CutNoneArr<A, R> for C {
-    type Cut = C::Cut;
 }
