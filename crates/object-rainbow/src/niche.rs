@@ -182,7 +182,7 @@ impl<T: Niche<N: Add<N, Output: ArrayLength>>, V: Niche<N = N, NeedsTag: NicheAu
     fn niche() -> GenericArray<u8, Self::N> {
         Concat::concat(T::niche(), V::niche())
     }
-    type Next = NicheAnd<T::Next, AutoNiche<V>>;
+    type Next = NicheAnd<T::Next, V>;
 }
 
 impl<T: MinNiche, V> MinNiche for NicheAnd<T, V> {}
