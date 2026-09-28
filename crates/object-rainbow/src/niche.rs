@@ -146,7 +146,7 @@ impl<
     fn niche() -> GenericArray<u8, Self::N> {
         Concat::concat(V::niche(), T::niche())
     }
-    type Next = AndNiche<AutoNiche<V>, T::Next>;
+    type Next = AndNiche<V, T::Next>;
 }
 
 impl<V: MaybeNiche<N = N>, N: Unsigned, T: MaybeNiche> MaybeNiche for AndNiche<V, T>
