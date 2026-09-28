@@ -427,27 +427,19 @@ impl<const X: usize> Niche for HackNiche<X> {
 /// This niche precedes all non-niche values.
 pub trait MinNiche {}
 
-pub trait CutSome<A, B> {
-    type Cut: MaybeNiche;
-}
-
-impl<A, B> CutSome<A, B> for B0
+impl<A, B, R: MnArray<MaybeNiche = B>> CutSomeArr<A, R> for B0
 where
     NicheAnd<A, B>: MaybeNiche,
 {
     type Cut = NicheAnd<A, B>;
 }
 
-impl<A: MaybeNiche, B> CutSome<A, B> for B1 {
+impl<A: MaybeNiche, R> CutSomeArr<A, R> for B1 {
     type Cut = A;
 }
 
 pub trait CutSomeArr<A, R> {
     type Cut: MaybeNiche;
-}
-
-impl<A, B, C: CutSome<A, B>, R: MnArray<MaybeNiche = B>> CutSomeArr<A, R> for C {
-    type Cut = C::Cut;
 }
 
 impl<A: MaybeNiche, B: AsTailOf<A>, R: MnArray<MaybeNiche = B>> CutNoneArr<A, R> for B0 {
