@@ -169,9 +169,7 @@ where
     type WithHead = AndNiche<U, Self>;
 }
 
-impl<V, T: MaybeNiche<Cut = Cut>, U, Cut: CutSome<Self, U>, R: MnArray<MaybeNiche = U>>
-    AsHeadOfArr<R> for AndNiche<V, T>
-{
+impl<V, T: MaybeNiche<Cut = Cut>, Cut: CutSomeArr<Self, R>, R> AsHeadOfArr<R> for AndNiche<V, T> {
     type WithTail = Cut::Cut;
 }
 
@@ -206,9 +204,7 @@ impl<
     type WithHead = AndNiche<U, Self>;
 }
 
-impl<T, V: MaybeNiche<Cut = Cut>, U, Cut: CutSome<Self, U>, R: MnArray<MaybeNiche = U>>
-    AsHeadOfArr<R> for NicheAnd<T, V>
-{
+impl<T, V: MaybeNiche<Cut = Cut>, Cut: CutSomeArr<Self, R>, R> AsHeadOfArr<R> for NicheAnd<T, V> {
     type WithTail = Cut::Cut;
 }
 
@@ -235,9 +231,7 @@ impl<U: MaybeNiche<N: Add<T::N, Output: Unsigned>>, T: Niche<NeedsTag = B0>> AsT
     type WithHead = AndNiche<U, Self>;
 }
 
-impl<T: Niche<Cut = Cut>, U, Cut: CutSome<Self, U>, R: MnArray<MaybeNiche = U>> AsHeadOfArr<R>
-    for SomeNiche<T>
-{
+impl<T: Niche<Cut = Cut>, Cut: CutSomeArr<Self, R>, R> AsHeadOfArr<R> for SomeNiche<T> {
     type WithTail = Cut::Cut;
 }
 
@@ -446,6 +440,14 @@ where
 
 impl<A: MaybeNiche, B> CutSome<A, B> for B1 {
     type Cut = A;
+}
+
+pub trait CutSomeArr<A, R> {
+    type Cut: MaybeNiche;
+}
+
+impl<A, B, C: CutSome<A, B>, R: MnArray<MaybeNiche = B>> CutSomeArr<A, R> for C {
+    type Cut = C::Cut;
 }
 
 impl<A: MaybeNiche, B: AsTailOf<A>, R: MnArray<MaybeNiche = B>> CutNoneArr<A, R> for B0 {
