@@ -73,10 +73,6 @@ pub trait AsTailOf<U: MaybeNiche>: MaybeNiche {
     type WithHead: MaybeNiche;
 }
 
-pub trait AsHeadOf<U: MaybeNiche>: MaybeNiche {
-    type WithTail: MaybeNiche;
-}
-
 impl<V: Niche<NeedsTag = B1>> Niche for NoNiche<V> {
     type NeedsTag = B1;
     type Cut = V::Cut;
@@ -98,8 +94,12 @@ impl<U: MaybeNiche<N: Add<V::N, Output: Unsigned>>, V: Niche<NeedsTag = B1>> AsT
     type WithHead = NoNiche2<U, Self>;
 }
 
-impl<V: Niche<NeedsTag = B1, Cut = Cut>, U: AsTailOf<Self>, Cut: CutNone<Self, U>> AsHeadOf<U>
-    for NoNiche<V>
+impl<
+    V: Niche<NeedsTag = B1, Cut = Cut>,
+    U: AsTailOf<Self>,
+    Cut: CutNone<Self, U>,
+    R: MnArray<MaybeNiche = U>,
+> AsHeadOfArr<R> for NoNiche<V>
 {
     type WithTail = Cut::Cut;
 }
@@ -133,7 +133,8 @@ impl<
     B: MaybeNiche<Cut = Cut>,
     U: AsTailOf<Self>,
     Cut: CutNone<Self, U>,
-> AsHeadOf<U> for NoNiche2<A, B>
+    R: MnArray<MaybeNiche = U>,
+> AsHeadOfArr<R> for NoNiche2<A, B>
 {
     type WithTail = Cut::Cut;
 }
@@ -179,7 +180,8 @@ impl<
     T: MaybeNiche<Cut = Cut>,
     U: MaybeNiche,
     Cut: CutSome<Self, U>,
-> AsHeadOf<U> for AndNiche<V, T>
+    R: MnArray<MaybeNiche = U>,
+> AsHeadOfArr<R> for AndNiche<V, T>
 where
     N: Add<T::N, Output: Unsigned>,
     Sum<N, T::N>: Add<U::N, Output: Unsigned>,
@@ -224,7 +226,8 @@ impl<
     N: Unsigned,
     U: MaybeNiche,
     Cut: CutSome<Self, U>,
-> AsHeadOf<U> for NicheAnd<T, V>
+    R: MnArray<MaybeNiche = U>,
+> AsHeadOfArr<R> for NicheAnd<T, V>
 where
     Sum<T::N, N>: Add<U::N, Output: Unsigned>,
 {
@@ -258,7 +261,8 @@ impl<
     T: Niche<N: Add<U::N, Output: Unsigned>, NeedsTag = B0, Cut = Cut>,
     U: MaybeNiche,
     Cut: CutSome<Self, U>,
-> AsHeadOf<U> for SomeNiche<T>
+    R: MnArray<MaybeNiche = U>,
+> AsHeadOfArr<R> for SomeNiche<T>
 {
     type WithTail = Cut::Cut;
 }
@@ -279,10 +283,6 @@ impl<T: MaybeNiche> MnArray for T {
 
 pub trait AsHeadOfArr<R> {
     type WithTail: MaybeNiche;
-}
-
-impl<U: AsHeadOf<R::MaybeNiche>, R: MnArray> AsHeadOfArr<R> for U {
-    type WithTail = U::WithTail;
 }
 
 impl<T: MnArray<MaybeNiche = U>, U: AsHeadOfArr<R>, R: MnArray> MnArray for TArr<T, R> {
