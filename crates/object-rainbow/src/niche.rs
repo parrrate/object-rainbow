@@ -94,12 +94,8 @@ impl<U: MaybeNiche<N: Add<V::N, Output: Unsigned>>, V: Niche<NeedsTag = B1>> AsT
     type WithHead = NoNiche2<U, Self>;
 }
 
-impl<
-    V: Niche<NeedsTag = B1, Cut = Cut>,
-    U: AsTailOf<Self>,
-    Cut: CutNone<Self, U>,
-    R: MnArray<MaybeNiche = U>,
-> AsHeadOfArr<R> for NoNiche<V>
+impl<V: Niche<NeedsTag = B1, Cut = Cut>, U, Cut: CutNone<Self, U>, R: MnArray<MaybeNiche = U>>
+    AsHeadOfArr<R> for NoNiche<V>
 {
     type WithTail = Cut::Cut;
 }
