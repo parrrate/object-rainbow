@@ -427,11 +427,50 @@ impl<const X: usize> Niche for HackNiche<X> {
 /// This niche precedes all non-niche values.
 pub trait MinNiche {}
 
-impl<A, B, R: MnArray<MaybeNiche = B>> CutSomeArr<A, R> for B0
+pub trait MaybeHeadAsIs<A, B> {
+    type Cut: MaybeNiche;
+}
+
+impl<A, B, U, X> MaybeHeadAsIs<A, B> for UInt<U, X>
 where
     NicheAnd<A, B>: MaybeNiche,
 {
     type Cut = NicheAnd<A, B>;
+}
+
+pub trait MaybeCutAsIs<C, S, B> {
+    type Cut: MaybeNiche;
+}
+
+impl<A: MaybeNiche, B> MaybeCutAsIs<B1, B1, B> for A {
+    type Cut = A;
+}
+
+impl<A: MaybeNiche, B> MaybeCutAsIs<B0, B1, B> for A {
+    type Cut = A;
+}
+
+impl<A: MaybeNiche, B> MaybeCutAsIs<B0, B0, B> for A {
+    type Cut = A;
+}
+
+impl<A, B> MaybeCutAsIs<B1, B0, B> for A
+where
+    NicheAnd<A, B>: MaybeNiche,
+{
+    type Cut = NicheAnd<A, B>;
+}
+
+impl<A: MaybeCutAsIs<C, S, B> + MaybeNiche<Cut = S>, B: MaybeNiche<Cut = C>, C, S>
+    MaybeHeadAsIs<A, B> for UTerm
+{
+    type Cut = <A as MaybeCutAsIs<C, S, B>>::Cut;
+}
+
+impl<A, B: MaybeNiche<N = N>, R: MnArray<MaybeNiche = B>, N: MaybeHeadAsIs<A, B>> CutSomeArr<A, R>
+    for B0
+{
+    type Cut = N::Cut;
 }
 
 impl<A: MaybeNiche, R> CutSomeArr<A, R> for B1 {
