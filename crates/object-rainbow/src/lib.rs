@@ -1147,7 +1147,7 @@ pub struct WithHash<'a, T: ?Sized> {
     pub data: &'a T,
 }
 
-pub trait FullHash: ToOutput + ListHashes + Tagged {
+pub trait FullHash: ToOutput + ListHashes + TagsHash {
     fn diff_hashes(&self) -> DiffHashes {
         DiffHashes {
             tags: self.tags_hash(),
@@ -1178,7 +1178,7 @@ pub trait DefaultHash: FullHash + Default {
 
 impl<T: FullHash + Default> DefaultHash for T {}
 
-pub trait Traversible: 'static + Sized + Send + Sync + FullHash + Topological {
+pub trait Traversible: 'static + Sized + Send + Sync + FullHash + Topological + Tagged {
     fn local(self) -> Arc<dyn SingularFetch<T = Self>>
     where
         Self: Clone,
@@ -1187,7 +1187,7 @@ pub trait Traversible: 'static + Sized + Send + Sync + FullHash + Topological {
     }
 }
 
-impl<T: 'static + Send + Sync + FullHash + Topological> Traversible for T {}
+impl<T: 'static + Send + Sync + FullHash + Topological + Tagged> Traversible for T {}
 
 pub trait Object<Extra = ()>: Traversible + for<'a> Parse<Input<'a, Extra>> {}
 
@@ -2068,7 +2068,7 @@ impl<T> MaybeHasNiche for dyn Send + Sync + ExtraFor<T> {
 assert_impl!(
     impl<T, E> Inline<E> for Arc<dyn Send + Sync + ExtraFor<T>>
     where
-        T: Object<E>,
+        T: Object<E> + Tagged,
         E: 'static + Send + Sync + Clone + ExtraFor<T>,
     {
     }
