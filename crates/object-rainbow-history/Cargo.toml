@@ -12,7 +12,6 @@ description = "Git-ish diff-by-diff change history"
 object-rainbow.workspace = true
 object-rainbow-apply.workspace = true
 object-rainbow-chain-tree.workspace = true
-object-rainbow-hamt = { workspace = true, optional = true }
 
 futures-util.workspace = true
 

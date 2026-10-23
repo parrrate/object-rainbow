@@ -1955,7 +1955,6 @@ dependencies = [
  "object-rainbow-amt",
  "object-rainbow-apply",
  "object-rainbow-chain-tree",
- "object-rainbow-hamt",
  "object-rainbow-trie",
  "smol",
  "smol-macros",
