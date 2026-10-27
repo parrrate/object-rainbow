@@ -789,10 +789,11 @@ impl<'d, Extra: 'static + Clone> PointInput for Input<'d, Extra> {
         }
     }
 
-    fn parse_inline_extra<E: 'static + Clone, T: ParseInline<Self::WithExtra<E>>>(
+    fn with_inline_extra<E: 'static + Clone, T>(
         &mut self,
         extra: E,
-    ) -> crate::Result<T> {
+        f: impl FnOnce(&mut Self::WithExtra<E>) -> Result<T>,
+    ) -> Result<T> {
         let Self {
             refless,
             resolve,
@@ -807,7 +808,7 @@ impl<'d, Extra: 'static + Clone> PointInput for Input<'d, Extra> {
             index,
             extra: Cow::Owned(extra),
         };
-        let value = input.parse_inline()?;
+        let value = f(&mut input)?;
         refless.data = input.refless.data.take();
         Ok(value)
     }
@@ -1924,7 +1925,14 @@ pub trait PointInput: ParseInput {
     fn parse_inline_extra<E: 'static + Clone, T: ParseInline<Self::WithExtra<E>>>(
         &mut self,
         extra: E,
-    ) -> crate::Result<T>;
+    ) -> crate::Result<T> {
+        self.with_inline_extra(extra, |input| input.parse_inline())
+    }
+    fn with_inline_extra<E: 'static + Clone, T>(
+        &mut self,
+        extra: E,
+        f: impl FnOnce(&mut Self::WithExtra<E>) -> Result<T>,
+    ) -> Result<T>;
 }
 
 impl<T: Sized + IntoIterator> RainbowIterator for T {}
