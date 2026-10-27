@@ -33,8 +33,10 @@ impl<T: ParseInline<I::WithExtra<E>>, I: PointInput<Extra = (u64, E)>, E: 'stati
 {
     fn parse_inline(input: &mut I) -> crate::Result<Self> {
         let (n, extra) = input.extra().clone();
-        (0..n)
-            .map(|_| input.parse_inline_extra(extra.clone()))
-            .collect()
+        input
+            .with_inline_extra(extra, |input| {
+                input.parse_vec_n(n.try_into().map_err(|_| Error::UnsupportedLength)?)
+            })
+            .map(Self)
     }
 }
