@@ -24,6 +24,13 @@ pub trait Owp {
     {
         TryForEachIncreasing { owp: self, f }
     }
+
+    fn try_for_each_decreasing<F: FnMut(Self::Item)>(self, f: F) -> TryForEachDecreasing<Self, F>
+    where
+        Self: Sized,
+    {
+        TryForEachDecreasing { owp: self, f }
+    }
 }
 
 pub trait OwpBounds<B: ?Sized = <Self as Owp>::Item> {
@@ -49,6 +56,25 @@ impl<O: Owp, F: FnMut(O::Item)> Future for TryForEachIncreasing<O, F> {
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let mut this = self.project();
         while let Some(item) = ready!(this.owp.as_mut().poll_min(cx))? {
+            (this.f)(item);
+        }
+        Poll::Ready(Ok(()))
+    }
+}
+
+#[pin_project]
+pub struct TryForEachDecreasing<O, F> {
+    #[pin]
+    owp: O,
+    f: F,
+}
+
+impl<O: Owp, F: FnMut(O::Item)> Future for TryForEachDecreasing<O, F> {
+    type Output = object_rainbow::Result<()>;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let mut this = self.project();
+        while let Some(item) = ready!(this.owp.as_mut().poll_max(cx))? {
             (this.f)(item);
         }
         Poll::Ready(Ok(()))
