@@ -26,7 +26,7 @@ generic-array.workspace = true
 ghost.workspace = true
 hex = { workspace = true, optional = true }
 indexmap = { workspace = true, optional = true }
-pin-project = { workspace = true, optional = true }
+pin-project.workspace = true
 serde = { workspace = true, features = ["derive"], optional = true }
 sha2.workspace = true
 sha2-const.workspace = true
@@ -42,12 +42,7 @@ hex = ["dep:hex"]
 indexmap = ["dep:indexmap"]
 nested-mut = ["dep:futures-channel"]
 serde = ["dep:serde"]
-task-owp = [
-    "dep:atomic-waker",
-    "dep:flume",
-    "dep:futures-core",
-    "dep:pin-project",
-]
+task-owp = ["dep:atomic-waker", "dep:flume", "dep:futures-core"]
 ulid = ["dep:ulid"]
 
 [package.metadata.docs.rs]
