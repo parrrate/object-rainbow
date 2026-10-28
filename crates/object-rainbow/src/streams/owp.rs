@@ -1,8 +1,8 @@
 use std::{
-    ops::Bound,
+    marker::PhantomData,
+    ops::{Bound, RangeBounds},
     pin::Pin,
-    task::ready,
-    task::{Context, Poll},
+    task::{Context, Poll, ready},
 };
 
 use pin_project::pin_project;
@@ -39,6 +39,17 @@ pub trait Owp {
         Self: Sized,
     {
         OutputBounds { owp: self }
+    }
+
+    fn with_bounds<B: RangeBounds<T>, T: ?Sized>(self, bounds: B) -> WithBounds<Self, B, T>
+    where
+        Self: Sized,
+    {
+        WithBounds {
+            owp: self,
+            bounds: Some(bounds),
+            _item: PhantomData,
+        }
     }
 }
 
@@ -127,5 +138,49 @@ impl<O: Owp + OwpBoundsOwned<Vec<u8>>, T: ToOutput> OwpBounds<T> for OutputBound
 
     fn set_max(self: Pin<&mut Self>, max: Bound<&T>) {
         self.inner().set_max(max.map(ToOutput::output));
+    }
+}
+
+#[pin_project]
+pub struct WithBounds<O, B, T: ?Sized> {
+    #[pin]
+    owp: O,
+    bounds: Option<B>,
+    _item: PhantomData<T>,
+}
+
+impl<O, B, T: ?Sized> WithBounds<O, B, T> {
+    fn inner(self: Pin<&mut Self>) -> Pin<&mut O> {
+        self.project().owp
+    }
+}
+
+impl<O: OwpBounds<T>, B: RangeBounds<T>, T: ?Sized> WithBounds<O, B, T> {
+    fn init(self: Pin<&mut Self>) {
+        let mut this = self.project();
+        if let Some(bounds) = this.bounds.take() {
+            this.owp.as_mut().set_min(bounds.start_bound());
+            this.owp.as_mut().set_max(bounds.end_bound());
+        }
+    }
+}
+
+impl<O: Owp + OwpBounds<T>, B: RangeBounds<T>, T: ?Sized> Owp for WithBounds<O, B, T> {
+    type Item = O::Item;
+
+    fn poll_min(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<crate::Result<Option<Self::Item>>> {
+        self.as_mut().init();
+        self.inner().poll_min(cx)
+    }
+
+    fn poll_max(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<crate::Result<Option<Self::Item>>> {
+        self.as_mut().init();
+        self.inner().poll_max(cx)
     }
 }
