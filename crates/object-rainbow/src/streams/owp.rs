@@ -31,6 +31,13 @@ pub trait Owp {
     {
         TryForEachDecreasing { owp: self, f }
     }
+
+    fn output_bounds(self) -> OutputBounds<Self>
+    where
+        Self: Sized,
+    {
+        OutputBounds { owp: self }
+    }
 }
 
 pub trait OwpBounds<B: ?Sized = <Self as Owp>::Item> {
@@ -78,5 +85,35 @@ impl<O: Owp, F: FnMut(O::Item)> Future for TryForEachDecreasing<O, F> {
             (this.f)(item);
         }
         Poll::Ready(Ok(()))
+    }
+}
+
+#[pin_project]
+pub struct OutputBounds<O> {
+    #[pin]
+    owp: O,
+}
+
+impl<O> OutputBounds<O> {
+    fn inner(self: Pin<&mut Self>) -> Pin<&mut O> {
+        self.project().owp
+    }
+}
+
+impl<O: Owp> Owp for OutputBounds<O> {
+    type Item = O::Item;
+
+    fn poll_min(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<crate::Result<Option<Self::Item>>> {
+        self.inner().poll_min(cx)
+    }
+
+    fn poll_max(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<crate::Result<Option<Self::Item>>> {
+        self.inner().poll_max(cx)
     }
 }
