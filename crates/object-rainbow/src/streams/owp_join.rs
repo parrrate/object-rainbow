@@ -109,9 +109,13 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
                         unreachable!()
                     };
                     match k_l.cmp(&k_r) {
-                        Ordering::Less => *this.min = State::R(k_r, v_r),
+                        Ordering::Less => {
+                            *this.min = State::R(k_r, v_r);
+                        }
                         Ordering::Equal => break Poll::Ready(Ok(Some((k_l, (v_l, v_r))))),
-                        Ordering::Greater => *this.min = State::L(k_l, v_l),
+                        Ordering::Greater => {
+                            *this.min = State::L(k_l, v_l);
+                        }
                     }
                 } else {
                     assert!(this.min.is_empty());
@@ -131,9 +135,13 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
                         unreachable!()
                     };
                     match k_l.cmp(&k_r) {
-                        Ordering::Less => *this.min = State::R(k_r, v_r),
+                        Ordering::Less => {
+                            *this.min = State::R(k_r, v_r);
+                        }
                         Ordering::Equal => break Poll::Ready(Ok(Some((k_l, (v_l, v_r))))),
-                        Ordering::Greater => *this.min = State::L(k_l, v_l),
+                        Ordering::Greater => {
+                            *this.min = State::L(k_l, v_l);
+                        }
                     }
                 } else {
                     assert!(this.min.is_empty());
@@ -153,7 +161,9 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
                         unreachable!()
                     };
                     match k_l.cmp(&k_r) {
-                        Ordering::Less => *this.max = State::R(k_r, v_r),
+                        Ordering::Less => {
+                            *this.max = State::R(k_r, v_r);
+                        }
                         Ordering::Equal => break Poll::Ready(Ok(Some((k_l, (v_l, v_r))))),
                         Ordering::Greater => break Poll::Ready(Ok(None)),
                     }
@@ -168,7 +178,9 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
                     match k_l.cmp(&k_r) {
                         Ordering::Less => break Poll::Ready(Ok(None)),
                         Ordering::Equal => break Poll::Ready(Ok(Some((k_l, (v_l, v_r))))),
-                        Ordering::Greater => *this.max = State::L(k_l, v_l),
+                        Ordering::Greater => {
+                            *this.max = State::L(k_l, v_l);
+                        }
                     }
                 }
                 _ => unreachable!(),
@@ -215,9 +227,13 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
                         unreachable!()
                     };
                     match k_l.cmp(&k_r) {
-                        Ordering::Less => *this.max = State::L(k_l, v_l),
+                        Ordering::Less => {
+                            *this.max = State::L(k_l, v_l);
+                        }
                         Ordering::Equal => break Poll::Ready(Ok(Some((k_l, (v_l, v_r))))),
-                        Ordering::Greater => *this.max = State::R(k_r, v_r),
+                        Ordering::Greater => {
+                            *this.max = State::R(k_r, v_r);
+                        }
                     }
                 } else {
                     assert!(this.max.is_empty());
@@ -237,9 +253,13 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
                         unreachable!()
                     };
                     match k_l.cmp(&k_r) {
-                        Ordering::Less => *this.max = State::L(k_l, v_l),
+                        Ordering::Less => {
+                            *this.max = State::L(k_l, v_l);
+                        }
                         Ordering::Equal => break Poll::Ready(Ok(Some((k_l, (v_l, v_r))))),
-                        Ordering::Greater => *this.max = State::R(k_r, v_r),
+                        Ordering::Greater => {
+                            *this.max = State::R(k_r, v_r);
+                        }
                     }
                 } else {
                     assert!(this.max.is_empty());
@@ -259,7 +279,9 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
                         unreachable!()
                     };
                     match k_l.cmp(&k_r) {
-                        Ordering::Less => *this.min = State::L(k_l, v_l),
+                        Ordering::Less => {
+                            *this.min = State::L(k_l, v_l);
+                        }
                         Ordering::Equal => break Poll::Ready(Ok(Some((k_l, (v_l, v_r))))),
                         Ordering::Greater => break Poll::Ready(Ok(None)),
                     }
@@ -274,7 +296,9 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
                     match k_l.cmp(&k_r) {
                         Ordering::Less => break Poll::Ready(Ok(None)),
                         Ordering::Equal => break Poll::Ready(Ok(Some((k_l, (v_l, v_r))))),
-                        Ordering::Greater => *this.min = State::R(k_r, v_r),
+                        Ordering::Greater => {
+                            *this.min = State::R(k_r, v_r);
+                        }
                     }
                 }
                 _ => unreachable!(),
