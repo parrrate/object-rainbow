@@ -1650,4 +1650,52 @@ mod test {
         );
         Ok(())
     }
+
+    #[cfg(feature = "owp")]
+    #[apply(test!)]
+    async fn owp_join() -> object_rainbow::Result<()> {
+        use object_rainbow::streams::{owp::Owp, owp_join::OwpJoin};
+
+        let a: AmtMap<[u8; 4], bool> = [
+            (*b"abcd", true),
+            (*b"abce", true),
+            (*b"abff", true),
+            (*b"ahij", true),
+            (*b"xxx1", true),
+            (*b"xxx2", true),
+            (*b"xxy1", true),
+            (*b"xxy2", true),
+        ]
+        .into_iter()
+        .collect();
+        let b: AmtMap<[u8; 4], bool> = [
+            (*b"abcd", true),
+            (*b"abce", true),
+            (*b"abff", true),
+            (*b"abfg", true),
+            (*b"ahij", true),
+            (*b"xxx2", true),
+            (*b"xxy1", true),
+            (*b"xxy2", true),
+        ]
+        .into_iter()
+        .collect();
+        let mut items = Vec::new();
+        OwpJoin::new(a.owp(), b.owp())
+            .try_for_each_increasing(|item| items.push(item))
+            .await?;
+        assert_eq!(
+            items,
+            [
+                (*b"abcd", (true, true)),
+                (*b"abce", (true, true)),
+                (*b"abff", (true, true)),
+                (*b"ahij", (true, true)),
+                (*b"xxx2", (true, true)),
+                (*b"xxy1", (true, true)),
+                (*b"xxy2", (true, true)),
+            ]
+        );
+        Ok(())
+    }
 }
