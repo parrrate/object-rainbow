@@ -16,7 +16,7 @@ pub trait Owp {
     ) -> Poll<object_rainbow::Result<Option<Self::Item>>>;
 }
 
-pub trait OwpBounds<B = <Self as Owp>::Item> {
+pub trait OwpBounds<B: ?Sized = <Self as Owp>::Item> {
     fn set_min(self: Pin<&mut Self>, min: Bound<&B>);
     fn set_max(self: Pin<&mut Self>, max: Bound<&B>);
 }
