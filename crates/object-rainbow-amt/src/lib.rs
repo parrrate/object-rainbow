@@ -799,12 +799,17 @@ impl<K: Component, V: Component> Node<K, V> {
                 {
                     while let Ok(fetched) = fetched_r.try_recv() {
                         let (prefix, nodes) = fetched?;
+                        let mut received_min = false;
+                        let mut received_max = false;
                         if waiting_min.as_deref() == Some(prefix.as_slice()) {
                             waiting_min = None;
+                            received_min = true;
                         }
                         if waiting_max.as_deref() == Some(prefix.as_slice()) {
                             waiting_max = None;
+                            received_max = true;
                         }
+                        assert!(received_min || received_max);
                         for (prefix, node) in nodes {
                             q.insert(prefix, node);
                         }
