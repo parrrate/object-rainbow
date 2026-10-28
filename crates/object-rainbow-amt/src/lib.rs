@@ -1,7 +1,14 @@
+use std::{collections::BTreeMap, ops::Bound};
+
 use futures_util::{Stream, TryStreamExt, future::try_join};
 use genawaiter_try_stream::{Co, try_stream};
 #[cfg(feature = "get-mut")]
 use object_rainbow::nested_mut::{Borrower, LendTo, NestedMut};
+#[cfg(feature = "owp")]
+use object_rainbow::streams::{
+    owp::Owp,
+    task_owp::{TaskOwp, intersect},
+};
 use object_rainbow::{
     Component, Enum, Equivalent, EquivalentFor, Inline, InlineOutput, ListHashes, Parse,
     ParseInline, PointInput, Singular, Tagged, ToOutput, Topological, Traversible, assert_impl,
@@ -746,6 +753,152 @@ impl<K: Component, V: Component> Node<K, V> {
         }
         Ok(())
     }
+
+    #[cfg(feature = "owp")]
+    fn owp(self) -> impl Owp<Item = (K, V)> {
+        TaskOwp::<_, Vec<u8>, _>::new(async move |mut ctx| {
+            let mut q = BTreeMap::from([(Vec::<u8>::new(), self)]);
+            let mut bound_min = Bound::<Vec<u8>>::Unbounded;
+            let mut bound_max = Bound::<Vec<u8>>::Unbounded;
+            let mut waiting_min = None::<Vec<u8>>;
+            let mut waiting_max = None::<Vec<u8>>;
+            let (fetched_s, fetched_r) =
+                flume::bounded::<object_rainbow::Result<(Vec<u8>, Vec<(Vec<u8>, Self)>)>>(2);
+            let mut fetched_r = fetched_r.into_stream();
+            let hook = ctx.hook();
+            let executor = async_executor::Executor::new();
+            let stuff = |prefix: Vec<u8>, point: Point<Subs<K, V>>| {
+                executor
+                    .spawn(async {
+                        fetched_s
+                            .send_async(
+                                async move {
+                                    let MappedExtra(sub, map) = { point }.fetch_take().await?;
+                                    let prefix = {
+                                        let mut prefix = prefix;
+                                        prefix.append(&mut { sub.0.0 });
+                                        prefix
+                                    };
+                                    let nodes = map
+                                        .into_iter()
+                                        .map(|(k, v)| {
+                                            let prefix = [prefix.as_slice(), &[k]].concat();
+                                            (prefix, v.1)
+                                        })
+                                        .collect::<Vec<_>>();
+                                    object_rainbow::Result::Ok((prefix, nodes))
+                                }
+                                .await,
+                            )
+                            .await
+                            .ok();
+                        hook.notify();
+                    })
+                    .detach()
+            };
+            let future = async {
+                while (!q.is_empty() | waiting_min.is_some() || waiting_max.is_some())
+                    && ctx.wait().await
+                {
+                    while let Some((prefix, nodes)) = fetched_r.try_next().await? {
+                        if waiting_min.as_deref() == Some(prefix.as_slice()) {
+                            waiting_min = None;
+                        }
+                        if waiting_max.as_deref() == Some(prefix.as_slice()) {
+                            waiting_max = None;
+                        }
+                        for (prefix, node) in nodes {
+                            q.insert(prefix, node);
+                        }
+                    }
+                    if let Some(new_min) = ctx.bound_min() {
+                        bound_min = intersect(bound_min, new_min, |strict, other| strict > other);
+                    }
+                    if let Some(new_max) = ctx.bound_max() {
+                        bound_max = intersect(bound_max, new_max, |strict, other| strict < other);
+                    }
+                    match (bound_min.as_ref(), bound_max.as_ref()) {
+                        (_, Bound::Excluded(max)) if max.is_empty() => return Ok(()),
+                        (Bound::Unbounded, _) | (_, Bound::Unbounded) => {}
+                        (Bound::Included(min), Bound::Included(max)) if min == max => {}
+                        (
+                            Bound::Included(min) | Bound::Excluded(min),
+                            Bound::Included(max) | Bound::Excluded(max),
+                        ) if min >= max => return Ok(()),
+                        _ => {}
+                    }
+                    while ctx.wants_min()
+                        && waiting_min.is_none()
+                        && let Some((prefix, node)) = q.pop_first().or_else(|| {
+                            waiting_min = waiting_max.clone();
+                            None
+                        })
+                    {
+                        match bound_min.as_ref() {
+                            Bound::Excluded(min) if *min == prefix => continue,
+                            Bound::Included(min) | Bound::Excluded(min)
+                                if min.starts_with(&prefix) => {}
+                            Bound::Included(min) | Bound::Excluded(min) if prefix < *min => {
+                                continue;
+                            }
+                            _ => {}
+                        }
+                        match node {
+                            Self::Empty => {}
+                            Self::Leaf(k, mapped_extra) => {
+                                use std::ops::RangeBounds;
+                                assert_eq!(prefix, Vec::<u8>::from(k.prefix().clone()));
+                                let key = k.value().vec();
+                                if (bound_min.as_ref(), bound_max.as_ref()).contains(&&key) {
+                                    assert!(waiting_min.is_none());
+                                    ctx.give_min((k.into_value(), mapped_extra.1));
+                                }
+                            }
+                            Self::Sub(point) => {
+                                assert!(waiting_min.is_none());
+                                waiting_min = Some(prefix.clone());
+                                stuff(prefix, point);
+                            }
+                        }
+                    }
+                    while ctx.wants_max()
+                        && waiting_max.is_none()
+                        && let Some((prefix, node)) = q.pop_last().or_else(|| {
+                            waiting_max = waiting_min.clone();
+                            None
+                        })
+                    {
+                        match bound_max.as_ref() {
+                            Bound::Excluded(max) if *max == prefix => continue,
+                            Bound::Included(max) | Bound::Excluded(max) if prefix > *max => {
+                                continue;
+                            }
+                            _ => {}
+                        }
+                        match node {
+                            Self::Empty => {}
+                            Self::Leaf(k, mapped_extra) => {
+                                use std::ops::RangeBounds;
+                                assert_eq!(prefix, Vec::<u8>::from(k.prefix().clone()));
+                                let key = k.value().vec();
+                                if (bound_min.as_ref(), bound_max.as_ref()).contains(&&key) {
+                                    assert!(waiting_max.is_none());
+                                    ctx.give_max((k.into_value(), mapped_extra.1));
+                                }
+                            }
+                            Self::Sub(point) => {
+                                assert!(waiting_max.is_none());
+                                waiting_max = Some(prefix.clone());
+                                stuff(prefix, point);
+                            }
+                        }
+                    }
+                }
+                Ok(())
+            };
+            executor.run(future).await
+        })
+    }
 }
 
 trait TraitOp<K: Send, V, U: Send>: Send + Sync {
@@ -968,6 +1121,11 @@ impl<K: Component, V: Component> AmtMap<K, V> {
             .await?
             .into_iter()
             .collect())
+    }
+
+    #[cfg(feature = "owp")]
+    pub fn owp(self) -> impl Owp<Item = (K, V)> {
+        self.0.1.owp()
     }
 }
 

@@ -1769,6 +1769,8 @@ dependencies = [
 name = "object-rainbow-amt"
 version = "0.0.0-a.10"
 dependencies = [
+ "async-executor",
+ "flume",
  "futures-util",
  "genawaiter-try-stream",
  "macro_rules_attribute",
