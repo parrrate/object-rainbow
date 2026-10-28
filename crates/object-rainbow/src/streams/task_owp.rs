@@ -68,6 +68,7 @@ impl<'a, T, B, F: Future<Output = crate::Result<()>>> TaskOwp<'a, T, B, F> {
             wants_min: wants_min.clone(),
             wants_max: wants_max.clone(),
             update: update_r,
+            hook: update_s.clone(),
         }));
         let wakers = Arc::<Wakers>::default();
         let waker = wakers.clone().into();
@@ -198,6 +199,18 @@ pub struct OwpCtx<T, B> {
     wants_min: Arc<AtomicBool>,
     wants_max: Arc<AtomicBool>,
     update: Receiver<()>,
+    hook: Sender<()>,
+}
+
+#[derive(Clone)]
+pub struct OwnHook {
+    hook: Sender<()>,
+}
+
+impl OwnHook {
+    pub fn notify(&self) {
+        self.hook.try_send(()).ok();
+    }
 }
 
 impl<T, B> OwpCtx<T, B> {
@@ -231,5 +244,11 @@ impl<T, B> OwpCtx<T, B> {
 
     pub async fn wait(&mut self) -> bool {
         self.update.recv_async().await.is_ok()
+    }
+
+    pub fn hook(&self) -> OwnHook {
+        OwnHook {
+            hook: self.hook.clone(),
+        }
     }
 }
