@@ -765,7 +765,6 @@ impl<K: Component, V: Component> Node<K, V> {
             let mut waiting_max = None::<Vec<u8>>;
             let (fetched_s, fetched_r) =
                 flume::bounded::<object_rainbow::Result<(Vec<u8>, Vec<(Vec<u8>, Self)>)>>(2);
-            let mut fetched_r = fetched_r.into_stream();
             let hook = ctx.hook();
             let executor = async_executor::Executor::new();
             let stuff = |prefix: Vec<u8>, point: Point<Subs<K, V>>| {
@@ -798,7 +797,8 @@ impl<K: Component, V: Component> Node<K, V> {
                 while (!q.is_empty() | waiting_min.is_some() || waiting_max.is_some())
                     && ctx.wait().await
                 {
-                    while let Some((prefix, nodes)) = fetched_r.try_next().await? {
+                    while let Ok(fetched) = fetched_r.try_recv() {
+                        let (prefix, nodes) = fetched?;
                         if waiting_min.as_deref() == Some(prefix.as_slice()) {
                             waiting_min = None;
                         }
