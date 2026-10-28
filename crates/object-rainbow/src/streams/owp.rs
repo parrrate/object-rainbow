@@ -230,3 +230,13 @@ impl<O: Owp<Item = (K, V)> + OwpBounds<K>, K, V> Owp for Distinct<O> {
         ))
     }
 }
+
+impl<O: OwpBounds<B>, B: ?Sized> OwpBounds<B> for Distinct<O> {
+    fn set_min(self: Pin<&mut Self>, min: Bound<&B>) {
+        self.project().owp.set_min(min);
+    }
+
+    fn set_max(self: Pin<&mut Self>, max: Bound<&B>) {
+        self.project().owp.set_max(max);
+    }
+}
