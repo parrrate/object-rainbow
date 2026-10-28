@@ -17,7 +17,7 @@ anyhow.workspace = true
 bitvec = { workspace = true, optional = true }
 bytes = { workspace = true, optional = true }
 cid = { workspace = true, optional = true }
-futures-channel.workspace = true
+futures-channel = { workspace = true, optional = true }
 futures-concurrency.workspace = true
 generic-array.workspace = true
 ghost.workspace = true
@@ -36,6 +36,7 @@ bytes = ["dep:bytes"]
 cid = ["dep:cid"]
 hex = ["dep:hex"]
 indexmap = ["dep:indexmap"]
+nested-mut = ["dep:futures-channel"]
 serde = ["dep:serde"]
 ulid = ["dep:ulid"]
 

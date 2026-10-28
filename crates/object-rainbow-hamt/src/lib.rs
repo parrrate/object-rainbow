@@ -1,11 +1,12 @@
-use std::{ops::DerefMut, pin::Pin};
+use std::pin::Pin;
 
 use futures_util::TryStreamExt;
+#[cfg(feature = "get-mut")]
+use object_rainbow::nested_mut::{Borrower, LendTo, NestedMut};
 use object_rainbow::{
     Component, Enum, Hash, Inline, InlineOutput, ListHashes, MaybeHasNiche, Output, Parse,
     ParseInline, PointInput, PointVisitor, Singular, Size, SizeExt, Tagged, Tags, ToOutput,
     Topological, Traversible, assert_impl,
-    nested_mut::{Borrower, LendTo, NestedMut},
 };
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
@@ -26,6 +27,7 @@ trait Amt<K>: Sized + Send {
         key: K,
         f: impl 'a + Send + FnOnce(&Self::V) -> O,
     ) -> OptionFuture<'a, O>;
+    #[cfg(feature = "get-mut")]
     fn get_mut_inner<'a>(&'a mut self, key: K, borrower: Borrower<Self::V>) -> ActionFuture<'a>;
     fn append<'a>(&'a mut self, other: &'a mut Self) -> ActionFuture<'a>;
     fn intersect<'a>(&'a mut self, other: &'a Self) -> ActionFuture<'a>
@@ -83,6 +85,7 @@ impl<V: Send + Sync + Clone> Amt<u8> for DeepestLeaf<V> {
         Box::pin(async move { Ok(self.0.get(key).map(f)) })
     }
 
+    #[cfg(feature = "get-mut")]
     fn get_mut_inner<'a>(&'a mut self, key: u8, borrower: Borrower<Self::V>) -> ActionFuture<'a> {
         Box::pin(async move {
             if let Some(value) = self.0.get_mut(key) {
@@ -242,6 +245,7 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
         })
     }
 
+    #[cfg(feature = "get-mut")]
     fn get_mut_inner<'a>(&'a mut self, key: K, borrower: Borrower<Self::V>) -> ActionFuture<'a> {
         Box::pin(async move {
             match self {
@@ -520,6 +524,7 @@ impl<T: Amt<K, V: Clone> + Clone + Traversible, K: Send + Sync + PartialEq + Clo
         })
     }
 
+    #[cfg(feature = "get-mut")]
     fn get_mut_inner<'a>(
         &'a mut self,
         (key, rest): (u8, K),
@@ -712,6 +717,7 @@ mod private {
                     self.0.get(key, f)
                 }
 
+                #[cfg(feature = "get-mut")]
                 fn get_mut_inner<'a>(
                     &'a mut self,
                     key: $k,
@@ -855,10 +861,12 @@ impl<V: Component> HamtMap<V> {
             .await
     }
 
+    #[cfg(feature = "get-mut")]
     pub async fn get_mut(
         &mut self,
         hash: Hash,
-    ) -> object_rainbow::Result<Option<impl '_ + Send + Sync + DerefMut<Target = V>>> {
+    ) -> object_rainbow::Result<Option<impl '_ + Send + Sync + std::ops::DerefMut<Target = V>>>
+    {
         NestedMut::from_fn(async move |borrower| {
             self.0
                 .fetch_mut()
@@ -998,7 +1006,7 @@ impl HamtSet {
 #[cfg(test)]
 mod test {
     use macro_rules_attribute::apply;
-    use object_rainbow::{FullHash, ToOutput};
+    use object_rainbow::FullHash;
     use smol_macros::test;
 
     use crate::{HamtMap, HamtSet};
@@ -1076,8 +1084,10 @@ mod test {
         Ok(())
     }
 
+    #[cfg(feature = "get-mut")]
     #[apply(test!)]
     async fn get_mut() -> object_rainbow::Result<()> {
+        use object_rainbow::ToOutput;
         let mut amt = HamtMap::<u8>::new();
         amt.insert(b"abcd".data_hash(), 1).await?;
         amt.insert(b"abce".data_hash(), 2).await?;

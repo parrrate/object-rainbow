@@ -67,6 +67,7 @@ pub mod local_fetch;
 pub mod map_extra;
 mod monostate;
 pub mod monostate_headers;
+#[cfg(feature = "nested-mut")]
 pub mod nested_mut;
 mod niche;
 pub mod niche_cut;

@@ -17,6 +17,9 @@ object-rainbow-point.workspace = true
 futures-util = { workspace = true, features = ["std"] }
 genawaiter-try-stream.workspace = true
 
+[features]
+get-mut = ["object-rainbow/nested-mut"]
+
 [dev-dependencies]
 macro_rules_attribute.workspace = true
 smol.workspace = true
