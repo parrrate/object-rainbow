@@ -79,6 +79,7 @@ pub mod partial_byte_tag;
 pub mod refless;
 pub mod runtime_array;
 pub mod sequence;
+pub mod streams;
 pub mod tuple_extra;
 pub mod tuple_of_arrays;
 pub mod u63;
