@@ -46,6 +46,7 @@ pub struct TaskOwp<'a, T, B, F> {
     retry_max: Receiver<Bound<B>>,
     wants_min: Arc<AtomicBool>,
     wants_max: Arc<AtomicBool>,
+    update: Sender<()>,
     wakers: Arc<Wakers>,
     waker: Waker,
 }
@@ -56,6 +57,7 @@ impl<'a, T, B, F: Future<Output = crate::Result<()>>> TaskOwp<'a, T, B, F> {
         let (ready_max_s, ready_max_r) = bounded(1);
         let (bound_min_s, bound_min_r) = bounded(1);
         let (bound_max_s, bound_max_r) = bounded(1);
+        let (update_s, update_r) = bounded(1);
         let wants_min = Arc::new(AtomicBool::new(false));
         let wants_max = Arc::new(AtomicBool::new(false));
         let future = Some(f(OwpCtx {
@@ -65,6 +67,7 @@ impl<'a, T, B, F: Future<Output = crate::Result<()>>> TaskOwp<'a, T, B, F> {
             bound_max: bound_max_r.clone(),
             wants_min: wants_min.clone(),
             wants_max: wants_max.clone(),
+            update: update_r,
         }));
         let wakers = Arc::<Wakers>::default();
         let waker = wakers.clone().into();
@@ -78,6 +81,7 @@ impl<'a, T, B, F: Future<Output = crate::Result<()>>> TaskOwp<'a, T, B, F> {
             retry_max: bound_max_r,
             wants_min,
             wants_max,
+            update: update_s,
             wakers,
             waker,
         }
@@ -97,6 +101,7 @@ impl<'a, T, B, F: Future<Output = crate::Result<()>>> Owp for TaskOwp<'a, T, B, 
         }
         if let Some(future) = this.future.as_mut().as_pin_mut() {
             this.wants_min.store(true, Ordering::Relaxed);
+            this.update.try_send(()).ok();
             this.wakers.min.register(cx.waker());
             if future
                 .poll(&mut Context::from_waker(this.waker))?
@@ -120,6 +125,7 @@ impl<'a, T, B, F: Future<Output = crate::Result<()>>> Owp for TaskOwp<'a, T, B, 
         }
         if let Some(future) = this.future.as_mut().as_pin_mut() {
             this.wants_max.store(true, Ordering::Relaxed);
+            this.update.try_send(()).ok();
             this.wakers.max.register(cx.waker());
             if future
                 .poll(&mut Context::from_waker(this.waker))?
@@ -170,6 +176,7 @@ impl<'a, T, B: Ord, F> OwpBoundsOwned<B> for TaskOwp<'a, T, B, F> {
             min = intersect(old, min, |strict, other| strict > other);
         }
         self.bound_min.try_send(min).ok();
+        self.update.try_send(()).ok();
         self.wakers.wake_by_ref();
     }
 
@@ -178,6 +185,7 @@ impl<'a, T, B: Ord, F> OwpBoundsOwned<B> for TaskOwp<'a, T, B, F> {
             max = intersect(old, max, |strict, other| strict < other);
         }
         self.bound_max.try_send(max).ok();
+        self.update.try_send(()).ok();
         self.wakers.wake_by_ref();
     }
 }
@@ -189,6 +197,7 @@ pub struct OwpCtx<T, B> {
     bound_max: Receiver<Bound<B>>,
     wants_min: Arc<AtomicBool>,
     wants_max: Arc<AtomicBool>,
+    update: Receiver<()>,
 }
 
 impl<T, B> OwpCtx<T, B> {
@@ -218,5 +227,9 @@ impl<T, B> OwpCtx<T, B> {
 
     pub fn bound_max(&mut self) -> Option<Bound<B>> {
         self.bound_max.try_recv().ok()
+    }
+
+    pub async fn wait(&mut self) -> bool {
+        self.update.recv_async().await.is_ok()
     }
 }
