@@ -43,7 +43,7 @@ pub trait Owp {
 
     fn with_bounds<B: RangeBounds<T>, T: ?Sized>(self, bounds: B) -> WithBounds<Self, B, T>
     where
-        Self: Sized,
+        Self: Sized + OwpBounds<T>,
     {
         WithBounds {
             owp: self,
