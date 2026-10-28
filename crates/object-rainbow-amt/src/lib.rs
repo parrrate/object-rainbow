@@ -1698,4 +1698,57 @@ mod test {
         );
         Ok(())
     }
+
+    #[cfg(feature = "owp")]
+    #[apply(test!)]
+    async fn owp_union_distinct() -> object_rainbow::Result<()> {
+        use object_rainbow::streams::{
+            owp::{Distinct, Owp},
+            owp_union::OwpUnion,
+        };
+
+        let a: AmtMap<[u8; 4], bool> = [
+            (*b"abcd", true),
+            (*b"abce", true),
+            (*b"abff", true),
+            (*b"ahij", true),
+            (*b"xxx1", true),
+            (*b"xxx2", true),
+            (*b"xxy1", true),
+            (*b"xxy2", true),
+        ]
+        .into_iter()
+        .collect();
+        let b: AmtMap<[u8; 4], bool> = [
+            (*b"abcd", true),
+            (*b"abce", true),
+            (*b"abff", true),
+            (*b"abfg", true),
+            (*b"ahij", true),
+            (*b"xxx2", true),
+            (*b"xxy1", true),
+            (*b"xxy2", true),
+        ]
+        .into_iter()
+        .collect();
+        let mut items = Vec::new();
+        Distinct::new(OwpUnion::new([a.owp(), b.owp()]))
+            .try_for_each_increasing(|item| items.push(item))
+            .await?;
+        assert_eq!(
+            items,
+            [
+                (*b"abcd", true),
+                (*b"abce", true),
+                (*b"abff", true),
+                (*b"abfg", true),
+                (*b"ahij", true),
+                (*b"xxx1", true),
+                (*b"xxx2", true),
+                (*b"xxy1", true),
+                (*b"xxy2", true),
+            ]
+        );
+        Ok(())
+    }
 }
