@@ -23,6 +23,32 @@ impl<K, Lv, Rv> State<K, Lv, Rv> {
     }
 }
 
+impl<K: Ord, Lv, Rv> State<K, Lv, Rv> {
+    fn set_min(&mut self, min: Bound<&K>) {
+        if let Self::L(k, _) | Self::R(k, _) = &*self
+            && match min {
+                Bound::Included(min) => k < min,
+                Bound::Excluded(min) => k <= min,
+                Bound::Unbounded => false,
+            }
+        {
+            std::mem::take(self);
+        }
+    }
+
+    fn set_max(&mut self, max: Bound<&K>) {
+        if let Self::L(k, _) | Self::R(k, _) = &*self
+            && match max {
+                Bound::Included(max) => k > max,
+                Bound::Excluded(max) => k >= max,
+                Bound::Unbounded => false,
+            }
+        {
+            std::mem::take(self);
+        }
+    }
+}
+
 enum WhereNext {
     Owp,
     Min,
@@ -341,5 +367,31 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
                 _ => unreachable!(),
             }
         }
+    }
+}
+
+impl<L: OwpBounds<K>, R: OwpBounds<K>, K: Ord, Lv, Rv> OwpBounds<K> for OwpJoin<L, R, K, Lv, Rv> {
+    fn set_min(self: Pin<&mut Self>, min: Bound<&K>) {
+        let this = self.project();
+        if let Some(l) = this.owp_l.as_pin_mut() {
+            l.set_min(min);
+        }
+        if let Some(r) = this.owp_r.as_pin_mut() {
+            r.set_min(min);
+        }
+        this.min.set_min(min);
+        this.max.set_min(min);
+    }
+
+    fn set_max(self: Pin<&mut Self>, max: Bound<&K>) {
+        let this = self.project();
+        if let Some(l) = this.owp_l.as_pin_mut() {
+            l.set_max(max);
+        }
+        if let Some(r) = this.owp_r.as_pin_mut() {
+            r.set_max(max);
+        }
+        this.min.set_max(max);
+        this.max.set_max(max);
     }
 }
