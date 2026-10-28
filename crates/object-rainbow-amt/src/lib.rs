@@ -775,15 +775,12 @@ impl<K: Component, V: Component> Node<K, V> {
                             .send_async(
                                 async move {
                                     let MappedExtra(sub, map) = { point }.fetch_take().await?;
-                                    let prefix = {
-                                        let mut prefix = prefix;
-                                        prefix.append(&mut { sub.0.0 });
-                                        prefix
-                                    };
                                     let nodes = map
                                         .into_iter()
                                         .map(|(k, v)| {
-                                            let prefix = [prefix.as_slice(), &[k]].concat();
+                                            let prefix =
+                                                [prefix.as_slice(), sub.0.as_slice(), &[k]]
+                                                    .concat();
                                             (prefix, v.1)
                                         })
                                         .collect::<Vec<_>>();
