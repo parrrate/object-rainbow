@@ -1492,4 +1492,30 @@ mod test {
         assert_eq!(items, original);
         Ok(())
     }
+
+    #[cfg(feature = "owp")]
+    #[apply(test!)]
+    async fn owp_decreasing() -> object_rainbow::Result<()> {
+        use object_rainbow::streams::owp::Owp;
+
+        let mut original = [
+            (*b"abcd", true),
+            (*b"abce", true),
+            (*b"abff", true),
+            (*b"abfg", true),
+            (*b"ahij", true),
+            (*b"xxx1", true),
+            (*b"xxx2", true),
+            (*b"xxy1", true),
+            (*b"xxy2", true),
+        ];
+        let map: AmtMap<[u8; 4], bool> = original.into_iter().collect();
+        let mut items = Vec::new();
+        map.owp()
+            .try_for_each_decreasing(|item| items.push(item))
+            .await?;
+        original.reverse();
+        assert_eq!(items, original);
+        Ok(())
+    }
 }
