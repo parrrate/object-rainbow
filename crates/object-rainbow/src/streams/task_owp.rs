@@ -141,7 +141,7 @@ impl<'a, T, B, F: Future<Output = crate::Result<()>>> Owp for TaskOwp<'a, T, B, 
     }
 }
 
-fn intersect<B>(x: Bound<B>, y: Bound<B>, stricter: impl Fn(&B, &B) -> bool) -> Bound<B> {
+pub fn intersect<B>(x: Bound<B>, y: Bound<B>, stricter: impl Fn(&B, &B) -> bool) -> Bound<B> {
     match (x, y) {
         (Bound::Unbounded, strict) => strict,
         (strict, Bound::Unbounded) => strict,
