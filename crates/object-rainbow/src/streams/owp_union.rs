@@ -116,8 +116,8 @@ impl<O: Owp<Item = (K, V)>, K: Ord + Clone, V> Owp for OwpUnion<O, K, V> {
     }
 }
 
-impl<O: OwpBounds<B>, K, V, B: ?Sized> OwpBounds<B> for OwpUnion<O, K, V> {
-    fn set_min(self: Pin<&mut Self>, min: Bound<&B>) {
+impl<O: OwpBounds<K>, K: Ord, V> OwpBounds<K> for OwpUnion<O, K, V> {
+    fn set_min(self: Pin<&mut Self>, min: Bound<&K>) {
         let this = self.get_mut();
         this.queue.values_mut().for_each(|o| o.set_min(min));
         let mut r = None;
@@ -125,15 +125,43 @@ impl<O: OwpBounds<B>, K, V, B: ?Sized> OwpBounds<B> for OwpUnion<O, K, V> {
             this.queue.link_push_back::<OP_WAKE_MIN>(&next);
             r = Some(next);
         }
+        while let Some((k, _)) = this.pulled.first_key_value()
+            && match min {
+                Bound::Included(min) => k < min,
+                Bound::Excluded(min) => k <= min,
+                Bound::Unbounded => false,
+            }
+        {
+            for (_, r) in this.pulled.pop_first().unwrap().1 {
+                this.queue.link_push_back::<OP_WAKE_MIN>(&r);
+                this.queue.link_push_back::<OP_IS_WAITING_MIN>(&r);
+                this.queue.link_push_back::<OP_WAKE_MAX>(&r);
+                this.queue.link_push_back::<OP_IS_WAITING_MAX>(&r);
+            }
+        }
     }
 
-    fn set_max(self: Pin<&mut Self>, max: Bound<&B>) {
+    fn set_max(self: Pin<&mut Self>, max: Bound<&K>) {
         let this = self.get_mut();
         this.queue.values_mut().for_each(|o| o.set_max(max));
         let mut r = None;
         while let (_, Some(next)) = this.queue.link_of::<OP_IS_WAITING_MAX>(r.as_ref()) {
             this.queue.link_push_back::<OP_WAKE_MAX>(&next);
             r = Some(next);
+        }
+        while let Some((k, _)) = this.pulled.last_key_value()
+            && match max {
+                Bound::Included(max) => k > max,
+                Bound::Excluded(max) => k >= max,
+                Bound::Unbounded => false,
+            }
+        {
+            for (_, r) in this.pulled.pop_last().unwrap().1 {
+                this.queue.link_push_back::<OP_WAKE_MIN>(&r);
+                this.queue.link_push_back::<OP_IS_WAITING_MIN>(&r);
+                this.queue.link_push_back::<OP_WAKE_MAX>(&r);
+                this.queue.link_push_back::<OP_IS_WAITING_MAX>(&r);
+            }
         }
     }
 }
