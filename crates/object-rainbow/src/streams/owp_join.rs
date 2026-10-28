@@ -6,7 +6,7 @@ use std::{
 
 use pin_project::pin_project;
 
-use super::owp::Owp;
+use super::owp::{Owp, OwpBounds};
 
 #[derive(Default)]
 enum State<K, Lv, Rv> {
@@ -52,7 +52,9 @@ pub struct OwpJoin<L, R, K, Lv, Rv> {
     max: State<K, Lv, Rv>,
 }
 
-impl<L: Owp<Item = (K, Lv)>, R: Owp<Item = (K, Rv)>, K: Ord, Lv, Rv> OwpJoin<L, R, K, Lv, Rv> {
+impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K>, K: Ord, Lv, Rv>
+    OwpJoin<L, R, K, Lv, Rv>
+{
     pub fn new(l: L, r: R) -> Self {
         Self {
             owp_l: Some(l),
@@ -63,8 +65,8 @@ impl<L: Owp<Item = (K, Lv)>, R: Owp<Item = (K, Rv)>, K: Ord, Lv, Rv> OwpJoin<L, 
     }
 }
 
-impl<L: Owp<Item = (K, Lv)>, R: Owp<Item = (K, Rv)>, K: Ord, Lv, Rv> Owp
-    for OwpJoin<L, R, K, Lv, Rv>
+impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K>, K: Ord, Lv, Rv>
+    Owp for OwpJoin<L, R, K, Lv, Rv>
 {
     type Item = (K, (Lv, Rv));
 
