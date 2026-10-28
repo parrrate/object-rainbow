@@ -21,7 +21,7 @@ cid = { workspace = true, optional = true }
 flume = { workspace = true, optional = true }
 futures-channel = { workspace = true, optional = true }
 futures-concurrency.workspace = true
-futures-core = { workspace = true, optional = true }
+futures-core.workspace = true
 generic-array.workspace = true
 ghost.workspace = true
 hex = { workspace = true, optional = true }
@@ -44,7 +44,7 @@ indexmap = ["dep:indexmap"]
 nested-mut = ["dep:futures-channel"]
 owp-union = ["dep:ruchei-wakelist"]
 serde = ["dep:serde"]
-task-owp = ["dep:atomic-waker", "dep:flume", "dep:futures-core"]
+task-owp = ["dep:atomic-waker", "dep:flume"]
 ulid = ["dep:ulid"]
 
 [package.metadata.docs.rs]

@@ -5,6 +5,7 @@ use std::{
     task::{Context, Poll, ready},
 };
 
+use futures_core::Stream;
 use pin_project::pin_project;
 
 use crate::ToOutput;
@@ -50,6 +51,13 @@ pub trait Owp {
             bounds: Some(bounds),
             _item: PhantomData,
         }
+    }
+
+    fn both_ends(self) -> BothEnds<Self>
+    where
+        Self: Sized,
+    {
+        BothEnds { owp: self }
     }
 }
 
@@ -238,5 +246,23 @@ impl<O: OwpBounds<B>, B: ?Sized> OwpBounds<B> for Distinct<O> {
 
     fn set_max(self: Pin<&mut Self>, max: Bound<&B>) {
         self.project().owp.set_max(max);
+    }
+}
+
+#[pin_project]
+pub struct BothEnds<O> {
+    #[pin]
+    owp: O,
+}
+
+impl<O: Owp> Stream for BothEnds<O> {
+    type Item = object_rainbow::Result<O::Item>;
+
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        let mut owp = self.project().owp;
+        if let Poll::Ready(item) = owp.as_mut().poll_min(cx)? {
+            return Poll::Ready(item.map(Ok));
+        }
+        owp.as_mut().poll_max(cx).map(Result::transpose)
     }
 }
