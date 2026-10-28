@@ -1518,4 +1518,33 @@ mod test {
         assert_eq!(items, original);
         Ok(())
     }
+
+    #[cfg(feature = "owp")]
+    #[apply(test!)]
+    async fn owp_bounds() -> object_rainbow::Result<()> {
+        use object_rainbow::streams::owp::Owp;
+
+        let original = [
+            (*b"abcd", true),
+            (*b"abce", true),
+            (*b"abff", true),
+            (*b"abfg", true),
+            (*b"ahij", true),
+            (*b"xxx1", true),
+            (*b"xxx2", true),
+            (*b"xxy1", true),
+            (*b"xxy2", true),
+        ];
+        let map: AmtMap<[u8; 4], bool> = original.into_iter().collect();
+        let mut items = Vec::new();
+        map.owp()
+            .with_bounds(b"abfg"..b"xxx2")
+            .try_for_each_increasing(|item| items.push(item))
+            .await?;
+        assert_eq!(
+            items,
+            [(*b"abfg", true), (*b"ahij", true), (*b"xxx1", true),],
+        );
+        Ok(())
+    }
 }
