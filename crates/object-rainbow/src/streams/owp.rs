@@ -21,7 +21,7 @@ pub trait OwpBounds<B: ?Sized = <Self as Owp>::Item> {
     fn set_max(self: Pin<&mut Self>, max: Bound<&B>);
 }
 
-pub trait OwpBoundOwned<B = <Self as Owp>::Item> {
+pub trait OwpBoundsOwned<B = <Self as Owp>::Item> {
     fn set_min(self: Pin<&mut Self>, min: Bound<B>);
     fn set_max(self: Pin<&mut Self>, max: Bound<B>);
 }
