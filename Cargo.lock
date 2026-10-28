@@ -1757,6 +1757,7 @@ dependencies = [
  "indexmap 2.14.0",
  "object-rainbow-derive",
  "pin-project",
+ "ruchei-wakelist",
  "serde",
  "sha2",
  "sha2-const",
@@ -2697,6 +2698,16 @@ dependencies = [
  "libc",
  "untrusted",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "ruchei-wakelist"
+version = "0.0.0-a.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01185f54c8c26d59e87badd0ee2bb44503eaf97c8564e10aee2b388790e1d65a"
+dependencies = [
+ "atomic-waker",
+ "crossbeam-utils",
 ]
 
 [[package]]
