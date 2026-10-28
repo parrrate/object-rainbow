@@ -184,3 +184,49 @@ impl<O: Owp + OwpBounds<T>, B: RangeBounds<T>, T: ?Sized> Owp for WithBounds<O, 
         self.inner().poll_max(cx)
     }
 }
+
+#[pin_project]
+pub struct Distinct<O> {
+    #[pin]
+    owp: O,
+}
+
+impl<O: Owp<Item = (K, V)> + OwpBounds<K>, K, V> Distinct<O> {
+    pub fn new(owp: O) -> Self {
+        Self { owp }
+    }
+}
+
+impl<O: Owp<Item = (K, V)> + OwpBounds<K>, K, V> Owp for Distinct<O> {
+    type Item = (K, V);
+
+    fn poll_min(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<crate::Result<Option<Self::Item>>> {
+        let mut this = self.project();
+        Poll::Ready(Ok(
+            if let Some((k, v)) = ready!(this.owp.as_mut().poll_min(cx))? {
+                this.owp.set_min(Bound::Excluded(&k));
+                Some((k, v))
+            } else {
+                None
+            },
+        ))
+    }
+
+    fn poll_max(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<crate::Result<Option<Self::Item>>> {
+        let mut this = self.project();
+        Poll::Ready(Ok(
+            if let Some((k, v)) = ready!(this.owp.as_mut().poll_min(cx))? {
+                this.owp.set_max(Bound::Excluded(&k));
+                Some((k, v))
+            } else {
+                None
+            },
+        ))
+    }
+}
