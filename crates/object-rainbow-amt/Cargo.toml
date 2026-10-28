@@ -24,6 +24,8 @@ get-mut = ["object-rainbow/nested-mut"]
 owp = ["dep:async-executor", "dep:flume", "object-rainbow/task-owp"]
 
 [dev-dependencies]
+object-rainbow = { workspace = true, features = ["owp-union"] }
+
 macro_rules_attribute.workspace = true
 smol.workspace = true
 smol-macros.workspace = true
