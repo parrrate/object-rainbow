@@ -1,5 +1,6 @@
 use std::{
     cmp::Ordering,
+    ops::Bound,
     pin::Pin,
     task::{Context, Poll},
 };
@@ -110,10 +111,16 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
                     };
                     match k_l.cmp(&k_r) {
                         Ordering::Less => {
+                            if let Some(l) = this.owp_l.as_mut().as_pin_mut() {
+                                l.set_min(Bound::Included(&k_r));
+                            }
                             *this.min = State::R(k_r, v_r);
                         }
                         Ordering::Equal => break Poll::Ready(Ok(Some((k_l, (v_l, v_r))))),
                         Ordering::Greater => {
+                            if let Some(r) = this.owp_r.as_mut().as_pin_mut() {
+                                r.set_min(Bound::Included(&k_l));
+                            }
                             *this.min = State::L(k_l, v_l);
                         }
                     }
@@ -136,10 +143,16 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
                     };
                     match k_l.cmp(&k_r) {
                         Ordering::Less => {
+                            if let Some(l) = this.owp_l.as_mut().as_pin_mut() {
+                                l.set_min(Bound::Included(&k_r));
+                            }
                             *this.min = State::R(k_r, v_r);
                         }
                         Ordering::Equal => break Poll::Ready(Ok(Some((k_l, (v_l, v_r))))),
                         Ordering::Greater => {
+                            if let Some(r) = this.owp_r.as_mut().as_pin_mut() {
+                                r.set_min(Bound::Included(&k_l));
+                            }
                             *this.min = State::L(k_l, v_l);
                         }
                     }
@@ -228,10 +241,16 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
                     };
                     match k_l.cmp(&k_r) {
                         Ordering::Less => {
+                            if let Some(r) = this.owp_r.as_mut().as_pin_mut() {
+                                r.set_max(Bound::Included(&k_l));
+                            }
                             *this.max = State::L(k_l, v_l);
                         }
                         Ordering::Equal => break Poll::Ready(Ok(Some((k_l, (v_l, v_r))))),
                         Ordering::Greater => {
+                            if let Some(l) = this.owp_l.as_mut().as_pin_mut() {
+                                l.set_max(Bound::Included(&k_r));
+                            }
                             *this.max = State::R(k_r, v_r);
                         }
                     }
@@ -254,10 +273,16 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
                     };
                     match k_l.cmp(&k_r) {
                         Ordering::Less => {
+                            if let Some(r) = this.owp_r.as_mut().as_pin_mut() {
+                                r.set_max(Bound::Included(&k_l));
+                            }
                             *this.max = State::L(k_l, v_l);
                         }
                         Ordering::Equal => break Poll::Ready(Ok(Some((k_l, (v_l, v_r))))),
                         Ordering::Greater => {
+                            if let Some(l) = this.owp_l.as_mut().as_pin_mut() {
+                                l.set_max(Bound::Included(&k_r));
+                            }
                             *this.max = State::R(k_r, v_r);
                         }
                     }
