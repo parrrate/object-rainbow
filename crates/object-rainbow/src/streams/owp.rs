@@ -7,6 +7,8 @@ use std::{
 
 use pin_project::pin_project;
 
+use crate::ToOutput;
+
 pub trait Owp {
     type Item;
     fn poll_min(
@@ -115,5 +117,15 @@ impl<O: Owp> Owp for OutputBounds<O> {
         cx: &mut Context<'_>,
     ) -> Poll<crate::Result<Option<Self::Item>>> {
         self.inner().poll_max(cx)
+    }
+}
+
+impl<O: Owp + OwpBoundsOwned<Vec<u8>>, T: ToOutput> OwpBounds<T> for OutputBounds<O> {
+    fn set_min(self: Pin<&mut Self>, min: Bound<&T>) {
+        self.inner().set_min(min.map(ToOutput::output));
+    }
+
+    fn set_max(self: Pin<&mut Self>, max: Bound<&T>) {
+        self.inner().set_max(max.map(ToOutput::output));
     }
 }
