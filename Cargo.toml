@@ -67,6 +67,7 @@ object-rainbow-trie = { version = "0.0.0-a.21", path = "crates/object-rainbow-tr
 anyhow = "1.0.102"
 async-executor = "1.14.0"
 async-fs = "2.2.0"
+atomic-waker = "1.1.2"
 axum = { version = "0.8.9", default-features = false }
 bitvec = { version = "1.0.1", default-features = false }
 blocking = "1.7.0"

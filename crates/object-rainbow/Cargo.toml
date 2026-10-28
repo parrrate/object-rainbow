@@ -14,15 +14,19 @@ exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 object-rainbow-derive = { version = "=0.0.0-a.27", path = "../object-rainbow-derive" }
 
 anyhow.workspace = true
+atomic-waker = { workspace = true, optional = true }
 bitvec = { workspace = true, optional = true }
 bytes = { workspace = true, optional = true }
 cid = { workspace = true, optional = true }
+flume = { workspace = true, optional = true }
 futures-channel = { workspace = true, optional = true }
 futures-concurrency.workspace = true
+futures-core = { workspace = true, optional = true }
 generic-array.workspace = true
 ghost.workspace = true
 hex = { workspace = true, optional = true }
 indexmap = { workspace = true, optional = true }
+pin-project = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"], optional = true }
 sha2.workspace = true
 sha2-const.workspace = true
@@ -38,6 +42,12 @@ hex = ["dep:hex"]
 indexmap = ["dep:indexmap"]
 nested-mut = ["dep:futures-channel"]
 serde = ["dep:serde"]
+task-owp = [
+    "dep:atomic-waker",
+    "dep:flume",
+    "dep:futures-core",
+    "dep:pin-project",
+]
 ulid = ["dep:ulid"]
 
 [package.metadata.docs.rs]
