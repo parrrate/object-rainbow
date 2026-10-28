@@ -7,7 +7,7 @@ use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::nested_mut::{Borrower, LendTo, NestedMut};
 #[cfg(feature = "owp")]
 use object_rainbow::streams::{
-    owp::Owp,
+    owp::{Owp, OwpBoundsOwned},
     task_owp::{TaskOwp, intersect},
 };
 use object_rainbow::{
@@ -756,7 +756,7 @@ impl<K: Component, V: Component> Node<K, V> {
     }
 
     #[cfg(feature = "owp")]
-    fn owp(self) -> impl Owp<Item = (K, V)> {
+    fn owp(self) -> impl Owp<Item = (K, V)> + OwpBoundsOwned<Vec<u8>> {
         TaskOwp::<_, Vec<u8>, _>::new(async move |mut ctx| {
             let mut q = BTreeMap::from([(Vec::<u8>::new(), self)]);
             let mut bound_min = Bound::<Vec<u8>>::Unbounded;
