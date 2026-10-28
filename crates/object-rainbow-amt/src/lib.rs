@@ -7,7 +7,7 @@ use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::nested_mut::{Borrower, LendTo, NestedMut};
 #[cfg(feature = "owp")]
 use object_rainbow::streams::{
-    owp::{Owp, OwpBoundsOwned},
+    owp::{Owp, OwpBounds, OwpBoundsOwned},
     task_owp::{TaskOwp, intersect},
 };
 use object_rainbow::{
@@ -1127,8 +1127,8 @@ impl<K: Component, V: Component> AmtMap<K, V> {
     }
 
     #[cfg(feature = "owp")]
-    pub fn owp(self) -> impl Owp<Item = (K, V)> {
-        self.0.1.owp()
+    pub fn owp(self) -> impl Owp<Item = (K, V)> + OwpBounds<K> {
+        self.0.1.owp().output_bounds()
     }
 }
 
