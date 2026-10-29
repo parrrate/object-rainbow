@@ -233,10 +233,8 @@ impl<K: Component, V: Component> Node<K, V> {
         key: &[u8],
         k_new: &K,
         borrower: Borrower<V>,
-    ) -> impl Send + Future<Output = object_rainbow::Result<T>>
-    where
-        V: Default,
-    {
+        default: impl Send + FnOnce() -> V,
+    ) -> impl Send + Future<Output = object_rainbow::Result<T>> {
         async move {
             match self {
                 Self::Leaf(k, MappedExtra(_, v)) => {
@@ -255,9 +253,10 @@ impl<K: Component, V: Component> Node<K, V> {
                             k.into_value(),
                             k_new.clone(),
                             v,
-                            Default::default(),
+                            default(),
                         )?;
-                        Box::pin(self.get_mut_inner_default(key, k_new, borrower)).await
+                        self.get_mut_inner(key, borrower).await?;
+                        Err(object_rainbow::error_operation!("missing key"))
                     }
                 }
                 Self::Sub(point) => {
@@ -277,7 +276,7 @@ impl<K: Component, V: Component> Node<K, V> {
                                 children
                                     .entry(first)
                                     .or_default()
-                                    .get_mut_inner_default(key, k_new, borrower),
+                                    .get_mut_inner_default(key, k_new, borrower, default),
                             )
                             .await?;
                         }
@@ -296,14 +295,16 @@ impl<K: Component, V: Component> Node<K, V> {
                             })?),
                             k_new.clone(),
                         )?,
-                        Default::default(),
+                        MappedExtra(Default::default(), default()),
                     );
                     *self = Self::from_pair(common, first_a, first_b, node_a, node_b);
-                    Box::pin(self.get_mut_inner_default(key, k_new, borrower)).await
+                    self.get_mut_inner(key, borrower).await?;
+                    Err(object_rainbow::error_operation!("missing key"))
                 }
                 _ => {
-                    *self = Self::from_kv(key, k_new.clone(), Default::default())?;
-                    Box::pin(self.get_mut_inner_default(key, k_new, borrower)).await
+                    *self = Self::from_kv(key, k_new.clone(), default())?;
+                    self.get_mut_inner(key, borrower).await?;
+                    Err(object_rainbow::error_operation!("missing key"))
                 }
             }
         }
@@ -328,7 +329,8 @@ impl<K: Component, V: Component> Node<K, V> {
         V: Default,
     {
         NestedMut::from_fn(async move |borrower| {
-            self.get_mut_inner_default(&key, k_new, borrower).await
+            self.get_mut_inner_default(&key, k_new, borrower, Default::default)
+                .await
         })
         .await?
         .ok_or_else(|| object_rainbow::error_operation!("missing key"))
