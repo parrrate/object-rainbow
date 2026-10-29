@@ -1030,6 +1030,37 @@ impl<K: Component, V: Component> Node<K, V> {
     }
 }
 
+impl<K: Component, V1: Component, V2: Component> Node<K, (V1, V2)> {
+    async fn split(self) -> object_rainbow::Result<(Node<K, V1>, Node<K, V2>)> {
+        Ok(match self {
+            Self::Empty => (Node::Empty, Node::Empty),
+            Self::Leaf(k, MappedExtra(e, (v1, v2))) => (
+                Node::Leaf(k.clone(), MappedExtra(e, v1)),
+                Node::Leaf(k, MappedExtra(e, v2)),
+            ),
+            Self::Sub(point) => {
+                let MappedExtra(prefix, KeyedArrayMap(subs)) = { point }.fetch_take().await?;
+                let (subs1, subs2) = futures_util::future::try_join_all(subs.into_iter().map(
+                    |(k, MappedExtra(e, node))| async move {
+                        let (node1, node2) = node.split().await?;
+                        Ok::<_, object_rainbow::Error>((
+                            (k, MappedExtra(e, node1)),
+                            (k, MappedExtra(e, node2)),
+                        ))
+                    },
+                ))
+                .await?
+                .into_iter()
+                .collect();
+                (
+                    Node::Sub(MappedExtra(prefix.clone(), KeyedArrayMap(subs1)).point()),
+                    Node::Sub(MappedExtra(prefix, KeyedArrayMap(subs2)).point()),
+                )
+            }
+        })
+    }
+}
+
 trait TraitOp<K: Send, V, U: Send>: Send + Sync {
     fn t1_empty(
         &self,
@@ -1275,6 +1306,14 @@ impl<K: Component, V: Component> AmtMap<K, V> {
     #[cfg(feature = "owp")]
     pub fn owp(&self) -> impl Owp<Item = (K, V)> + OwpBounds<K> {
         self.0.1.clone().owp().output_bounds()
+    }
+}
+
+impl<K: Component, V1: Component, V2: Component> AmtMap<K, (V1, V2)> {
+    pub async fn split(self) -> object_rainbow::Result<(AmtMap<K, V1>, AmtMap<K, V2>)> {
+        let AmtMap(MappedExtra(e, node)) = self;
+        let (node1, node2) = node.split().await?;
+        Ok((AmtMap(MappedExtra(e, node1)), AmtMap(MappedExtra(e, node2))))
     }
 }
 
