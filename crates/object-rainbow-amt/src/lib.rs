@@ -41,6 +41,7 @@ mod private {
         PartialEq,
         Eq,
         MaybeHasNiche,
+        Hash,
     )]
     #[topology(recursive, unchecked)]
     #[topology(bound = "K: InlineOutput + Traversible")]
