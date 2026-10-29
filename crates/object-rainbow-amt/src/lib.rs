@@ -11,9 +11,9 @@ use object_rainbow::streams::{
     task_owp::{TaskOwp, intersect},
 };
 use object_rainbow::{
-    Component, Enum, Equivalent, EquivalentFor, Inline, InlineOutput, ListHashes, Parse,
-    ParseInline, PointInput, Singular, Tagged, ToOutput, Topological, Traversible, assert_impl,
-    length_prefixed::LpBytes, map_extra::MappedExtra, tuple_extra::Extra1,
+    Component, Enum, Equivalent, EquivalentFor, Inline, InlineOutput, ListHashes, MaybeHasNiche,
+    Parse, ParseInline, PointInput, Singular, Tagged, ToOutput, Topological, Traversible,
+    assert_impl, length_prefixed::LpBytes, map_extra::MappedExtra, tuple_extra::Extra1,
 };
 use object_rainbow_array_map::KeyedArrayMap;
 use object_rainbow_parse_prefix::{Prefix, PrefixRoot, WithByte, WithBytes, WithPrefix};
@@ -37,6 +37,7 @@ mod construct;
     Default,
     PartialEq,
     Eq,
+    MaybeHasNiche,
 )]
 #[topology(recursive, unchecked)]
 #[topology(bound = "K: InlineOutput + Traversible")]
@@ -46,6 +47,7 @@ mod construct;
 #[parse(bound = "K: ParseInline<I::WithExtra<E>> + Inline<E>")]
 #[parse(bound = "V: ParseInline<I::WithExtra<E>> + Inline<E>")]
 #[parse(bound = "I: PointInput<Extra = (Prefix, E)>")]
+#[niche(tag)]
 enum Node<K, V> {
     #[default]
     Empty,
