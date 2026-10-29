@@ -1391,6 +1391,11 @@ impl<K: Component, V: Component> AmtMap<K, V> {
     pub fn owp(&self) -> impl Owp<Item = (K, V)> + OwpBounds<K> {
         self.0.1.clone().owp().output_bounds()
     }
+
+    #[cfg(feature = "owp")]
+    pub fn into_owp(self) -> impl Owp<Item = (K, V)> + OwpBounds<K> {
+        self.0.1.owp().output_bounds()
+    }
 }
 
 impl<K: Component, V1: Component, V2: Component> AmtMap<K, (V1, V2)> {
