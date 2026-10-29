@@ -19,40 +19,44 @@ use object_rainbow_array_map::KeyedArrayMap;
 use object_rainbow_parse_prefix::{Prefix, PrefixRoot, WithByte, WithBytes, WithPrefix};
 use object_rainbow_point::{IntoPoint, Point};
 
-use self::construct::Construct;
+use self::{construct::Construct, private::Node};
 
 mod construct;
 
-#[derive(
-    Debug,
-    Enum,
-    ToOutput,
-    InlineOutput,
-    Tagged,
-    ListHashes,
-    Topological,
-    Parse,
-    ParseInline,
-    Clone,
-    Default,
-    PartialEq,
-    Eq,
-    MaybeHasNiche,
-)]
-#[topology(recursive, unchecked)]
-#[topology(bound = "K: InlineOutput + Traversible")]
-#[topology(bound = "V: InlineOutput + Traversible")]
-#[parse(input = "I", unchecked)]
-#[parse(generic = "E: 'static + Send + Sync + Clone")]
-#[parse(bound = "K: ParseInline<I::WithExtra<E>> + Inline<E>")]
-#[parse(bound = "V: ParseInline<I::WithExtra<E>> + Inline<E>")]
-#[parse(bound = "I: PointInput<Extra = (Prefix, E)>")]
-#[niche(tag)]
-enum Node<K, V> {
-    #[default]
-    Empty,
-    Leaf(WithPrefix<K>, MappedExtra<V, Extra1>),
-    Sub(#[tags(skip)] Point<Subs<K, V>>),
+mod private {
+    use super::*;
+
+    #[derive(
+        Debug,
+        Enum,
+        ToOutput,
+        InlineOutput,
+        Tagged,
+        ListHashes,
+        Topological,
+        Parse,
+        ParseInline,
+        Clone,
+        Default,
+        PartialEq,
+        Eq,
+        MaybeHasNiche,
+    )]
+    #[topology(recursive, unchecked)]
+    #[topology(bound = "K: InlineOutput + Traversible")]
+    #[topology(bound = "V: InlineOutput + Traversible")]
+    #[parse(input = "I", unchecked)]
+    #[parse(generic = "E: 'static + Send + Sync + Clone")]
+    #[parse(bound = "K: ParseInline<I::WithExtra<E>> + Inline<E>")]
+    #[parse(bound = "V: ParseInline<I::WithExtra<E>> + Inline<E>")]
+    #[parse(bound = "I: PointInput<Extra = (Prefix, E)>")]
+    #[niche(tag)]
+    pub enum Node<K, V> {
+        #[default]
+        Empty,
+        Leaf(WithPrefix<K>, MappedExtra<V, Extra1>),
+        Sub(#[tags(skip)] Point<Subs<K, V>>),
+    }
 }
 
 type Subs<K, V> = MappedExtra<KeyedArrayMap<MappedExtra<Node<K, V>, WithByte>>, WithBytes>;
@@ -1160,6 +1164,7 @@ impl<K: Component, V: Component> FromIterator<(K, V)> for Node<K, V> {
     ParseInline,
     PartialEq,
     Eq,
+    MaybeHasNiche,
 )]
 pub struct AmtMap<K, V>(MappedExtra<Node<K, V>, PrefixRoot>);
 
