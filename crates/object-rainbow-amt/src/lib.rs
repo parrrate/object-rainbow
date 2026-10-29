@@ -124,6 +124,32 @@ impl<K: Component, V: Component> Node<K, V> {
         })
     }
 
+    async fn then<U: Component, F: Future<Output = object_rainbow::Result<U>>>(
+        self,
+        f: impl Copy + Fn(V) -> F,
+    ) -> object_rainbow::Result<Node<K, U>> {
+        Ok(match self {
+            Self::Empty => Node::Empty,
+            Self::Leaf(k, MappedExtra(e, v)) => Node::Leaf(k, MappedExtra(e, f(v).await?)),
+            Self::Sub(mut point) => Node::Sub(
+                {
+                    let MappedExtra(prefix, KeyedArrayMap(subs)) = point.fetch_take().await?;
+                    let subs = futures_util::future::try_join_all(subs.into_iter().map(
+                        |(k, MappedExtra(e, node))| async move {
+                            let node = node.then(f).await?;
+                            Ok::<_, object_rainbow::Error>((k, MappedExtra(e, node)))
+                        },
+                    ))
+                    .await?
+                    .into_iter()
+                    .collect();
+                    MappedExtra(prefix, KeyedArrayMap(subs))
+                }
+                .point(),
+            ),
+        })
+    }
+
     async fn filter_map<U: Component>(
         self,
         f: impl Copy + Fn(V) -> Option<U>,
@@ -1076,6 +1102,15 @@ impl<K: Component, V: Component> AmtMap<K, V> {
     ) -> object_rainbow::Result<AmtMap<K, U>> {
         let AmtMap(MappedExtra(e, node)) = self;
         let node = node.map(&f).await?;
+        Ok(AmtMap(MappedExtra(e, node)))
+    }
+
+    pub async fn then<U: Component, F: Future<Output = object_rainbow::Result<U>>>(
+        self,
+        f: impl Fn(V) -> F,
+    ) -> object_rainbow::Result<AmtMap<K, U>> {
+        let AmtMap(MappedExtra(e, node)) = self;
+        let node = node.then(&f).await?;
         Ok(AmtMap(MappedExtra(e, node)))
     }
 
