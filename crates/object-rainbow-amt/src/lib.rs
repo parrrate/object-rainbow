@@ -1128,6 +1128,82 @@ where
     }
 }
 
+struct NestedOp<O>(O);
+
+impl<K1: Component, K2: Component, V: Component, U: Component, O: TraitOp<K2, V, U>>
+    TraitOp<K1, AmtMap<K2, V>, AmtMap<K2, U>> for NestedOp<O>
+{
+    async fn t1_empty(
+        &self,
+        t2: &mut Node<K1, AmtMap<K2, U>>,
+    ) -> object_rainbow::Result<Node<K1, AmtMap<K2, V>>> {
+        let (t1_tmp, t2_tmp) = std::mem::take(t2)
+            .then(async |mut u| {
+                let v = AmtMap(MappedExtra(
+                    Default::default(),
+                    self.0.t1_empty(&mut u.0).await?,
+                ));
+                Ok((v, u))
+            })
+            .await?
+            .split()
+            .await?;
+        let t1;
+        (t1, *t2) = futures_util::future::try_join(
+            t1_tmp.filter_map(|v| if v.is_empty() { None } else { Some(v) }),
+            t2_tmp.filter_map(|u| if u.is_empty() { None } else { Some(u) }),
+        )
+        .await?;
+        Ok(t1)
+    }
+
+    async fn single_kv2(
+        &self,
+        t1: &mut Node<K1, AmtMap<K2, V>>,
+        key: &[u8],
+        k: K1,
+        mut u: AmtMap<K2, U>,
+    ) -> object_rainbow::Result<Option<(K1, AmtMap<K2, U>)>> {
+        let delete = {
+            let mut v = t1.get_mut_default(key.to_vec(), &k).await?;
+            v.0.op(&mut u.0, &self.0).await?;
+            v.is_empty()
+        };
+        if delete {
+            t1.remove(key).await?;
+        }
+        Ok(if u.is_empty() { None } else { Some((k, u)) })
+    }
+
+    async fn single_kv1(
+        &self,
+        t2: &mut Node<K1, AmtMap<K2, U>>,
+        key: &[u8],
+        k: K1,
+        v: AmtMap<K2, V>,
+    ) -> object_rainbow::Result<Node<K1, AmtMap<K2, V>>> {
+        let mut t = std::mem::take(t2)
+            .map(|u| (AmtMap::<K2, V>::default(), u))
+            .await?;
+        t.get_mut_default(key.to_vec(), &k).await?.0 = v;
+        let (t1_tmp, t2_tmp) = t
+            .then(async |(mut v, mut u)| {
+                v.0.op(&mut u.0, &self.0).await?;
+                Ok((v, u))
+            })
+            .await?
+            .split()
+            .await?;
+        let t1;
+        (t1, *t2) = futures_util::future::try_join(
+            t1_tmp.filter_map(|v| if v.is_empty() { None } else { Some(v) }),
+            t2_tmp.filter_map(|u| if u.is_empty() { None } else { Some(u) }),
+        )
+        .await?;
+        Ok(t1)
+    }
+}
+
 type CollapseCtx<K, V> = Option<Option<(Vec<u8>, u8, Node<K, V>)>>;
 
 fn common_length(a: &[u8], b: &[u8]) -> object_rainbow::Result<usize> {
@@ -1320,6 +1396,27 @@ impl<K: Component, V1: Component, V2: Component> AmtMap<K, (V1, V2)> {
         let AmtMap(MappedExtra(e, node)) = self;
         let (node1, node2) = node.split().await?;
         Ok((AmtMap(MappedExtra(e, node1)), AmtMap(MappedExtra(e, node2))))
+    }
+}
+
+impl<K1: Component, K2: Component, V: Component> AmtMap<K1, AmtMap<K2, V>> {
+    async fn filter2(self) -> object_rainbow::Result<Self> {
+        self.filter_map(|map| if map.is_empty() { None } else { Some(map) })
+            .await
+    }
+
+    pub async fn bulk2(
+        &mut self,
+        mut bulk: AmtMap<K1, AmtMap<K2, Option<V>>>,
+    ) -> object_rainbow::Result<AmtMap<K1, AmtMap<K2, V>>>
+    where
+        Option<V>: Component,
+    {
+        self.0.op(&mut bulk.0, &NestedOp(BulkOp)).await?;
+        bulk.then(|map| map.filter_map(std::convert::identity))
+            .await?
+            .filter2()
+            .await
     }
 }
 
