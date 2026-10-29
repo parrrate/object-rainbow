@@ -228,12 +228,110 @@ impl<K: Component, V: Component> Node<K, V> {
     }
 
     #[cfg(feature = "get-mut")]
+    fn get_mut_inner_default<T>(
+        &mut self,
+        key: &[u8],
+        k_new: &K,
+        borrower: Borrower<V>,
+    ) -> impl Send + Future<Output = object_rainbow::Result<T>>
+    where
+        V: Default,
+    {
+        async move {
+            match self {
+                Self::Leaf(k, MappedExtra(_, v)) => {
+                    let vec = k.vec();
+                    if vec == key {
+                        v.lend_to(borrower).await
+                    } else {
+                        let Self::Leaf(k, MappedExtra(_, v)) = std::mem::take(self) else {
+                            unreachable!()
+                        };
+                        let prefix = k.prefix().clone();
+                        *self = Self::from_kv_pairs(
+                            prefix,
+                            &vec,
+                            key,
+                            k.into_value(),
+                            k_new.clone(),
+                            v,
+                            Default::default(),
+                        )?;
+                        Box::pin(self.get_mut_inner_default(key, k_new, borrower)).await
+                    }
+                }
+                Self::Sub(point) => {
+                    let (first_a, n) = {
+                        let MappedExtra(prefix, children) = &mut *point.fetch_mut().await?;
+                        if children.len() < 2 {
+                            return Err(object_rainbow::error_consistency!("node too small"));
+                        }
+                        let key_a = &*prefix.0.0;
+                        if let Some(key) = key.strip_prefix(key_a) {
+                            let Some((&first, key)) = key.split_first() else {
+                                return Err(object_rainbow::error_consistency!(
+                                    "key is prefix of another key"
+                                ));
+                            };
+                            return Box::pin(
+                                children
+                                    .entry(first)
+                                    .or_default()
+                                    .get_mut_inner_default(key, k_new, borrower),
+                            )
+                            .await?;
+                        }
+                        let n = common_length(key, key_a)?;
+                        let first_a = key_a[n];
+                        prefix.0.0.drain(..n + 1);
+                        (first_a, n)
+                    };
+                    let common = &key[..n];
+                    let (&first_b, key_b) = key[n..].split_first().expect("must have 1 different");
+                    let node_a = std::mem::take(self);
+                    let node_b = Self::Leaf(
+                        WithPrefix::new(
+                            Prefix::from(k_new.vec().strip_suffix(key_b).ok_or_else(|| {
+                                object_rainbow::error_consistency!("suffix mismatch")
+                            })?),
+                            k_new.clone(),
+                        )?,
+                        Default::default(),
+                    );
+                    *self = Self::from_pair(common, first_a, first_b, node_a, node_b);
+                    Box::pin(self.get_mut_inner_default(key, k_new, borrower)).await
+                }
+                _ => {
+                    *self = Self::from_kv(key, k_new.clone(), Default::default())?;
+                    Box::pin(self.get_mut_inner_default(key, k_new, borrower)).await
+                }
+            }
+        }
+    }
+
+    #[cfg(feature = "get-mut")]
     async fn get_mut(
         &mut self,
         key: Vec<u8>,
     ) -> object_rainbow::Result<Option<impl '_ + Send + Sync + std::ops::DerefMut<Target = V>>>
     {
         NestedMut::from_fn(async move |borrower| self.get_mut_inner(&key, borrower).await).await
+    }
+
+    #[cfg(feature = "get-mut")]
+    async fn get_mut_default<'a>(
+        &'a mut self,
+        key: Vec<u8>,
+        k_new: &'a K,
+    ) -> object_rainbow::Result<impl 'a + Send + Sync + std::ops::DerefMut<Target = V>>
+    where
+        V: Default,
+    {
+        NestedMut::from_fn(async move |borrower| {
+            self.get_mut_inner_default(&key, k_new, borrower).await
+        })
+        .await?
+        .ok_or_else(|| object_rainbow::error_operation!("missing key"))
     }
 
     fn from_kv(key: &[u8], k: K, v: V) -> object_rainbow::Result<Self> {
@@ -1062,6 +1160,17 @@ impl<K: Component, V: Component> AmtMap<K, V> {
     ) -> object_rainbow::Result<Option<impl '_ + Send + Sync + std::ops::DerefMut<Target = V>>>
     {
         self.0.get_mut(k.vec()).await
+    }
+
+    #[cfg(feature = "get-mut")]
+    pub async fn get_or_default<'a>(
+        &'a mut self,
+        k: &'a K,
+    ) -> object_rainbow::Result<impl 'a + Send + Sync + std::ops::DerefMut<Target = V>>
+    where
+        V: Default,
+    {
+        self.0.get_mut_default(k.vec(), k).await
     }
 
     pub async fn insert_replace(&mut self, k: K, v: V) -> object_rainbow::Result<Option<(K, V)>> {
