@@ -102,6 +102,12 @@ pub struct WithPrefix<T> {
     value: T,
 }
 
+impl<T: std::hash::Hash> std::hash::Hash for WithPrefix<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.value.hash(state);
+    }
+}
+
 impl<T: PartialEq> PartialEq for WithPrefix<T> {
     fn eq(&self, other: &Self) -> bool {
         self.prefix.len() == other.prefix.len() && self.value == other.value
