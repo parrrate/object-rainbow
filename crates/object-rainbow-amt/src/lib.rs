@@ -1243,6 +1243,7 @@ impl<K: Component, V: Component> FromIterator<(K, V)> for Node<K, V> {
     PartialEq,
     Eq,
     MaybeHasNiche,
+    Hash,
 )]
 pub struct AmtMap<K, V>(MappedExtra<Node<K, V>, PrefixRoot>);
 
