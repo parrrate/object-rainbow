@@ -280,11 +280,13 @@ impl<K: Component, V: Component> Node<K, V> {
                                     "key is prefix of another key"
                                 ));
                             };
-                            return children
-                                .entry(first)
-                                .or_default()
-                                .get_mut_inner_default(key, k_new, borrower)
-                                .await?;
+                            return Box::pin(
+                                children
+                                    .entry(first)
+                                    .or_default()
+                                    .get_mut_inner_default(key, k_new, borrower),
+                            )
+                            .await;
                         }
                         let n = common_length(key, key_a)?;
                         let first_a = key_a[n];
