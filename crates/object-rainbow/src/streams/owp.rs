@@ -35,6 +35,13 @@ pub trait Owp {
         TryForEachDecreasing { owp: self, f }
     }
 
+    fn try_for_each_both_ends<F: FnMut(Self::Item)>(self, f: F) -> TryForEachBothEnds<Self, F>
+    where
+        Self: Sized,
+    {
+        TryForEachBothEnds { owp: self, f }
+    }
+
     fn output_bounds(self) -> OutputBounds<Self>
     where
         Self: Sized,
@@ -104,6 +111,44 @@ impl<O: Owp, F: FnMut(O::Item)> Future for TryForEachDecreasing<O, F> {
         let mut this = self.project();
         while let Some(item) = ready!(this.owp.as_mut().poll_max(cx))? {
             (this.f)(item);
+        }
+        Poll::Ready(Ok(()))
+    }
+}
+
+#[pin_project]
+pub struct TryForEachBothEnds<O, F> {
+    #[pin]
+    owp: O,
+    f: F,
+}
+
+impl<O: Owp, F: FnMut(O::Item)> Future for TryForEachBothEnds<O, F> {
+    type Output = object_rainbow::Result<()>;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let mut this = self.project();
+        loop {
+            let mut any_ready = false;
+            if let Poll::Ready(item) = this.owp.as_mut().poll_min(cx)? {
+                any_ready = true;
+                if let Some(item) = item {
+                    (this.f)(item);
+                } else {
+                    break;
+                }
+            }
+            if let Poll::Ready(item) = this.owp.as_mut().poll_max(cx)? {
+                any_ready = true;
+                if let Some(item) = item {
+                    (this.f)(item);
+                } else {
+                    break;
+                }
+            }
+            if !any_ready {
+                return Poll::Pending;
+            }
         }
         Poll::Ready(Ok(()))
     }
