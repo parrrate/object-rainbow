@@ -5,7 +5,7 @@ use std::{
         Arc,
         atomic::{AtomicBool, Ordering},
     },
-    task::{Context, Poll, Wake, Waker},
+    task::{Context, Poll, Wake, Waker, ready},
 };
 
 use atomic_waker::AtomicWaker;
@@ -89,17 +89,41 @@ impl<'a, T, B, F: Future<Output = crate::Result<()>>> TaskOwp<'a, T, B, F> {
     }
 }
 
+impl<'a, T, B, F> TaskOwp<'a, T, B, F> {
+    fn poll_ready_min(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<T>> {
+        let this = self.project();
+        let mut item = ready!(this.ready_min.poll_next(cx));
+        if item.is_none()
+            && let Poll::Ready(other) = this.ready_max.poll_next(cx)
+        {
+            item = other;
+        }
+        Poll::Ready(item)
+    }
+
+    fn poll_ready_max(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<T>> {
+        let this = self.project();
+        let mut item = ready!(this.ready_max.poll_next(cx));
+        if item.is_none()
+            && let Poll::Ready(other) = this.ready_min.poll_next(cx)
+        {
+            item = other;
+        }
+        Poll::Ready(item)
+    }
+}
+
 impl<'a, T, B, F: Future<Output = crate::Result<()>>> Owp for TaskOwp<'a, T, B, F> {
     type Item = T;
 
     fn poll_min(
-        self: Pin<&mut Self>,
+        mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<crate::Result<Option<Self::Item>>> {
-        let mut this = self.project();
-        if let Poll::Ready(item) = this.ready_min.as_mut().poll_next(cx) {
+        if let Poll::Ready(item) = self.as_mut().poll_ready_min(cx) {
             return Poll::Ready(Ok(item));
         }
+        let mut this = self.as_mut().project();
         if let Some(future) = this.future.as_mut().as_pin_mut() {
             this.wants_min.store(true, Ordering::Relaxed);
             this.update.try_send(()).ok();
@@ -110,20 +134,20 @@ impl<'a, T, B, F: Future<Output = crate::Result<()>>> Owp for TaskOwp<'a, T, B, 
             {
                 this.future.set(None);
             }
-            this.ready_min.poll_next(cx).map(Ok)
+            self.poll_ready_min(cx).map(Ok)
         } else {
             Poll::Ready(Ok(None))
         }
     }
 
     fn poll_max(
-        self: Pin<&mut Self>,
+        mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<crate::Result<Option<Self::Item>>> {
-        let mut this = self.project();
-        if let Poll::Ready(item) = this.ready_max.as_mut().poll_next(cx) {
+        if let Poll::Ready(item) = self.as_mut().poll_ready_max(cx) {
             return Poll::Ready(Ok(item));
         }
+        let mut this = self.as_mut().project();
         if let Some(future) = this.future.as_mut().as_pin_mut() {
             this.wants_max.store(true, Ordering::Relaxed);
             this.update.try_send(()).ok();
@@ -134,7 +158,7 @@ impl<'a, T, B, F: Future<Output = crate::Result<()>>> Owp for TaskOwp<'a, T, B, 
             {
                 this.future.set(None);
             }
-            this.ready_max.poll_next(cx).map(Ok)
+            self.poll_ready_max(cx).map(Ok)
         } else {
             Poll::Ready(Ok(None))
         }
