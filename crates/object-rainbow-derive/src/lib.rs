@@ -3040,6 +3040,8 @@ struct PodArgs {
     #[darling(default)]
     no_inline_output: SpannedValue<bool>,
     #[darling(default)]
+    no_ord: SpannedValue<bool>,
+    #[darling(default)]
     no_byte_ord: SpannedValue<bool>,
 }
 
@@ -3057,6 +3059,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
             no_parse,
             no_inline,
             no_inline_output,
+            no_ord,
             no_byte_ord,
         },
         args_error,
@@ -3108,6 +3111,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
     let yes_parse = !no_parse.into_inner();
     let yes_inline = !no_inline.into_inner();
     let yes_inline_output = !no_inline_output.into_inner();
+    let yes_ord = !no_ord.into_inner();
     let yes_byte_ord = !no_byte_ord.into_inner();
     let yes_size = !no_size.into_inner();
     let yes_niche = !no_niche.into_inner();
@@ -3125,7 +3129,15 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
     } else {
         quote! {}
     };
-    let derive_byte_ord = if yes_output && yes_byte_ord {
+    let derive_ord = if yes_ord {
+        quote! {
+            ::core::cmp::PartialOrd,
+            ::core::cmp::Ord,
+        }
+    } else {
+        quote! {}
+    };
+    let derive_byte_ord = if yes_output && yes_ord && yes_byte_ord {
         quote! {
             ::object_rainbow::ByteOrd,
         }
@@ -3168,8 +3180,7 @@ pub fn pod(args: TokenStream, input: TokenStream) -> TokenStream {
             #derive_copy
             ::core::cmp::PartialEq,
             ::core::cmp::Eq,
-            ::core::cmp::PartialOrd,
-            ::core::cmp::Ord,
+            #derive_ord
             #derive_default
             ::core::fmt::Debug,
             ::core::hash::Hash,
