@@ -16,6 +16,7 @@ use crate::*;
     PartialEq,
     Eq,
     Default,
+    Hash,
 )]
 pub struct MappedExtra<T, M = ()>(pub M, pub T);
 
