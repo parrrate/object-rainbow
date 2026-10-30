@@ -71,8 +71,10 @@ impl<O: Owp<Item = (K, V)>, K: Ord + Clone, V> Owp for OwpUnion<O, K, V> {
             } else {
                 min.key().clone()
             };
-            this.queue.link_push_back::<OP_WAKE_MIN>(&r);
-            this.queue.link_push_back::<OP_IS_WAITING_MIN>(&r);
+            if this.queue.contains(&r) {
+                this.queue.link_push_back::<OP_WAKE_MIN>(&r);
+                this.queue.link_push_back::<OP_IS_WAITING_MIN>(&r);
+            }
             Poll::Ready(Ok(Some((k, v))))
         } else {
             Poll::Ready(Ok(None))
@@ -107,8 +109,10 @@ impl<O: Owp<Item = (K, V)>, K: Ord + Clone, V> Owp for OwpUnion<O, K, V> {
             } else {
                 max.key().clone()
             };
-            this.queue.link_push_back::<OP_WAKE_MAX>(&r);
-            this.queue.link_push_back::<OP_IS_WAITING_MAX>(&r);
+            if this.queue.contains(&r) {
+                this.queue.link_push_back::<OP_WAKE_MAX>(&r);
+                this.queue.link_push_back::<OP_IS_WAITING_MAX>(&r);
+            }
             Poll::Ready(Ok(Some((k, v))))
         } else {
             Poll::Ready(Ok(None))
@@ -133,10 +137,12 @@ impl<O: OwpBounds<K>, K: Ord, V> OwpBounds<K> for OwpUnion<O, K, V> {
             }
         {
             for (_, r) in this.pulled.pop_first().unwrap().1 {
-                this.queue.link_push_back::<OP_WAKE_MIN>(&r);
-                this.queue.link_push_back::<OP_IS_WAITING_MIN>(&r);
-                this.queue.link_push_back::<OP_WAKE_MAX>(&r);
-                this.queue.link_push_back::<OP_IS_WAITING_MAX>(&r);
+                if this.queue.contains(&r) {
+                    this.queue.link_push_back::<OP_WAKE_MIN>(&r);
+                    this.queue.link_push_back::<OP_IS_WAITING_MIN>(&r);
+                    this.queue.link_push_back::<OP_WAKE_MAX>(&r);
+                    this.queue.link_push_back::<OP_IS_WAITING_MAX>(&r);
+                }
             }
         }
     }
@@ -157,10 +163,12 @@ impl<O: OwpBounds<K>, K: Ord, V> OwpBounds<K> for OwpUnion<O, K, V> {
             }
         {
             for (_, r) in this.pulled.pop_last().unwrap().1 {
-                this.queue.link_push_back::<OP_WAKE_MIN>(&r);
-                this.queue.link_push_back::<OP_IS_WAITING_MIN>(&r);
-                this.queue.link_push_back::<OP_WAKE_MAX>(&r);
-                this.queue.link_push_back::<OP_IS_WAITING_MAX>(&r);
+                if this.queue.contains(&r) {
+                    this.queue.link_push_back::<OP_WAKE_MIN>(&r);
+                    this.queue.link_push_back::<OP_IS_WAITING_MIN>(&r);
+                    this.queue.link_push_back::<OP_WAKE_MAX>(&r);
+                    this.queue.link_push_back::<OP_IS_WAITING_MAX>(&r);
+                }
             }
         }
     }
