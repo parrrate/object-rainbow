@@ -345,3 +345,13 @@ impl<A, B, O: Owp<Item = A>, F: FnMut(A) -> B> Owp for Map<O, F> {
         this.owp.poll_max(cx).map_ok(|o| o.map(this.f))
     }
 }
+
+impl<O: OwpBounds<B>, F, B: ?Sized> OwpBounds<B> for Map<O, F> {
+    fn set_min(self: Pin<&mut Self>, min: Bound<&B>) {
+        self.project().owp.set_min(min);
+    }
+
+    fn set_max(self: Pin<&mut Self>, max: Bound<&B>) {
+        self.project().owp.set_max(max);
+    }
+}
