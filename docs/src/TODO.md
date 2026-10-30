@@ -24,3 +24,4 @@ Alisa Feistel maintains this list for herself, please do NOT treat this as an in
 - fixed-size reverse parse-ahead
 - move `Apply` on things to things
 - externally defined (de)serialisation
+- length-first comparison for length-prefixed
