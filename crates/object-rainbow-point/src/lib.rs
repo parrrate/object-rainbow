@@ -516,6 +516,16 @@ impl<T: Traversible + Clone> Point<T> {
     {
         Ok(std::mem::take(&mut *self.fetch_mut().await?))
     }
+
+    pub async fn fetch_move(mut self) -> object_rainbow::Result<T>
+    where
+        T: Default,
+    {
+        let mut pm = self.fetch_mut().await?;
+        let object = std::mem::take(&mut *pm);
+        pm.forget();
+        Ok(object)
+    }
 }
 
 impl<T: FullHash> Fetch for Point<T> {
@@ -707,6 +717,11 @@ impl<'a, T: FullHash> PointMut<'a, T> {
     fn finalize(&mut self) {
         self.fetch.get_mut_finalize();
         *self.hash = self.full_hash().into();
+    }
+
+    fn forget(self) {
+        self.fetch.get_mut_finalize();
+        std::mem::forget(self);
     }
 }
 
