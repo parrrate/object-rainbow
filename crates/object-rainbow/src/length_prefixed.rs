@@ -83,6 +83,12 @@ impl Ord for LpBytes {
     }
 }
 
+impl ByteOrd for LpBytes {
+    fn bytes_cmp(&self, other: &Self) -> Ordering {
+        self.cmp(other)
+    }
+}
+
 impl Deref for LpBytes {
     type Target = Vec<u8>;
 
