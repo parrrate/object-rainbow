@@ -138,9 +138,9 @@ impl<K: Component, V: Component> Node<K, V> {
         Ok(match self {
             Self::Empty => Node::Empty,
             Self::Leaf(k, MappedExtra(e, v)) => Node::Leaf(k, MappedExtra(e, f(v).await?)),
-            Self::Sub(mut point) => Node::Sub(
+            Self::Sub(point) => Node::Sub(
                 {
-                    let MappedExtra(prefix, KeyedArrayMap(subs)) = point.fetch_take().await?;
+                    let MappedExtra(prefix, KeyedArrayMap(subs)) = point.fetch_move().await?;
                     let subs = futures_util::future::try_join_all(subs.into_iter().map(
                         |(k, MappedExtra(e, node))| async move {
                             let node = node.then(f).await?;
