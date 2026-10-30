@@ -66,10 +66,22 @@ fn prefixed() -> crate::Result<()> {
 }
 
 /// Length-prefixed [`Vec<u8>`]
-#[pod(no_copy, no_output, no_parse, no_byte_ord)]
+#[pod(no_copy, no_output, no_parse, no_ord)]
 #[derive(ParseAsInline)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LpBytes(pub Vec<u8>);
+
+impl PartialOrd for LpBytes {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for LpBytes {
+    fn cmp(&self, other: &Self) -> Ordering {
+        (self.0.len(), &self.0).cmp(&(other.0.len(), &other.0))
+    }
+}
 
 impl Deref for LpBytes {
     type Target = Vec<u8>;
