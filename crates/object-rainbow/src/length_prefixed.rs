@@ -108,7 +108,7 @@ impl<I: ParseInput> ParseInline<I> for LpBytes {
 }
 
 /// Length-prefixed [`String`].
-#[pod(no_copy, no_output, no_parse)]
+#[pod(no_copy, no_output, no_parse, no_byte_ord)]
 #[derive(ParseAsInline)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LpString(pub String);
