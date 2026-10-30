@@ -1047,7 +1047,7 @@ impl<K: Component, V1: Component, V2: Component> Node<K, (V1, V2)> {
                 Node::Leaf(k, MappedExtra(e, v2)),
             ),
             Self::Sub(point) => {
-                let MappedExtra(prefix, KeyedArrayMap(subs)) = { point }.fetch_take().await?;
+                let MappedExtra(prefix, KeyedArrayMap(subs)) = point.fetch_move().await?;
                 let (subs1, subs2) = futures_util::future::try_join_all(subs.into_iter().map(
                     |(k, MappedExtra(e, node))| async move {
                         let (node1, node2) = node.split().await?;
