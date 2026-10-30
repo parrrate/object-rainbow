@@ -73,6 +73,17 @@ pub trait Owp {
     {
         Map { owp: self, f }
     }
+
+    fn count(self) -> impl Send + Future<Output = object_rainbow::Result<u64>>
+    where
+        Self: Sized + Send,
+    {
+        async {
+            let mut count = 0;
+            self.try_for_each_both_ends(|_| count += 1).await?;
+            Ok(count)
+        }
+    }
 }
 
 pub trait OwpBounds<B: ?Sized = <Self as Owp>::Item> {
