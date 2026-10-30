@@ -261,7 +261,7 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
             let waiting_r = next_r_in.is_waiting();
             let any_waiting = waiting_l || waiting_r;
             if waiting_l
-                && let Poll::Ready(item) = this.owp_l.as_mut().as_pin_mut().unwrap().poll_min(cx)?
+                && let Poll::Ready(item) = this.owp_l.as_mut().as_pin_mut().unwrap().poll_max(cx)?
             {
                 let Some((k_l, v_l)) = item else {
                     this.owp_l.set(None);
@@ -293,7 +293,7 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
                 continue;
             }
             if waiting_r
-                && let Poll::Ready(item) = this.owp_r.as_mut().as_pin_mut().unwrap().poll_min(cx)?
+                && let Poll::Ready(item) = this.owp_r.as_mut().as_pin_mut().unwrap().poll_max(cx)?
             {
                 let Some((k_r, v_r)) = item else {
                     this.owp_r.set(None);
