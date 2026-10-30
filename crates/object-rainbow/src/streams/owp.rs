@@ -66,6 +66,13 @@ pub trait Owp {
     {
         BothEnds { owp: self }
     }
+
+    fn map<F: FnMut(Self::Item) -> T, T>(self, f: F) -> Map<Self, F>
+    where
+        Self: Sized,
+    {
+        Map { owp: self, f }
+    }
 }
 
 pub trait OwpBounds<B: ?Sized = <Self as Owp>::Item> {
@@ -309,5 +316,32 @@ impl<O: Owp> Stream for BothEnds<O> {
             return Poll::Ready(item.map(Ok));
         }
         owp.as_mut().poll_max(cx).map(Result::transpose)
+    }
+}
+
+#[pin_project]
+pub struct Map<O, F> {
+    #[pin]
+    owp: O,
+    f: F,
+}
+
+impl<A, B, O: Owp<Item = A>, F: FnMut(A) -> B> Owp for Map<O, F> {
+    type Item = B;
+
+    fn poll_min(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<crate::Result<Option<Self::Item>>> {
+        let this = self.project();
+        this.owp.poll_min(cx).map_ok(|o| o.map(this.f))
+    }
+
+    fn poll_max(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<crate::Result<Option<Self::Item>>> {
+        let this = self.project();
+        this.owp.poll_max(cx).map_ok(|o| o.map(this.f))
     }
 }
