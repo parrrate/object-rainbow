@@ -1131,8 +1131,10 @@ where
     }
 }
 
+#[cfg(feature = "bulk2")]
 struct NestedOp<O>(O);
 
+#[cfg(feature = "bulk2")]
 impl<K1: Component, K2: Component, V: Component, U: Component, O: TraitOp<K2, V, U>>
     TraitOp<K1, AmtMap<K2, V>, AmtMap<K2, U>> for NestedOp<O>
 {
@@ -1408,6 +1410,7 @@ impl<K: Component, V1: Component, V2: Component> AmtMap<K, (V1, V2)> {
     }
 }
 
+#[cfg(feature = "bulk2")]
 impl<K1: Component, K2: Component, V: Component> AmtMap<K1, AmtMap<K2, V>> {
     async fn filter2(self) -> object_rainbow::Result<Self> {
         self.filter_map(|map| if map.is_empty() { None } else { Some(map) })

@@ -20,6 +20,7 @@ futures-util = { workspace = true, features = ["std"] }
 genawaiter-try-stream.workspace = true
 
 [features]
+bulk2 = ["get-mut"]
 get-mut = ["object-rainbow/nested-mut"]
 owp = ["dep:async-executor", "dep:flume", "object-rainbow/task-owp"]
 
