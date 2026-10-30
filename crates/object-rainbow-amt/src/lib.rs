@@ -907,7 +907,7 @@ impl<K: Component, V: Component> Node<K, V> {
                         fetched_s
                             .send_async(
                                 async move {
-                                    let MappedExtra(sub, map) = { point }.fetch_take().await?;
+                                    let MappedExtra(sub, map) = point.fetch_move().await?;
                                     let nodes = map
                                         .into_iter()
                                         .map(|(k, v)| {
