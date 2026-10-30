@@ -139,9 +139,9 @@ impl Chunk {
         Ok(data)
     }
 
-    pub async fn into_data(mut self) -> object_rainbow::Result<Vec<u8>> {
+    pub async fn into_data(self) -> object_rainbow::Result<Vec<u8>> {
         let len = self.len()?;
-        let mut data = self.data.fetch_take().await?;
+        let mut data = self.data.fetch_move().await?;
         data.truncate(len);
         Ok(data)
     }
