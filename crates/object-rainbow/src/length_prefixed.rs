@@ -66,7 +66,7 @@ fn prefixed() -> crate::Result<()> {
 }
 
 /// Length-prefixed [`Vec<u8>`]
-#[pod(no_copy, no_output, no_parse)]
+#[pod(no_copy, no_output, no_parse, no_byte_ord)]
 #[derive(ParseAsInline)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LpBytes(pub Vec<u8>);
