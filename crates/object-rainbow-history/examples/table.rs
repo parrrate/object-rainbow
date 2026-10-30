@@ -148,9 +148,9 @@ impl Table for History {
 #[apply(main!)]
 async fn main() -> object_rainbow::Result<()> {
     let mut history = History::new();
-    let channel = ChannelId(Ulid::new());
-    let user = UserId(Ulid::new());
-    let message = MessageId(Ulid::new());
+    let channel = ChannelId(Ulid::generate());
+    let user = UserId(Ulid::generate());
+    let message = MessageId(Ulid::generate());
     history.insert(message, Message { channel, user }).await?;
     assert!(
         history

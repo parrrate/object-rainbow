@@ -37,7 +37,7 @@ type WordSearch = Sequential<
 #[apply(main!)]
 async fn main() -> object_rainbow::Result<()> {
     let mut history = WordSearch::default();
-    let id = Ulid::new();
+    let id = Ulid::generate();
     let x = history.apply((Some("a b a".parse()?), id)).await?;
     for (a, (b, (c, d))) in x {
         println!("{} {} {c} {d}", a.is_none(), b.is_none());
