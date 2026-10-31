@@ -130,7 +130,7 @@ impl<O: Owp<Item = (K, V)>, K: Ord + Clone, V> Owp for OwpUnion<O, K, V> {
     }
 }
 
-impl<O: OwpBounds<K>, K: Ord, V> OwpBounds<K> for OwpUnion<O, K, V> {
+impl<O: OwpBounds<K>, K: Ord + Clone, V> OwpBounds<K> for OwpUnion<O, K, V> {
     fn set_min(self: Pin<&mut Self>, min: Bound<&K>) {
         let this = self.get_mut();
         this.queue.values_mut().for_each(|o| o.set_min(min));
