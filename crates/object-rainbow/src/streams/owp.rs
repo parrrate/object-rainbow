@@ -15,11 +15,11 @@ pub trait Owp {
     fn poll_min(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
-    ) -> Poll<object_rainbow::Result<Option<Self::Item>>>;
+    ) -> Poll<crate::Result<Option<Self::Item>>>;
     fn poll_max(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
-    ) -> Poll<object_rainbow::Result<Option<Self::Item>>>;
+    ) -> Poll<crate::Result<Option<Self::Item>>>;
 
     fn try_for_each_increasing<F: FnMut(Self::Item)>(self, f: F) -> TryForEachIncreasing<Self, F>
     where
@@ -74,7 +74,7 @@ pub trait Owp {
         Map { owp: self, f }
     }
 
-    fn count(self) -> impl Send + Future<Output = object_rainbow::Result<u64>>
+    fn count(self) -> impl Send + Future<Output = crate::Result<u64>>
     where
         Self: Sized + Send,
     {
@@ -104,7 +104,7 @@ pub struct TryForEachIncreasing<O, F> {
 }
 
 impl<O: Owp, F: FnMut(O::Item)> Future for TryForEachIncreasing<O, F> {
-    type Output = object_rainbow::Result<()>;
+    type Output = crate::Result<()>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let mut this = self.project();
@@ -123,7 +123,7 @@ pub struct TryForEachDecreasing<O, F> {
 }
 
 impl<O: Owp, F: FnMut(O::Item)> Future for TryForEachDecreasing<O, F> {
-    type Output = object_rainbow::Result<()>;
+    type Output = crate::Result<()>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let mut this = self.project();
@@ -142,7 +142,7 @@ pub struct TryForEachBothEnds<O, F> {
 }
 
 impl<O: Owp, F: FnMut(O::Item)> Future for TryForEachBothEnds<O, F> {
-    type Output = object_rainbow::Result<()>;
+    type Output = crate::Result<()>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let mut this = self.project();
@@ -319,7 +319,7 @@ pub struct BothEnds<O> {
 }
 
 impl<O: Owp> Stream for BothEnds<O> {
-    type Item = object_rainbow::Result<O::Item>;
+    type Item = crate::Result<O::Item>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let mut owp = self.project().owp;
