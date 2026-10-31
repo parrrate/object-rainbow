@@ -366,3 +366,33 @@ impl<O: OwpBounds<B>, F, B: ?Sized> OwpBounds<B> for Map<O, F> {
         self.project().owp.set_max(max);
     }
 }
+
+pub fn intersect<B>(x: Bound<B>, y: Bound<B>, stricter: impl Fn(&B, &B) -> bool) -> Bound<B> {
+    match (x, y) {
+        (Bound::Unbounded, strict) => strict,
+        (strict, Bound::Unbounded) => strict,
+        (Bound::Included(strict), Bound::Included(other) | Bound::Excluded(other))
+            if stricter(&strict, &other) =>
+        {
+            Bound::Included(strict)
+        }
+        (Bound::Excluded(strict), Bound::Included(other) | Bound::Excluded(other))
+            if stricter(&strict, &other) =>
+        {
+            Bound::Excluded(strict)
+        }
+        (Bound::Included(other) | Bound::Excluded(other), Bound::Included(strict))
+            if stricter(&strict, &other) =>
+        {
+            Bound::Included(strict)
+        }
+        (Bound::Included(other) | Bound::Excluded(other), Bound::Excluded(strict))
+            if stricter(&strict, &other) =>
+        {
+            Bound::Excluded(strict)
+        }
+        (Bound::Excluded(strict), _) => Bound::Excluded(strict),
+        (_, Bound::Excluded(strict)) => Bound::Excluded(strict),
+        (Bound::Included(strict), Bound::Included(_)) => Bound::Included(strict),
+    }
+}

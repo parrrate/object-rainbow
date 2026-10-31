@@ -7,8 +7,8 @@ use genawaiter_try_stream::{Co, try_stream};
 use object_rainbow::nested_mut::{Borrower, LendTo, NestedMut};
 #[cfg(feature = "owp")]
 use object_rainbow::streams::{
-    owp::{Owp, OwpBounds, OwpBoundsOwned},
-    task_owp::{TaskOwp, intersect},
+    owp::{Owp, OwpBounds, OwpBoundsOwned, intersect},
+    task_owp::TaskOwp,
 };
 use object_rainbow::{
     Component, Enum, Equivalent, EquivalentFor, Inline, InlineOutput, ListHashes, MaybeHasNiche,

@@ -13,7 +13,7 @@ use flume::{Receiver, Sender, r#async::RecvStream, bounded};
 use futures_core::Stream;
 use pin_project::pin_project;
 
-use super::owp::{Owp, OwpBoundsOwned};
+use super::owp::{Owp, OwpBoundsOwned, intersect};
 
 #[derive(Default)]
 struct Wakers {
@@ -162,36 +162,6 @@ impl<'a, T, B, F: Future<Output = crate::Result<()>>> Owp for TaskOwp<'a, T, B, 
         } else {
             Poll::Ready(Ok(None))
         }
-    }
-}
-
-pub fn intersect<B>(x: Bound<B>, y: Bound<B>, stricter: impl Fn(&B, &B) -> bool) -> Bound<B> {
-    match (x, y) {
-        (Bound::Unbounded, strict) => strict,
-        (strict, Bound::Unbounded) => strict,
-        (Bound::Included(strict), Bound::Included(other) | Bound::Excluded(other))
-            if stricter(&strict, &other) =>
-        {
-            Bound::Included(strict)
-        }
-        (Bound::Excluded(strict), Bound::Included(other) | Bound::Excluded(other))
-            if stricter(&strict, &other) =>
-        {
-            Bound::Excluded(strict)
-        }
-        (Bound::Included(other) | Bound::Excluded(other), Bound::Included(strict))
-            if stricter(&strict, &other) =>
-        {
-            Bound::Included(strict)
-        }
-        (Bound::Included(other) | Bound::Excluded(other), Bound::Excluded(strict))
-            if stricter(&strict, &other) =>
-        {
-            Bound::Excluded(strict)
-        }
-        (Bound::Excluded(strict), _) => Bound::Excluded(strict),
-        (_, Bound::Excluded(strict)) => Bound::Excluded(strict),
-        (Bound::Included(strict), Bound::Included(_)) => Bound::Included(strict),
     }
 }
 
