@@ -14,7 +14,9 @@ const OP_WAKE_MAX: usize = 1;
 const OP_WAKE: usize = 2;
 const OP_IS_WAITING_MIN: usize = 2;
 const OP_IS_WAITING_MAX: usize = 3;
-const OP_COUNT: usize = 4;
+const OP_IS_PARKED_MIN: usize = 4;
+const OP_IS_PARKED_MAX: usize = 5;
+const OP_COUNT: usize = 6;
 
 pub struct OwpUnion<O, K, V> {
     queue: Queue<O, OP_WAKE, OP_COUNT>,
@@ -53,13 +55,17 @@ impl<O: Owp<Item = (K, V)>, K: Ord + Clone, V> Owp for OwpUnion<O, K, V> {
             if !this.queue.link_pop_at::<OP_IS_WAITING_MIN>(&r) {
                 continue;
             }
+            this.queue.link_pop_at::<OP_IS_PARKED_MIN>(&r);
             let (o, waker) = this.queue.context::<OP_WAKE_MIN>(&r);
             match o.poll_min(&mut Context::from_waker(&waker))? {
                 Poll::Ready(Some((k, v))) => {
                     this.pulled.entry(k).or_default().push_back((v, r.clone()))
                 }
                 Poll::Ready(None) => assert!(this.queue.remove_pinned(&r)),
-                Poll::Pending => assert!(this.queue.link_push_back::<OP_IS_WAITING_MIN>(&r)),
+                Poll::Pending => {
+                    assert!(this.queue.link_push_back::<OP_IS_PARKED_MIN>(&r));
+                    assert!(this.queue.link_push_back::<OP_IS_WAITING_MIN>(&r));
+                }
             }
         }
         if !this.queue.link_empty::<OP_IS_WAITING_MIN>() {
@@ -91,13 +97,17 @@ impl<O: Owp<Item = (K, V)>, K: Ord + Clone, V> Owp for OwpUnion<O, K, V> {
             if !this.queue.link_pop_at::<OP_IS_WAITING_MAX>(&r) {
                 continue;
             }
+            this.queue.link_pop_at::<OP_IS_PARKED_MAX>(&r);
             let (o, waker) = this.queue.context::<OP_WAKE_MAX>(&r);
             match o.poll_max(&mut Context::from_waker(&waker))? {
                 Poll::Ready(Some((k, v))) => {
                     this.pulled.entry(k).or_default().push_back((v, r.clone()))
                 }
                 Poll::Ready(None) => assert!(this.queue.remove_pinned(&r)),
-                Poll::Pending => assert!(this.queue.link_push_back::<OP_IS_WAITING_MAX>(&r)),
+                Poll::Pending => {
+                    assert!(this.queue.link_push_back::<OP_IS_PARKED_MAX>(&r));
+                    assert!(this.queue.link_push_back::<OP_IS_WAITING_MAX>(&r));
+                }
             }
         }
         if !this.queue.link_empty::<OP_IS_WAITING_MAX>() {
@@ -124,10 +134,8 @@ impl<O: OwpBounds<K>, K: Ord, V> OwpBounds<K> for OwpUnion<O, K, V> {
     fn set_min(self: Pin<&mut Self>, min: Bound<&K>) {
         let this = self.get_mut();
         this.queue.values_mut().for_each(|o| o.set_min(min));
-        let mut r = None;
-        while let (_, Some(next)) = this.queue.link_of::<OP_IS_WAITING_MIN>(r.as_ref()) {
-            this.queue.link_push_back::<OP_WAKE_MIN>(&next);
-            r = Some(next);
+        while let Some(r) = this.queue.link_pop_front::<OP_IS_PARKED_MIN>() {
+            this.queue.link_push_back::<OP_WAKE_MIN>(&r);
         }
         while let Some((k, _)) = this.pulled.first_key_value()
             && match min {
@@ -150,10 +158,8 @@ impl<O: OwpBounds<K>, K: Ord, V> OwpBounds<K> for OwpUnion<O, K, V> {
     fn set_max(self: Pin<&mut Self>, max: Bound<&K>) {
         let this = self.get_mut();
         this.queue.values_mut().for_each(|o| o.set_max(max));
-        let mut r = None;
-        while let (_, Some(next)) = this.queue.link_of::<OP_IS_WAITING_MAX>(r.as_ref()) {
-            this.queue.link_push_back::<OP_WAKE_MAX>(&next);
-            r = Some(next);
+        while let Some(r) = this.queue.link_pop_front::<OP_IS_PARKED_MAX>() {
+            this.queue.link_push_back::<OP_WAKE_MAX>(&r);
         }
         while let Some((k, _)) = this.pulled.last_key_value()
             && match max {
