@@ -940,6 +940,17 @@ struct NodeOwp<K, V> {
 
 impl<K, V> Unpin for NodeOwp<K, V> {}
 
+impl<K, V> NodeOwp<K, V> {
+    fn cutoff_min(&self, prefix: &[u8]) -> bool {
+        match self.bound_min.as_ref() {
+            Bound::Excluded(min) if *min == prefix => true,
+            Bound::Included(min) | Bound::Excluded(min) if min.starts_with(prefix) => false,
+            Bound::Included(min) | Bound::Excluded(min) if *prefix < **min => true,
+            _ => false,
+        }
+    }
+}
+
 impl<K: Component, V: Component> Owp for NodeOwp<K, V> {
     type Item = (K, V);
 
@@ -963,13 +974,8 @@ impl<K: Component, V: Component> Owp for NodeOwp<K, V> {
                 }
                 return Poll::Ready(Ok(None));
             };
-            match this.bound_min.as_ref() {
-                Bound::Excluded(min) if *min == prefix => continue,
-                Bound::Included(min) | Bound::Excluded(min) if min.starts_with(&prefix) => {}
-                Bound::Included(min) | Bound::Excluded(min) if prefix < *min => {
-                    continue;
-                }
-                _ => {}
+            if this.cutoff_min(&prefix) {
+                continue;
             }
             match node {
                 Node::Empty => {}
