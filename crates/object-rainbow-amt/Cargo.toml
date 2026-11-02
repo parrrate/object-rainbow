@@ -14,15 +14,12 @@ object-rainbow-array-map.workspace = true
 object-rainbow-parse-prefix.workspace = true
 object-rainbow-point.workspace = true
 
-async-executor = { workspace = true, optional = true }
-flume = { workspace = true, optional = true }
 futures-util = { workspace = true, features = ["std"] }
 genawaiter-try-stream.workspace = true
 
 [features]
 bulk2 = ["get-mut"]
 get-mut = ["object-rainbow/nested-mut"]
-owp = ["dep:async-executor", "dep:flume", "object-rainbow/task-owp"]
 
 [dev-dependencies]
 object-rainbow = { workspace = true, features = ["owp-union"] }

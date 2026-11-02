@@ -1,19 +1,23 @@
-#[cfg(feature = "owp")]
-use std::{collections::BTreeMap, ops::Bound};
+use std::{
+    collections::BTreeMap,
+    ops::Bound,
+    pin::Pin,
+    sync::Arc,
+    task::{Context, Poll, Wake, Waker, ready},
+};
 
-use futures_util::{Stream, TryStreamExt, future::try_join};
+use futures_util::{Stream, TryStreamExt, future::try_join, task::AtomicWaker};
 use genawaiter_try_stream::{Co, try_stream};
 #[cfg(feature = "get-mut")]
 use object_rainbow::nested_mut::{Borrower, LendTo, NestedMut};
-#[cfg(feature = "owp")]
-use object_rainbow::streams::{
-    owp::{Owp, OwpBounds, OwpBoundsOwned, intersect},
-    task_owp::TaskOwp,
-};
 use object_rainbow::{
-    Component, Enum, Equivalent, EquivalentFor, Inline, InlineOutput, ListHashes, MaybeHasNiche,
-    Parse, ParseInline, PointInput, Singular, Tagged, ToOutput, Topological, Traversible,
-    assert_impl, length_prefixed::LpBytes, map_extra::MappedExtra, tuple_extra::Extra1,
+    Component, Enum, Equivalent, EquivalentFor, FailFuture, Inline, InlineOutput, ListHashes,
+    MaybeHasNiche, Parse, ParseInline, PointInput, Singular, Tagged, ToOutput, Topological,
+    Traversible, assert_impl,
+    length_prefixed::LpBytes,
+    map_extra::MappedExtra,
+    streams::owp::{Owp, OwpBounds, OwpBoundsOwned, intersect},
+    tuple_extra::Extra1,
 };
 use object_rainbow_array_map::KeyedArrayMap;
 use object_rainbow_parse_prefix::{Prefix, PrefixRoot, WithByte, WithBytes, WithPrefix};
@@ -889,150 +893,195 @@ impl<K: Component, V: Component> Node<K, V> {
         Ok(())
     }
 
-    #[cfg(feature = "owp")]
     fn owp(self) -> impl Owp<Item = (K, V)> + OwpBoundsOwned<Vec<u8>> {
-        TaskOwp::<_, Vec<u8>, _>::new(async move |mut ctx| {
-            let mut q = BTreeMap::from([(Vec::<u8>::new(), self)]);
-            let mut bound_min = Bound::<Vec<u8>>::Unbounded;
-            let mut bound_max = Bound::<Vec<u8>>::Unbounded;
-            let mut waiting_min = None::<Vec<u8>>;
-            let mut waiting_max = None::<Vec<u8>>;
-            let (fetched_s, fetched_r) =
-                flume::bounded::<object_rainbow::Result<(Vec<u8>, Vec<(Vec<u8>, Self)>)>>(2);
-            let hook = ctx.hook();
-            let executor = async_executor::Executor::new();
-            let stuff = |prefix: Vec<u8>, point: Point<Subs<K, V>>| {
-                executor
-                    .spawn(async {
-                        fetched_s
-                            .send_async(
-                                async move {
-                                    let MappedExtra(sub, map) = point.fetch_move().await?;
-                                    let nodes = map
-                                        .into_iter()
-                                        .map(|(k, v)| {
-                                            let prefix =
-                                                [prefix.as_slice(), sub.0.as_slice(), &[k]]
-                                                    .concat();
-                                            (prefix, v.1)
-                                        })
-                                        .collect::<Vec<_>>();
-                                    object_rainbow::Result::Ok((prefix, nodes))
-                                }
-                                .await,
-                            )
-                            .await
-                            .ok();
-                        hook.notify();
-                    })
-                    .detach()
+        let wakers = Arc::<Wakers>::default();
+        let waker = wakers.clone().into();
+        NodeOwp {
+            q: [(Vec::new(), self)].into(),
+            bound_min: Bound::Unbounded,
+            bound_max: Bound::Unbounded,
+            waiting_min: Default::default(),
+            waiting_max: Default::default(),
+            wakers,
+            waker,
+        }
+    }
+}
+
+type Batch<K, V> = Vec<(Vec<u8>, Node<K, V>)>;
+type Waiting<K, V> = Option<(Vec<u8>, FailFuture<'static, Batch<K, V>>)>;
+
+#[derive(Default)]
+struct Wakers {
+    min: AtomicWaker,
+    max: AtomicWaker,
+}
+
+impl Wake for Wakers {
+    fn wake(self: Arc<Self>) {
+        self.wake_by_ref();
+    }
+
+    fn wake_by_ref(self: &Arc<Self>) {
+        self.min.wake();
+        self.max.wake();
+    }
+}
+
+struct NodeOwp<K, V> {
+    q: BTreeMap<Vec<u8>, Node<K, V>>,
+    bound_min: Bound<Vec<u8>>,
+    bound_max: Bound<Vec<u8>>,
+    waiting_min: Waiting<K, V>,
+    waiting_max: Waiting<K, V>,
+    wakers: Arc<Wakers>,
+    waker: Waker,
+}
+
+impl<K, V> Unpin for NodeOwp<K, V> {}
+
+impl<K: Component, V: Component> Owp for NodeOwp<K, V> {
+    type Item = (K, V);
+
+    fn poll_min(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<object_rainbow::Result<Option<Self::Item>>> {
+        let this = self.get_mut();
+        this.wakers.min.register(cx.waker());
+        loop {
+            if let Some((_, fut)) = this.waiting_min.as_mut() {
+                this.q.extend(ready!(
+                    fut.as_mut().poll(&mut Context::from_waker(&this.waker))
+                )?);
+                this.waiting_min = None;
+            }
+            let Some((prefix, node)) = this.q.pop_first() else {
+                if let Some(waiting) = this.waiting_max.take() {
+                    this.waiting_min = Some(waiting);
+                    continue;
+                }
+                return Poll::Ready(Ok(None));
             };
-            let future = async {
-                while (!q.is_empty() | waiting_min.is_some() || waiting_max.is_some())
-                    && ctx.wait().await
-                {
-                    while let Ok(fetched) = fetched_r.try_recv() {
-                        let (prefix, nodes) = fetched?;
-                        let mut received_min = false;
-                        let mut received_max = false;
-                        if waiting_min.as_deref() == Some(prefix.as_slice()) {
-                            waiting_min = None;
-                            received_min = true;
-                        }
-                        if waiting_max.as_deref() == Some(prefix.as_slice()) {
-                            waiting_max = None;
-                            received_max = true;
-                        }
-                        assert!(received_min || received_max);
-                        q.extend(nodes);
-                    }
-                    if let Some(new_min) = ctx.bound_min() {
-                        bound_min = intersect(bound_min, new_min, |strict, other| strict > other);
-                    }
-                    if let Some(new_max) = ctx.bound_max() {
-                        bound_max = intersect(bound_max, new_max, |strict, other| strict < other);
-                    }
-                    match (bound_min.as_ref(), bound_max.as_ref()) {
-                        (_, Bound::Excluded(max)) if max.is_empty() => return Ok(()),
-                        (Bound::Unbounded, _) | (_, Bound::Unbounded) => {}
-                        (Bound::Included(min), Bound::Included(max)) if min == max => {}
-                        (
-                            Bound::Included(min) | Bound::Excluded(min),
-                            Bound::Included(max) | Bound::Excluded(max),
-                        ) if min >= max => return Ok(()),
-                        _ => {}
-                    }
-                    while ctx.wants_min()
-                        && waiting_min.is_none()
-                        && let Some((prefix, node)) = q.pop_first().or_else(|| {
-                            waiting_min = waiting_max.clone();
-                            None
-                        })
-                    {
-                        match bound_min.as_ref() {
-                            Bound::Excluded(min) if *min == prefix => continue,
-                            Bound::Included(min) | Bound::Excluded(min)
-                                if min.starts_with(&prefix) => {}
-                            Bound::Included(min) | Bound::Excluded(min) if prefix < *min => {
-                                continue;
-                            }
-                            _ => {}
-                        }
-                        match node {
-                            Self::Empty => {}
-                            Self::Leaf(k, MappedExtra(_, v)) => {
-                                use std::ops::RangeBounds;
-                                assert_eq!(prefix, Vec::<u8>::from(k.prefix().clone()));
-                                let key = k.value().vec();
-                                if (bound_min.as_ref(), bound_max.as_ref()).contains(&&key) {
-                                    assert!(waiting_min.is_none());
-                                    ctx.give_min((k.into_value(), v));
-                                }
-                            }
-                            Self::Sub(point) => {
-                                assert!(waiting_min.is_none());
-                                waiting_min = Some(prefix.clone());
-                                stuff(prefix, point);
-                            }
-                        }
-                    }
-                    while ctx.wants_max()
-                        && waiting_max.is_none()
-                        && let Some((prefix, node)) = q.pop_last().or_else(|| {
-                            waiting_max = waiting_min.clone();
-                            None
-                        })
-                    {
-                        match bound_max.as_ref() {
-                            Bound::Excluded(max) if *max == prefix => continue,
-                            Bound::Included(max) | Bound::Excluded(max) if prefix > *max => {
-                                continue;
-                            }
-                            _ => {}
-                        }
-                        match node {
-                            Self::Empty => {}
-                            Self::Leaf(k, MappedExtra(_, v)) => {
-                                use std::ops::RangeBounds;
-                                assert_eq!(prefix, Vec::<u8>::from(k.prefix().clone()));
-                                let key = k.value().vec();
-                                if (bound_min.as_ref(), bound_max.as_ref()).contains(&&key) {
-                                    assert!(waiting_max.is_none());
-                                    ctx.give_max((k.into_value(), v));
-                                }
-                            }
-                            Self::Sub(point) => {
-                                assert!(waiting_max.is_none());
-                                waiting_max = Some(prefix.clone());
-                                stuff(prefix, point);
-                            }
-                        }
+            match this.bound_min.as_ref() {
+                Bound::Excluded(min) if *min == prefix => continue,
+                Bound::Included(min) | Bound::Excluded(min) if min.starts_with(&prefix) => {}
+                Bound::Included(min) | Bound::Excluded(min) if prefix < *min => {
+                    continue;
+                }
+                _ => {}
+            }
+            match node {
+                Node::Empty => {}
+                Node::Leaf(k, MappedExtra(_, v)) => {
+                    use std::ops::RangeBounds;
+                    assert_eq!(prefix, Vec::<u8>::from(k.prefix().clone()));
+                    let key = k.value().vec();
+                    if (this.bound_min.as_ref(), this.bound_max.as_ref()).contains(&&key) {
+                        assert!(this.waiting_min.is_none());
+                        return Poll::Ready(Ok(Some((k.into_value(), v))));
                     }
                 }
-                Ok(())
+                Node::Sub(point) => {
+                    assert!(this.waiting_min.is_none());
+                    this.waiting_min = Some((
+                        prefix.clone(),
+                        Box::pin(async move {
+                            let MappedExtra(sub, map) = point.fetch_move().await?;
+                            let nodes = map
+                                .into_iter()
+                                .map(|(k, v)| {
+                                    let prefix =
+                                        [prefix.as_slice(), sub.0.as_slice(), &[k]].concat();
+                                    (prefix, v.1)
+                                })
+                                .collect::<Vec<_>>();
+                            Ok(nodes)
+                        }),
+                    ));
+                }
+            }
+        }
+    }
+
+    fn poll_max(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<object_rainbow::Result<Option<Self::Item>>> {
+        let this = self.get_mut();
+        this.wakers.max.register(cx.waker());
+        loop {
+            if let Some((_, fut)) = this.waiting_max.as_mut() {
+                this.q.extend(ready!(
+                    fut.as_mut().poll(&mut Context::from_waker(&this.waker))
+                )?);
+                this.waiting_max = None;
+            }
+            let Some((prefix, node)) = this.q.pop_last() else {
+                if let Some(waiting) = this.waiting_min.take() {
+                    this.waiting_max = Some(waiting);
+                    continue;
+                }
+                return Poll::Ready(Ok(None));
             };
-            executor.run(future).await
-        })
+            match this.bound_max.as_ref() {
+                Bound::Excluded(max) if *max == prefix => continue,
+                Bound::Included(max) | Bound::Excluded(max) if prefix > *max => {
+                    continue;
+                }
+                _ => {}
+            }
+            match node {
+                Node::Empty => {}
+                Node::Leaf(k, MappedExtra(_, v)) => {
+                    use std::ops::RangeBounds;
+                    assert_eq!(prefix, Vec::<u8>::from(k.prefix().clone()));
+                    let key = k.value().vec();
+                    if (this.bound_min.as_ref(), this.bound_max.as_ref()).contains(&&key) {
+                        assert!(this.waiting_max.is_none());
+                        return Poll::Ready(Ok(Some((k.into_value(), v))));
+                    }
+                }
+                Node::Sub(point) => {
+                    assert!(this.waiting_max.is_none());
+                    this.waiting_max = Some((
+                        prefix.clone(),
+                        Box::pin(async move {
+                            let MappedExtra(sub, map) = point.fetch_move().await?;
+                            let nodes = map
+                                .into_iter()
+                                .map(|(k, v)| {
+                                    let prefix =
+                                        [prefix.as_slice(), sub.0.as_slice(), &[k]].concat();
+                                    (prefix, v.1)
+                                })
+                                .collect::<Vec<_>>();
+                            Ok(nodes)
+                        }),
+                    ));
+                }
+            }
+        }
+    }
+}
+
+impl<K, V> OwpBoundsOwned<Vec<u8>> for NodeOwp<K, V> {
+    fn set_min(self: Pin<&mut Self>, min: Bound<Vec<u8>>) {
+        let this = self.get_mut();
+        this.bound_min = intersect(
+            std::mem::replace(&mut this.bound_min, Bound::Unbounded),
+            min,
+            |strict, other| strict > other,
+        );
+    }
+
+    fn set_max(self: Pin<&mut Self>, max: Bound<Vec<u8>>) {
+        let this = self.get_mut();
+        this.bound_max = intersect(
+            std::mem::replace(&mut this.bound_max, Bound::Unbounded),
+            max,
+            |strict, other| strict > other,
+        );
     }
 }
 
@@ -1389,12 +1438,10 @@ impl<K: Component, V: Component> AmtMap<K, V> {
             .collect())
     }
 
-    #[cfg(feature = "owp")]
     pub fn owp(&self) -> impl Owp<Item = (K, V)> + OwpBounds<K> {
         self.0.1.clone().owp().output_bounds()
     }
 
-    #[cfg(feature = "owp")]
     pub fn into_owp(self) -> impl Owp<Item = (K, V)> + OwpBounds<K> {
         self.0.1.owp().output_bounds()
     }
@@ -1766,7 +1813,6 @@ mod test {
         Ok(())
     }
 
-    #[cfg(feature = "owp")]
     #[apply(test!)]
     async fn owp_increasing() -> object_rainbow::Result<()> {
         use object_rainbow::streams::owp::Owp;
@@ -1791,7 +1837,6 @@ mod test {
         Ok(())
     }
 
-    #[cfg(feature = "owp")]
     #[apply(test!)]
     async fn owp_decreasing() -> object_rainbow::Result<()> {
         use object_rainbow::streams::owp::Owp;
@@ -1817,7 +1862,6 @@ mod test {
         Ok(())
     }
 
-    #[cfg(feature = "owp")]
     #[apply(test!)]
     async fn owp_bounds() -> object_rainbow::Result<()> {
         use object_rainbow::streams::owp::Owp;
@@ -1846,7 +1890,6 @@ mod test {
         Ok(())
     }
 
-    #[cfg(feature = "owp")]
     #[apply(test!)]
     async fn owp_union() -> object_rainbow::Result<()> {
         use object_rainbow::streams::{owp::Owp, owp_union::OwpUnion};
@@ -1903,7 +1946,6 @@ mod test {
         Ok(())
     }
 
-    #[cfg(feature = "owp")]
     #[apply(test!)]
     async fn owp_union_bounds() -> object_rainbow::Result<()> {
         use object_rainbow::streams::{owp::Owp, owp_union::OwpUnion};
@@ -1949,7 +1991,6 @@ mod test {
         Ok(())
     }
 
-    #[cfg(feature = "owp")]
     #[apply(test!)]
     async fn owp_join() -> object_rainbow::Result<()> {
         use object_rainbow::streams::{owp::Owp, owp_join::OwpJoin};
@@ -1997,7 +2038,6 @@ mod test {
         Ok(())
     }
 
-    #[cfg(feature = "owp")]
     #[apply(test!)]
     async fn owp_union_distinct() -> object_rainbow::Result<()> {
         use object_rainbow::streams::{
