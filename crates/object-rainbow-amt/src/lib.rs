@@ -944,9 +944,7 @@ impl<K: Component, V: Component> Node<K, V> {
                             received_max = true;
                         }
                         assert!(received_min || received_max);
-                        for (prefix, node) in nodes {
-                            q.insert(prefix, node);
-                        }
+                        q.extend(nodes);
                     }
                     if let Some(new_min) = ctx.bound_min() {
                         bound_min = intersect(bound_min, new_min, |strict, other| strict > other);
