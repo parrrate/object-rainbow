@@ -1083,6 +1083,19 @@ impl<K, V> OwpBoundsOwned<Vec<u8>> for NodeOwp<K, V> {
             min,
             |strict, other| strict > other,
         );
+        if let Some((prefix, _)) = this.waiting_max.as_ref()
+            && this.cutoff_min(prefix)
+        {
+            this.waiting_max = None;
+            this.q.clear();
+            this.waiting_min = None;
+            this.wakers.wake_by_ref();
+        } else if let Some((prefix, _)) = this.waiting_min.as_ref()
+            && this.cutoff_min(prefix)
+        {
+            this.waiting_min = None;
+            this.wakers.wake_by_ref();
+        }
     }
 
     fn set_max(self: Pin<&mut Self>, max: Bound<Vec<u8>>) {
@@ -1092,6 +1105,19 @@ impl<K, V> OwpBoundsOwned<Vec<u8>> for NodeOwp<K, V> {
             max,
             |strict, other| strict < other,
         );
+        if let Some((prefix, _)) = this.waiting_min.as_ref()
+            && this.cutoff_max(prefix)
+        {
+            this.waiting_min = None;
+            this.q.clear();
+            this.waiting_max = None;
+            this.wakers.wake_by_ref();
+        } else if let Some((prefix, _)) = this.waiting_max.as_ref()
+            && this.cutoff_max(prefix)
+        {
+            this.waiting_max = None;
+            this.wakers.wake_by_ref();
+        }
     }
 }
 
