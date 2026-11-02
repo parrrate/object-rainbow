@@ -980,13 +980,13 @@ impl<K: Component, V: Component> Node<K, V> {
                         }
                         match node {
                             Self::Empty => {}
-                            Self::Leaf(k, mapped_extra) => {
+                            Self::Leaf(k, MappedExtra(_, v)) => {
                                 use std::ops::RangeBounds;
                                 assert_eq!(prefix, Vec::<u8>::from(k.prefix().clone()));
                                 let key = k.value().vec();
                                 if (bound_min.as_ref(), bound_max.as_ref()).contains(&&key) {
                                     assert!(waiting_min.is_none());
-                                    ctx.give_min((k.into_value(), mapped_extra.1));
+                                    ctx.give_min((k.into_value(), v));
                                 }
                             }
                             Self::Sub(point) => {
@@ -1012,13 +1012,13 @@ impl<K: Component, V: Component> Node<K, V> {
                         }
                         match node {
                             Self::Empty => {}
-                            Self::Leaf(k, mapped_extra) => {
+                            Self::Leaf(k, MappedExtra(_, v)) => {
                                 use std::ops::RangeBounds;
                                 assert_eq!(prefix, Vec::<u8>::from(k.prefix().clone()));
                                 let key = k.value().vec();
                                 if (bound_min.as_ref(), bound_max.as_ref()).contains(&&key) {
                                     assert!(waiting_max.is_none());
-                                    ctx.give_max((k.into_value(), mapped_extra.1));
+                                    ctx.give_max((k.into_value(), v));
                                 }
                             }
                             Self::Sub(point) => {
