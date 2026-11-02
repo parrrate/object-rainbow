@@ -949,6 +949,14 @@ impl<K, V> NodeOwp<K, V> {
             _ => false,
         }
     }
+
+    fn cutoff_max(&self, prefix: &[u8]) -> bool {
+        match self.bound_max.as_ref() {
+            Bound::Excluded(max) if *max == prefix => true,
+            Bound::Included(max) | Bound::Excluded(max) if *prefix > **max => true,
+            _ => false,
+        }
+    }
 }
 
 impl<K: Component, V: Component> Owp for NodeOwp<K, V> {
@@ -1030,12 +1038,8 @@ impl<K: Component, V: Component> Owp for NodeOwp<K, V> {
                 }
                 return Poll::Ready(Ok(None));
             };
-            match this.bound_max.as_ref() {
-                Bound::Excluded(max) if *max == prefix => continue,
-                Bound::Included(max) | Bound::Excluded(max) if prefix > *max => {
-                    continue;
-                }
-                _ => {}
+            if this.cutoff_max(&prefix) {
+                continue;
             }
             match node {
                 Node::Empty => {}
