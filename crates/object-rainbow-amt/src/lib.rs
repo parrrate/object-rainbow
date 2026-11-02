@@ -1080,7 +1080,7 @@ impl<K, V> OwpBoundsOwned<Vec<u8>> for NodeOwp<K, V> {
         this.bound_max = intersect(
             std::mem::replace(&mut this.bound_max, Bound::Unbounded),
             max,
-            |strict, other| strict > other,
+            |strict, other| strict < other,
         );
     }
 }
