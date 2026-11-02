@@ -1,5 +1,5 @@
 use std::{
-    collections::BTreeMap,
+    collections::VecDeque,
     ops::Bound,
     pin::Pin,
     sync::Arc,
@@ -929,7 +929,7 @@ impl Wake for Wakers {
 }
 
 struct NodeOwp<K, V> {
-    q: BTreeMap<Vec<u8>, Node<K, V>>,
+    q: VecDeque<(Vec<u8>, Node<K, V>)>,
     bound_min: Bound<Vec<u8>>,
     bound_max: Bound<Vec<u8>>,
     waiting_min: Waiting<K, V>,
@@ -970,12 +970,13 @@ impl<K: Component, V: Component> Owp for NodeOwp<K, V> {
         this.wakers.min.register(cx.waker());
         loop {
             if let Some((_, fut)) = this.waiting_min.as_mut() {
-                this.q.extend(ready!(
-                    fut.as_mut().poll(&mut Context::from_waker(&this.waker))
-                )?);
+                ready!(fut.as_mut().poll(&mut Context::from_waker(&this.waker)))?
+                    .into_iter()
+                    .rev()
+                    .for_each(|x| this.q.push_front(x));
                 this.waiting_min = None;
             }
-            let Some((prefix, node)) = this.q.pop_first() else {
+            let Some((prefix, node)) = this.q.pop_front() else {
                 if let Some(waiting) = this.waiting_max.take() {
                     this.waiting_min = Some(waiting);
                     continue;
@@ -1026,12 +1027,12 @@ impl<K: Component, V: Component> Owp for NodeOwp<K, V> {
         this.wakers.max.register(cx.waker());
         loop {
             if let Some((_, fut)) = this.waiting_max.as_mut() {
-                this.q.extend(ready!(
-                    fut.as_mut().poll(&mut Context::from_waker(&this.waker))
-                )?);
+                ready!(fut.as_mut().poll(&mut Context::from_waker(&this.waker)))?
+                    .into_iter()
+                    .for_each(|x| this.q.push_back(x));
                 this.waiting_max = None;
             }
-            let Some((prefix, node)) = this.q.pop_last() else {
+            let Some((prefix, node)) = this.q.pop_back() else {
                 if let Some(waiting) = this.waiting_min.take() {
                     this.waiting_max = Some(waiting);
                     continue;
