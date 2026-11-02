@@ -84,6 +84,13 @@ pub trait Owp {
             Ok(count)
         }
     }
+
+    fn take(self, n: u64) -> Take<Self>
+    where
+        Self: Sized,
+    {
+        Take { owp: self, n }
+    }
 }
 
 pub trait OwpBounds<B: ?Sized = <Self as Owp>::Item> {
@@ -394,5 +401,46 @@ pub fn intersect<B>(x: Bound<B>, y: Bound<B>, stricter: impl Fn(&B, &B) -> bool)
         (Bound::Excluded(strict), _) => Bound::Excluded(strict),
         (_, Bound::Excluded(strict)) => Bound::Excluded(strict),
         (Bound::Included(strict), Bound::Included(_)) => Bound::Included(strict),
+    }
+}
+
+#[pin_project]
+pub struct Take<O> {
+    #[pin]
+    owp: O,
+    n: u64,
+}
+
+impl<O: Owp> Owp for Take<O> {
+    type Item = O::Item;
+
+    fn poll_min(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<crate::Result<Option<Self::Item>>> {
+        let this = self.project();
+        if *this.n == 0 {
+            return Poll::Ready(Ok(None));
+        }
+        let item = ready!(this.owp.poll_min(cx))?;
+        if item.is_some() {
+            *this.n -= 1;
+        }
+        Poll::Ready(Ok(item))
+    }
+
+    fn poll_max(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<crate::Result<Option<Self::Item>>> {
+        let this = self.project();
+        if *this.n == 0 {
+            return Poll::Ready(Ok(None));
+        }
+        let item = ready!(this.owp.poll_max(cx))?;
+        if item.is_some() {
+            *this.n -= 1;
+        }
+        Poll::Ready(Ok(item))
     }
 }
