@@ -10,7 +10,7 @@ use crate::{
 
 /// This *might* contain a valid [`Niche`].
 ///
-/// If `Self: Size`, a niche must have the same size.
+/// If `Self: Size`, a niche typically has the same size.
 ///
 /// A niche must satisfy these requirements if it *doesn't need a tag*:
 /// - No valid values are a prefix of it, if `Self` is inline. Otherwise we might misinterpret a
