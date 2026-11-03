@@ -70,7 +70,7 @@ impl WhereNext {
 }
 
 #[pin_project]
-pub struct OwpJoin<L, R, K, Lv, Rv> {
+pub struct OwpZip<L, R, K, Lv, Rv> {
     #[pin]
     owp_l: Option<L>,
     #[pin]
@@ -80,7 +80,7 @@ pub struct OwpJoin<L, R, K, Lv, Rv> {
 }
 
 impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K>, K: Ord, Lv, Rv>
-    OwpJoin<L, R, K, Lv, Rv>
+    OwpZip<L, R, K, Lv, Rv>
 {
     pub fn new(l: L, r: R) -> Self {
         Self {
@@ -93,7 +93,7 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
 }
 
 impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K>, K: Ord, Lv, Rv>
-    Owp for OwpJoin<L, R, K, Lv, Rv>
+    Owp for OwpZip<L, R, K, Lv, Rv>
 {
     type Item = (K, (Lv, Rv));
 
@@ -370,7 +370,7 @@ impl<L: Owp<Item = (K, Lv)> + OwpBounds<K>, R: Owp<Item = (K, Rv)> + OwpBounds<K
     }
 }
 
-impl<L: OwpBounds<K>, R: OwpBounds<K>, K: Ord, Lv, Rv> OwpBounds<K> for OwpJoin<L, R, K, Lv, Rv> {
+impl<L: OwpBounds<K>, R: OwpBounds<K>, K: Ord, Lv, Rv> OwpBounds<K> for OwpZip<L, R, K, Lv, Rv> {
     fn set_min(self: Pin<&mut Self>, min: Bound<&K>) {
         let this = self.project();
         if let Some(l) = this.owp_l.as_pin_mut() {

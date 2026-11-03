@@ -2030,7 +2030,7 @@ mod test {
 
     #[apply(test!)]
     async fn owp_join() -> object_rainbow::Result<()> {
-        use object_rainbow::streams::{owp::Owp, owp_join::OwpJoin};
+        use object_rainbow::streams::{owp::Owp, owp_zip::OwpZip};
 
         let a: AmtMap<[u8; 4], bool> = [
             (*b"abcd", true),
@@ -2057,7 +2057,7 @@ mod test {
         .into_iter()
         .collect();
         let mut items = Vec::new();
-        OwpJoin::new(a.owp(), b.owp())
+        OwpZip::new(a.owp(), b.owp())
             .try_for_each_increasing(|item| items.push(item))
             .await?;
         assert_eq!(
