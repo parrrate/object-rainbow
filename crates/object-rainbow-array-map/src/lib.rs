@@ -1,10 +1,15 @@
+use core::slice;
 use std::{
-    collections::{BTreeMap, btree_map},
     marker::PhantomData,
-    ops::{Deref, DerefMut, RangeBounds},
+    ops::{Bound, Deref, DerefMut, Index, IndexMut, RangeBounds},
+    vec,
 };
 
-use bitvec::array::BitArray;
+use bitvec::{
+    array::BitArray,
+    order::Lsb0,
+    slice::{BitSlice, IterOnes},
+};
 use object_rainbow::{
     ByteOrd, Equivalent, EquivalentFor, Inline, InlineOutput, ParseAsInline, ParseInline,
     ParseInput, PointInput, RainbowIterator, ToOutput, assert_impl, pod,
@@ -16,13 +21,13 @@ type Bits = BitArray<[u8; 32]>;
 #[derive(ParseAsInline)]
 pub struct ArrayMap<T> {
     bits: Bits,
-    map: BTreeMap<u8, T>,
+    items: Vec<T>,
 }
 
 impl<T: InlineOutput> ToOutput for ArrayMap<T> {
     fn to_output(&self, output: &mut (impl ?Sized + object_rainbow::Output)) {
         self.bits.to_output(output);
-        self.map.values().iter_to_output(output);
+        (&self.items).iter_to_output(output);
     }
 }
 
@@ -37,11 +42,11 @@ impl<T: ByteOrd + InlineOutput> ByteOrd for ArrayMap<T> {
 impl<T: ParseInline<I>, I: ParseInput> ParseInline<I> for ArrayMap<T> {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let bits = input.parse_inline::<Bits>()?;
-        let map = bits
+        let items = bits
             .iter_ones()
-            .map(|one| Ok((u8::try_from(one).expect("overflow"), input.parse_inline()?)))
+            .map(|_| input.parse_inline())
             .collect::<object_rainbow::Result<_>>()?;
-        Ok(Self { bits, map })
+        Ok(Self { bits, items })
     }
 }
 
@@ -63,14 +68,14 @@ impl<T: ParseInline<I::WithExtra<(u8, I::Extra)>>, I: PointInput> ParseInline<I>
 {
     fn parse_inline(input: &mut I) -> object_rainbow::Result<Self> {
         let bits = input.parse_inline::<Bits>()?;
-        let map = bits
+        let items = bits
             .iter_ones()
             .map(|one| {
                 let key = u8::try_from(one).expect("overflow");
-                Ok((key, input.parse_inline_extra((key, input.extra().clone()))?))
+                input.parse_inline_extra((key, input.extra().clone()))
             })
             .collect::<object_rainbow::Result<_>>()?;
-        Ok(Self(ArrayMap { bits, map }))
+        Ok(Self(ArrayMap { bits, items }))
     }
 }
 
@@ -103,26 +108,62 @@ impl<T> Default for KeyedArrayMap<T> {
     }
 }
 
+impl<T> Index<u8> for ArrayMap<T> {
+    type Output = T;
+
+    fn index(&self, key: u8) -> &Self::Output {
+        let index = self.index(key).unwrap();
+        &self.items[index]
+    }
+}
+
+impl<T> IndexMut<u8> for ArrayMap<T> {
+    fn index_mut(&mut self, key: u8) -> &mut Self::Output {
+        let index = self.index(key).unwrap();
+        &mut self.items[index]
+    }
+}
+
 impl<T> ArrayMap<T> {
+    fn place(&self, key: u8) -> usize {
+        self.bits.split_at(key as _).0.count_ones()
+    }
+
+    fn index(&self, key: u8) -> Option<usize> {
+        if self.contains(key) {
+            Some(self.place(key))
+        } else {
+            None
+        }
+    }
+
     pub fn get_mut(&mut self, key: u8) -> Option<&mut T> {
-        self.map.get_mut(&key)
+        let index = self.index(key)?;
+        Some(&mut self.items[index])
     }
 
     pub fn get(&self, key: u8) -> Option<&T> {
-        self.map.get(&key)
+        let index = self.index(key)?;
+        Some(&self.items[index])
     }
 
     pub fn insert(&mut self, key: u8, value: T) -> Option<T> {
-        self.bits.set(key as usize, true);
-        self.map.insert(key, value)
+        if self.contains(key) {
+            Some(std::mem::replace(&mut self[key], value))
+        } else {
+            self.bits.set(key as usize, true);
+            let index = self.index(key).unwrap();
+            self.items.insert(index, value);
+            None
+        }
     }
 
     pub fn is_empty(&self) -> bool {
-        self.map.is_empty()
+        self.items.is_empty()
     }
 
     pub fn len(&self) -> usize {
-        self.map.len()
+        self.items.len()
     }
 
     pub fn contains(&self, key: u8) -> bool {
@@ -130,20 +171,47 @@ impl<T> ArrayMap<T> {
     }
 
     pub fn remove(&mut self, key: u8) -> Option<T> {
-        self.bits.set(key as usize, false);
-        self.map.remove(&key)
+        if self.contains(key) {
+            let index = self.index(key).unwrap();
+            self.bits.set(key as usize, false);
+            let value = self.items.remove(index);
+            Some(value)
+        } else {
+            None
+        }
     }
 
     pub fn range<R: RangeBounds<u8>>(&self, range: R) -> Range<'_, T> {
+        let bits = &*self.bits;
+        let (bits, _suffix) = match range.end_bound() {
+            Bound::Unbounded | Bound::Included(&255) => (bits, BitSlice::empty()),
+            Bound::Included(x) => bits.split_at((*x as usize) + 1),
+            Bound::Excluded(x) => bits.split_at(*x as usize),
+        };
+        let (prefix, bits) = match range.start_bound() {
+            Bound::Included(x) => bits.split_at(*x as usize),
+            Bound::Excluded(&255) => (bits, BitSlice::empty()),
+            Bound::Excluded(x) => bits.split_at((*x as usize) + 1),
+            Bound::Unbounded => (BitSlice::empty(), bits),
+        };
+        let l = prefix.count_ones();
+        let offset = match range.start_bound() {
+            Bound::Included(x) => *x,
+            Bound::Excluded(&255) => 0,
+            Bound::Excluded(x) => *x + 1,
+            Bound::Unbounded => 0,
+        };
         Range {
-            range: self.map.range(range),
+            offset,
+            ones: bits.iter_ones(),
+            range: self.items[l..].iter(),
         }
     }
 
     pub fn pop_first(&mut self) -> Option<(u8, T)> {
-        self.map
-            .pop_first()
-            .inspect(|&(key, _)| self.bits.set(key as usize, false))
+        let key = self.bits.first_one()? as u8;
+        let value = self.remove(key)?;
+        Some((key, value))
     }
 
     pub const fn new() -> Self {
@@ -152,19 +220,21 @@ impl<T> ArrayMap<T> {
                 _ord: PhantomData,
                 data: [0; _],
             },
-            map: BTreeMap::new(),
+            items: Vec::new(),
         }
     }
 
     pub fn iter(&self) -> Entries<'_, T> {
         Entries {
-            inner: self.map.iter(),
+            ones: self.bits.iter_ones(),
+            inner: self.items.iter(),
         }
     }
 
     pub fn iter_mut(&mut self) -> EntriesMut<'_, T> {
         EntriesMut {
-            inner: self.map.iter_mut(),
+            ones: self.bits.iter_ones(),
+            inner: self.items.iter_mut(),
         }
     }
 
@@ -195,22 +265,26 @@ impl<T> ArrayMap<T> {
         }
     }
 
-    pub fn map<U>(self, mut f: impl FnMut(T) -> U) -> ArrayMap<U> {
-        let Self { bits, map } = self;
-        let map = map.into_iter().map(|(k, v)| (k, f(v))).collect();
-        ArrayMap { bits, map }
+    pub fn map<U>(self, f: impl FnMut(T) -> U) -> ArrayMap<U> {
+        let Self { bits, items } = self;
+        let items = items.into_iter().map(f).collect();
+        ArrayMap { bits, items }
     }
 }
 
 pub struct Range<'a, T> {
-    range: btree_map::Range<'a, u8, T>,
+    offset: u8,
+    ones: IterOnes<'a, u8, Lsb0>,
+    range: slice::Iter<'a, T>,
 }
 
 impl<'a, T> Iterator for Range<'a, T> {
     type Item = (u8, &'a T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.range.next().map(|(&k, v)| (k, v))
+        let k = self.offset + (self.ones.next()? as u8);
+        let v = self.range.next()?;
+        Some((k, v))
     }
 }
 
@@ -218,7 +292,7 @@ impl<T> Default for ArrayMap<T> {
     fn default() -> Self {
         Self {
             bits: Default::default(),
-            map: Default::default(),
+            items: Default::default(),
         }
     }
 }
@@ -246,7 +320,7 @@ impl<T, const N: usize> From<[(u8, T); N]> for ArrayMap<T> {
 }
 
 pub struct IntoEntries<T> {
-    inner: std::collections::btree_map::IntoIter<u8, T>,
+    inner: vec::IntoIter<(u8, T)>,
 }
 
 impl<T> Iterator for IntoEntries<T> {
@@ -268,7 +342,13 @@ impl<T> IntoIterator for ArrayMap<T> {
 
     fn into_iter(self) -> Self::IntoIter {
         IntoEntries {
-            inner: self.map.into_iter(),
+            inner: self
+                .bits
+                .iter_ones()
+                .zip(self.items)
+                .map(|(k, v)| (k as u8, v))
+                .collect::<Vec<_>>()
+                .into_iter(),
         }
     }
 }
@@ -284,15 +364,17 @@ impl<T> IntoIterator for KeyedArrayMap<T> {
 }
 
 pub struct Entries<'a, T> {
-    inner: std::collections::btree_map::Iter<'a, u8, T>,
+    ones: IterOnes<'a, u8, Lsb0>,
+    inner: slice::Iter<'a, T>,
 }
 
 impl<'a, T> Iterator for Entries<'a, T> {
     type Item = (u8, &'a T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let (key, value) = self.inner.next()?;
-        Some((*key, value))
+        let k = self.ones.next()? as u8;
+        let v = self.inner.next()?;
+        Some((k, v))
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
@@ -311,15 +393,17 @@ impl<'a, T> IntoIterator for &'a ArrayMap<T> {
 }
 
 pub struct EntriesMut<'a, T> {
-    inner: std::collections::btree_map::IterMut<'a, u8, T>,
+    ones: IterOnes<'a, u8, Lsb0>,
+    inner: slice::IterMut<'a, T>,
 }
 
 impl<'a, T> Iterator for EntriesMut<'a, T> {
     type Item = (u8, &'a mut T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let (key, value) = self.inner.next()?;
-        Some((*key, value))
+        let k = self.ones.next()? as u8;
+        let v = self.inner.next()?;
+        Some((k, v))
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
@@ -495,11 +579,7 @@ impl Equivalent<ArrayMap<()>> for ArraySet {
     fn into_equivalent(self) -> ArrayMap<()> {
         ArrayMap {
             bits: self.bits,
-            map: self
-                .bits
-                .iter_ones()
-                .map(|one| (u8::try_from(one).expect("overflow"), ()))
-                .collect(),
+            items: self.bits.iter_ones().map(|_| ()).collect(),
         }
     }
 
