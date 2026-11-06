@@ -8,9 +8,9 @@ repository.workspace = true
 authors.workspace = true
 
 [dependencies]
-object-rainbow.workspace = true
-object-rainbow-amt.workspace = true
+object-rainbow = { workspace = true, features = ["owp-union"] }
+object-rainbow-amt = { workspace = true, features = ["bulk2"] }
 
 async-executor.workspace = true
-futures-concurrency.workspace=true
+futures-concurrency.workspace = true
 multimap.workspace = true
