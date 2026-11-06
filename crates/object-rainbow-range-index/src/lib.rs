@@ -29,18 +29,15 @@ impl<K: Component> RangeIndex<K> {
     where
         Option<F>: InlineOutput,
     {
-        let entries = entries
-            .into_iter()
-            .map(|(k, f)| (f.vec(), k))
-            .collect::<Vec<_>>();
         self.prefixes
             .bulk2(
                 entries
-                    .iter()
+                    .into_iter()
+                    .map(|(k, f)| (f.vec(), k))
                     .flat_map(|(filter, k)| {
                         (0..=filter.len())
-                            .map(|n| filter[..n].to_vec())
-                            .map(|key| (LpBytes(key), (k.clone(), ())))
+                            .map(move |n| filter[..n].to_vec())
+                            .map(move |key| (LpBytes(key), (k.clone(), ())))
                     })
                     .collect::<MultiMap<_, _>>()
                     .into_iter()
