@@ -6,7 +6,7 @@ use core::future::ready;
 
 use futures_concurrency::future::TryJoin;
 use object_rainbow::{
-    derive_for_wrapped,
+    Fetch, derive_for_wrapped,
     map_extra::{SmExtra, StaticMap},
     pod,
     tuple_extra::ToTuple2,
@@ -100,5 +100,16 @@ impl<T: Apply<D>, D: Send, I: Send + IntoIterator<Item = D, IntoIter: Send>> App
             output.push(self.0.apply(diff).await?);
         }
         Ok(output)
+    }
+}
+
+#[pod]
+pub struct Points<T>(pub T);
+
+impl<T: Apply<D>, D: Send, F: Fetch<T = D>> Apply<F> for Points<T> {
+    type Output = T::Output;
+
+    async fn apply(&mut self, diff: F) -> object_rainbow::Result<Self::Output> {
+        self.0.apply(diff.fetch().await?).await
     }
 }
