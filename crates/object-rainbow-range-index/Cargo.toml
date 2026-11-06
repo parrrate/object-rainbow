@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
+description = "range-filtered key-ordered queries"
 
 [dependencies]
 object-rainbow = { workspace = true, features = ["owp-union"] }
