@@ -1,7 +1,7 @@
 use object_rainbow::{Component, InlineOutput};
-use object_rainbow_amt::{AmtMap, AmtSet};
+use object_rainbow_apply::Apply;
 
-use crate::Apply;
+use crate::{AmtMap, AmtSet};
 
 impl<K: Component, V: Component> Apply<(Option<V>, K)> for AmtMap<K, V> {
     type Output = Option<(V, K)>;

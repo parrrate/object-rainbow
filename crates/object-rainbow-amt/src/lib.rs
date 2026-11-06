@@ -25,6 +25,8 @@ use object_rainbow_point::{IntoPoint, Point};
 
 use self::{construct::Construct, private::Node};
 
+#[cfg(feature = "apply")]
+mod apply;
 mod construct;
 
 mod private {

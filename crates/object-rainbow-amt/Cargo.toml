@@ -10,6 +10,7 @@ description = "key-sorted distributed AMT"
 
 [dependencies]
 object-rainbow.workspace = true
+object-rainbow-apply = { workspace = true, optional = true }
 object-rainbow-array-map.workspace = true
 object-rainbow-parse-prefix.workspace = true
 object-rainbow-point.workspace = true
@@ -18,6 +19,7 @@ futures-util = { workspace = true, features = ["std"] }
 genawaiter-try-stream.workspace = true
 
 [features]
+apply = ["dep:object-rainbow-apply"]
 bulk2 = ["get-mut"]
 get-mut = ["object-rainbow/nested-mut"]
 

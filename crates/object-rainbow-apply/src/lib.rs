@@ -12,8 +12,6 @@ use object_rainbow::{
     tuple_extra::ToTuple2,
 };
 
-#[cfg(feature = "amt")]
-mod amt;
 pub mod enforce_unique;
 #[cfg(feature = "hamt")]
 mod hamt;
