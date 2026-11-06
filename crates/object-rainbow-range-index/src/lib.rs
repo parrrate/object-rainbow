@@ -17,7 +17,6 @@ use object_rainbow_amt::AmtMap;
 #[pod(no_copy, no_ord)]
 pub struct RangeIndex<K> {
     prefixes: AmtMap<LpBytes, AmtMap<K, ()>>,
-    filters: AmtMap<LpBytes, AmtMap<K, ()>>,
 }
 
 type MapTask<K> = Task<Result<Vec<AmtMap<K, ()>>, object_rainbow::Error>>;
@@ -34,49 +33,53 @@ impl<K: Component> RangeIndex<K> {
             .into_iter()
             .map(|(k, f)| (f.vec(), k))
             .collect::<Vec<_>>();
-        let f1 = self.prefixes.bulk2(
-            entries
-                .iter()
-                .flat_map(|(filter, k)| {
-                    (0..=filter.len())
-                        .map(|n| filter[..n].to_vec())
-                        .map(|key| (LpBytes(key), (k.clone(), ())))
-                })
-                .collect::<MultiMap<_, _>>()
-                .into_iter()
-                .map(|(k, kv)| {
-                    (
-                        k,
-                        kv.into_iter()
-                            .map(|(k, v)| (k, Some(v)))
-                            .collect::<AmtMap<_, _>>(),
-                    )
-                })
-                .collect::<AmtMap<_, _>>(),
-        );
-        let entries = entries
-            .into_iter()
-            .map(|(f, k)| {
-                (
-                    f,
-                    [(k.clone(), Some(()))]
-                        .into_iter()
-                        .collect::<AmtMap<K, _>>(),
-                )
-            })
-            .collect::<Vec<_>>();
-        let f2 = self.filters.bulk2(
-            entries
-                .into_iter()
-                .map(|(filter, map)| (LpBytes(filter), map))
-                .collect::<AmtMap<_, _>>(),
-        );
-        (f1, f2).try_join().await?;
+        self.prefixes
+            .bulk2(
+                entries
+                    .iter()
+                    .flat_map(|(filter, k)| {
+                        (0..=filter.len())
+                            .map(|n| filter[..n].to_vec())
+                            .map(|key| (LpBytes(key), (k.clone(), ())))
+                    })
+                    .collect::<MultiMap<_, _>>()
+                    .into_iter()
+                    .map(|(k, kv)| {
+                        (
+                            k,
+                            kv.into_iter()
+                                .map(|(k, v)| (k, Some(v)))
+                                .collect::<AmtMap<_, _>>(),
+                        )
+                    })
+                    .collect::<AmtMap<_, _>>(),
+            )
+            .await?;
         Ok(())
     }
 
     async fn filter_get(&self, filter: &LpBytes) -> object_rainbow::Result<Option<AmtMap<K, ()>>> {
-        self.filters.get(filter).await
+        let Some(map) = self.prefixes.get(filter).await? else {
+            return Ok(None);
+        };
+        Ok(
+            if self
+                .prefixes
+                .owp()
+                .with_bounds(
+                    &LpBytes([filter.as_slice(), [0x00].as_slice()].concat())
+                        ..=&LpBytes([filter.as_slice(), [0xff].as_slice()].concat()),
+                )
+                .take(1)
+                .count()
+                .await?
+                == 0
+            {
+                Some(map)
+            } else {
+                None
+            },
+        )
     }
 
     fn fill_maps<'s: 'e, 'e>(
