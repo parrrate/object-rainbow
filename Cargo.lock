@@ -1796,7 +1796,6 @@ dependencies = [
  "futures-concurrency",
  "macro_rules_attribute",
  "object-rainbow",
- "object-rainbow-point",
  "smol",
  "smol-macros",
  "thiserror",
@@ -2055,6 +2054,7 @@ name = "object-rainbow-point"
 version = "0.0.0-a.20"
 dependencies = [
  "object-rainbow",
+ "object-rainbow-apply",
  "serde",
 ]
 

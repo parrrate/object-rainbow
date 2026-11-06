@@ -23,6 +23,8 @@ use object_rainbow::{
 
 pub use self::raw_inner::RawPointInner;
 
+#[cfg(feature = "apply")]
+pub mod apply;
 #[cfg(feature = "serde")]
 mod point_deserialize;
 #[cfg(feature = "point-serialize")]

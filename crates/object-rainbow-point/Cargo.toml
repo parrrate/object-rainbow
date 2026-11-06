@@ -10,10 +10,12 @@ description = "default pointer type for object-rainbow"
 
 [dependencies]
 object-rainbow.workspace = true
+object-rainbow-apply = { workspace = true, optional = true }
 
 serde = { workspace = true, optional = true }
 
 [features]
+apply = ["dep:object-rainbow-apply"]
 serde = ["dep:serde"]
 point-serialize = ["serde"]
 

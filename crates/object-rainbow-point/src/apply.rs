@@ -1,7 +1,8 @@
 use object_rainbow::Traversible;
-use object_rainbow_point::Point;
+use object_rainbow_apply::Apply;
 
-use crate::Apply;
+use crate::Point;
+
 
 impl<T: Clone + Traversible + Apply<D>, D: Send> Apply<D> for Point<T> {
     type Output = T::Output;

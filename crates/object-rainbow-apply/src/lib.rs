@@ -13,8 +13,6 @@ use object_rainbow::{
 };
 
 pub mod enforce_unique;
-#[cfg(feature = "point")]
-pub mod point;
 pub mod remap;
 pub mod skip;
 

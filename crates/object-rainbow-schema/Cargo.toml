@@ -24,7 +24,7 @@ _collections-kv = ["_collections"]
 amt = ["dep:object-rainbow-amt", "_collections-item", "_collections-kv"]
 apply = ["dep:object-rainbow-apply"]
 hamt = ["dep:object-rainbow-hamt", "_collections-item"]
-point = ["dep:object-rainbow-point", "object-rainbow-apply/point"]
+point = ["dep:object-rainbow-point"]
 
 [package.metadata.docs.rs]
 all-features = true
