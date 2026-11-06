@@ -1791,7 +1791,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-apply"
-version = "0.0.0-a.5"
+version = "0.0.0-a.6"
 dependencies = [
  "futures-concurrency",
  "macro_rules_attribute",
@@ -1960,7 +1960,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history-store"
-version = "0.0.0-a.9"
+version = "0.0.0-a.10"
 dependencies = [
  "anyhow",
  "object-rainbow",
@@ -2071,7 +2071,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-schema"
-version = "0.0.0-a.5"
+version = "0.0.0-a.6"
 dependencies = [
  "futures-concurrency",
  "object-rainbow",
@@ -2116,7 +2116,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-trie"
-version = "0.0.0-a.21"
+version = "0.0.0-a.22"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
@@ -2132,7 +2132,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-unique-diffs"
-version = "0.0.0-a.9"
+version = "0.0.0-a.10"
 dependencies = [
  "object-rainbow",
  "object-rainbow-apply",
