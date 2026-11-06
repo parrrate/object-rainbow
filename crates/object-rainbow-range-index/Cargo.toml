@@ -10,8 +10,12 @@ description = "range-filtered key-ordered queries"
 
 [dependencies]
 object-rainbow = { workspace = true, features = ["owp-union"] }
+object-rainbow-apply = { workspace = true, optional = true }
 object-rainbow-amt = { workspace = true, features = ["bulk2"] }
 
 async-executor.workspace = true
 futures-concurrency.workspace = true
 multimap.workspace = true
+
+[features]
+apply = ["dep:object-rainbow-apply"]

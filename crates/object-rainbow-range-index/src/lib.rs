@@ -14,6 +14,9 @@ use object_rainbow::{
 };
 use object_rainbow_amt::AmtMap;
 
+#[cfg(feature = "apply")]
+mod apply;
+
 #[pod(no_copy, no_ord)]
 pub struct RangeIndex<K> {
     prefixes: AmtMap<LpBytes, AmtMap<K, ()>>,

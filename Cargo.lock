@@ -2086,6 +2086,7 @@ dependencies = [
  "multimap",
  "object-rainbow",
  "object-rainbow-amt",
+ "object-rainbow-apply",
 ]
 
 [[package]]
