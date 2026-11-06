@@ -10,5 +10,5 @@ description = "object-rainbow-apply deduplication"
 
 [dependencies]
 object-rainbow.workspace = true
-object-rainbow-apply = { workspace = true, features = ["hamt"] }
-object-rainbow-hamt.workspace = true
+object-rainbow-apply.workspace = true
+object-rainbow-hamt = { workspace = true, features = ["apply"] }

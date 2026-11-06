@@ -1,7 +1,7 @@
 use object_rainbow::{Component, Hash};
-use object_rainbow_hamt::{HamtMap, HamtSet};
+use object_rainbow_apply::Apply;
 
-use crate::Apply;
+use crate::{HamtMap, HamtSet};
 
 impl<V: 'static + Send + Sync + Component> Apply<(Option<V>, Hash)> for HamtMap<V> {
     type Output = Option<(V, Hash)>;

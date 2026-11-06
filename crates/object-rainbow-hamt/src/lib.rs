@@ -11,6 +11,9 @@ use object_rainbow::{
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
 
+#[cfg(feature = "apply")]
+mod apply;
+
 type ActionFuture<'a, T = ()> =
     Pin<Box<dyn 'a + Send + Future<Output = object_rainbow::Result<T>>>>;
 type OptionFuture<'a, T> = ActionFuture<'a, Option<T>>;

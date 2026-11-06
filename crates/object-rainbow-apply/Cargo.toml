@@ -10,7 +10,6 @@ description = "asynchronous map trait for object-rainbow-history"
 
 [dependencies]
 object-rainbow.workspace = true
-object-rainbow-hamt = { workspace = true, optional = true }
 object-rainbow-point = { workspace = true, optional = true }
 object-rainbow-trie = { workspace = true, optional = true }
 
@@ -18,7 +17,6 @@ futures-concurrency.workspace = true
 thiserror.workspace = true
 
 [features]
-hamt = ["dep:object-rainbow-hamt"]
 point = ["dep:object-rainbow-point"]
 trie = ["dep:object-rainbow-trie"]
 

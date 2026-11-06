@@ -10,12 +10,14 @@ description = "distributed HAMT"
 
 [dependencies]
 object-rainbow.workspace = true
+object-rainbow-apply = { workspace = true, optional = true }
 object-rainbow-array-map.workspace = true
 object-rainbow-point.workspace = true
 
 futures-util = { workspace = true, features = ["std"] }
 
 [features]
+apply = ["dep:object-rainbow-apply"]
 get-mut = ["object-rainbow/nested-mut"]
 
 [dev-dependencies]
