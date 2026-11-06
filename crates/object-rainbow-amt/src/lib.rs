@@ -1465,16 +1465,12 @@ impl<K: Component, V: Component> AmtMap<K, V> {
         try_stream(async |co| self.0.stream(&co).await)
     }
 
+    pub async fn to_vec(&self) -> object_rainbow::Result<Vec<(K, V)>> {
+        self.clone().map(|x| x).await?.stream().try_collect().await
+    }
+
     pub async fn collect<T: FromIterator<(K, V)>>(&self) -> object_rainbow::Result<T> {
-        Ok(self
-            .clone()
-            .map(|x| x)
-            .await?
-            .stream()
-            .try_collect::<Vec<_>>()
-            .await?
-            .into_iter()
-            .collect())
+        Ok(self.to_vec().await?.into_iter().collect())
     }
 
     pub fn owp(&self) -> impl Owp<Item = (K, V)> + OwpBounds<K> {
