@@ -24,7 +24,7 @@ type MapTask<K> = Task<Result<Vec<AmtMap<K, ()>>, object_rainbow::Error>>;
 impl<K: Component> RangeIndex<K> {
     pub async fn extend<F: Component>(
         &mut self,
-        entries: impl IntoIterator<Item = (K, F)>,
+        entries: impl IntoIterator<Item = (K, F, Option<()>)>,
     ) -> object_rainbow::Result<()>
     where
         Option<F>: InlineOutput,
@@ -33,22 +33,15 @@ impl<K: Component> RangeIndex<K> {
             .bulk2(
                 entries
                     .into_iter()
-                    .map(|(k, f)| (f.vec(), k))
-                    .flat_map(|(filter, k)| {
+                    .map(|(k, f, v)| (f.vec(), k, v))
+                    .flat_map(|(filter, k, v)| {
                         (0..=filter.len())
                             .map(move |n| filter[..n].to_vec())
-                            .map(move |key| (LpBytes(key), (k.clone(), ())))
+                            .map(move |key| (LpBytes(key), (k.clone(), v)))
                     })
                     .collect::<MultiMap<_, _>>()
                     .into_iter()
-                    .map(|(k, kv)| {
-                        (
-                            k,
-                            kv.into_iter()
-                                .map(|(k, v)| (k, Some(v)))
-                                .collect::<AmtMap<_, _>>(),
-                        )
-                    })
+                    .map(|(k, kv)| (k, kv.into_iter().collect::<AmtMap<_, _>>()))
                     .collect::<AmtMap<_, _>>(),
             )
             .await?;
