@@ -15,10 +15,10 @@ object-rainbow-history.workspace = true
 object-rainbow-store.workspace = true
 
 [dev-dependencies]
-object-rainbow-apply = { workspace = true, features = ["trie"] }
+object-rainbow-apply.workspace = true
 object-rainbow-history.workspace = true
 object-rainbow-store-opendal.workspace = true
-object-rainbow-trie.workspace = true
+object-rainbow-trie = { workspace = true, features = ["apply"] }
 
 anyhow.workspace = true
 opendal.workspace = true

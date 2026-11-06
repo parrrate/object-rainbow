@@ -18,8 +18,8 @@ futures-util.workspace = true
 [dev-dependencies]
 object-rainbow = { workspace = true, features = ["ulid"] }
 object-rainbow-amt = { workspace = true, features = ["apply"] }
-object-rainbow-apply = { workspace = true, features = ["trie"] }
-object-rainbow-trie.workspace = true
+object-rainbow-apply.workspace = true
+object-rainbow-trie = { workspace = true, features = ["apply"] }
 
 macro_rules_attribute.workspace = true
 smol.workspace = true

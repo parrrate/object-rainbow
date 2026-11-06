@@ -10,6 +10,7 @@ description = "distributed Trie"
 
 [dependencies]
 object-rainbow.workspace = true
+object-rainbow-apply = { workspace = true, optional = true }
 object-rainbow-array-map.workspace = true
 object-rainbow-point.workspace = true
 
@@ -18,6 +19,7 @@ genawaiter-try-stream.workspace = true
 serde = { workspace = true, features = ["derive"], optional = true }
 
 [features]
+apply = ["dep:object-rainbow-apply"]
 serde = ["dep:serde"]
 
 [dev-dependencies]

@@ -1,7 +1,7 @@
 use object_rainbow::{InlineOutput, ReflessObject, Traversible};
-use object_rainbow_trie::{TrieMap, TrieSet};
+use object_rainbow_apply::Apply;
 
-use crate::Apply;
+use crate::{TrieMap, TrieSet};
 
 impl<K: ReflessObject, V: 'static + Send + Sync + Clone> Apply<(Option<V>, K)> for TrieMap<K, V>
 where

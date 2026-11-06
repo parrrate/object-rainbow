@@ -17,8 +17,6 @@ pub mod enforce_unique;
 pub mod point;
 pub mod remap;
 pub mod skip;
-#[cfg(feature = "trie")]
-mod trie;
 
 #[derive_for_wrapped]
 pub trait Apply<Diff: Send>: Send {

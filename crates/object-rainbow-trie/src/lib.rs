@@ -16,6 +16,8 @@ use object_rainbow::{
 use object_rainbow_array_map::ArrayMap;
 use object_rainbow_point::{IntoPoint, Point};
 
+#[cfg(feature = "apply")]
+mod apply;
 #[cfg(feature = "serde")]
 mod serde;
 
