@@ -1,6 +1,6 @@
 [package]
 name = "object-rainbow"
-version = "0.0.0-a.73"
+version = "0.0.0-a.74"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -11,7 +11,7 @@ documentation = "https://docs.rs/object-rainbow"
 exclude = ["/.github", "/bin", "/.gitattribues", "/.gitignore", "/codegen.sh"]
 
 [dependencies]
-object-rainbow-derive = { version = "=0.0.0-a.27", path = "../object-rainbow-derive" }
+object-rainbow-derive = { version = "=0.0.0-a.28", path = "../object-rainbow-derive" }
 
 anyhow.workspace = true
 atomic-waker = { workspace = true, optional = true }

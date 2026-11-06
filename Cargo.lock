@@ -1734,7 +1734,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow"
-version = "0.0.0-a.73"
+version = "0.0.0-a.74"
 dependencies = [
  "anyhow",
  "atomic-waker",
@@ -1762,7 +1762,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-amt"
-version = "0.0.0-a.10"
+version = "0.0.0-a.11"
 dependencies = [
  "futures-util",
  "genawaiter-try-stream",
@@ -1806,7 +1806,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-array-map"
-version = "0.0.0-a.15"
+version = "0.0.0-a.16"
 dependencies = [
  "bitvec",
  "object-rainbow",
@@ -1837,7 +1837,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-cdc"
-version = "0.0.0-a.6"
+version = "0.0.0-a.7"
 dependencies = [
  "async-fs",
  "blocking",
@@ -1869,7 +1869,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-derive"
-version = "0.0.0-a.27"
+version = "0.0.0-a.28"
 dependencies = [
  "darling",
  "object-rainbow",
@@ -1933,7 +1933,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-hamt"
-version = "0.0.0-a.15"
+version = "0.0.0-a.16"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -1946,7 +1946,7 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-history"
-version = "0.0.0-a.36"
+version = "0.0.0-a.37"
 dependencies = [
  "futures-util",
  "macro_rules_attribute",
@@ -2046,14 +2046,14 @@ dependencies = [
 
 [[package]]
 name = "object-rainbow-parse-prefix"
-version = "0.0.0-a.7"
+version = "0.0.0-a.8"
 dependencies = [
  "object-rainbow",
 ]
 
 [[package]]
 name = "object-rainbow-point"
-version = "0.0.0-a.19"
+version = "0.0.0-a.20"
 dependencies = [
  "object-rainbow",
  "serde",
