@@ -75,6 +75,10 @@ impl<K: Component> RangeIndex<K> {
         Ok(())
     }
 
+    async fn filter_get(&self, filter: &LpBytes) -> object_rainbow::Result<Option<AmtMap<K, ()>>> {
+        self.filters.get(filter).await
+    }
+
     fn fill_maps<'s: 'e, 'e>(
         &'s self,
         mut l: Vec<u8>,
@@ -144,7 +148,7 @@ impl<K: Component> RangeIndex<K> {
                     let r = r.clone();
                     async move {
                         let mut result = Vec::new();
-                        if let Some(map) = self.filters.get(&LpBytes(r)).await? {
+                        if let Some(map) = self.filter_get(&LpBytes(r)).await? {
                             result.push(map);
                         }
                         Ok(result)
@@ -171,7 +175,7 @@ impl<K: Component> RangeIndex<K> {
                 assert!(r.len() == l.len() + 1);
                 tasks.push(executor.spawn(async move {
                     let mut result = Vec::new();
-                    if let Some(map) = self.filters.get(&LpBytes(l.clone())).await? {
+                    if let Some(map) = self.filter_get(&LpBytes(l.clone())).await? {
                         result.push(map);
                     } else {
                         self.prefixes
