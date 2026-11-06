@@ -1703,6 +1703,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "multimap"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d87ecb2933e8aeadb3e3a02b828fed80a7528047e68b4f424523a0981a3a084"
+
+[[package]]
 name = "nu-ansi-term"
 version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2051,6 +2057,16 @@ version = "0.0.0-a.19"
 dependencies = [
  "object-rainbow",
  "serde",
+]
+
+[[package]]
+name = "object-rainbow-range-index"
+version = "0.0.0-a.0"
+dependencies = [
+ "async-executor",
+ "multimap",
+ "object-rainbow",
+ "object-rainbow-amt",
 ]
 
 [[package]]

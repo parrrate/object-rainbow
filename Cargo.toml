@@ -24,7 +24,7 @@ members = [
     "crates/object-rainbow-marshall",
     "crates/object-rainbow-opaque",
     "crates/object-rainbow-parse-prefix",
-    "crates/object-rainbow-point",
+    "crates/object-rainbow-point", "crates/object-rainbow-range-index",
     "crates/object-rainbow-schema",
     "crates/object-rainbow-sign",
     "crates/object-rainbow-store",
@@ -88,6 +88,7 @@ hex = "0.4.3"
 imbl = "7.0.0"
 indexmap = "2.14.0"
 macro_rules_attribute = "0.2.2"
+multimap = { version = "0.10.1", default-features = false }
 opendal = "0.56.0"
 pin-project = "1.1.13"
 proc-macro2 = "1.0.106"
