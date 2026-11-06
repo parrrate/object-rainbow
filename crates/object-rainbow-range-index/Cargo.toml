@@ -12,4 +12,5 @@ object-rainbow.workspace = true
 object-rainbow-amt.workspace = true
 
 async-executor.workspace = true
+futures-concurrency.workspace=true
 multimap.workspace = true
