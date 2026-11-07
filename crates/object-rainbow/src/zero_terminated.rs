@@ -36,6 +36,12 @@ impl<T: ByteOrd> ByteOrd for Zt<T> {
     }
 }
 
+impl<T> std::hash::Hash for Zt<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.inner.hash(state);
+    }
+}
+
 impl<T: ToOutput> Zt<T> {
     /// Create a zero-terminated value.
     ///
