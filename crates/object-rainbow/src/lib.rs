@@ -1396,6 +1396,11 @@ impl ListHashes for dyn '_ + Singular {
     }
 }
 
+impl Size for dyn '_ + Singular {
+    type Size = <Hash as Size>::Size;
+    const SIZE: usize = <Hash as Size>::SIZE;
+}
+
 impl<T> ToOutput for dyn '_ + SingularFetch<T = T> {
     fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.hash().to_output(output);
