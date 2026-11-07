@@ -483,6 +483,13 @@ impl<P: DerefMut<Target: OwpBoundsOwned<B>>, B> OwpBoundsOwned<B> for Pin<P> {
     }
 }
 
-pub trait KeyOwp<K: Send, V: Send>: Send + Owp<Item = (K, V)> + OwpBounds<K> {}
+pub trait KeyOwp<K: Send, V: Send>: Send + Owp<Item = (K, V)> + OwpBounds<K> {
+    fn boxed(self) -> Pin<Box<dyn KeyOwp<K, V>>>
+    where
+        Self: 'static + Sized,
+    {
+        Box::pin(self) as _
+    }
+}
 
 impl<K: Send, V: Send, O: ?Sized + Send + Owp<Item = (K, V)> + OwpBounds<K>> KeyOwp<K, V> for O {}
