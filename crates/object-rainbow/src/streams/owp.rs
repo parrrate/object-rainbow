@@ -487,3 +487,8 @@ pub trait KeyOwp: Send + Owp<Item = (Self::K, Self::V)> + OwpBounds<Self::K> {
     type K: Send;
     type V: Send;
 }
+
+impl<K: Send, V: Send, O: ?Sized + Send + Owp<Item = (K, V)> + OwpBounds<K>> KeyOwp for O {
+    type K = K;
+    type V = V;
+}
