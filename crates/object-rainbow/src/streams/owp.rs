@@ -497,3 +497,7 @@ impl<K: Send, V: Send, O: ?Sized + Send + Owp<Item = (K, V)> + OwpBounds<K>> Key
 
 #[phantom]
 pub struct Empty<T>;
+
+pub fn empty<T>() -> Empty<T> {
+    Empty
+}
