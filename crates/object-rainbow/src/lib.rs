@@ -1463,6 +1463,12 @@ impl<T> MaybeHasNiche for dyn '_ + SingularFetch<T = T> {
     type MnArray = <Hash as MaybeHasNiche>::MnArray;
 }
 
+impl<T> PartialEq for dyn '_ + SingularFetch<T = T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.hash() == other.hash()
+    }
+}
+
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
 impl<T: Traversible> Topological for Arc<dyn SingularFetch<T = T>> {
