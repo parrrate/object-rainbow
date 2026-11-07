@@ -17,6 +17,7 @@ Alisa Feistel maintains this list for herself, please do NOT treat this as an in
 - `#[derive(FromSized)]`
 - `hybrid-array`
 - `Immutable` point
+  - we want `Default` here
 - fetch chain
   - consistency error cascade
 - `tokio_util::codec`
