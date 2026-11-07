@@ -488,7 +488,7 @@ pub trait KeyOwp<K: Send, V: Send>: Send + Owp<Item = (K, V)> + OwpBounds<K> {
     where
         Self: 'a + Sized,
     {
-        Box::pin(self) as _
+        Box::pin(self)
     }
 }
 
