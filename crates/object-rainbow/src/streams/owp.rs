@@ -462,3 +462,13 @@ impl<P: DerefMut<Target: Owp<Item = T>>, T> Owp for Pin<P> {
         self.as_deref_mut().poll_max(cx)
     }
 }
+
+impl<P: DerefMut<Target: OwpBounds<B>>, B: ?Sized> OwpBounds<B> for Pin<P> {
+    fn set_min(self: Pin<&mut Self>, min: Bound<&B>) {
+        self.as_deref_mut().set_min(min);
+    }
+
+    fn set_max(self: Pin<&mut Self>, max: Bound<&B>) {
+        self.as_deref_mut().set_max(max);
+    }
+}
