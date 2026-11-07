@@ -241,11 +241,22 @@ impl<S: RainbowStoreMut, Extra: 'static + Send + Sync + Clone> StoreMut<S, Extra
         &self,
         key: K,
     ) -> object_rainbow::Result<StoreRef<S, K, T, Extra>> {
+        self.load_or_init_with(key, Default::default).await
+    }
+
+    pub async fn load_or_init_with<
+        T: Object<Extra> + Default + Clone,
+        K: Send + Sync + AsRef<str>,
+    >(
+        &self,
+        key: K,
+        f: impl FnOnce() -> Point<T>,
+    ) -> object_rainbow::Result<StoreRef<S, K, T, Extra>> {
         if let Some(hash) = self.store.fetch_ref(key.as_ref()).await?.get() {
             let point = self.store.point_extra(hash, self.extra.clone());
             Ok(self.store.store_ref_raw(key, point, self.extra.clone()))
         } else {
-            self.init(key, Default::default()).await
+            self.init(key, f()).await
         }
     }
 
