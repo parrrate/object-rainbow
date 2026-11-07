@@ -519,3 +519,8 @@ impl<T> Owp for Empty<T> {
         Poll::Ready(Ok(None))
     }
 }
+
+impl<T, B: ?Sized> OwpBounds<B> for Empty<T> {
+    fn set_min(self: Pin<&mut Self>, _: Bound<&B>) {}
+    fn set_max(self: Pin<&mut Self>, _: Bound<&B>) {}
+}
