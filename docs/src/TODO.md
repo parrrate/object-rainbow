@@ -4,7 +4,6 @@ Alisa Feistel maintains this list for herself, please do NOT treat this as an in
 
 - `NonZero<i*>` niches
 - LEB128
-- `append` but leaves old items in `other`
 - IPLD storage
 - encrypted IPLD storage
 - `Ipld`
