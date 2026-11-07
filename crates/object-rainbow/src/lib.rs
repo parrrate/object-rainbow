@@ -1405,6 +1405,12 @@ impl MaybeHasNiche for dyn '_ + Singular {
     type MnArray = <Hash as MaybeHasNiche>::MnArray;
 }
 
+impl PartialEq for dyn '_ + Singular {
+    fn eq(&self, other: &Self) -> bool {
+        self.hash() == other.hash()
+    }
+}
+
 impl<T> ToOutput for dyn '_ + SingularFetch<T = T> {
     fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.hash().to_output(output);
