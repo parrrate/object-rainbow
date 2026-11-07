@@ -1424,6 +1424,11 @@ impl<T> ListHashes for dyn '_ + SingularFetch<T = T> {
     }
 }
 
+impl<T> Size for dyn '_ + SingularFetch<T = T> {
+    type Size = <Hash as Size>::Size;
+    const SIZE: usize = <Hash as Size>::SIZE;
+}
+
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
 impl<T: Traversible> Topological for Arc<dyn SingularFetch<T = T>> {
