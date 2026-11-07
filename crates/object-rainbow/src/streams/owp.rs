@@ -501,3 +501,21 @@ pub struct Empty<T>;
 pub fn empty<T>() -> Empty<T> {
     Empty
 }
+
+impl<T> Owp for Empty<T> {
+    type Item = T;
+
+    fn poll_min(
+        self: Pin<&mut Self>,
+        _: &mut Context<'_>,
+    ) -> Poll<crate::Result<Option<Self::Item>>> {
+        Poll::Ready(Ok(None))
+    }
+
+    fn poll_max(
+        self: Pin<&mut Self>,
+        _: &mut Context<'_>,
+    ) -> Poll<crate::Result<Option<Self::Item>>> {
+        Poll::Ready(Ok(None))
+    }
+}
