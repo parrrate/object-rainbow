@@ -273,15 +273,17 @@ impl<K: Component> RangeIndex<K> {
         Ok(result)
     }
 
-    async fn maps<F: ToOutput>(
+    pub async fn maps<F: ToOutput>(
         &self,
         bounds: impl RangeBounds<F>,
-    ) -> object_rainbow::Result<Vec<AmtMap<K, ()>>> {
-        self.vec_maps(
-            bounds.start_bound().map(ToOutput::output),
-            bounds.end_bound().map(ToOutput::output),
-        )
-        .await
+    ) -> object_rainbow::Result<Maps<K>> {
+        Ok(Maps(
+            self.vec_maps(
+                bounds.start_bound().map(ToOutput::output),
+                bounds.end_bound().map(ToOutput::output),
+            )
+            .await?,
+        ))
     }
 
     pub async fn owp<F: ToOutput>(
@@ -291,9 +293,15 @@ impl<K: Component> RangeIndex<K> {
     where
         K: Ord,
     {
-        Ok(OwpUnion::new(
-            self.maps(bounds).await?.into_iter().map(AmtMap::into_owp),
-        ))
+        Ok(self.maps(bounds).await?.owp())
+    }
+}
+
+pub struct Maps<K>(Vec<AmtMap<K, ()>>);
+
+impl<K: Component + Ord> Maps<K> {
+    pub fn owp(self) -> impl Send + Owp<Item = (K, ())> + OwpBounds<K> {
+        OwpUnion::new(self.0.into_iter().map(AmtMap::into_owp))
     }
 }
 
