@@ -1401,6 +1401,10 @@ impl Size for dyn '_ + Singular {
     const SIZE: usize = <Hash as Size>::SIZE;
 }
 
+impl MaybeHasNiche for dyn '_ + Singular {
+    type MnArray = <Hash as MaybeHasNiche>::MnArray;
+}
+
 impl<T> ToOutput for dyn '_ + SingularFetch<T = T> {
     fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.hash().to_output(output);
