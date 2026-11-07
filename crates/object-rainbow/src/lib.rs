@@ -1411,6 +1411,8 @@ impl PartialEq for dyn '_ + Singular {
     }
 }
 
+impl Eq for dyn '_ + Singular {}
+
 impl<T> ToOutput for dyn '_ + SingularFetch<T = T> {
     fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.hash().to_output(output);
