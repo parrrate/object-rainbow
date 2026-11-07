@@ -1413,6 +1413,18 @@ impl PartialEq for dyn '_ + Singular {
 
 impl Eq for dyn '_ + Singular {}
 
+impl PartialOrd for dyn '_ + Singular {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for dyn '_ + Singular {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.hash().cmp(&other.hash())
+    }
+}
+
 impl<T> ToOutput for dyn '_ + SingularFetch<T = T> {
     fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.hash().to_output(output);
