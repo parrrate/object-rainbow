@@ -24,3 +24,13 @@ Alisa Feistel maintains this list for herself, please do NOT treat this as an in
 - fixed-size reverse parse-ahead
 - externally defined (de)serialisation
 - length-first comparison for length-prefixed
+- better builtin-trait `#[derive]`s
+  - `#[derive(PartialEq)]`
+  - `#[derive(Eq)]`
+  - `#[derive(PartialOrd)]`
+  - `#[derive(Ord)]`
+  - `#[derive(Default)]`
+  - `#[derive(Hash)]`
+  - `#[derive(Clone)]`
+  - `#[derive(Copy)]`
+  - `#[derive(Debug)]`
