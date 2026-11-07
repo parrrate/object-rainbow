@@ -11,7 +11,7 @@ Alisa Feistel maintains this list for herself, please do NOT treat this as an in
 - `{Hamt,Trie}{Map,Set}: FromIterator`
 - auto-inlining wrapper
 - generic `Trie` algorithms
-- type as value
+- type as value (clarify?)
 - subtries
   - `Amt`
   - `Trie`
