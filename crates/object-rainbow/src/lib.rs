@@ -1425,6 +1425,12 @@ impl Ord for dyn '_ + Singular {
     }
 }
 
+impl std::hash::Hash for dyn '_ + Singular {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.hash().hash(state);
+    }
+}
+
 impl<T> ToOutput for dyn '_ + SingularFetch<T = T> {
     fn to_output(&self, output: &mut (impl ?Sized + Output)) {
         self.hash().to_output(output);
