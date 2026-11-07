@@ -6,6 +6,7 @@ use std::{
 };
 
 use futures_core::Stream;
+use ghost::phantom;
 use pin_project::pin_project;
 
 use crate::ToOutput;
@@ -493,3 +494,6 @@ pub trait KeyOwp<K: Send, V: Send = ()>: Send + Owp<Item = (K, V)> + OwpBounds<K
 }
 
 impl<K: Send, V: Send, O: ?Sized + Send + Owp<Item = (K, V)> + OwpBounds<K>> KeyOwp<K, V> for O {}
+
+#[phantom]
+pub struct Empty<T>;
