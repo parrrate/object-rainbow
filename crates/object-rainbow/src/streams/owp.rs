@@ -1,6 +1,6 @@
 use std::{
     marker::PhantomData,
-    ops::{Bound, RangeBounds},
+    ops::{Bound, DerefMut, RangeBounds},
     pin::Pin,
     task::{Context, Poll, ready},
 };
@@ -442,5 +442,23 @@ impl<O: Owp> Owp for Take<O> {
             *this.n -= 1;
         }
         Poll::Ready(Ok(item))
+    }
+}
+
+impl<P: DerefMut<Target: Owp<Item = T>>, T> Owp for Pin<P> {
+    type Item = T;
+
+    fn poll_min(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<crate::Result<Option<Self::Item>>> {
+        self.as_deref_mut().poll_min(cx)
+    }
+
+    fn poll_max(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<crate::Result<Option<Self::Item>>> {
+        self.as_deref_mut().poll_max(cx)
     }
 }
