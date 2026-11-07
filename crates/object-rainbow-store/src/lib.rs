@@ -244,10 +244,7 @@ impl<S: RainbowStoreMut, Extra: 'static + Send + Sync + Clone> StoreMut<S, Extra
         self.load_or_init_with(key, Default::default).await
     }
 
-    pub async fn load_or_init_with<
-        T: Object<Extra> + Default + Clone,
-        K: Send + Sync + AsRef<str>,
-    >(
+    pub async fn load_or_init_with<T: Object<Extra>, K: Send + Sync + AsRef<str>>(
         &self,
         key: K,
         f: impl FnOnce() -> Point<T>,
