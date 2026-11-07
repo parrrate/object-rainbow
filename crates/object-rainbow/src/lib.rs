@@ -1469,6 +1469,8 @@ impl<T> PartialEq for dyn '_ + SingularFetch<T = T> {
     }
 }
 
+impl<T> Eq for dyn '_ + SingularFetch<T = T> {}
+
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
 impl<T: Traversible> Topological for Arc<dyn SingularFetch<T = T>> {
