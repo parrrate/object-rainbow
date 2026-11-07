@@ -482,3 +482,8 @@ impl<P: DerefMut<Target: OwpBoundsOwned<B>>, B> OwpBoundsOwned<B> for Pin<P> {
         self.as_deref_mut().set_max(max);
     }
 }
+
+pub trait KeyOwp: Send + Owp<Item = (Self::K, Self::V)> + OwpBounds<Self::K> {
+    type K: Send;
+    type V: Send;
+}
