@@ -1433,6 +1433,10 @@ impl<T> Size for dyn '_ + SingularFetch<T = T> {
     const SIZE: usize = <Hash as Size>::SIZE;
 }
 
+impl<T> MaybeHasNiche for dyn '_ + SingularFetch<T = T> {
+    type MnArray = <Hash as MaybeHasNiche>::MnArray;
+}
+
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
 impl<T: Traversible> Topological for Arc<dyn SingularFetch<T = T>> {
