@@ -1483,6 +1483,12 @@ impl<T> Ord for dyn '_ + SingularFetch<T = T> {
     }
 }
 
+impl<T> std::hash::Hash for dyn '_ + SingularFetch<T = T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.hash().hash(state);
+    }
+}
+
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
 impl<T: Traversible> Topological for Arc<dyn SingularFetch<T = T>> {
