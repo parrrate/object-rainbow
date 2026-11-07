@@ -63,6 +63,12 @@ impl<T> Ord for WithRepr<T> {
     }
 }
 
+impl<T> std::hash::Hash for WithRepr<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.data.hash(state);
+    }
+}
+
 impl<T: ToOutput> ByteOrd for WithRepr<T> {
     fn bytes_cmp(&self, other: &Self) -> Ordering {
         self.cmp(other)
