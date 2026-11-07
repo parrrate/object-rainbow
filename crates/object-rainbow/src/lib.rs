@@ -1471,6 +1471,18 @@ impl<T> PartialEq for dyn '_ + SingularFetch<T = T> {
 
 impl<T> Eq for dyn '_ + SingularFetch<T = T> {}
 
+impl<T> PartialOrd for dyn '_ + SingularFetch<T = T> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<T> Ord for dyn '_ + SingularFetch<T = T> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.hash().cmp(&other.hash())
+    }
+}
+
 pub type TopoVec = Vec<Arc<dyn Singular>>;
 
 impl<T: Traversible> Topological for Arc<dyn SingularFetch<T = T>> {
