@@ -185,7 +185,7 @@ impl<K: Component> RangeIndex<K> {
                                     l
                                 })..LpBytes(r.clone()),
                             )
-                            .try_for_each_increasing(|(_, map)| {
+                            .try_for_each_both_ends(|(_, map)| {
                                 result.push(map);
                             })
                             .await?;
