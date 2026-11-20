@@ -48,7 +48,7 @@ impl Size for u8 {
 
 impl FromSized for u8 {
     fn from_sized(data: &GenericArray<u8, Self::Size>) -> Self {
-        let [byte] = From::from(Clone::clone(data));
+        let [byte] = From::from(*data);
         byte
     }
 }
